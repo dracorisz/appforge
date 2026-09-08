@@ -2,6 +2,7 @@ import React from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Layout } from './components/layout/Layout'
 import { PublicToolShell } from './components/public/PublicToolShell'
+import { PrivacyPolicyPage, TermsOfServicePage } from './components/public/LegalPages'
 import { AppWorkspace } from './components/dashboard/AppWorkspace'
 import { PublicDashboard } from './components/dashboard/PublicDashboard'
 import {
@@ -98,6 +99,8 @@ function App() {
   const requestedPath = `${location.pathname}${location.search}${location.hash}`
   const isPublicScrapper = location.pathname === '/apps/scrapper-pro' || location.pathname === '/pf-scrapper-pro'
 
+  if (location.pathname === '/privacy') return <PrivacyPolicyPage />
+  if (location.pathname === '/terms') return <TermsOfServicePage />
   if (isPublicScrapper && !user) return <PublicToolShell><PF_ScrapperPro /></PublicToolShell>
   if (location.pathname === '/login') return <LoginPage />
   if (loading || !user) return <LoginPage returnTo={requestedPath} />
