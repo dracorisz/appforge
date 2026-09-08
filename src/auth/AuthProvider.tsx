@@ -1,12 +1,13 @@
 import React from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { rememberReturnPath } from './returnPath'
 
 interface AuthContextValue {
   session: Session | null
   user: User | null
   loading: boolean
-  signInWithGoogle: () => Promise<void>
+  signInWithGoogle: (returnTo?: string) => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -36,18 +37,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const signInWithGoogle = async () => {
-    const redirectTo = `${window.location.origin}/`
+  const signInWithGoogle = async (returnTo = '/') => {
+    rememberReturnPath(returnTo)
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo,
+        redirectTo: `${window.location.origin}/login`,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
         },
       },
     })
+
     if (error) throw error
   }
 
