@@ -12,6 +12,7 @@ import {
   PF_PariflowSmpl,
   MiniAppShell,
   AnyToAnyConverter,
+  UtilityWorkbench,
 } from './components/dashboard'
 import { SettingsPage } from './components/resources/Settings'
 import type { AppState, MiniApp } from './types'
@@ -202,11 +203,21 @@ function App() {
         <Route path="/apps/any-converter" element={<AnyToAnyConverter />} />
         <Route path="/settings" element={<SettingsPage state={state} setState={setState} />} />
 
+        <Route path="/apps/json-formatter" element={<UtilityWorkbench />} />
+        <Route path="/apps/uuid-generator" element={<UtilityWorkbench />} />
+        <Route path="/apps/password-generator" element={<UtilityWorkbench />} />
+        <Route path="/apps/token-generator" element={<UtilityWorkbench />} />
+        <Route path="/apps/base64-tool" element={<UtilityWorkbench />} />
+        <Route path="/apps/hash-tool" element={<UtilityWorkbench />} />
+        <Route path="/apps/url-encoder" element={<UtilityWorkbench />} />
+        <Route path="/apps/html-encoder" element={<UtilityWorkbench />} />
+        <Route path="/apps/jwt-decoder" element={<UtilityWorkbench />} />
+        <Route path="/apps/hex-converter" element={<UtilityWorkbench />} />
+
         <Route path="/apps/pitch-deck" element={miniAppRoute('mini-2')} />
         <Route path="/apps/invoice-studio" element={miniAppRoute('mini-3')} />
         <Route path="/apps/source-grade" element={miniAppRoute('mini-5')} />
         <Route path="/apps/link-checker" element={miniAppRoute('mini-9')} />
-        <Route path="/apps/json-formatter" element={miniAppRoute('mini-11')} />
         <Route path="/apps/csv-converter" element={miniAppRoute('mini-12')} />
         <Route path="/apps/qr-generator" element={miniAppRoute('mini-13')} />
         <Route path="/apps/color-picker" element={miniAppRoute('mini-14')} />
@@ -216,15 +227,6 @@ function App() {
         <Route path="/apps/image-converter" element={miniAppRoute('mini-1')} />
         <Route path="/apps/image-compressor" element={miniAppRoute('mini-1')} />
         <Route path="/apps/image-metadata" element={miniAppRoute('mini-1')} />
-        <Route path="/apps/uuid-generator" element={miniAppRoute('mini-1')} />
-        <Route path="/apps/password-generator" element={miniAppRoute('mini-1')} />
-        <Route path="/apps/token-generator" element={miniAppRoute('mini-1')} />
-        <Route path="/apps/base64-tool" element={miniAppRoute('mini-1')} />
-        <Route path="/apps/hash-tool" element={miniAppRoute('mini-1')} />
-        <Route path="/apps/url-encoder" element={miniAppRoute('mini-1')} />
-        <Route path="/apps/html-encoder" element={miniAppRoute('mini-1')} />
-        <Route path="/apps/jwt-decoder" element={miniAppRoute('mini-1')} />
-        <Route path="/apps/hex-converter" element={miniAppRoute('mini-1')} />
 
         <Route path="/pf-scrapper-pro" element={<Navigate to="/apps/scrapper-pro" replace />} />
         <Route path="/pf-image-labeler" element={<Navigate to="/apps/image-labeler" replace />} />
