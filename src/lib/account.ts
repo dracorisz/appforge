@@ -273,7 +273,7 @@ export async function getSecurityState(): Promise<{
   return {
     currentLevel: normalizeAssuranceLevel(aal.data.currentLevel),
     nextLevel: normalizeAssuranceLevel(aal.data.nextLevel),
-    totp: factors.data?.totp || [],
+    totp: factors.data?.totp ?? [],
   }
 }
 
