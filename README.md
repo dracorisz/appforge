@@ -1,6 +1,6 @@
 # AppForge
 
-Unified toolbox for everyday developer work. Local-first, no backend, no analytics.
+1-init Unified toolbox for everyday developer work. Local-first, no backend, no analytics.
 
 ## Quick Start
 
