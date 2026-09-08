@@ -24,25 +24,37 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'robots.txt', 'apple-touch-icon.png'],
+      registerType: 'prompt',
+      includeAssets: ['favicon.svg', 'robots.txt', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
+        id: '/',
         name: 'AppForge — Simple, powerful tools',
         short_name: 'AppForge',
-        description: 'A fast, clean developer toolbox with focused mini-apps.',
+        description: 'A polished open-source toolbox of focused utilities, media tools and authenticated workspace features.',
+        start_url: '/',
+        scope: '/',
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',
+        categories: ['utilities', 'productivity', 'developer'],
         icons: [
+          {
+            src: 'favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any'
+          },
           {
             src: 'pwa-192x192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
             src: 'pwa-512x512.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
             src: 'pwa-512x512.png',
@@ -50,10 +62,29 @@ export default defineConfig({
             type: 'image/png',
             purpose: 'maskable'
           }
+        ],
+        shortcuts: [
+          {
+            name: 'Scrapper Pro',
+            short_name: 'Scrapper',
+            description: 'Search public media sources in AppForge Scrapper Pro.',
+            url: '/apps/scrapper-pro',
+            icons: [{ src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml' }]
+          },
+          {
+            name: 'Any → Any Converter',
+            short_name: 'Converter',
+            description: 'Open the AppForge data converter.',
+            url: '/apps/any-converter',
+            icons: [{ src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml' }]
+          }
         ]
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        cleanupOutdatedCaches: true,
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

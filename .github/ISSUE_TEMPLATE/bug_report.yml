@@ -1,34 +1,69 @@
 name: Bug report
-description: Report a reproducible problem in AppForge
-title: "[Bug] "
-labels: [bug]
+description: Report a reproducible AppForge problem
+title: "[Bug]: "
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for helping improve AppForge. Please include the build fingerprint shown in the footer.
+        Thanks for testing AppForge. Please copy the exact Footer build fingerprint so we can reproduce the deployment you saw.
   - type: input
-    id: app
+    id: route
     attributes:
-      label: App / route
-      placeholder: /apps/scrapper-pro
+      label: Route / app
+      description: Exact URL or route where the problem occurs.
+      placeholder: https://www.sstoken.space/apps/scrapper-pro
     validations:
       required: true
   - type: input
     id: build
     attributes:
       label: Build fingerprint
-      placeholder: v1.18.0 · abc1234 · Sep 08, 21:00 UTC
+      description: Copy the version + short Git SHA + UTC time shown in the Footer/Build badge.
+      placeholder: v1.18.0 · abc1234 · Sep 08, 21:45 UTC
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser / device
+      placeholder: Firefox 155 on Linux desktop
     validations:
       required: true
   - type: textarea
-    id: problem
+    id: actual
     attributes:
       label: What happened?
-      description: Include steps to reproduce and what you expected instead.
+      description: Include the exact error text when available.
     validations:
       required: true
   - type: textarea
-    id: notes
+    id: expected
     attributes:
-      label: Browser / screenshots / notes
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Enter ...
+        3. Click ...
+    validations:
+      required: true
+  - type: checkboxes
+    id: access
+    attributes:
+      label: Session state
+      options:
+        - label: I tested while signed out
+        - label: I tested while signed in
+        - label: I tested the installed PWA/standalone mode
+  - type: checkboxes
+    id: sensitive
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed secrets, cookies, tokens, private URLs and personal sensitive data from this report.
+          required: true

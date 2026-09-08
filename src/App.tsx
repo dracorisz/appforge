@@ -1,6 +1,7 @@
 import React from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Layout } from './components/layout/Layout'
+import { PublicToolShell } from './components/public/PublicToolShell'
 import { AppWorkspace } from './components/dashboard/AppWorkspace'
 import { PublicDashboard } from './components/dashboard/PublicDashboard'
 import {
@@ -94,6 +95,9 @@ function App() {
 
   const dashboard = <PublicDashboard state={state} onOpenApp={addToRecent} onToggleFavorite={toggleFavorite} />
   const requestedPath = `${location.pathname}${location.search}${location.hash}`
+  const isPublicScrapper = location.pathname === '/apps/scrapper-pro' || location.pathname === '/pf-scrapper-pro'
+
+  if (isPublicScrapper && !user) return <PublicToolShell><PF_ScrapperPro /></PublicToolShell>
   if (location.pathname === '/login') return <LoginPage />
   if (loading || !user) return <LoginPage returnTo={requestedPath} />
 
