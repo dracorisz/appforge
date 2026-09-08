@@ -1,0 +1,42 @@
+# Supabase Configuration for AppForge
+# Reference: https://supabase.com/docs/guides/cli/config
+
+project_id = "appforge"
+name = "AppForge"
+region = "us-east-1"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[auth]
+enabled = true
+port = 54325
+
+[storage]
+enabled = true
+port = 54326
+
+[edge-runtime]
+enabled = true
+port = 54329
+
+[analytics]
+enabled = false
+
+[experimental]
+s3_compatibility = false
