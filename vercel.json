@@ -36,12 +36,5 @@
         }
       ]
     }
-  ],
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/:splat",
-      "permanent": true
-    }
   ]
 }
