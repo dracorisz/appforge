@@ -15,6 +15,7 @@ import {
   Image as ImageIcon,
   LayoutDashboard,
   Lock,
+  LogOut,
   Monitor,
   Palette,
   QrCode,
@@ -34,6 +35,7 @@ import {
 import { useTheme } from '../../hooks/useTheme'
 import { searchApps } from '@/lib/registry'
 import { resolveCategories, subscribeCategoryOverrides } from '@/lib/categories'
+import { useAuth } from '@/auth/AuthProvider'
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   ArrowLeftRight,
@@ -68,8 +70,10 @@ const coreItems = [
 export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }: { onClose?: () => void; collapsed?: boolean; onToggleCollapse?: () => void }) {
   const location = useLocation()
   const { mode, setMode } = useTheme()
+  const { user, signOut } = useAuth()
   const [internalCollapsed, setInternalCollapsed] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState('')
+  const [signingOut, setSigningOut] = React.useState(false)
   const [, refreshCategories] = React.useReducer((value) => value + 1, 0)
 
   React.useEffect(() => subscribeCategoryOverrides(refreshCategories), [])
@@ -89,7 +93,20 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
     else setMode('light')
   }
 
+  const handleSignOut = async () => {
+    setSigningOut(true)
+    try {
+      await signOut()
+      onClose?.()
+    } finally {
+      setSigningOut(false)
+    }
+  }
+
   const ThemeIcon = mode === 'light' ? Sun : mode === 'dark' ? Moon : Monitor
+  const avatar = user?.user_metadata?.avatar_url || user?.user_metadata?.picture
+  const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || 'Account'
+  const initial = String(displayName).trim().charAt(0).toUpperCase() || 'A'
 
   return (
     <aside className={`flex h-full flex-col border-r border-border bg-background/92 backdrop-blur-xl transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'}`}>
@@ -183,10 +200,27 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
         </div>
       </nav>
 
-      <div className="border-t border-border p-3">
+      <div className="space-y-1 border-t border-border p-3">
+        {user && (
+          <div className={`mb-2 flex items-center gap-2 rounded-xl border border-border/60 bg-background/35 p-2 ${isCollapsed ? 'justify-center' : ''}`} title={isCollapsed ? String(displayName) : undefined}>
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-accent text-xs font-semibold text-foreground">
+              {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : initial}
+            </div>
+            {!isCollapsed && (
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-xs font-medium text-foreground">{String(displayName)}</div>
+                {user.email && <div className="truncate text-[10px] text-muted-foreground">{user.email}</div>}
+              </div>
+            )}
+          </div>
+        )}
         <button onClick={cycleTheme} title={isCollapsed ? 'Toggle theme' : undefined} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground">
           <ThemeIcon className="h-4 w-4 shrink-0" />
           {!isCollapsed && <span>{mode === 'light' ? 'Light' : mode === 'dark' ? 'Dark' : 'System'}</span>}
+        </button>
+        <button onClick={() => void handleSignOut()} disabled={signingOut} title={isCollapsed ? 'Sign out' : undefined} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-60">
+          <LogOut className="h-4 w-4 shrink-0" />
+          {!isCollapsed && <span>{signingOut ? 'Signing out…' : 'Sign out'}</span>}
         </button>
       </div>
     </aside>

@@ -54,7 +54,7 @@ const defaultState: AppState = {
 
 function App() {
   const location = useLocation()
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const [remoteReady, setRemoteReady] = React.useState(false)
   const [state, setState] = React.useState<AppState>(() => {
     try {
@@ -177,7 +177,9 @@ function App() {
     />
   )
 
+  const requestedPath = `${location.pathname}${location.search}${location.hash}`
   if (location.pathname === '/login') return <LoginPage />
+  if (loading || !user) return <LoginPage returnTo={requestedPath} />
 
   return (
     <Layout currentVersion={BUILD_INFO.version}>
