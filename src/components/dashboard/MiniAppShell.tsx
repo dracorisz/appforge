@@ -1,6 +1,6 @@
 import React from 'react'
 import { Card, Button, Badge, Input, Textarea } from '@/components/ui'
-import { ExternalLink, GitFork, Edit2, Save, X, Trash2, Star } from 'lucide-react'
+import { Save, X, Trash2, Star } from 'lucide-react'
 import type { MiniApp } from '@/types'
 
 export function MiniAppShell({ app, onUpdate, onDelete, onToggleFavorite, isFavorite }: { app: MiniApp; onUpdate?: (app: MiniApp) => void; onDelete?: (id: string) => void; onToggleFavorite?: (id: string) => void; isFavorite?: boolean }) {
@@ -20,13 +20,12 @@ export function MiniAppShell({ app, onUpdate, onDelete, onToggleFavorite, isFavo
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground dark:text-foreground">{app.name}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{app.name}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{app.description}</p>
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <Badge color={statusColor}>{app.status}</Badge>
-            <span className="text-xs text-muted-foreground">v{app.version}</span>
             <span className="text-xs text-muted-foreground">{app.codename}</span>
           </div>
         </div>
@@ -58,7 +57,6 @@ export function MiniAppShell({ app, onUpdate, onDelete, onToggleFavorite, isFavo
             <Input label="Codename" value={form.codename} onChange={(e) => setForm({ ...form, codename: e.target.value })} />
             <Input label="Price" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
             <Input label="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
-            <Input label="Version" value={form.version} onChange={(e) => setForm({ ...form, version: e.target.value })} />
             <Input label="Branch" value={form.branch} onChange={(e) => setForm({ ...form, branch: e.target.value })} />
             <div className="md:col-span-2">
               <Textarea label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} />
@@ -75,7 +73,7 @@ export function MiniAppShell({ app, onUpdate, onDelete, onToggleFavorite, isFavo
           <p><strong>Branch:</strong> {app.branch}</p>
           <p><strong>Channels:</strong> {app.channels.join(' + ')}</p>
           <p><strong>Forks:</strong> {app.forks}</p>
-          {app.url && <p><strong>URL:</strong> <a href={app.url} target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-foreground">{app.url}</a></p>}
+          {app.url && <p><strong>URL:</strong> <a href={app.url} target="_blank" rel="noopener noreferrer" className="text-foreground hover:underline">{app.url}</a></p>}
         </div>
       </Card>
     </div>
