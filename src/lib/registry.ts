@@ -39,6 +39,7 @@ export const CATEGORIES: CategoryDefinition[] = [
   { id: 'crypto', name: 'Crypto', description: 'UUIDs, passwords, secure tokens, hashes, and security generators.', icon: 'Lock', apps: [] },
   { id: 'encoding', name: 'Encoding', description: 'Base64, URL, HTML, JWT, hex, and binary encoders and decoders.', icon: 'FileCode', apps: [] },
   { id: 'dates', name: 'Dates', description: 'Timestamp conversion, date formatting, timezone tools, and calculations.', icon: 'Calendar', apps: [] },
+  { id: 'ai', name: 'AI', description: 'OpenAI-powered interactive tools and games.', icon: 'Sparkles', apps: [] },
   { id: 'utilities', name: 'Utilities', description: 'Search, weather, markets, QR codes, and general-purpose tools.', icon: 'Wrench', apps: [] },
 ]
 
@@ -56,6 +57,7 @@ const APPS: AppDefinition[] = [
   app({ id: 'crypto-track', name: 'Crypto Track', description: 'Live cryptocurrency market data through AppForge server APIs with provider failover and watchlists.', category: 'utilities', icon: 'Wrench', route: '/apps/crypto-track', tags: ['crypto', 'prices', 'market', 'coingecko', 'coinpaprika'], status: 'beta', version: '1.1.0' }),
   app({ id: 'weather-now', name: 'Weather Now', description: 'Current weather and location search through AppForge server APIs backed by Open-Meteo.', category: 'utilities', icon: 'Wrench', route: '/apps/weather-now', tags: ['weather', 'forecast', 'open-meteo', 'city'], status: 'beta', version: '1.1.0' }),
   app({ id: 'pariflow-smpl', name: 'Pariflow Smpl', description: 'Pariflow documentation explorer with MCP CLI and API integration guidance.', category: 'utilities', icon: 'FileText', route: '/apps/pariflow-smpl', tags: ['docs', 'mcp', 'cli', 'pariflow'], status: 'building', version: '1.0.0' }),
+  app({ id: 'ai-dragon-arena', name: 'Dragon Arena', description: 'WildDragons.ai turn-based adventure with a server-side OpenAI game master locked to GPT-5.6 Sol.', category: 'ai', icon: 'Sparkles', route: '/apps/ai-dragon-arena', tags: ['ai', 'openai', 'game', 'dragon', 'gpt-5.6'], status: 'beta', version: '1.0.0', changelog: [{ version: '1.0.0', date: '2026-09-09', changes: ['Interactive AI game master', 'Server-side OpenAI Responses API', 'Plus-level GPT-5.6 Sol allowlist'] }] }),
 
   app({ id: 'json-formatter', name: 'JSON Formatter', description: 'Format, minify, and validate JSON locally with copy-ready output.', category: 'json-data', icon: 'Braces', route: '/apps/json-formatter', tags: ['json', 'format', 'validate', 'minify'], status: 'beta', version: '0.2.0' }),
   app({ id: 'csv-converter', name: 'CSV Converter', description: 'Convert quoted CSV to JSON, Markdown tables, or SQL INSERT statements locally.', category: 'converters', icon: 'Table2', route: '/apps/csv-converter', tags: ['csv', 'json', 'sql', 'markdown'], status: 'beta', version: '0.2.0' }),
