@@ -1,414 +1,309 @@
 import React from 'react'
-import { Card, Button, Input, Textarea, Select, Modal } from '@/components/ui'
-import { Moon, Sun, Monitor, Download, Upload, RotateCcw, Printer, GitFork, RefreshCw } from 'lucide-react'
+import {
+  Check,
+  Cloud,
+  Download,
+  ExternalLink,
+  Github,
+  ImagePlus,
+  KeyRound,
+  Loader2,
+  LockKeyhole,
+  Monitor,
+  Moon,
+  RefreshCw,
+  ShieldCheck,
+  Sun,
+  Trash2,
+  Upload,
+  UserRound,
+} from 'lucide-react'
+import { Badge, BuildBadge, Button, Card, Input, Textarea } from '@/components/ui'
 import type { AppState, Settings } from '@/types'
+import { useAuth } from '@/auth/AuthProvider'
+import { BUILD_INFO } from '@/lib/buildInfo'
+import {
+  adminDeleteUser,
+  adminListUsers,
+  adminSetRole,
+  adminUpdateProfile,
+  claimFirstAdmin,
+  ensureProfile,
+  enrollTotp,
+  getRole,
+  getSecurityState,
+  listProfileImages,
+  removeProfileImage,
+  saveProfile,
+  unenrollTotp,
+  uploadProfileImage,
+  verifyTotpFactor,
+  type AdminUser,
+  type AppProfile,
+  type ProfileImageLink,
+  type UserImage,
+} from '@/lib/account'
 
-const STORAGE_KEY = 'appforge-api-keys'
-const GITHUB_STORAGE_KEY = 'appforge-github-token'
-
+const LIVE_URL_KEY = 'appforge-live-url'
 type ThemeMode = 'light' | 'dark' | 'system'
+type TabId = 'profile' | 'appearance' | 'security' | 'data' | 'integrations' | 'deployment' | 'about' | 'admin'
 
-interface GitHubRepo {
-  id: string
-  name: string
-  full_name: string
-  forks_count: number
-  html_url: string
+const imageFromLink = (link: ProfileImageLink) => {
+  const value = link.user_images
+  return Array.isArray(value) ? value[0] || null : value || null
 }
 
 export function SettingsPage({ state, setState }: { state: AppState; setState: (s: AppState) => void }) {
-  const [settings, setSettings] = React.useState<Settings>(state.settings)
-  const [confirmAction, setConfirmAction] = React.useState<string | null>(null)
-  const [apiKeys, setApiKeys] = React.useState<Record<string, string>>(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      if (raw) return JSON.parse(raw)
-    } catch { /* ignore */ }
-       return {
-      weather: import.meta.env.VITE_WEATHERAPI_KEY || '',
-      pariflow: import.meta.env.VITE_PARIFLOW_API_KEY || '',
-      coinmarketcap: import.meta.env.VITE_COINMARKETCAP_API_KEY || '',
-      coinpaprika: import.meta.env.VITE_COINPAPRIKA_API_KEY || '',
-    }
-  })
-  const [githubToken, setGithubToken] = React.useState<string>(() => {
-    try {
-      const raw = localStorage.getItem(GITHUB_STORAGE_KEY)
-      if (raw) return JSON.parse(raw)
-    } catch { /* ignore */ }
-    return ''
-  })
-  const [liveUrl, setLiveUrl] = React.useState<string>(() => {
-    try {
-      const raw = localStorage.getItem('appforge-live-url')
-      if (raw) return JSON.parse(raw)
-      const legacy = localStorage.getItem('projectforge-live-url')
-      if (legacy) return JSON.parse(legacy)
-    } catch { /* ignore */ }
-    return 'https://appforge.sstoken.space'
-  })
-  const [githubRepos, setGithubRepos] = React.useState<GitHubRepo[]>([])
-  const [githubLoading, setGithubLoading] = React.useState(false)
+  const { user, signOut } = useAuth()
+  const [activeTab, setActiveTab] = React.useState<TabId>('profile')
   const [themeMode, setThemeMode] = React.useState<ThemeMode>('system')
-  const [activeTab, setActiveTab] = React.useState<'theming' | 'api' | 'integrations' | 'pwa' | 'data' | 'deployment' | 'about'>('theming')
+  const [profile, setProfile] = React.useState<AppProfile | null>(null)
+  const [images, setImages] = React.useState<ProfileImageLink[]>([])
+  const [role, setRole] = React.useState<'user' | 'admin'>('user')
+  const [currentLevel, setCurrentLevel] = React.useState<'aal1' | 'aal2' | null>(null)
+  const [nextLevel, setNextLevel] = React.useState<'aal1' | 'aal2' | null>(null)
+  const [totpFactors, setTotpFactors] = React.useState<any[]>([])
+  const [enrollment, setEnrollment] = React.useState<{ id: string; qr: string; secret: string } | null>(null)
+  const [totpCode, setTotpCode] = React.useState('')
+  const [adminUsers, setAdminUsers] = React.useState<AdminUser[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [busy, setBusy] = React.useState('')
+  const [message, setMessage] = React.useState('')
+  const [error, setError] = React.useState('')
+  const [liveUrl, setLiveUrl] = React.useState(() => localStorage.getItem(LIVE_URL_KEY) || 'https://www.sstoken.space')
+
+  const refreshAccount = React.useCallback(async () => {
+    if (!user) return
+    setLoading(true)
+    setError('')
+    try {
+      const [nextProfile, nextRole, security, nextImages] = await Promise.all([
+        ensureProfile(user),
+        getRole(user.id),
+        getSecurityState(),
+        listProfileImages(user.id),
+      ])
+      setProfile(nextProfile)
+      setRole(nextRole)
+      setCurrentLevel(security.currentLevel)
+      setNextLevel(security.nextLevel)
+      setTotpFactors(security.totp || [])
+      setImages(nextImages)
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : 'Could not load account settings.')
+    } finally {
+      setLoading(false)
+    }
+  }, [user])
+
+  React.useEffect(() => { void refreshAccount() }, [refreshAccount])
 
   React.useEffect(() => {
-    const saved = localStorage.getItem('appforge-theme')
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        setThemeMode(parsed.mode || 'system')
-      } catch { /* ignore */ }
+    const raw = localStorage.getItem('appforge-theme')
+    if (raw) {
+      try { setThemeMode(JSON.parse(raw).mode || 'system') } catch { /* ignore */ }
     }
   }, [])
 
   React.useEffect(() => {
-    const root = window.document.documentElement
-    const isDark = themeMode === 'dark' || (themeMode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    root.classList.toggle('dark', isDark)
+    const root = document.documentElement
+    const dark = themeMode === 'dark' || (themeMode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    root.classList.toggle('dark', dark)
     localStorage.setItem('appforge-theme', JSON.stringify({ mode: themeMode }))
+    const nextSettings = { ...state.settings, theme: themeMode } as Settings
+    if (state.settings.theme !== themeMode) setState({ ...state, settings: nextSettings })
   }, [themeMode])
 
-  const applySettings = (s: Settings) => {
-    setSettings(s)
-    setState({ ...state, settings: s })
+  const flash = (text: string) => {
+    setMessage(text)
+    setError('')
+    window.setTimeout(() => setMessage(''), 2200)
   }
 
-  const updateApiKey = (key: string, value: string) => {
-    setApiKeys(prev => {
-      const next = { ...prev, [key]: value }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-      return next
-    })
-  }
-
-  const updateGithubToken = (value: string) => {
-    setGithubToken(value)
-    localStorage.setItem(GITHUB_STORAGE_KEY, JSON.stringify(value))
-  }
-
-  const fetchGitHubForks = async () => {
-    if (!githubToken) return
-    setGithubLoading(true)
+  const saveProfileForm = async () => {
+    if (!user || !profile) return
+    setBusy('profile')
     try {
-      const owner = 'appforge'
-      const repos: GitHubRepo[] = []
-      for (const app of state.miniApps) {
-        if (!app.codename) continue
-        const repoName = app.codename.replace('PF_', '').toLowerCase()
-        try {
-          const res = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, {
-            headers: { 'Authorization': `token ${githubToken}`, 'Accept': 'application/vnd.github.v3+json' }
-          })
-          if (res.ok) {
-            const data = await res.json()
-            repos.push({
-              id: app.id,
-              name: data.name || app.name,
-              full_name: data.full_name || `${owner}/${repoName}`,
-              forks_count: data.forks_count || 0,
-              html_url: data.html_url || `https://github.com/${owner}/${repoName}`
-            })
-          }
-        } catch { /* skip */ }
-      }
-      setGithubRepos(repos)
-      if (repos.length > 0) {
-        setState({
-          ...state,
-          miniApps: state.miniApps.map(a => {
-            const repo = repos.find(r => r.id === a.id)
-            return repo ? { ...a, forks: repo.forks_count } : a
-          })
-        })
-      }
-    } catch { /* ignore */ }
-    setGithubLoading(false)
+      const saved = await saveProfile(user.id, profile)
+      setProfile(saved)
+      flash('Profile saved.')
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : 'Could not save profile.')
+    } finally { setBusy('') }
   }
 
-  const exportJSON = () => {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' })
+  const uploadImage = async (file: File, kind: 'avatar' | 'gallery') => {
+    if (!user) return
+    setBusy(kind)
+    try {
+      await uploadProfileImage(user.id, file, kind)
+      await refreshAccount()
+      flash(kind === 'avatar' ? 'Profile photo updated.' : 'Image added to your profile.')
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : 'Upload failed.')
+    } finally { setBusy('') }
+  }
+
+  const removeImage = async (image: UserImage) => {
+    if (!user) return
+    setBusy(image.id)
+    try {
+      await removeProfileImage(user.id, image)
+      await refreshAccount()
+      flash('Image removed.')
+    } catch (removeError) {
+      setError(removeError instanceof Error ? removeError.message : 'Could not remove image.')
+    } finally { setBusy('') }
+  }
+
+  const beginTotp = async () => {
+    setBusy('enroll')
+    setError('')
+    try {
+      const data = await enrollTotp()
+      setEnrollment({ id: data.id, qr: data.totp.qr_code, secret: data.totp.secret })
+    } catch (mfaError) {
+      setError(mfaError instanceof Error ? mfaError.message : 'Could not start TOTP enrollment.')
+    } finally { setBusy('') }
+  }
+
+  const verifyFactor = async (factorId: string) => {
+    if (!totpCode.trim()) return
+    setBusy('verify')
+    setError('')
+    try {
+      await verifyTotpFactor(factorId, totpCode)
+      setTotpCode('')
+      setEnrollment(null)
+      await refreshAccount()
+      flash('TOTP verified. This session is AAL2.')
+    } catch (mfaError) {
+      setError(mfaError instanceof Error ? mfaError.message : 'TOTP verification failed.')
+    } finally { setBusy('') }
+  }
+
+  const removeFactor = async (factorId: string) => {
+    setBusy('unenroll')
+    try {
+      await unenrollTotp(factorId)
+      await refreshAccount()
+      flash('TOTP factor removed.')
+    } catch (mfaError) {
+      setError(mfaError instanceof Error ? mfaError.message : 'Could not remove TOTP factor.')
+    } finally { setBusy('') }
+  }
+
+  const bootstrapAdmin = async () => {
+    setBusy('bootstrap-admin')
+    try {
+      const claimed = await claimFirstAdmin()
+      if (!claimed) throw new Error('Initial admin can only be claimed while you are the sole AppForge account and no admin exists yet.')
+      await refreshAccount()
+      flash('Initial admin role claimed. Set up TOTP before using Admin CRUD.')
+    } catch (adminError) {
+      setError(adminError instanceof Error ? adminError.message : 'Could not initialize admin.')
+    } finally { setBusy('') }
+  }
+
+  const loadAdmin = async () => {
+    if (role !== 'admin' || currentLevel !== 'aal2') return
+    setBusy('admin-load')
+    try {
+      setAdminUsers(await adminListUsers())
+    } catch (adminError) {
+      setError(adminError instanceof Error ? adminError.message : 'Could not load admin users.')
+    } finally { setBusy('') }
+  }
+
+  React.useEffect(() => {
+    if (activeTab === 'admin' && role === 'admin' && currentLevel === 'aal2') void loadAdmin()
+  }, [activeTab, role, currentLevel])
+
+  const exportWorkspace = () => {
+    const payload = { exportedAt: new Date().toISOString(), build: BUILD_INFO, profile, workspace: state }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href = url; a.download = 'appforge-backup.json'; a.click(); URL.revokeObjectURL(url)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `appforge-${new Date().toISOString().slice(0, 10)}.json`
+    link.click()
+    URL.revokeObjectURL(url)
   }
 
-  const importJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const importWorkspace = (file: File) => {
     const reader = new FileReader()
     reader.onload = () => {
       try {
-        const parsed = JSON.parse(reader.result as string)
-        if (parsed && typeof parsed === 'object') {
-          setState(parsed as AppState)
-        } else {
-          alert('Invalid JSON')
-        }
-      } catch { alert('Invalid JSON') }
+        const parsed = JSON.parse(String(reader.result || '{}'))
+        const next = parsed.workspace || parsed
+        if (!next || typeof next !== 'object') throw new Error('Invalid backup')
+        setState(next as AppState)
+        flash('Workspace imported.')
+      } catch { setError('That file is not a valid AppForge workspace export.') }
     }
     reader.readAsText(file)
   }
 
-  const resetDemo = () => {
-    setState({
-      ...state,
-      plan: state.plan.map(p => ({ ...p, status: 'Not started', items: [] })),
-      article: { ...state.article, body: '' },
-      pitches: state.pitches.map(p => ({ ...p, subject: '', body: '' })),
-      sources: [],
-      outreach: [],
-      checklist: state.checklist.map(c => ({ ...c, checked: false }))
-    })
-    setConfirmAction(null)
-  }
-
-  const clearAll = () => {
-    localStorage.removeItem('appforge-workplan-v1')
-    setState({
-      ...state,
-      plan: [],
-      article: { ...state.article, body: '' },
-      pitches: [],
-      sources: [],
-      outreach: [],
-      checklist: []
-    })
-    setConfirmAction(null)
-  }
-
-  const tabs = [
-    { id: 'theming', label: 'Theming' },
-    { id: 'api', label: 'API Keys' },
-    { id: 'integrations', label: 'Integrations' },
-    { id: 'pwa', label: 'PWA' },
+  const gallery = images.filter((link) => link.kind === 'gallery').map(imageFromLink).filter((image): image is UserImage => Boolean(image))
+  const verifiedTotp = totpFactors.filter((factor) => factor.status === 'verified')
+  const tabs: { id: TabId; label: string }[] = [
+    { id: 'profile', label: 'Profile' },
+    { id: 'appearance', label: 'Appearance' },
+    { id: 'security', label: 'Security' },
     { id: 'data', label: 'Data' },
+    { id: 'integrations', label: 'Integrations' },
     { id: 'deployment', label: 'Deployment' },
     { id: 'about', label: 'About' },
+    ...(role === 'admin' ? [{ id: 'admin' as TabId, label: 'Admin' }] : []),
   ]
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Application preferences, API keys, and integrations.</p>
+    <div className="space-y-5 pb-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div><h1 className="text-2xl font-semibold tracking-tight text-foreground">Settings</h1><p className="mt-1 text-sm text-muted-foreground">Your profile, security, workspace data, deployment and project information.</p></div>
+        <BuildBadge />
       </div>
 
-      <div className="flex gap-1 border-b border-border">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as typeof activeTab)}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === tab.id ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <div className="flex flex-wrap gap-1 border-b border-border/70 pb-2">{tabs.map((tab) => <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${activeTab === tab.id ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{tab.label}</button>)}</div>
 
-      {activeTab === 'theming' && (
-        <Card>
-          <h2 className="text-lg font-semibold text-foreground">Appearance</h2>
-          <div className="mt-4 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground">Theme</label>
-              <div className="mt-2 flex gap-2">
-                {[
-                  { value: 'light', label: 'Light', icon: Sun },
-                  { value: 'dark', label: 'Dark', icon: Moon },
-                  { value: 'system', label: 'System', icon: Monitor }
-                ].map(opt => {
-                  const Icon = opt.icon
-                  return (
-                    <button
-                      key={opt.value}
-                      onClick={() => setThemeMode(opt.value as ThemeMode)}
-                      className={`flex items-center gap-2 rounded-lg border border-input bg-background px-3 py-2 text-sm transition-colors ${
-                        themeMode === opt.value ? 'border-primary bg-accent' : 'hover:bg-accent'
-                      }`}
-                    >
-                      <Icon className="h-4 w-4" /> {opt.label}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground">Default shadcn/ui B&W theme. Clean, minimal, monochrome.</p>
-          </div>
-        </Card>
-      )}
+      {message && <Card className="border-emerald-500/25 bg-emerald-500/5 p-3 text-sm text-emerald-600 dark:text-emerald-400"><Check className="mr-2 inline h-4 w-4" />{message}</Card>}
+      {error && <Card className="border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</Card>}
 
-      {activeTab === 'api' && (
-        <Card>
-          <h2 className="text-lg font-semibold text-foreground">API Keys</h2>
-          <p className="mt-1 text-xs text-muted-foreground">Keys are stored locally. Apps use dummy data by default unless keys are provided.</p>
-          <div className="mt-4 space-y-3">
-            <Input label="WeatherAPI Key" value={apiKeys.weather || ''} onChange={(e) => updateApiKey('weather', e.target.value)} placeholder="Enter WeatherAPI key..." />
-            <Input label="Pariflow API Key" value={apiKeys.pariflow || ''} onChange={(e) => updateApiKey('pariflow', e.target.value)} placeholder="Enter Pariflow key..." />
-             <Input label="CoinMarketCap API Key" value={apiKeys.coinmarketcap || ''} onChange={(e) => updateApiKey('coinmarketcap', e.target.value)} placeholder="Enter CoinMarketCap key..." />
-             <Input label="CoinPaprika API Key" value={apiKeys.coinpaprika || ''} onChange={(e) => updateApiKey('coinpaprika', e.target.value)} placeholder="Enter CoinPaprika key..." />
-          </div>
-          <p className="mt-2 text-xs text-muted-foreground">Keys are saved to localStorage automatically.</p>
-        </Card>
-      )}
+      {activeTab === 'profile' && (
+        <div className="grid gap-4 lg:grid-cols-[0.72fr_1.28fr]">
+          <Card className="p-4">
+            <div className="flex items-center gap-3"><div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-muted text-muted-foreground">{profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : <UserRound className="h-7 w-7" />}</div><div className="min-w-0"><div className="truncate text-sm font-semibold text-foreground">{profile?.display_name || user?.email || 'AppForge user'}</div><div className="truncate text-xs text-muted-foreground">{user?.email}</div><Badge className="mt-2" color={role === 'admin' ? 'blue' : 'slate'}>{role}</Badge></div></div>
+            <label className="mt-4 block"><input type="file" accept="image/*" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, 'avatar'); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 bg-background/45 px-3 py-2 text-xs font-medium text-foreground hover:bg-accent"><ImagePlus className="h-4 w-4" />{busy === 'avatar' ? 'Uploading…' : 'Change photo'}</span></label>
+            <p className="mt-3 text-xs leading-5 text-muted-foreground">Your public profile is visible to other signed-in AppForge users. Tool preferences, saved state and recent activity are not part of the public profile.</p>
+          </Card>
 
-      {activeTab === 'integrations' && (
-        <Card>
-          <h2 className="text-lg font-semibold text-foreground">Integrations</h2>
-          <p className="mt-1 text-xs text-muted-foreground">Connect external services to sync real data.</p>
-          <div className="mt-4 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground">GitHub Personal Access Token</label>
-              <p className="text-xs text-muted-foreground">Used to fetch real fork counts from GitHub repos. Token is stored locally.</p>
-              <div className="mt-2 flex gap-2">
-                <Input
-                  type="password"
-                  value={githubToken}
-                  onChange={(e) => updateGithubToken(e.target.value)}
-                  placeholder="ghp_..."
-                  className="flex-1"
-                />
-                <Button onClick={fetchGitHubForks} disabled={!githubToken || githubLoading}>
-                  {githubLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <GitFork className="h-4 w-4" />}
-                  {githubLoading ? 'Syncing...' : 'Sync forks'}
-                </Button>
-              </div>
-            </div>
-            {githubRepos.length > 0 && (
-              <div className="mt-4 space-y-2">
-                <p className="text-sm font-medium text-foreground">Synced Repositories</p>
-                <div className="max-h-60 space-y-2 overflow-y-auto">
-                  {githubRepos.map(repo => (
-                    <div key={repo.id} className="flex items-center justify-between rounded-lg border border-border p-3">
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{repo.name}</p>
-                        <p className="text-xs text-muted-foreground">{repo.full_name}</p>
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <GitFork className="h-3 w-3" />
-                        {repo.forks_count}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div className="mt-4 rounded-lg border border-border p-3">
-              <p className="text-sm font-medium text-foreground">Supabase + Google Login</p>
-              <p className="mt-1 text-xs text-muted-foreground">Project is prepared for Supabase backend and Google authentication. Configure in <code className="rounded bg-muted px-1 py-0.5">.env</code>:</p>
-              <ul className="mt-2 ml-4 list-disc text-xs text-muted-foreground">
-                <li><code className="rounded bg-muted px-1 py-0.5">VITE_SUPABASE_URL</code></li>
-                <li><code className="rounded bg-muted px-1 py-0.5">VITE_SUPABASE_ANON_KEY</code></li>
-                <li><code className="rounded bg-muted px-1 py-0.5">VITE_GOOGLE_CLIENT_ID</code></li>
-              </ul>
-              <p className="mt-2 text-xs text-muted-foreground">Backend tables and auth providers are ready to be enabled in Supabase dashboard.</p>
-            </div>
-          </div>
-        </Card>
-      )}
+          <Card className="p-4">
+            {loading || !profile ? <div className="py-8 text-center text-sm text-muted-foreground">Loading profile…</div> : <div className="space-y-3"><div className="grid gap-3 sm:grid-cols-2"><Input label="Display name" value={profile.display_name || ''} onChange={(e) => setProfile({ ...profile, display_name: e.target.value })} /><Input label="Username" value={profile.username || ''} onChange={(e) => setProfile({ ...profile, username: e.target.value })} placeholder="your-handle" /><Input label="Location" value={profile.location || ''} onChange={(e) => setProfile({ ...profile, location: e.target.value })} /><Input label="Website" value={profile.website || ''} onChange={(e) => setProfile({ ...profile, website: e.target.value })} placeholder="https://…" /></div><Textarea label="Bio" value={profile.bio || ''} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} rows={4} /><label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={profile.is_public} onChange={(e) => setProfile({ ...profile, is_public: e.target.checked })} /> Show my profile to other signed-in users</label><Button onClick={() => void saveProfileForm()} disabled={busy === 'profile'}>{busy === 'profile' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Save profile</Button></div>}
+          </Card>
 
-      {activeTab === 'pwa' && (
-        <Card>
-          <h2 className="text-lg font-semibold text-foreground">Progressive Web App</h2>
-          <p className="mt-1 text-xs text-muted-foreground">Configure PWA settings and live deployment URL.</p>
-          <div className="mt-4 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground">Live URL</label>
-              <p className="text-xs text-muted-foreground">The public URL where this app is deployed. Used for PWA manifest and sharing.</p>
-              <div className="mt-2 flex gap-2">
-                <Input
-                  value={liveUrl}
-                  onChange={(e) => {
-                    setLiveUrl(e.target.value)
-                    localStorage.setItem('appforge-live-url', JSON.stringify(e.target.value))
-                  }}
-                  placeholder="https://appforge.sstoken.space"
-                  className="flex-1"
-                />
-                <Button variant="secondary" onClick={() => window.open(liveUrl, '_blank')}>Open</Button>
-              </div>
-            </div>
-            <div className="rounded-lg border border-border p-3">
-              <p className="text-sm font-medium text-foreground">PWA Features</p>
-              <ul className="mt-2 ml-4 list-disc text-xs text-muted-foreground">
-                <li>Installable on desktop and mobile</li>
-                <li>Offline support via service worker</li>
-                <li>App manifest with icons and theme</li>
-                <li>Push notifications ready</li>
-              </ul>
-            </div>
-            <div className="rounded-lg border border-border p-3">
-              <p className="text-sm font-medium text-foreground">sstoken.space Deployment</p>
-              <p className="mt-1 text-xs text-muted-foreground">Upload the <code className="rounded bg-muted px-1 py-0.5">dist/</code> folder to sstoken.space via FTP/SFTP. The live URL will be automatically detected.</p>
-              <p className="mt-2 text-xs text-muted-foreground">Current live URL: <code className="rounded bg-muted px-1 py-0.5">{liveUrl}</code></p>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {activeTab === 'data' && (
-        <Card>
-          <h2 className="text-lg font-semibold text-foreground">Data</h2>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={() => window.print()}><Printer className="h-4 w-4" /> Print report</Button>
-            <Button variant="secondary" onClick={exportJSON}><Download className="h-4 w-4" /> Export all data</Button>
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-input bg-background px-4 py-2 text-sm text-foreground hover:bg-accent">
-              <Upload className="h-4 w-4" /> Import data
-              <input type="file" accept="application/json" onChange={importJSON} className="hidden" />
-            </label>
-            <Button variant="secondary" onClick={() => setConfirmAction('reset')}><RotateCcw className="h-4 w-4" /> Reset demo data</Button>
-            <Button variant="secondary" onClick={() => setConfirmAction('clear')} className="text-destructive">Clear local data</Button>
-          </div>
-        </Card>
-      )}
-
-      {activeTab === 'deployment' && (
-        <Card>
-          <h2 className="text-lg font-semibold text-foreground">Deployment</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Deploy to Vercel, GitHub Pages, or sstoken.space.</p>
-          <div className="mt-3 space-y-2 text-xs text-muted-foreground">
-            <p><strong>Vercel:</strong> connect this repo in Vercel dashboard. Build command: <code className="rounded bg-muted px-1 py-0.5">npm run build</code>. Output dir: <code className="rounded bg-muted px-1 py-0.5">dist</code>.</p>
-            <p><strong>GitHub Pages:</strong> enable Pages in repo Settings → Pages → Source: GitHub Actions, or use <code className="rounded bg-muted px-1 py-0.5">npm run build && npm run preview</code>.</p>
-            <p><strong>sstoken.space:</strong> upload the <code className="rounded bg-muted px-1 py-0.5">dist/</code> folder via FTP/SFTP.</p>
-            <p><strong>Environment variables:</strong> set in Vercel dashboard under Settings → Environment Variables:</p>
-            <ul className="ml-4 list-disc">
-              <li><code className="rounded bg-muted px-1 py-0.5">VITE_WEATHERAPI_KEY</code></li>
-              <li><code className="rounded bg-muted px-1 py-0.5">VITE_PARIFLOW_API_KEY</code></li>
-               <li><code className="rounded bg-muted px-1 py-0.5">VITE_COINMARKETCAP_API_KEY</code></li>
-               <li><code className="rounded bg-muted px-1 py-0.5">VITE_COINPAPRIKA_API_KEY</code></li>
-              <li><code className="rounded bg-muted px-1 py-0.5">VITE_SUPABASE_URL</code></li>
-              <li><code className="rounded bg-muted px-1 py-0.5">VITE_SUPABASE_ANON_KEY</code></li>
-              <li><code className="rounded bg-muted px-1 py-0.5">VITE_GOOGLE_CLIENT_ID</code></li>
-            </ul>
-            <p className="mt-2 rounded-lg border border-destructive/50 bg-destructive/10 p-2 text-destructive-foreground">Note: exposing API keys in client-side code is visible to users. For production, proxy requests through a backend.</p>
-          </div>
-        </Card>
-      )}
-
-      {activeTab === 'about' && (
-        <Card>
-          <h2 className="text-lg font-semibold text-foreground">About</h2>
-          <p className="mt-2 text-sm text-muted-foreground">AppForge — Simple, powerful tools for everyday work.</p>
-          <p className="text-xs text-muted-foreground">Local-first. No backend. No analytics. No tracking. All data stays in your browser. Open source.</p>
-        </Card>
-      )}
-
-      <Modal open={confirmAction === 'reset'} onClose={() => setConfirmAction(null)} title="Confirm reset">
-        <p className="text-sm text-muted-foreground">This will reset all demo data while preserving structure. Are you sure?</p>
-        <div className="mt-4 flex gap-2">
-          <Button onClick={resetDemo}>Reset</Button>
-          <Button variant="secondary" onClick={() => setConfirmAction(null)}>Cancel</Button>
+          <Card className="p-4 lg:col-span-2"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-foreground">Profile gallery</h2><p className="mt-0.5 text-xs text-muted-foreground">Images are stored in the AppForge Supabase media bucket and related to your profile in the database.</p></div><label><input type="file" accept="image/*" multiple className="hidden" onChange={(event) => { const files = Array.from(event.target.files || []); void (async () => { for (const file of files) await uploadImage(file, 'gallery') })(); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-xs font-medium hover:bg-accent"><Upload className="h-4 w-4" /> Add images</span></label></div>{gallery.length ? <div className="mt-4 grid gap-3 sm:grid-cols-2">{gallery.map((image) => <div key={image.id} className="group relative overflow-hidden rounded-xl border border-border/70 bg-muted"><img src={image.source_url || ''} alt={image.title || ''} className="aspect-[4/3] w-full object-cover" /><button onClick={() => void removeImage(image)} className="absolute right-2 top-2 rounded-lg border border-white/15 bg-black/45 p-2 text-white opacity-0 backdrop-blur-md transition-opacity group-hover:opacity-100" aria-label="Remove image"><Trash2 className="h-4 w-4" /></button></div>)}</div> : <div className="mt-4 rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">No gallery images yet.</div>}</Card>
         </div>
-      </Modal>
+      )}
 
-      <Modal open={confirmAction === 'clear'} onClose={() => setConfirmAction(null)} title="Confirm clear">
-        <p className="text-sm text-destructive">This will permanently delete all local data. This cannot be undone. Are you sure?</p>
-        <div className="mt-4 flex gap-2">
-          <Button onClick={clearAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Clear</Button>
-          <Button variant="secondary" onClick={() => setConfirmAction(null)}>Cancel</Button>
+      {activeTab === 'appearance' && <Card className="p-4"><h2 className="text-sm font-semibold text-foreground">Appearance</h2><div className="mt-4 flex flex-wrap gap-2">{([{ value: 'light', label: 'Light', icon: Sun }, { value: 'dark', label: 'Dark', icon: Moon }, { value: 'system', label: 'System', icon: Monitor }] as const).map(({ value, label, icon: Icon }) => <button key={value} onClick={() => setThemeMode(value)} className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${themeMode === value ? 'border-foreground/25 bg-accent' : 'border-border/70 hover:bg-accent/60'}`}><Icon className="h-4 w-4" /> {label}</button>)}</div></Card>}
+
+      {activeTab === 'security' && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card className="p-4"><div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-foreground">Google authentication</h2><p className="mt-1 text-xs text-muted-foreground">Primary sign-in is handled by Google through Supabase Auth.</p></div><Badge color="green">Connected</Badge></div><div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-3 text-sm"><div className="font-medium text-foreground">{user?.email}</div><div className="mt-1 text-xs text-muted-foreground">Session assurance: {currentLevel || 'checking…'} · next: {nextLevel || 'checking…'}</div></div>{role === 'user' && <div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-3"><div className="text-sm font-medium text-foreground">Initial administrator</div><p className="mt-1 text-xs leading-5 text-muted-foreground">If this is the first and only AppForge account, you can initialize the project administrator once. No email is hardcoded in the client.</p><Button className="mt-3" variant="secondary" onClick={() => void bootstrapAdmin()} disabled={busy === 'bootstrap-admin'}>{busy === 'bootstrap-admin' ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />} Initialize admin</Button></div>}<Button variant="secondary" className="mt-4" onClick={() => void signOut()}>Sign out</Button></Card>
+
+          <Card className="p-4"><div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-foreground">Authenticator app (TOTP)</h2><p className="mt-1 text-xs text-muted-foreground">Admin mutations require an AAL2 session verified with TOTP.</p></div><ShieldCheck className="h-5 w-5 text-muted-foreground" /></div>{verifiedTotp.length === 0 && !enrollment && <Button className="mt-4" onClick={() => void beginTotp()} disabled={busy === 'enroll'}><KeyRound className="h-4 w-4" /> Set up TOTP</Button>}{enrollment && <div className="mt-4 space-y-3"><div className="rounded-xl border border-border/70 bg-white p-3"><img src={enrollment.qr} alt="TOTP QR code" className="mx-auto max-h-52 max-w-full" /></div><div className="rounded-lg bg-muted p-2 font-mono text-xs break-all">{enrollment.secret}</div><Input label="6-digit code" inputMode="numeric" value={totpCode} onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 8))} /><Button onClick={() => void verifyFactor(enrollment.id)} disabled={busy === 'verify' || !totpCode}><ShieldCheck className="h-4 w-4" /> Verify and enable</Button></div>}{verifiedTotp.length > 0 && <div className="mt-4 space-y-3"><div className="rounded-xl border border-border/70 p-3"><div className="text-sm font-medium text-foreground">{verifiedTotp[0].friendly_name || 'Authenticator app'}</div><div className="mt-1 text-xs text-muted-foreground">Verified factor · {currentLevel === 'aal2' ? 'this session is elevated' : 'verification required for admin actions'}</div></div>{currentLevel !== 'aal2' && <><Input label="Authenticator code" inputMode="numeric" value={totpCode} onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 8))} /><Button onClick={() => void verifyFactor(verifiedTotp[0].id)} disabled={!totpCode || busy === 'verify'}><LockKeyhole className="h-4 w-4" /> Verify this session</Button></>}{currentLevel === 'aal2' && <Button variant="secondary" onClick={() => void removeFactor(verifiedTotp[0].id)} disabled={busy === 'unenroll'}>Remove factor</Button>}</div>}</Card>
         </div>
-      </Modal>
+      )}
+
+      {activeTab === 'data' && <Card className="p-4"><h2 className="text-sm font-semibold text-foreground">Workspace data</h2><p className="mt-1 text-xs leading-5 text-muted-foreground">Authenticated preferences and category overrides sync to Supabase. Tool-specific data may remain local when the tool is intentionally browser-only.</p><div className="mt-4 flex flex-wrap gap-2"><Button onClick={exportWorkspace}><Download className="h-4 w-4" /> Export JSON</Button><label><input type="file" accept="application/json,.json" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) importWorkspace(file); e.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm font-medium hover:bg-accent"><Upload className="h-4 w-4" /> Import JSON</span></label></div></Card>}
+
+      {activeTab === 'integrations' && <div className="grid gap-3 sm:grid-cols-2">{[['Supabase', 'Google Auth, profiles, preferences, roles, TOTP and profile media.', Cloud], ['Vercel', 'Vite frontend plus same-origin serverless APIs for Scrapper, Weather and Crypto.', RefreshCw], ['GitHub', 'Source repository, contributor workflow, issues and pull requests.', Github], ['Google', 'OAuth identity provider only; AppForge does not request Drive, Gmail or Calendar scopes.', ShieldCheck]].map(([name, description, Icon]: any) => <Card key={name} className="p-4"><Icon className="h-5 w-5 text-muted-foreground" /><h2 className="mt-3 text-sm font-semibold text-foreground">{name}</h2><p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p></Card>)}</div>}
+
+      {activeTab === 'deployment' && <Card className="p-4"><div className="flex flex-wrap items-start justify-between gap-4"><div><h2 className="text-sm font-semibold text-foreground">Deployment</h2><p className="mt-1 text-xs text-muted-foreground">One AppForge project deploys the Vite frontend and colocated `/api/*` functions.</p></div><BuildBadge /></div><div className="mt-4 grid gap-3 sm:grid-cols-2"><Input label="Live URL" value={liveUrl} onChange={(e) => { setLiveUrl(e.target.value); localStorage.setItem(LIVE_URL_KEY, e.target.value) }} /><Input label="Product version" value={BUILD_INFO.version} disabled /><Input label="Commit" value={BUILD_INFO.shortSha} disabled /><Input label="Built" value={BUILD_INFO.builtAtLabel} disabled /></div><a href={liveUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"><ExternalLink className="h-3.5 w-3.5" /> Open production</a></Card>}
+
+      {activeTab === 'about' && <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]"><Card className="p-5"><h2 className="text-lg font-semibold text-foreground">About AppForge</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">AppForge is an open-source toolbox with a public codebase and a Google-authenticated workspace. Account preferences, profiles and selected workspace state sync through Supabase; media and API-backed tools may use AppForge serverless endpoints and external public data providers.</p><p className="mt-3 text-sm leading-6 text-muted-foreground">Privacy is a product constraint, not a slogan: AppForge does not use advertising analytics or tracking. Browser-only tools can remain local, while features that require persistence or network access state that clearly in their UI and documentation.</p><div className="mt-4 flex flex-wrap gap-2"><Badge color="green">Open source</Badge><Badge color="blue">Google Auth</Badge><Badge color="slate">Supabase RLS</Badge><Badge color="slate">Vercel serverless</Badge></div></Card><Card className="p-5"><h2 className="text-sm font-semibold text-foreground">Project principles</h2><ul className="mt-3 space-y-2 text-sm text-muted-foreground"><li>• Small tools with consistent interaction patterns.</li><li>• Public development and contributor-friendly documentation.</li><li>• No fake data presented as live data.</li><li>• Shared version/build identity across every app.</li><li>• Authentication and RLS around personal data.</li></ul></Card></div>}
+
+      {activeTab === 'admin' && role === 'admin' && <div className="space-y-4">{currentLevel !== 'aal2' ? <Card className="p-6 text-center"><LockKeyhole className="mx-auto h-7 w-7 text-muted-foreground" /><h2 className="mt-3 text-sm font-semibold text-foreground">Admin is TOTP protected</h2><p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">Verify your authenticator in Security before AppForge will read or mutate administrative data.</p><Button className="mt-4" onClick={() => setActiveTab('security')}>Open Security</Button></Card> : <><div className="flex items-center justify-between"><div><h2 className="text-sm font-semibold text-foreground">Users</h2><p className="mt-1 text-xs text-muted-foreground">Roles and destructive account actions are enforced in Supabase with admin + AAL2 checks.</p></div><Button variant="secondary" size="sm" onClick={() => void loadAdmin()} disabled={busy === 'admin-load'}><RefreshCw className={`h-4 w-4 ${busy === 'admin-load' ? 'animate-spin' : ''}`} /> Refresh</Button></div><div className="space-y-2">{adminUsers.map((item) => <Card key={item.id} className="p-3"><div className="flex flex-col gap-3 lg:flex-row lg:items-center"><div className="flex min-w-0 flex-1 items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-muted">{item.avatar_url ? <img src={item.avatar_url} alt="" className="h-full w-full object-cover" /> : <UserRound className="h-4 w-4" />}</div><div className="min-w-0"><div className="truncate text-sm font-medium text-foreground">{item.display_name || item.email || item.id}</div><div className="truncate text-xs text-muted-foreground">{item.email} · {item.username ? `@${item.username}` : 'no username'}</div></div></div><div className="flex flex-wrap items-center gap-2"><select value={item.role} onChange={async (e) => { const nextRole = e.target.value as 'user' | 'admin'; try { await adminSetRole(item.id, nextRole); setAdminUsers((rows) => rows.map((row) => row.id === item.id ? { ...row, role: nextRole } : row)); flash('Role updated.') } catch (roleError) { setError(roleError instanceof Error ? roleError.message : 'Role update failed.') } }} className="h-9 rounded-lg border border-input bg-background/55 px-2 text-xs"><option value="user">user</option><option value="admin">admin</option></select><button onClick={async () => { try { await adminUpdateProfile(item.id, { display_name: item.display_name, username: item.username, is_public: !item.is_public }); setAdminUsers((rows) => rows.map((row) => row.id === item.id ? { ...row, is_public: !row.is_public } : row)); flash('Profile visibility updated.') } catch (profileError) { setError(profileError instanceof Error ? profileError.message : 'Profile update failed.') } }} className="rounded-lg border border-border/70 px-2.5 py-2 text-xs hover:bg-accent">{item.is_public ? 'Public' : 'Private'}</button>{item.id !== user?.id && <Button variant="ghost" size="sm" onClick={async () => { if (!confirm(`Delete ${item.email || 'this user'}?`)) return; try { await adminDeleteUser(item.id); setAdminUsers((rows) => rows.filter((row) => row.id !== item.id)); flash('User deleted.') } catch (deleteError) { setError(deleteError instanceof Error ? deleteError.message : 'Delete failed.') } }}><Trash2 className="h-4 w-4" /></Button>}</div></div></Card>)}</div></>}</div>}
     </div>
   )
 }

@@ -15,6 +15,7 @@ import {
   UtilityWorkbench,
 } from './components/dashboard'
 import { SettingsPage } from './components/resources/Settings'
+import { PeoplePage } from './components/resources/People'
 import type { AppState, MiniApp } from './types'
 import {
   defaultArticle,
@@ -75,23 +76,18 @@ function App() {
   React.useEffect(() => {
     let cancelled = false
     setRemoteReady(false)
-
     if (!user) return () => { cancelled = true }
 
     const hydrate = async () => {
       try {
         const remote = await loadUserPreferences(user.id)
         if (cancelled) return
-
         if (remote) {
           if (remote.appState) {
             setState((current) => ({
               ...current,
               ...remote.appState,
-              settings: {
-                ...current.settings,
-                ...(remote.appState?.settings || {}),
-              },
+              settings: { ...current.settings, ...(remote.appState?.settings || {}) },
             }))
           }
           saveCategoryOverrides(remote.categoryOverrides || {})
@@ -159,25 +155,12 @@ function App() {
   const miniAppRoute = (miniAppId: string) => {
     const app = state.miniApps.find((item) => item.id === miniAppId)
     if (!app) return <Navigate to="/apps" replace />
-    return (
-      <MiniAppShell
-        app={app}
-        onUpdate={updateMiniApp}
-        onToggleFavorite={toggleFavorite}
-        isFavorite={(state.favorites || []).includes(miniAppId)}
-      />
-    )
+    return <MiniAppShell app={app} onUpdate={updateMiniApp} onToggleFavorite={toggleFavorite} isFavorite={(state.favorites || []).includes(miniAppId)} />
   }
 
-  const dashboard = (
-    <PublicDashboard
-      state={state}
-      onOpenApp={addToRecent}
-      onToggleFavorite={toggleFavorite}
-    />
-  )
-
+  const dashboard = <PublicDashboard state={state} onOpenApp={addToRecent} onToggleFavorite={toggleFavorite} />
   const requestedPath = `${location.pathname}${location.search}${location.hash}`
+
   if (location.pathname === '/login') return <LoginPage />
   if (loading || !user) return <LoginPage returnTo={requestedPath} />
 
@@ -190,11 +173,9 @@ function App() {
         <Route path="/recent" element={dashboard} />
         <Route path="/categories" element={dashboard} />
         <Route path="/category/:id" element={dashboard} />
+        <Route path="/people" element={<PeoplePage />} />
 
-        <Route
-          path="/workspace"
-          element={<AppWorkspace state={state} setState={setState} onOpenApp={addToRecent} onToggleFavorite={toggleFavorite} />}
-        />
+        <Route path="/workspace" element={<AppWorkspace state={state} setState={setState} onOpenApp={addToRecent} onToggleFavorite={toggleFavorite} />} />
 
         <Route path="/apps/scrapper-pro" element={<PF_ScrapperPro />} />
         <Route path="/apps/image-labeler" element={<PF_ImageLabeler />} />
@@ -224,7 +205,6 @@ function App() {
         <Route path="/apps/qr-generator" element={miniAppRoute('mini-13')} />
         <Route path="/apps/color-picker" element={miniAppRoute('mini-14')} />
         <Route path="/apps/resume-forge" element={miniAppRoute('mini-1')} />
-
         <Route path="/apps/image-resizer" element={miniAppRoute('mini-1')} />
         <Route path="/apps/image-converter" element={miniAppRoute('mini-1')} />
         <Route path="/apps/image-compressor" element={miniAppRoute('mini-1')} />

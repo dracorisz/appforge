@@ -29,6 +29,7 @@ import {
   Moon,
   Table2,
   Type,
+  Users,
   Video,
   Wrench,
 } from 'lucide-react'
@@ -64,6 +65,7 @@ const coreItems = [
   { id: 'recent', label: 'Recent', icon: Clock, path: '/recent' },
   { id: 'favorites', label: 'Favorites', icon: Star, path: '/favorites' },
   { id: 'categories', label: 'Categories', icon: Table2, path: '/categories' },
+  { id: 'people', label: 'People', icon: Users, path: '/people' },
   { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
 ]
 
@@ -129,24 +131,13 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
         <div className="px-3 pb-2">
           <div className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search apps…"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              className="h-9 w-full rounded-lg border border-input bg-background/55 pl-8 pr-3 text-sm outline-none backdrop-blur-md placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/20"
-            />
+            <input type="text" placeholder="Search apps…" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} className="h-9 w-full rounded-lg border border-input bg-background/55 pl-8 pr-3 text-sm outline-none backdrop-blur-md placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/20" />
           </div>
           {searchResults.length > 0 && (
             <div className="surface-card mt-2 max-h-52 space-y-1 overflow-y-auto rounded-xl border p-1.5">
               {searchResults.slice(0, 8).map((app) => {
                 const Icon = iconMap[app.icon] || Wrench
-                return (
-                  <NavLink key={app.id} to={app.route} onClick={onClose} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground">
-                    <Icon className="h-4 w-4 shrink-0" />
-                    <span className="truncate">{app.name}</span>
-                  </NavLink>
-                )
+                return <NavLink key={app.id} to={app.route} onClick={onClose} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"><Icon className="h-4 w-4 shrink-0" /><span className="truncate">{app.name}</span></NavLink>
               })}
             </div>
           )}
@@ -160,18 +151,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
             {coreItems.map((item) => {
               const Icon = item.icon
               const active = location.pathname === item.path
-              return (
-                <NavLink
-                  key={item.id}
-                  to={item.path}
-                  onClick={onClose}
-                  title={isCollapsed ? item.label : undefined}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'}`}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  {!isCollapsed && <span className="truncate">{item.label}</span>}
-                </NavLink>
-              )
+              return <NavLink key={item.id} to={item.path} onClick={onClose} title={isCollapsed ? item.label : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'}`}><Icon className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">{item.label}</span>}</NavLink>
             })}
           </div>
         </div>
@@ -183,18 +163,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
               const Icon = iconMap[category.icon] || Wrench
               const path = `/category/${category.id}`
               const active = location.pathname === path
-              return (
-                <NavLink
-                  key={category.id}
-                  to={path}
-                  onClick={onClose}
-                  title={isCollapsed ? category.name : undefined}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'}`}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  {!isCollapsed && <span className="truncate">{category.name}</span>}
-                </NavLink>
-              )
+              return <NavLink key={category.id} to={path} onClick={onClose} title={isCollapsed ? category.name : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'}`}><Icon className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">{category.name}</span>}</NavLink>
             })}
           </div>
         </div>
@@ -202,26 +171,13 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
 
       <div className="space-y-1 border-t border-border p-3">
         {user && (
-          <div className={`mb-2 flex items-center gap-2 rounded-xl border border-border/60 bg-background/35 p-2 ${isCollapsed ? 'justify-center' : ''}`} title={isCollapsed ? String(displayName) : undefined}>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-accent text-xs font-semibold text-foreground">
-              {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : initial}
-            </div>
-            {!isCollapsed && (
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-xs font-medium text-foreground">{String(displayName)}</div>
-                {user.email && <div className="truncate text-[10px] text-muted-foreground">{user.email}</div>}
-              </div>
-            )}
-          </div>
+          <NavLink to="/settings" onClick={onClose} className={`mb-2 flex items-center gap-2 rounded-xl border border-border/60 bg-background/35 p-2 hover:border-foreground/15 ${isCollapsed ? 'justify-center' : ''}`} title={isCollapsed ? String(displayName) : undefined}>
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-accent text-xs font-semibold text-foreground">{avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : initial}</div>
+            {!isCollapsed && <div className="min-w-0 flex-1"><div className="truncate text-xs font-medium text-foreground">{String(displayName)}</div>{user.email && <div className="truncate text-[10px] text-muted-foreground">{user.email}</div>}</div>}
+          </NavLink>
         )}
-        <button onClick={cycleTheme} title={isCollapsed ? 'Toggle theme' : undefined} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground">
-          <ThemeIcon className="h-4 w-4 shrink-0" />
-          {!isCollapsed && <span>{mode === 'light' ? 'Light' : mode === 'dark' ? 'Dark' : 'System'}</span>}
-        </button>
-        <button onClick={() => void handleSignOut()} disabled={signingOut} title={isCollapsed ? 'Sign out' : undefined} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-60">
-          <LogOut className="h-4 w-4 shrink-0" />
-          {!isCollapsed && <span>{signingOut ? 'Signing out…' : 'Sign out'}</span>}
-        </button>
+        <button onClick={cycleTheme} title={isCollapsed ? 'Toggle theme' : undefined} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"><ThemeIcon className="h-4 w-4 shrink-0" />{!isCollapsed && <span>{mode === 'light' ? 'Light' : mode === 'dark' ? 'Dark' : 'System'}</span>}</button>
+        <button onClick={() => void handleSignOut()} disabled={signingOut} title={isCollapsed ? 'Sign out' : undefined} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-60"><LogOut className="h-4 w-4 shrink-0" />{!isCollapsed && <span>{signingOut ? 'Signing out…' : 'Sign out'}</span>}</button>
       </div>
     </aside>
   )
@@ -235,19 +191,5 @@ export function MobileHeader({ onOpen }: { onOpen: () => void }) {
     else setMode('light')
   }
   const ThemeIcon = mode === 'light' ? Sun : mode === 'dark' ? Moon : Monitor
-
-  return (
-    <header className="flex h-14 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur-xl lg:hidden">
-      <button onClick={onOpen} className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Open navigation">
-        <Sliders className="h-5 w-5" />
-      </button>
-      <NavLink to="/" className="flex items-center gap-2">
-        <img src="/favicon.svg" alt="AppForge" className="h-8 w-8" />
-        <span className="text-sm font-semibold text-foreground">AppForge</span>
-      </NavLink>
-      <button onClick={cycleTheme} className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Change theme">
-        <ThemeIcon className="h-5 w-5" />
-      </button>
-    </header>
-  )
+  return <header className="flex h-14 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur-xl lg:hidden"><button onClick={onOpen} className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Open navigation"><Sliders className="h-5 w-5" /></button><NavLink to="/" className="flex items-center gap-2"><img src="/favicon.svg" alt="AppForge" className="h-8 w-8" /><span className="text-sm font-semibold text-foreground">AppForge</span></NavLink><button onClick={cycleTheme} className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Change theme"><ThemeIcon className="h-5 w-5" /></button></header>
 }
