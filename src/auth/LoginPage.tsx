@@ -1,21 +1,29 @@
 import React from 'react'
 import { ArrowRight, Check, Cloud, Lock, ShieldCheck, Sparkles } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { BuildBadge, Button } from '@/components/ui'
 import { getAllApps } from '@/lib/registry'
 import { useAuth } from './AuthProvider'
+import { consumeReturnPath, normalizeReturnPath } from './returnPath'
 
-export function LoginPage() {
-  const { user, loading, signInWithGoogle, signOut } = useAuth()
+export function LoginPage({ returnTo = '/' }: { returnTo?: string }) {
+  const navigate = useNavigate()
+  const { user, loading, signInWithGoogle } = useAuth()
   const [busy, setBusy] = React.useState(false)
   const [error, setError] = React.useState('')
   const apps = React.useMemo(() => getAllApps(), [])
   const liveCount = apps.filter((app) => app.status === 'launched' || app.status === 'beta' || app.status === 'building').length
 
+  React.useEffect(() => {
+    if (loading || !user) return
+    navigate(consumeReturnPath(returnTo), { replace: true })
+  }, [loading, navigate, returnTo, user])
+
   const login = async () => {
     setBusy(true)
     setError('')
     try {
-      await signInWithGoogle()
+      await signInWithGoogle(normalizeReturnPath(returnTo))
     } catch (loginError) {
       setError(loginError instanceof Error ? loginError.message : 'Google sign-in could not start.')
       setBusy(false)
@@ -47,14 +55,14 @@ export function LoginPage() {
               <span className="block text-muted-foreground">kept calm and connected.</span>
             </h1>
             <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
-              Convert, search, inspect, organize, generate, and track everyday work from one coherent AppForge workspace. Your preferences and recent activity can follow your account across devices.
+              Convert, search, inspect, organize, generate, and track everyday work from one coherent AppForge workspace. Sign in once and keep your recent tools, favorites, settings, and category preferences with your account.
             </p>
 
             <div className="mt-7 grid max-w-xl gap-3 sm:grid-cols-3">
               {[
                 [String(apps.length), 'registered apps'],
                 [String(liveCount), 'active or building'],
-                ['1', 'shared workspace'],
+                ['1', 'private workspace'],
               ].map(([value, label]) => (
                 <div key={label} className="surface-card rounded-xl border p-3.5">
                   <div className="text-xl font-semibold tracking-tight">{value}</div>
@@ -76,7 +84,7 @@ export function LoginPage() {
             </div>
             <h2 className="mt-5 text-xl font-semibold tracking-tight">Enter AppForge</h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Google authentication will protect the private workspace while keeping the public entry page lightweight and fast.
+              Continue with Google to enter the private workspace. If you followed a direct link to a tool, AppForge will return you there after sign-in.
             </p>
 
             <div className="mt-5 space-y-2">
@@ -86,7 +94,7 @@ export function LoginPage() {
               </div>
               <div className="flex items-start gap-3 rounded-xl border border-border/60 bg-background/35 p-3">
                 <Cloud className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                <div><div className="text-sm font-medium">Cross-device continuity</div><div className="mt-0.5 text-xs leading-5 text-muted-foreground">Favorites, recent tools, settings, and category overrides can sync through Supabase.</div></div>
+                <div><div className="text-sm font-medium">Cross-device continuity</div><div className="mt-0.5 text-xs leading-5 text-muted-foreground">Favorites, recent tools, settings, and category overrides sync through Supabase.</div></div>
               </div>
             </div>
 
@@ -97,30 +105,21 @@ export function LoginPage() {
             )}
 
             <div className="mt-5">
-              {loading ? (
-                <Button disabled className="w-full">Checking session…</Button>
-              ) : user ? (
-                <div className="space-y-2">
-                  <a href="/" className="block"><Button className="w-full">Continue to AppForge <ArrowRight className="h-4 w-4" /></Button></a>
-                  <Button variant="secondary" className="w-full" onClick={() => void signOut()}>Sign out {user.email ? `(${user.email})` : ''}</Button>
-                </div>
-              ) : (
-                <Button className="w-full" onClick={login} disabled={busy}>
-                  {busy ? 'Opening Google…' : 'Continue with Google'}
-                  {!busy && <ArrowRight className="h-4 w-4" />}
-                </Button>
-              )}
+              <Button className="w-full" onClick={login} disabled={busy || loading || Boolean(user)}>
+                {loading ? 'Checking session…' : user ? 'Opening AppForge…' : busy ? 'Opening Google…' : 'Continue with Google'}
+                {!loading && !user && !busy && <ArrowRight className="h-4 w-4" />}
+              </Button>
             </div>
 
             <p className="mt-4 text-center text-[11px] leading-5 text-muted-foreground">
-              Authentication is prepared but the workspace remains ungated until the Google provider is configured and tested.
+              Google handles identity. AppForge stores workspace preferences in Supabase under your authenticated user ID.
             </p>
           </section>
         </main>
 
         <footer className="flex flex-col gap-2 border-t border-border/60 py-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <span>AppForge · private workspace preview</span>
-          <span>Supabase auth + Vercel deployment</span>
+          <span>AppForge · protected workspace</span>
+          <span>Google OAuth · Supabase Auth · Vercel</span>
         </footer>
       </div>
     </div>
