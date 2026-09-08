@@ -1,5 +1,5 @@
 import React from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Layout } from './components/layout/Layout'
 import { AppWorkspace } from './components/dashboard/AppWorkspace'
 import { PublicDashboard } from './components/dashboard/PublicDashboard'
@@ -27,6 +27,7 @@ import {
 } from './types'
 import { BUILD_INFO } from './lib/buildInfo'
 import { useAuth } from './auth/AuthProvider'
+import { LoginPage } from './auth/LoginPage'
 import { loadUserPreferences, saveUserPreferences } from './lib/preferences'
 import {
   loadCategoryOverrides,
@@ -51,6 +52,7 @@ const defaultState: AppState = {
 }
 
 function App() {
+  const location = useLocation()
   const { user } = useAuth()
   const [remoteReady, setRemoteReady] = React.useState(false)
   const [state, setState] = React.useState<AppState>(() => {
@@ -107,8 +109,6 @@ function App() {
 
     void hydrate()
     return () => { cancelled = true }
-    // The initial local state intentionally seeds the first remote row.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
   React.useEffect(() => {
@@ -175,6 +175,8 @@ function App() {
       onToggleFavorite={toggleFavorite}
     />
   )
+
+  if (location.pathname === '/login') return <LoginPage />
 
   return (
     <Layout currentVersion={BUILD_INFO.version}>
