@@ -1,76 +1,16 @@
 const SOURCES = {
-  'duckduckgo-images': {
-    name: 'DuckDuckGo Images',
-    type: 'image',
-    search: (q) => `https://duckduckgo.com/?ia=images&q=${encodeURIComponent(q)}`,
-  },
-  'duckduckgo-general': {
-    name: 'DuckDuckGo',
-    type: 'article',
-    search: (q) => `https://duckduckgo.com/?q=${encodeURIComponent(q)}`,
-  },
-  'google-images': {
-    name: 'Google Images',
-    type: 'image',
-    search: (q) => `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q)}`,
-  },
-  'bing-images': {
-    name: 'Bing Images',
-    type: 'image',
-    search: (q) => `https://www.bing.com/images/search?q=${encodeURIComponent(q)}`,
-  },
-  reddit: {
-    name: 'Reddit',
-    type: 'post',
-    search: (q) => `https://www.reddit.com/search/?q=${encodeURIComponent(q)}`,
-  },
-  youtube: {
-    name: 'YouTube',
-    type: 'video',
-    search: (q) => `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`,
-  },
-  medium: {
-    name: 'Medium',
-    type: 'article',
-    search: (q) => `https://medium.com/search?q=${encodeURIComponent(q)}`,
-  },
-  flickr: {
-    name: 'Flickr',
-    type: 'image',
-    search: (q) => `https://www.flickr.com/search/?text=${encodeURIComponent(q)}`,
-  },
-  pixabay: {
-    name: 'Pixabay',
-    type: 'image',
-    search: (q) => `https://pixabay.com/images/search/${encodeURIComponent(q)}/`,
-  },
-  pexels: {
-    name: 'Pexels',
-    type: 'image',
-    search: (q) => `https://www.pexels.com/search/${encodeURIComponent(q)}/`,
-  },
-  pinterest: {
-    name: 'Pinterest',
-    type: 'image',
-    search: (q) => `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(q)}`,
-  },
-  deviantart: {
-    name: 'DeviantArt',
-    type: 'image',
-    search: (q) => `https://www.deviantart.com/search?q=${encodeURIComponent(q)}`,
-  },
+  'duckduckgo-images': { name: 'DuckDuckGo Images', kind: 'image' },
+  'bing-images': { name: 'Bing Images', kind: 'image' },
+  wikimedia: { name: 'Wikimedia Commons', kind: 'image' },
+  reddit: { name: 'Reddit', kind: 'mixed' },
+  youtube: { name: 'YouTube', kind: 'video' },
+  'duckduckgo-general': { name: 'DuckDuckGo Web', kind: 'article' },
+  medium: { name: 'Medium', kind: 'article' },
 }
-
-const SEARCH_HOSTS = new Set([
-  'duckduckgo.com', 'www.google.com', 'google.com', 'www.bing.com', 'bing.com',
-  'www.reddit.com', 'reddit.com', 'www.youtube.com', 'youtube.com', 'youtu.be',
-  'medium.com', 'www.flickr.com', 'flickr.com', 'pixabay.com', 'www.pexels.com',
-  'pexels.com', 'www.pinterest.com', 'pinterest.com', 'www.deviantart.com', 'deviantart.com',
-])
 
 const safeUrl = (value) => {
   try {
-    const url = new URL(value)
+    const url = new URL(String(value || ''))
     if (!['http:', 'https:'].includes(url.protocol)) return null
     return url.toString()
   } catch {
@@ -87,192 +27,276 @@ const hash = (value) => {
   return (h >>> 0).toString(36)
 }
 
-const cleanLabel = (value, fallback) => {
-  const text = String(value || '')
-    .replace(/<[^>]*>/g, '')
+const decodeHtml = (value = '') => String(value)
+  .replace(/&amp;/g, '&')
+  .replace(/&quot;/g, '"')
+  .replace(/&#39;/g, "'")
+  .replace(/&lt;/g, '<')
+  .replace(/&gt;/g, '>')
+
+const cleanText = (value, fallback = '') => {
+  const text = decodeHtml(String(value || ''))
+    .replace(/<[^>]*>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
-  return text.slice(0, 180) || fallback
+  return (text || fallback).slice(0, 220)
 }
 
-const extractMarkdownLinks = (text) => {
-  const links = []
-  const seen = new Set()
-  const regex = /\[([^\]]{1,220})\]\((https?:\/\/[^)\s]+)\)/g
-  let match
-  while ((match = regex.exec(text)) !== null) {
-    const url = safeUrl(match[2])
-    if (!url || seen.has(url)) continue
-    seen.add(url)
-    links.push({ title: cleanLabel(match[1], url), url })
+const decodeJsonText = (value, fallback = '') => {
+  try {
+    return cleanText(JSON.parse(`"${value}"`), fallback)
+  } catch {
+    return cleanText(value, fallback)
   }
-  return links
 }
 
-const extractImages = (text) => {
-  const images = []
-  const seen = new Set()
-  const patterns = [
-    /!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)/g,
-    /<img[^>]+src=["'](https?:\/\/[^"']+)["'][^>]*>/gi,
-    /https?:\/\/[^\s<>"')]+\.(?:png|jpe?g|webp|gif)(?:\?[^\s<>"')]+)?/gi,
-  ]
-
-  for (const regex of patterns) {
-    let match
-    while ((match = regex.exec(text)) !== null) {
-      const raw = match[2] || match[1] || match[0]
-      const url = safeUrl(raw)
-      if (!url || seen.has(url)) continue
-      const lower = url.toLowerCase()
-      if (lower.includes('favicon') || lower.includes('1x1') || lower.includes('pixel') || lower.includes('tracking')) continue
-      seen.add(url)
-      images.push({ title: cleanLabel(match[1], 'Image result'), url })
-      if (images.length >= 24) return images
-    }
-  }
-  return images
-}
-
-const extractYouTube = (text) => {
-  const items = []
-  const seen = new Set()
-  const regex = /(?:youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/)([A-Za-z0-9_-]{11})/g
-  let match
-  while ((match = regex.exec(text)) !== null) {
-    const id = match[1]
-    if (seen.has(id)) continue
-    seen.add(id)
-    items.push({
-      title: `YouTube video ${id.slice(0, 6)}`,
-      url: `https://www.youtube.com/watch?v=${id}`,
-      thumbnail: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
-    })
-    if (items.length >= 12) break
-  }
-  return items
-}
-
-const fetchText = async (url, timeoutMs = 8000) => {
+const fetchText = async (url, options = {}, timeoutMs = 9000) => {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
   try {
     const response = await fetch(url, {
+      ...options,
       signal: controller.signal,
       headers: {
-        Accept: 'text/plain, text/markdown, application/json;q=0.9, */*;q=0.8',
-        'User-Agent': 'SSToken-ScrapperPro/1.0',
+        Accept: 'text/html,application/json,text/plain;q=0.9,*/*;q=0.8',
+        'User-Agent': 'Mozilla/5.0 (compatible; SSToken-ScrapperPro/2.0; +https://sstoken.space)',
+        ...(options.headers || {}),
       },
     })
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    return (await response.text()).slice(0, 500000)
+    return (await response.text()).slice(0, 2_000_000)
   } finally {
     clearTimeout(timeout)
   }
 }
 
-const scrapeReddit = async (query) => {
-  const response = await fetch(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=10&sort=relevance`, {
-    headers: { 'User-Agent': 'SSToken-ScrapperPro/1.0' },
-  })
-  if (!response.ok) throw new Error(`HTTP ${response.status}`)
-  const data = await response.json()
-  return (data?.data?.children || []).map(({ data: post }) => ({
-    id: `reddit-${post.id || hash(post.permalink || post.title || '')}`,
-    source: 'Reddit',
-    type: 'post',
-    title: cleanLabel(post.title, 'Reddit result'),
-    url: `https://www.reddit.com${post.permalink || ''}`,
-    snippet: cleanLabel(post.selftext, post.subreddit_name_prefixed || 'Reddit post').slice(0, 260),
-    date: post.created_utc ? new Date(post.created_utc * 1000).toISOString() : undefined,
-    thumbnail: typeof post.thumbnail === 'string' && post.thumbnail.startsWith('http') ? post.thumbnail : undefined,
-  }))
+const fetchJson = async (url, options = {}, timeoutMs = 9000) => JSON.parse(await fetchText(url, options, timeoutMs))
+
+const scrapeDuckDuckGoImages = async (query) => {
+  const searchUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&iax=images&ia=images`
+  const html = await fetchText(searchUrl)
+  const tokenMatch = html.match(/vqd=["']?([^&"']+)/i) || html.match(/vqd[:=] ?["']([0-9-]+)["']/i)
+  if (!tokenMatch?.[1]) throw new Error('DuckDuckGo image token unavailable')
+
+  const endpoint = `https://duckduckgo.com/i.js?l=us-en&o=json&q=${encodeURIComponent(query)}&vqd=${encodeURIComponent(tokenMatch[1])}&f=,,,&p=1`
+  const data = await fetchJson(endpoint, { headers: { Referer: searchUrl } })
+
+  return (data.results || []).slice(0, 30).map((item, index) => {
+    const image = safeUrl(item.image)
+    const thumbnail = safeUrl(item.thumbnail) || image
+    const pageUrl = safeUrl(item.url) || image
+    if (!image || !pageUrl) return null
+    return {
+      id: `ddg-${hash(image)}`,
+      source: 'DuckDuckGo Images',
+      type: 'image',
+      title: cleanText(item.title, `Image ${index + 1}`),
+      url: pageUrl,
+      mediaUrl: image,
+      thumbnail,
+      snippet: cleanText(item.source, 'Image result'),
+    }
+  }).filter(Boolean)
 }
 
-const scrapeSource = async (sourceId, query) => {
-  const source = SOURCES[sourceId]
-  if (!source) throw new Error('Unsupported source')
-  if (sourceId === 'reddit') return scrapeReddit(query)
+const scrapeBingImages = async (query) => {
+  const html = await fetchText(`https://www.bing.com/images/search?q=${encodeURIComponent(query)}&form=HDRSC3&first=1`)
+  const items = []
+  const seen = new Set()
+  const regex = /<a[^>]+class=["'][^"']*iusc[^"']*["'][^>]+m=["']([^"']+)["'][^>]*>/gi
+  let match
 
-  const searchUrl = source.search(query)
-  const readerUrl = `https://r.jina.ai/${searchUrl}`
-  const text = await fetchText(readerUrl)
-
-  if (source.type === 'video') {
-    return extractYouTube(text).map((item) => ({
-      id: `${sourceId}-${hash(item.url)}`,
-      source: source.name,
-      type: 'video',
-      title: item.title,
-      url: item.url,
-      snippet: `Video result for “${query}”.`,
-      thumbnail: item.thumbnail,
-      mediaUrl: item.thumbnail,
-    }))
+  while ((match = regex.exec(html)) !== null && items.length < 30) {
+    try {
+      const metadata = JSON.parse(decodeHtml(match[1]))
+      const image = safeUrl(metadata.murl)
+      const thumbnail = safeUrl(metadata.turl) || image
+      const pageUrl = safeUrl(metadata.purl) || image
+      if (!image || !pageUrl || seen.has(image)) continue
+      seen.add(image)
+      items.push({
+        id: `bing-${hash(image)}`,
+        source: 'Bing Images',
+        type: 'image',
+        title: cleanText(metadata.t || metadata.desc, `Bing image ${items.length + 1}`),
+        url: pageUrl,
+        mediaUrl: image,
+        thumbnail,
+        snippet: cleanText(metadata.host || metadata.domain, 'Image result'),
+      })
+    } catch {
+      // Ignore malformed metadata blocks.
+    }
   }
 
-  if (source.type === 'image') {
-    return extractImages(text).slice(0, 16).map((item, index) => ({
-      id: `${sourceId}-${hash(item.url)}`,
-      source: source.name,
+  if (!items.length) throw new Error('No Bing image results parsed')
+  return items
+}
+
+const scrapeWikimedia = async (query) => {
+  const params = new URLSearchParams({
+    action: 'query',
+    format: 'json',
+    origin: '*',
+    generator: 'search',
+    gsrsearch: `file:${query}`,
+    gsrnamespace: '6',
+    gsrlimit: '24',
+    prop: 'imageinfo',
+    iiprop: 'url|extmetadata',
+    iiurlwidth: '640',
+  })
+  const data = await fetchJson(`https://commons.wikimedia.org/w/api.php?${params.toString()}`)
+  const pages = Object.values(data?.query?.pages || {})
+
+  return pages.map((page, index) => {
+    const info = page.imageinfo?.[0]
+    const image = safeUrl(info?.url)
+    const thumbnail = safeUrl(info?.thumburl) || image
+    const pageUrl = safeUrl(info?.descriptionurl) || `https://commons.wikimedia.org/wiki/${encodeURIComponent(page.title || '')}`
+    if (!image || !thumbnail) return null
+    const meta = info?.extmetadata || {}
+    return {
+      id: `commons-${page.pageid || hash(image)}`,
+      source: 'Wikimedia Commons',
       type: 'image',
-      title: item.title === 'Image result' ? `${source.name} image ${index + 1}` : item.title,
-      url: item.url,
-      snippet: `Image result for “${query}”.`,
-      thumbnail: item.url,
-      mediaUrl: item.url,
-    }))
+      title: cleanText(meta.ObjectName?.value || page.title?.replace(/^File:/, ''), `Commons image ${index + 1}`),
+      url: pageUrl,
+      mediaUrl: image,
+      thumbnail,
+      snippet: cleanText(meta.LicenseShortName?.value || meta.Artist?.value, 'Wikimedia Commons'),
+    }
+  }).filter(Boolean)
+}
+
+const redditImage = (post) => {
+  const preview = decodeHtml(post?.preview?.images?.[0]?.source?.url || '')
+  const destination = decodeHtml(post?.url_overridden_by_dest || post?.url || '')
+  if (/\.(png|jpe?g|webp|gif)(?:\?|$)/i.test(destination)) return safeUrl(destination)
+  return safeUrl(preview)
+}
+
+const scrapeReddit = async (query) => {
+  const data = await fetchJson(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=25&sort=relevance&type=link`, {
+    headers: { 'User-Agent': 'SSToken-ScrapperPro/2.0' },
+  })
+
+  return (data?.data?.children || []).map(({ data: post }) => {
+    const permalink = safeUrl(`https://www.reddit.com${post.permalink || ''}`)
+    if (!permalink) return null
+    const videoUrl = safeUrl(post?.secure_media?.reddit_video?.fallback_url || post?.media?.reddit_video?.fallback_url)
+    const imageUrl = redditImage(post)
+    const thumbnail = safeUrl(decodeHtml(post?.thumbnail)) || imageUrl
+    const type = videoUrl ? 'video' : imageUrl ? 'image' : 'post'
+
+    return {
+      id: `reddit-${post.id || hash(permalink)}`,
+      source: 'Reddit',
+      type,
+      title: cleanText(post.title, 'Reddit result'),
+      url: permalink,
+      mediaUrl: videoUrl || imageUrl || undefined,
+      thumbnail: thumbnail || undefined,
+      snippet: cleanText(post.selftext || post.subreddit_name_prefixed, 'Reddit'),
+      date: post.created_utc ? new Date(post.created_utc * 1000).toISOString() : undefined,
+    }
+  }).filter(Boolean)
+}
+
+const scrapeYouTube = async (query) => {
+  const html = await fetchText(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&hl=en`)
+  const results = []
+  const seen = new Set()
+  const regex = /"videoRenderer":\{"videoId":"([A-Za-z0-9_-]{11})"[\s\S]{0,2600}?"title":\{"runs":\[\{"text":"((?:\\.|[^"\\])*)"/g
+  let match
+
+  while ((match = regex.exec(html)) !== null && results.length < 24) {
+    const id = match[1]
+    if (seen.has(id)) continue
+    seen.add(id)
+    const url = `https://www.youtube.com/watch?v=${id}`
+    const thumbnail = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`
+    results.push({
+      id: `youtube-${id}`,
+      source: 'YouTube',
+      type: 'video',
+      title: decodeJsonText(match[2], 'YouTube video'),
+      url,
+      mediaUrl: url,
+      thumbnail,
+      snippet: 'YouTube video',
+    })
   }
 
-  const links = extractMarkdownLinks(text)
-    .filter((item) => {
-      try {
-        const host = new URL(item.url).hostname.toLowerCase()
-        return !SEARCH_HOSTS.has(host) || item.url.includes('/comments/') || item.url.includes('/@')
-      } catch {
-        return false
-      }
-    })
-    .slice(0, 10)
+  if (!results.length) {
+    const fallback = [...html.matchAll(/"videoId":"([A-Za-z0-9_-]{11})"/g)]
+    for (const item of fallback) {
+      const id = item[1]
+      if (seen.has(id)) continue
+      seen.add(id)
+      results.push({
+        id: `youtube-${id}`,
+        source: 'YouTube',
+        type: 'video',
+        title: 'YouTube video',
+        url: `https://www.youtube.com/watch?v=${id}`,
+        mediaUrl: `https://www.youtube.com/watch?v=${id}`,
+        thumbnail: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+        snippet: 'YouTube video',
+      })
+      if (results.length >= 24) break
+    }
+  }
 
-  return links.map((item) => ({
+  if (!results.length) throw new Error('No YouTube videos parsed')
+  return results
+}
+
+const extractMarkdownLinks = (text) => {
+  const results = []
+  const seen = new Set()
+  const regex = /\[([^\]]{2,220})\]\((https?:\/\/[^)\s]+)\)/g
+  let match
+  while ((match = regex.exec(text)) !== null && results.length < 16) {
+    const url = safeUrl(match[2])
+    if (!url || seen.has(url)) continue
+    seen.add(url)
+    results.push({ title: cleanText(match[1], url), url })
+  }
+  return results
+}
+
+const scrapeWebLinks = async (sourceId, query) => {
+  const target = sourceId === 'medium'
+    ? `https://medium.com/search?q=${encodeURIComponent(query)}`
+    : `https://duckduckgo.com/?q=${encodeURIComponent(query)}`
+  const text = await fetchText(`https://r.jina.ai/${target}`)
+  const sourceName = SOURCES[sourceId].name
+  return extractMarkdownLinks(text).map((item) => ({
     id: `${sourceId}-${hash(item.url)}`,
-    source: source.name,
-    type: source.type,
+    source: sourceName,
+    type: 'article',
     title: item.title,
     url: item.url,
-    snippet: `Result for “${query}” from ${source.name}.`,
+    snippet: `${sourceName} result`,
   }))
 }
 
-export default async function handler(req, res) {
-  res.setHeader('Cache-Control', 'no-store')
+const SCRAPERS = {
+  'duckduckgo-images': scrapeDuckDuckGoImages,
+  'bing-images': scrapeBingImages,
+  wikimedia: scrapeWikimedia,
+  reddit: scrapeReddit,
+  youtube: scrapeYouTube,
+  'duckduckgo-general': (query) => scrapeWebLinks('duckduckgo-general', query),
+  medium: (query) => scrapeWebLinks('medium', query),
+}
 
-  if (req.method === 'GET') {
-    return res.status(200).json({
-      ok: true,
-      service: 'sstoken-scrapper-pro',
-      sources: Object.entries(SOURCES).map(([id, source]) => ({ id, name: source.name, type: source.type })),
-    })
-  }
-
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'GET, POST')
-    return res.status(405).json({ error: 'Method not allowed' })
-  }
-
-  const query = String(req.body?.query || '').trim()
-  const requested = Array.isArray(req.body?.sources) ? req.body.sources : []
-  const sources = [...new Set(requested)].filter((id) => SOURCES[id]).slice(0, 10)
-
-  if (!query) return res.status(400).json({ error: 'Query is required' })
-  if (query.length > 200) return res.status(400).json({ error: 'Query is too long' })
-  if (!sources.length) return res.status(400).json({ error: 'Select at least one source' })
-
+const runSearch = async (query, sources) => {
   const startedAt = Date.now()
   const settled = await Promise.allSettled(sources.map(async (sourceId) => ({
     sourceId,
-    results: await scrapeSource(sourceId, query),
+    results: await SCRAPERS[sourceId](query),
   })))
 
   const results = []
@@ -291,14 +315,55 @@ export default async function handler(req, res) {
     }
   })
 
-  const unique = Array.from(new Map(results.filter((item) => item.url).map((item) => [item.url, item])).values())
+  const unique = Array.from(new Map(
+    results
+      .filter((item) => item.url)
+      .map((item) => [`${item.type}:${item.mediaUrl || item.url}`, item]),
+  ).values())
 
-  return res.status(200).json({
+  const rank = { image: 0, video: 1, post: 2, article: 3 }
+  unique.sort((a, b) => (rank[a.type] ?? 9) - (rank[b.type] ?? 9))
+
+  return {
     ok: true,
     query,
     count: unique.length,
+    mediaCount: unique.filter((item) => item.type === 'image' || item.type === 'video').length,
     durationMs: Date.now() - startedAt,
-    results: unique.slice(0, 120),
+    results: unique.slice(0, 160),
     failures,
-  })
+  }
+}
+
+export default async function handler(req, res) {
+  res.setHeader('Cache-Control', 'no-store')
+
+  if (req.method === 'GET' && !req.query?.q) {
+    return res.status(200).json({
+      ok: true,
+      service: 'sstoken-scrapper-pro',
+      sources: Object.entries(SOURCES).map(([id, source]) => ({ id, name: source.name, kind: source.kind })),
+    })
+  }
+
+  if (!['GET', 'POST'].includes(req.method)) {
+    res.setHeader('Allow', 'GET, POST')
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  const query = String(req.method === 'GET' ? req.query?.q || '' : req.body?.query || '').trim()
+  const rawSources = req.method === 'GET'
+    ? String(req.query?.sources || 'duckduckgo-images,bing-images,wikimedia,reddit,youtube').split(',')
+    : Array.isArray(req.body?.sources) ? req.body.sources : []
+  const sources = [...new Set(rawSources.map(String))].filter((id) => SOURCES[id]).slice(0, 7)
+
+  if (!query) return res.status(400).json({ error: 'Query is required' })
+  if (query.length > 200) return res.status(400).json({ error: 'Query is too long' })
+  if (!sources.length) return res.status(400).json({ error: 'Select at least one source' })
+
+  try {
+    return res.status(200).json(await runSearch(query, sources))
+  } catch (error) {
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Search failed' })
+  }
 }
