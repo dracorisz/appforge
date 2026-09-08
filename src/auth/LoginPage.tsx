@@ -76,7 +76,7 @@ export function LoginPage({ returnTo = '/' }: { returnTo?: string }) {
           </section>
         </main>
 
-        <footer className="flex shrink-0 flex-col gap-2 border-t border-border/60 py-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:py-3"><span className="inline-flex items-center gap-2"><img src="/favicon.svg" alt="" className="h-4 w-4" /> AppForge · public beta</span><span>Google OAuth · Supabase Auth · Vercel · PWA</span></footer>
+        <footer className="flex shrink-0 flex-col gap-2 border-t border-border/60 py-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:py-3"><span className="inline-flex items-center gap-2"><img src="/favicon.svg" alt="" className="h-4 w-4" /> AppForge · public beta</span><span className="flex flex-wrap items-center gap-x-4 gap-y-1"><Link to="/privacy" className="hover:text-foreground">Privacy</Link><Link to="/terms" className="hover:text-foreground">Terms</Link><span>Google OAuth · Supabase Auth · Vercel · PWA</span></span></footer>
       </div>
     </div>
   )
