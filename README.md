@@ -1,118 +1,153 @@
 # AppForge
 
-1-init Unified toolbox for everyday developer work. Local-first, no backend, no analytics.
+AppForge is a growing toolbox of focused web utilities running in one React/Vite application at **sstoken.space**. The project mixes local-first browser tools with narrow Vercel serverless APIs when a tool needs same-origin network access, protected provider calls, or CORS-safe downloads.
 
-## Quick Start
+## Current product direction
+
+- Fast, compact mini-apps rather than a generic admin dashboard.
+- Shared, subtle frosted-glass UI primitives.
+- Media-first cards use richer hover treatment; ordinary utility cards stay restrained.
+- Direct app routes must survive hard reloads.
+- No fake live data. Demo data must be explicitly labeled.
+- Server-side secrets belong in deployment environment settings, never client bundles.
+- Every production build shows its exact semantic version, Git SHA, and build timestamp in the Footer and Dashboard Project Pulse.
+
+## Quick start
 
 ```bash
 git clone <repo-url>
-cd projectpf
-cp .env.example .env
+cd appforge
+cp .env.example .env.local
 npm install
 npm run dev
 ```
 
-## Environment Variables
+Checks:
 
-Create a `.env` file in the root:
-
-```env
-VITE_WEATHERAPI_KEY=
-VITE_PARIFLOW_API_KEY=
-VITE_COINMARKETCAP_API_KEY=
+```bash
+npm run typecheck
+npm run build
 ```
 
-All keys are optional. Apps fall back to dummy/demo data when keys are missing.
-
-## API Keys
-
-### WeatherAPI (WeatherNow)
-- Sign up at https://www.weatherapi.com/
-- Free tier: 1M calls/month
-- Paste key into `.env` as `VITE_WEATHERAPI_KEY`
-
-### Pariflow (PariflowSmpl)
-- Contact pariflow.com for API access
-- Paste key into `.env` as `VITE_PARIFLOW_API_KEY`
-
-### CoinMarketCap (CryptoTrack)
-- Sign up at https://coinmarketcap.com/api/
-- Free tier: 10,000 calls/month
-- Paste key into `.env` as `VITE_COINMARKETCAP_API_KEY`
-
-Keys are stored in `localStorage` via Settings and never sent to our servers.
-
-## Branching Strategy
-
-- `main` — stable, deployable
-- `feature/<name>` — new apps, components, or tools
-- `fix/<name>` — bug fixes
-- `refactor/<name>` — structural changes without behavior changes
-
-Create a branch, open a PR, squash-merge into `main`.
-
-## Adding a New Mini App
-
-1. Add entry in `src/lib/registry.ts` under the appropriate category
-2. Create the component in `src/components/dashboard/`
-3. Add route in `src/App.tsx`
-4. Export component from `src/components/dashboard/index.ts`
-
-### App Interface
-
-Every mini app should be self-contained, manage its own internal state, and use the shared UI kit (`@/components/ui`). Do not mutate global `AppState` unless the app is part of the workspace.
-
-## Architecture
-
-```
-src/
-  App.tsx                    # Router + global state
-  types/index.ts             # All TypeScript interfaces + default data
-  components/
-    dashboard/               # Mini apps + workspace
-    layout/                  # Sidebar, header, footer
-    ui/                      # Shared UI kit
-    plan/, article/, pitches/, sources/, outreach/, safety/, resources/  # Workspace tabs
-  hooks/useTheme.ts          # Theme, accent, radius
-  lib/                       # Utilities
-```
-
-### State Management
-
-- Global state lives in `App.tsx` as `AppState`
-- Persisted to `localStorage` key `projectforge-workplan-v1`
-- Mini apps are standalone unless they need workspace data
-- Use `useTheme()` for appearance settings
-
-## Frontend Stack
+## Stack
 
 - React 18 + TypeScript
 - Vite 6
-- Tailwind CSS 3.4 (dark mode via `class`)
 - React Router 6
+- Tailwind CSS 3.4
 - Lucide icons
 - PWA via `vite-plugin-pwa`
+- Vercel static deployment + serverless `/api` functions
+- Supabase client/infrastructure available for apps that genuinely need persistent shared data
 
-UI is intentionally simple: cards, buttons, inputs, badges. No heavy frameworks.
+## Architecture
 
-## Build
+```text
+src/
+  App.tsx                         router + global local state
+  components/
+    dashboard/                    mini-app implementations
+    layout/                       Sidebar, Footer, Project Pulse
+    ui/                           shared cards, controls, MediaShowbox, BuildBadge
+  lib/
+    registry.ts                   tool registry + per-app metadata
+    buildInfo.ts                  shared deployment/build fingerprint
+    simplePdf.ts                  dependency-free text PDF export
+  types/                          shared TypeScript models and defaults
+api/
+  scrape.js                       Scrapper Pro source aggregation
+  media.js                        guarded image/video download proxy
+  article.js                      readable article content for PDF export
+  crypto.js                       server-backed crypto market data
+  weather.js                      keyless weather/geocoding layer
+scripts/
+  set-version.mjs                 one-command semantic version updater
+docs/apps/<app-id>/README.md       app-specific implementation docs
+```
+
+## Featured working apps
+
+### Scrapper Pro
+
+Public-source media search with real images/videos, in-page media showbox, saved results, server-backed downloads, article-to-PDF export, and partial-source failure handling.
+
+Developer documentation: `docs/apps/scrapper-pro/README.md`
+
+### Any → Any Converter
+
+Registry-based data conversion with validation, local file loading, safe format-pair selection, copy/download output, and hardened CSV/JSON/YAML/XML handling.
+
+### Image Labeler
+
+Local folder/file image labeling with removable tags, persistence, approval workflow, and JSON import/export.
+
+### Crypto Track
+
+Live server-backed market data with provider failover, watchlist, search/sort, pagination, and no fake fallback prices.
+
+### Weather Now
+
+Live keyless weather lookup using the AppForge server API rather than exposed client API keys.
+
+## Adding or completing a mini-app
+
+1. Add/update the tool record in `src/lib/registry.ts`.
+2. Implement the component in `src/components/dashboard/`.
+3. Export it from `src/components/dashboard/index.ts`.
+4. Add the route in `src/App.tsx`.
+5. Reuse `src/components/ui` primitives.
+6. Add a narrow `/api` endpoint only when the browser cannot safely/reliably do the work itself.
+7. Add `docs/apps/<app-id>/README.md` for substantial apps.
+8. Test both navigation and a direct hard reload of the route after deployment.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Versioning and deployment tracking
+
+The semantic product version lives in `package.json`.
+
+Normal pushes do **not** require a version bump. Vite injects a unique deployment fingerprint using the Vercel/Git Git SHA and build time; the shared `BUILD_INFO` module renders it consistently in the Footer and Project Pulse.
+
+For a named release:
 
 ```bash
-npm run build      # TypeScript check + Vite build
-npm run preview    # Preview production build
-npm run dev        # Dev server with HMR
+npm run version:set -- 1.19.0
 ```
+
+This keeps `package.json`, `package-lock.json`, and the legacy registry version in sync. Add meaningful notes to `APPFORGE_CHANGELOG` for named releases.
 
 ## Deployment
 
-- **Vercel / Netlify**: connect repo, build command `npm run build`, output `dist/`
-- **GitHub Pages**: enable Pages, source GitHub Actions
-- **sstoken.space**: upload `dist/` via FTP/SFTP
+The canonical production deployment is the Vercel `appforge` project connected to `main`.
 
-## Data
+```bash
+npm run build
+```
 
-All data is local-first. Export/import JSON from Settings. No backend. No sync. No tracking.
+Build output: `dist/`.
 
-## Safety Notice
+Vercel also deploys serverless functions from `api/` in the same project, so the UI and backend endpoints version together.
 
-This workspace is for genuine independent editorial research. Do not manufacture, disguise, or manipulate sources. Readiness indicators are internal workflow status, not Wikipedia predictions.
+Production review paths:
+
+- `https://www.sstoken.space/`
+- `https://www.sstoken.space/apps/scrapper-pro`
+- `https://www.sstoken.space/apps/any-converter`
+
+## Environment and secrets
+
+Copy `.env.example` to `.env.local` only when a local integration needs configuration. Never commit real `.env` files.
+
+Use Vercel/Supabase environment settings for deployed secrets. Variables prefixed with `VITE_` are bundled into browser code and must never contain server-only secrets.
+
+See [SECURITY.md](SECURITY.md).
+
+## Contributing
+
+External contributors are welcome once repository access/visibility permits it. Keep changes focused, preserve the shared design language, document substantial apps, and avoid fake data or unsafe network proxies.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and app-extension rules.
+
+## Licensing
+
+A repository license has not been selected yet. Before making the repository fully public/open-source, choose an explicit license (for example MIT or Apache-2.0) so external contributors know the legal terms.
