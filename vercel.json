@@ -9,11 +9,6 @@
     "VITE_APP_NAME": "AppForge",
     "VITE_APP_URL": "https://sstoken.space"
   },
-  "functions": {
-    "src/api/**/*.ts": {
-      "runtime": "nodejs20.x"
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",
