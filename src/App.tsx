@@ -14,6 +14,8 @@ import {
   AnyToAnyConverter,
   UtilityWorkbench,
   ImageWorkbench,
+  LocalToolsWorkbench,
+  ColorPickerTool,
 } from './components/dashboard'
 import { SettingsPage } from './components/resources/Settings'
 import { PeoplePage } from './components/resources/People'
@@ -32,27 +34,10 @@ import { BUILD_INFO } from './lib/buildInfo'
 import { useAuth } from './auth/AuthProvider'
 import { LoginPage } from './auth/LoginPage'
 import { loadUserPreferences, saveUserPreferences } from './lib/preferences'
-import {
-  loadCategoryOverrides,
-  saveCategoryOverrides,
-  subscribeCategoryOverrides,
-} from './lib/categories'
+import { loadCategoryOverrides, saveCategoryOverrides, subscribeCategoryOverrides } from './lib/categories'
 
 const defaultSettings = { theme: 'system' as const }
-
-const defaultState: AppState = {
-  plan: defaultPlan,
-  article: defaultArticle,
-  pitches: defaultPitches,
-  sources: defaultSources,
-  outreach: defaultOutreach,
-  checklist: defaultChecklist,
-  settings: defaultSettings,
-  miniApps: defaultMiniApps,
-  versions: defaultVersions,
-  favorites: [],
-  recentApps: [],
-}
+const defaultState: AppState = { plan: defaultPlan, article: defaultArticle, pitches: defaultPitches, sources: defaultSources, outreach: defaultOutreach, checklist: defaultChecklist, settings: defaultSettings, miniApps: defaultMiniApps, versions: defaultVersions, favorites: [], recentApps: [] }
 
 function App() {
   const location = useLocation()
@@ -80,11 +65,8 @@ function App() {
         } else {
           await saveUserPreferences(user.id, { appState: state, categoryOverrides: loadCategoryOverrides() })
         }
-      } catch (error) {
-        console.error('AppForge remote preference hydration failed', error)
-      } finally {
-        if (!cancelled) setRemoteReady(true)
-      }
+      } catch (error) { console.error('AppForge remote preference hydration failed', error) }
+      finally { if (!cancelled) setRemoteReady(true) }
     }
     void hydrate()
     return () => { cancelled = true }
@@ -92,17 +74,13 @@ function App() {
 
   React.useEffect(() => {
     if (!user || !remoteReady) return
-    const timer = window.setTimeout(() => {
-      void saveUserPreferences(user.id, { appState: state }).catch((error) => console.error('AppForge remote state sync failed', error))
-    }, 650)
+    const timer = window.setTimeout(() => { void saveUserPreferences(user.id, { appState: state }).catch((error) => console.error('AppForge remote state sync failed', error)) }, 650)
     return () => window.clearTimeout(timer)
   }, [state, user, remoteReady])
 
   React.useEffect(() => {
     if (!user || !remoteReady) return
-    return subscribeCategoryOverrides(() => {
-      void saveUserPreferences(user.id, { categoryOverrides: loadCategoryOverrides() }).catch((error) => console.error('AppForge category sync failed', error))
-    })
+    return subscribeCategoryOverrides(() => { void saveUserPreferences(user.id, { categoryOverrides: loadCategoryOverrides() }).catch((error) => console.error('AppForge category sync failed', error)) })
   }, [user, remoteReady])
 
   const addToRecent = (appId: string) => setState((prev) => ({ ...prev, recentApps: [appId, ...(prev.recentApps || []).filter((id) => id !== appId)].slice(0, 20) }))
@@ -140,29 +118,16 @@ function App() {
         <Route path="/apps/any-converter" element={<AnyToAnyConverter />} />
         <Route path="/settings" element={<SettingsPage state={state} setState={setState} />} />
 
-        <Route path="/apps/json-formatter" element={<UtilityWorkbench />} />
-        <Route path="/apps/uuid-generator" element={<UtilityWorkbench />} />
-        <Route path="/apps/password-generator" element={<UtilityWorkbench />} />
-        <Route path="/apps/token-generator" element={<UtilityWorkbench />} />
-        <Route path="/apps/base64-tool" element={<UtilityWorkbench />} />
-        <Route path="/apps/hash-tool" element={<UtilityWorkbench />} />
-        <Route path="/apps/url-encoder" element={<UtilityWorkbench />} />
-        <Route path="/apps/html-encoder" element={<UtilityWorkbench />} />
-        <Route path="/apps/jwt-decoder" element={<UtilityWorkbench />} />
-        <Route path="/apps/hex-converter" element={<UtilityWorkbench />} />
-
-        <Route path="/apps/image-resizer" element={<ImageWorkbench />} />
-        <Route path="/apps/image-converter" element={<ImageWorkbench />} />
-        <Route path="/apps/image-compressor" element={<ImageWorkbench />} />
-        <Route path="/apps/image-metadata" element={<ImageWorkbench />} />
+        {['json-formatter','uuid-generator','password-generator','token-generator','base64-tool','hash-tool','url-encoder','html-encoder','jwt-decoder','hex-converter'].map((slug) => <Route key={slug} path={`/apps/${slug}`} element={<UtilityWorkbench />} />)}
+        {['image-resizer','image-converter','image-compressor','image-metadata'].map((slug) => <Route key={slug} path={`/apps/${slug}`} element={<ImageWorkbench />} />)}
+        {['csv-converter','timestamp-converter','regex-tester'].map((slug) => <Route key={slug} path={`/apps/${slug}`} element={<LocalToolsWorkbench />} />)}
+        <Route path="/apps/color-picker" element={<ColorPickerTool />} />
 
         <Route path="/apps/pitch-deck" element={miniAppRoute('mini-2')} />
         <Route path="/apps/invoice-studio" element={miniAppRoute('mini-3')} />
         <Route path="/apps/source-grade" element={miniAppRoute('mini-5')} />
         <Route path="/apps/link-checker" element={miniAppRoute('mini-9')} />
-        <Route path="/apps/csv-converter" element={miniAppRoute('mini-12')} />
         <Route path="/apps/qr-generator" element={miniAppRoute('mini-13')} />
-        <Route path="/apps/color-picker" element={miniAppRoute('mini-14')} />
         <Route path="/apps/resume-forge" element={miniAppRoute('mini-1')} />
 
         <Route path="/pf-scrapper-pro" element={<Navigate to="/apps/scrapper-pro" replace />} />

@@ -58,9 +58,9 @@ const APPS: AppDefinition[] = [
   app({ id: 'pariflow-smpl', name: 'Pariflow Smpl', description: 'Pariflow documentation explorer with MCP CLI and API integration guidance.', category: 'utilities', icon: 'FileText', route: '/apps/pariflow-smpl', tags: ['docs', 'mcp', 'cli', 'pariflow'], status: 'building', version: '1.0.0' }),
 
   app({ id: 'json-formatter', name: 'JSON Formatter', description: 'Format, minify, and validate JSON locally with copy-ready output.', category: 'json-data', icon: 'Braces', route: '/apps/json-formatter', tags: ['json', 'format', 'validate', 'minify'], status: 'beta', version: '0.2.0' }),
-  app({ id: 'csv-converter', name: 'CSV Converter', description: 'Convert CSV to JSON, Markdown tables, or SQL INSERT statements.', category: 'converters', icon: 'Table2', route: '/apps/csv-converter', tags: ['csv', 'json', 'sql', 'markdown'], status: 'idea', version: '0.1.0' }),
+  app({ id: 'csv-converter', name: 'CSV Converter', description: 'Convert quoted CSV to JSON, Markdown tables, or SQL INSERT statements locally.', category: 'converters', icon: 'Table2', route: '/apps/csv-converter', tags: ['csv', 'json', 'sql', 'markdown'], status: 'beta', version: '0.2.0' }),
   app({ id: 'qr-generator', name: 'QR Generator', description: 'Generate QR codes for URLs, text, or Wi-Fi with downloadable output.', category: 'utilities', icon: 'QrCode', route: '/apps/qr-generator', tags: ['qr', 'generate', 'download'], status: 'idea', version: '0.1.0' }),
-  app({ id: 'color-picker', name: 'Color Picker', description: 'Pick colors from an image and copy HEX, RGB, and HSL values.', category: 'image', icon: 'Palette', route: '/apps/color-picker', tags: ['color', 'picker', 'palette', 'hex', 'rgb'], status: 'idea', version: '0.1.0' }),
+  app({ id: 'color-picker', name: 'Color Picker', description: 'Sample pixels from local images, extract a compact palette, and copy HEX/RGB/HSL values.', category: 'image', icon: 'Palette', route: '/apps/color-picker', tags: ['color', 'picker', 'palette', 'hex', 'rgb'], status: 'beta', version: '0.2.0' }),
   app({ id: 'resume-forge', name: 'Resume Forge', description: 'Live resume builder with visual assets, export, and version tracking.', category: 'svg-icons', icon: 'FileText', route: '/apps/resume-forge', tags: ['resume', 'svg', 'pdf', 'builder'], status: 'building', version: '1.0.0' }),
   app({ id: 'pitch-deck', name: 'Pitch Deck', description: 'Editable investor pitch-deck workspace with live preview and export goals.', category: 'utilities', icon: 'FileText', route: '/apps/pitch-deck', tags: ['pitch', 'deck', 'presentation'], status: 'building', version: '1.0.0' }),
   app({ id: 'invoice-studio', name: 'Invoice Studio', description: 'Freelancer invoice workspace with client, time, and payment-oriented tools.', category: 'utilities', icon: 'FileText', route: '/apps/invoice-studio', tags: ['invoice', 'freelance', 'crm'], status: 'building', version: '1.0.0' }),
@@ -72,8 +72,8 @@ const APPS: AppDefinition[] = [
   app({ id: 'token-generator', name: 'Token Generator', description: 'Generate secure hexadecimal or Base64URL secrets locally.', category: 'crypto', icon: 'Lock', route: '/apps/token-generator', tags: ['token', 'api', 'secret'], status: 'beta', version: '0.2.0' }),
   app({ id: 'base64-tool', name: 'Base64 Tool', description: 'Encode and decode UTF-8 text with Base64 and URL-safe Base64.', category: 'encoding', icon: 'FileCode', route: '/apps/base64-tool', tags: ['base64', 'encode', 'decode'], status: 'beta', version: '0.2.0' }),
   app({ id: 'hash-tool', name: 'Hash Tool', description: 'Calculate SHA-1, SHA-256, SHA-384, and SHA-512 digests locally with Web Crypto.', category: 'crypto', icon: 'Hash', route: '/apps/hash-tool', tags: ['hash', 'sha', 'checksum'], status: 'beta', version: '0.2.0' }),
-  app({ id: 'timestamp-converter', name: 'Timestamp Converter', description: 'Convert Unix timestamps to readable dates and back across timezones.', category: 'dates', icon: 'Calendar', route: '/apps/timestamp-converter', tags: ['timestamp', 'unix', 'date', 'timezone'], status: 'idea', version: '0.1.0' }),
-  app({ id: 'regex-tester', name: 'Regex Tester', description: 'Test regular expressions with match details and reusable patterns.', category: 'regex', icon: 'Regex', route: '/apps/regex-tester', tags: ['regex', 'test', 'match'], status: 'idea', version: '0.1.0' }),
+  app({ id: 'timestamp-converter', name: 'Timestamp Converter', description: 'Convert Unix seconds, Unix milliseconds, ISO dates, and human-readable dates locally.', category: 'dates', icon: 'Calendar', route: '/apps/timestamp-converter', tags: ['timestamp', 'unix', 'date', 'timezone'], status: 'beta', version: '0.2.0' }),
+  app({ id: 'regex-tester', name: 'Regex Tester', description: 'Test JavaScript regular expressions, inspect groups, and preview replacements locally.', category: 'regex', icon: 'Regex', route: '/apps/regex-tester', tags: ['regex', 'test', 'match', 'replace'], status: 'beta', version: '0.2.0' }),
   app({ id: 'markdown-previewer', name: 'Markdown Previewer', description: 'Write Markdown with a live rendered preview and export options.', category: 'text', icon: 'FileText', route: '/apps/markdown-previewer', tags: ['markdown', 'preview', 'html'], status: 'idea', version: '0.1.0' }),
   app({ id: 'pdf-tool', name: 'PDF Tool', description: 'Merge, split, rotate, inspect, and extract content from PDFs.', category: 'converters', icon: 'FileText', route: '/apps/pdf-tool', tags: ['pdf', 'merge', 'split', 'rotate'], status: 'idea', version: '0.1.0' }),
   app({ id: 'excel-tool', name: 'Excel Tool', description: 'Convert and clean spreadsheet data and generate summaries.', category: 'json-data', icon: 'Table2', route: '/apps/excel-tool', tags: ['excel', 'csv', 'json', 'sql'], status: 'idea', version: '0.1.0' }),
@@ -89,35 +89,17 @@ const APPS: AppDefinition[] = [
 
 const APP_MAP = new Map(APPS.map((item) => [item.id, item]))
 
-export function getApp(id: string): AppDefinition | undefined {
-  return APP_MAP.get(id)
-}
-
-export function getAppsByCategory(categoryId: string): AppDefinition[] {
-  return APPS.filter((item) => item.category === categoryId)
-}
-
+export function getApp(id: string): AppDefinition | undefined { return APP_MAP.get(id) }
+export function getAppsByCategory(categoryId: string): AppDefinition[] { return APPS.filter((item) => item.category === categoryId) }
 export function searchApps(query: string): AppDefinition[] {
   const normalized = query.toLowerCase().trim()
   if (!normalized) return APPS
-  return APPS.filter((item) =>
-    item.name.toLowerCase().includes(normalized) ||
-    item.description.toLowerCase().includes(normalized) ||
-    item.category.toLowerCase().includes(normalized) ||
-    item.tags.some((tag) => tag.toLowerCase().includes(normalized))
-  )
+  return APPS.filter((item) => item.name.toLowerCase().includes(normalized) || item.description.toLowerCase().includes(normalized) || item.category.toLowerCase().includes(normalized) || item.tags.some((tag) => tag.toLowerCase().includes(normalized)))
 }
-
-export function getAllApps(): AppDefinition[] {
-  return APPS
-}
-
-export function getAllCategories(): CategoryDefinition[] {
-  return CATEGORIES
-}
+export function getAllApps(): AppDefinition[] { return APPS }
+export function getAllCategories(): CategoryDefinition[] { return CATEGORIES }
 
 export { APPS, APP_MAP }
-
 export const APPFORGE_VERSION = BUILD_INFO.version
 export const APPFORGE_CHANGELOG = [
   { version: '1.18.0', date: '2026-09-08', changes: ['Centralized app registry', 'Shared build identity', 'Google auth and Supabase preferences', 'Server-backed media/weather/market tools'] },
