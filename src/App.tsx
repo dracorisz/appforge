@@ -26,6 +26,13 @@ import {
   defaultVersions,
 } from './types'
 import { BUILD_INFO } from './lib/buildInfo'
+import { useAuth } from './auth/AuthProvider'
+import { loadUserPreferences, saveUserPreferences } from './lib/preferences'
+import {
+  loadCategoryOverrides,
+  saveCategoryOverrides,
+  subscribeCategoryOverrides,
+} from './lib/categories'
 
 const defaultSettings = { theme: 'system' as const }
 
@@ -44,6 +51,8 @@ const defaultState: AppState = {
 }
 
 function App() {
+  const { user } = useAuth()
+  const [remoteReady, setRemoteReady] = React.useState(false)
   const [state, setState] = React.useState<AppState>(() => {
     try {
       const raw = localStorage.getItem('appforge-workplan-v1')
@@ -59,6 +68,69 @@ function App() {
   React.useEffect(() => {
     localStorage.setItem('appforge-workplan-v1', JSON.stringify(state))
   }, [state])
+
+  React.useEffect(() => {
+    let cancelled = false
+    setRemoteReady(false)
+
+    if (!user) return () => { cancelled = true }
+
+    const hydrate = async () => {
+      try {
+        const remote = await loadUserPreferences(user.id)
+        if (cancelled) return
+
+        if (remote) {
+          if (remote.appState) {
+            setState((current) => ({
+              ...current,
+              ...remote.appState,
+              settings: {
+                ...current.settings,
+                ...(remote.appState?.settings || {}),
+              },
+            }))
+          }
+          saveCategoryOverrides(remote.categoryOverrides || {})
+        } else {
+          await saveUserPreferences(user.id, {
+            appState: state,
+            categoryOverrides: loadCategoryOverrides(),
+          })
+        }
+      } catch (error) {
+        console.error('AppForge remote preference hydration failed', error)
+      } finally {
+        if (!cancelled) setRemoteReady(true)
+      }
+    }
+
+    void hydrate()
+    return () => { cancelled = true }
+    // The initial local state intentionally seeds the first remote row.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id])
+
+  React.useEffect(() => {
+    if (!user || !remoteReady) return
+    const timer = window.setTimeout(() => {
+      void saveUserPreferences(user.id, { appState: state }).catch((error) => {
+        console.error('AppForge remote state sync failed', error)
+      })
+    }, 650)
+    return () => window.clearTimeout(timer)
+  }, [state, user, remoteReady])
+
+  React.useEffect(() => {
+    if (!user || !remoteReady) return
+    return subscribeCategoryOverrides(() => {
+      void saveUserPreferences(user.id, {
+        categoryOverrides: loadCategoryOverrides(),
+      }).catch((error) => {
+        console.error('AppForge category sync failed', error)
+      })
+    })
+  }, [user, remoteReady])
 
   const addToRecent = (appId: string) => {
     setState((prev) => ({
