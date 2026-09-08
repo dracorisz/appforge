@@ -1,6 +1,6 @@
 import React from 'react'
-import { ExternalLink, Image as ImageIcon, MapPin, Search, UserRound } from 'lucide-react'
-import { Card, Input } from '@/components/ui'
+import { ExternalLink, Github, HeartHandshake, Image as ImageIcon, MapPin, Search, UserRound } from 'lucide-react'
+import { Badge, Card, Input } from '@/components/ui'
 import { listProfileImages, listVisibleProfiles, type AppProfile, type ProfileImageLink, type UserImage } from '@/lib/account'
 
 const linkedImage = (link: ProfileImageLink) => {
@@ -37,7 +37,7 @@ export function PeoplePage() {
   const visible = profiles.filter((profile) => {
     const needle = query.trim().toLowerCase()
     if (!needle) return true
-    return [profile.display_name, profile.username, profile.bio, profile.location]
+    return [profile.display_name, profile.username, profile.headline, profile.bio, profile.location, profile.github_username, ...(profile.skills || [])]
       .filter(Boolean)
       .some((value) => String(value).toLowerCase().includes(needle))
   })
@@ -52,11 +52,12 @@ export function PeoplePage() {
     <div className="space-y-6 pb-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/45 px-2.5 py-1 text-xs font-medium text-muted-foreground"><HeartHandshake className="h-3.5 w-3.5" /> Open-source collaborators</div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">People</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">Public AppForge profiles shared inside the authenticated workspace. Private preferences and tool history stay scoped to each account.</p>
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">Find AppForge users who chose to share a public profile, skills and collaboration status. Private personal information is stored separately and never appears here.</p>
         </div>
         <div className="w-full sm:max-w-xs">
-          <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search people…" className="pl-9" />
+          <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name, skill, GitHub…" className="pl-9" />
           <Search className="pointer-events-none relative -mt-7 ml-3 h-4 w-4 text-muted-foreground" />
         </div>
       </div>
@@ -68,7 +69,7 @@ export function PeoplePage() {
         <Card className="p-8 text-center">
           <UserRound className="mx-auto h-6 w-6 text-muted-foreground" />
           <h2 className="mt-3 text-sm font-medium text-foreground">No matching profiles</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Profiles appear here after users sign in and keep their profile public.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Profiles appear after users sign in and keep their profile public.</p>
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
@@ -87,15 +88,18 @@ export function PeoplePage() {
                       {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : <UserRound className="h-5 w-5" />}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h2 className="truncate text-sm font-semibold text-foreground">{profile.display_name || profile.username || 'AppForge user'}</h2>
+                      <div className="flex flex-wrap items-center gap-2"><h2 className="truncate text-sm font-semibold text-foreground">{profile.display_name || profile.username || 'AppForge user'}</h2>{profile.open_to_collaboration && <Badge color="green">Collaborate</Badge>}</div>
                       {profile.username && <p className="truncate text-xs text-muted-foreground">@{profile.username}</p>}
+                      {profile.headline && <p className="mt-1 text-xs font-medium text-foreground/80">{profile.headline}</p>}
                     </div>
                     {gallery.length === 0 && <ImageIcon className="h-4 w-4 text-muted-foreground" />}
                   </div>
 
                   {profile.bio && <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">{profile.bio}</p>}
+                  {(profile.skills || []).length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{profile.skills.slice(0, 8).map((skill) => <span key={skill} className="rounded-full border border-border/70 bg-background/45 px-2 py-0.5 text-[11px] text-muted-foreground">{skill}</span>)}</div>}
                   <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
                     {profile.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {profile.location}</span>}
+                    {profile.github_username && <a href={`https://github.com/${encodeURIComponent(profile.github_username)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-foreground"><Github className="h-3.5 w-3.5" /> GitHub</a>}
                     {profile.website && <a href={profile.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-foreground"><ExternalLink className="h-3.5 w-3.5" /> Website</a>}
                   </div>
                 </div>
