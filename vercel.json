@@ -39,7 +39,7 @@
   ],
   "redirects": [
     {
-      "source": "/pf-*",
+      "source": "/",
       "destination": "/:splat",
       "permanent": true
     }
