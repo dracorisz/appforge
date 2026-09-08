@@ -1,5 +1,7 @@
 export { AppWorkspace } from './AppWorkspace'
 export { MiniAppShell } from './MiniAppShell'
+export { PublicDashboard } from './PublicDashboard'
+export { UtilityWorkbench, IMPLEMENTED_UTILITY_ROUTES } from './UtilityWorkbench'
 export { PF_ScrapperPro, type ScrapperProResult } from './PF_ScrapperPro'
 export { PF_ImageLabeler, type ImageLabel } from './PF_ImageLabeler'
 export { PF_CreatorSVG, type HeaderConfig } from './PF_CreatorSVG'
