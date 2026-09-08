@@ -4,15 +4,17 @@ import { Sidebar, MobileHeader } from './Sidebar'
 import { Footer } from './Footer'
 import { BackToTop } from './BackToTop'
 import { ProjectPulse } from './ProjectPulse'
+import { AppMetaBar } from './AppMetaBar'
 
 export function Layout({ children, currentVersion }: { children: React.ReactNode; currentVersion?: string }) {
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)
   const location = useLocation()
   const showProjectPulse = location.pathname === '/' || location.pathname === '/recent'
+  const showAppMeta = location.pathname.startsWith('/apps/')
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div data-route={location.pathname} className="flex h-screen overflow-hidden bg-background">
       <div className={`hidden lg:flex ${sidebarCollapsed ? 'w-16' : 'w-64'} transition-all duration-300`}>
         <Sidebar collapsed={sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)} />
       </div>
@@ -31,6 +33,7 @@ export function Layout({ children, currentVersion }: { children: React.ReactNode
         <main className="flex-1 overflow-y-auto p-4 lg:p-8">
           <div className="mx-auto max-w-6xl">
             {showProjectPulse && <ProjectPulse />}
+            {showAppMeta && <AppMetaBar />}
             {children}
           </div>
         </main>
