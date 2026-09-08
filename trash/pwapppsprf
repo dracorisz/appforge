@@ -1,0 +1,47 @@
+Gemeral:
+
+A. complete left menu consolidation based on ProjectForge idea and session context and previously uncompleted tasks;
+B. continue with project unification on Dashboard and converting all the pages to apps with status; version; name; codename; description; etc;
+example on apps upgrades:
+A. convert Pariflow Workspace to an app and name the app WorkspacePrf for organizing shared Workspace on ProjectForge (Like DAO);
+B. see if you can connect 7e6829465e93c09071ad30f9c61bd88a08807aad46476bfb73e8b321782fc4c8 as API key for https://docs.pariflow.com/ and https://docs.pariflow.com/developers/agent-mcp-cli for MCP  and data save, always have default date scrapped from https://pariflow.com/ to have in one app, name that one PariflowSmpl
+C. add simple managment module
+D. WeatherNow like names should be displayed and not PF_WeatherNow that goes under app properties;
+E. on WeatherNow make listing options improve overall; Cloudy doesn't have effect; Box should state if API is used; No duplicates allowed in all boxes list (no same city); filterring ; sorting; bulk add e.g. 10 EU cities and stuff like that; make more complete; apply tidy to all apps;
+overall
+NOW EXmine and complete ProjectForge app with apps in names in two part LikeTwo PartTwo ScrapperPro to download assets to save as and show in WorkspacePrf
+1review on apps status:
+1. WeatherNow is better but please add text and background color effect to whole box; Make wheater boxes close able and display in larger quantity, start with New York, London, and Moscow, each input new box and add more to make map more complete + add use API vs Simple Dummy switch that changes source of data for weather box component;
+2. CryptoTrack CORS issues;
+3. ImageLabeler display image!;
+Gemeral:
+1. all apps names should be in format NamedName and with code format PF_NamedName e.g. CryptoTrack and PF_CryptoTrack so please rename those as     SVG Header to e.g. CreatorSVG etc. Unify all naming and give each app version and dedicated branch;
+2. encourage forking by apps;
+3. complete frontend and idea;
+ reverify and reoganoye and remove and cleanaupini apps registry:
+
+ResumeForge -> PF_ResumeForge
+PitchDeck Kit -> PF_PitchDeck
+Invoice Studio -> PF_InvoiceStudio
+Landing Page Blocks -> PF_LandingPageBlocks
+SourceGrade -> PF_SourceGrade
+ScrapperPro -> PF_ScrapperPro
+ImageLabeler -> PF_ImageLabeler
+LinkChecker -> PF_LinkChecker
+TextCleaner -> PF_TextCleaner
+JSONFormatter -> PF_JsonFormatter
+CSVConverter -> PF_CsvConverter
+QRGenerator -> PF_QrGenerator
+ColorPicker -> PF_ColorPicker
+UuidGenerator -> PF_UuidGenerator
+PasswordGenerator -> PF_PasswordGenerator
+Base64Tool -> PF_Base64Tool
+HashTool -> PF_HashTool
+TimestampConverter -> PF_TimestampConverter
+RegexTester -> PF_RegexTester
+MarkdownPreviewer -> PF_MarkdownPreviewer
+ImageResizer -> PF_ImageResizer
+AudioConverter -> PF_AudioConverter
+PdfTool -> PF_PdfTool
+ExcelTool -> PF_ExcelTool
+SvgTool -> PF_SvgTool

@@ -3,6 +3,7 @@ import { Card, Button, Badge, Input, Progress, Select, Modal } from '@/component
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { Target, Users, Search, AlertTriangle, GitFork, ShoppingCart, Download, Upload, Trash2, RefreshCw, ExternalLink, Edit2, Save, X, LayoutGrid, List, ChevronDown, ChevronUp, Plus, Star, Clock, ArrowLeftRight, Wrench, Code, Palette, FileText, Table2, Lock, Hash, QrCode, Link, Presentation, Receipt, Regex, Video, Music, File, Sheet, Image as ImageIcon, LayoutDashboard, Settings, SearchCheck, TrendingUp, Cloud } from 'lucide-react'
 import type { AppState, MiniApp } from '@/types'
+import type { CategoryDefinition } from '@/lib/registry'
 import { getAllApps, getAllCategories, searchApps, getAppsByCategory } from '@/lib/registry'
 import { APPFORGE_VERSION, APPFORGE_CHANGELOG } from '@/lib/registry'
 
@@ -35,7 +36,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   Sheet: Sheet
 }
 
-type Tab = 'tools' | 'workspace' | 'categories' | 'changelog'
+type Tab = 'tools' | 'workspace' | 'favorites' | 'recent' | 'categories' | 'changelog'
 type ViewMode = 'grid' | 'list' | 'compact'
 type SortField = 'name' | 'status' | 'forks'
 type SortDir = 'asc' | 'desc'
@@ -61,6 +62,13 @@ export function AppWorkspace({ state, setState, onOpenApp, onToggleFavorite }: {
   const [viewMode, setViewMode] = React.useState<ViewMode>('list')
   const [sortField, setSortField] = React.useState<SortField>('name')
   const [sortDir, setSortDir] = React.useState<SortDir>('asc')
+  const [customCategories, setCustomCategories] = React.useState<CategoryDefinition[]>(() => {
+    try {
+      const stored = localStorage.getItem('appforge-custom-categories')
+      if (stored) return JSON.parse(stored)
+    } catch { /* ignore */ }
+    return []
+  })
   const [selectedCategory, setSelectedCategory] = React.useState<string | null>(() => {
     const match = location.pathname.match(/^\/category\/(.+)$/)
     return match ? match[1] : null
@@ -103,7 +111,7 @@ export function AppWorkspace({ state, setState, onOpenApp, onToggleFavorite }: {
   const launchedApps = state.miniApps.filter(a => a.status === 'launched').length
   const ideaApps = state.miniApps.filter(a => a.status === 'idea').length
 
-  const categories = getAllCategories()
+  const categories = [...getAllCategories(), ...customCategories]
   const registryApps = getAllApps()
 
   const favoriteApps = registryApps.filter(a => (state.favorites || []).includes(a.id))
@@ -297,6 +305,8 @@ export function AppWorkspace({ state, setState, onOpenApp, onToggleFavorite }: {
       <div className="flex gap-1 border-b border-border">
         <button onClick={() => { setTab('tools'); setSelectedCategory(null); }} className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${tab === 'tools' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Tools</button>
         <button onClick={() => setTab('workspace')} className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${tab === 'workspace' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Workspace</button>
+        <button onClick={() => setTab('favorites')} className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${tab === 'favorites' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Favorites</button>
+        <button onClick={() => setTab('recent')} className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${tab === 'recent' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Recent</button>
         <button onClick={() => setTab('categories')} className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${tab === 'categories' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Categories</button>
         <button onClick={() => setTab('changelog')} className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${tab === 'changelog' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Changelog</button>
       </div>
@@ -402,6 +412,32 @@ export function AppWorkspace({ state, setState, onOpenApp, onToggleFavorite }: {
         </div>
       )}
 
+
+      {tab === 'favorites' && (
+        <div className="space-y-6">
+          <h2 className="text-lg font-semibold text-foreground dark:text-foreground">Favorites</h2>
+          {favoriteApps.length === 0 ? (
+            <Card><p className="text-sm text-muted-foreground">No favorites yet. Star apps from Tools or any app card.</p></Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {favoriteApps.map(app => renderAppCard(app))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'recent' && (
+        <div className="space-y-6">
+          <h2 className="text-lg font-semibold text-foreground dark:text-foreground">Recent</h2>
+          {recentApps.length === 0 ? (
+            <Card><p className="text-sm text-muted-foreground">No recent apps yet. Open an app to see it here.</p></Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {recentApps.map(app => app && renderAppCard(app))}
+            </div>
+          )}
+        </div>
+      )}
       {tab === 'workspace' && (
         <div className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -585,42 +621,115 @@ export function AppWorkspace({ state, setState, onOpenApp, onToggleFavorite }: {
       )}
 
       {tab === 'categories' && (
-        <div className="space-y-6">
-          {selectedCategory ? (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Button variant="secondary" onClick={() => { setSelectedCategory(null); navigate('/'); }}>← Back to categories</Button>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-foreground dark:text-foreground capitalize">{selectedCategory}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">{getAllCategories().find(c => c.id === selectedCategory)?.description || ''}</p>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {getAppsByCategory(selectedCategory).map(app => renderAppCard(app))}
-              </div>
+        <CategoriesCRUD categories={categories} onCategoriesChange={setCustomCategories} iconMap={iconMap} getAppsByCategory={getAppsByCategory} renderAppCard={renderAppCard} />
+      )}
+    </div>
+  )
+}
+
+function CategoriesCRUD({ categories, onCategoriesChange, iconMap, getAppsByCategory, renderAppCard }: { categories: CategoryDefinition[]; onCategoriesChange: (cats: CategoryDefinition[]) => void; iconMap: Record<string, React.ComponentType<any>>; getAppsByCategory: (id: string) => any[]; renderAppCard: (app: any) => React.ReactNode }) {
+  const [editingId, setEditingId] = React.useState<string | null>(null)
+  const [form, setForm] = React.useState<CategoryDefinition>({ id: '', name: '', description: '', icon: 'Wrench', apps: [] })
+  const [selectedId, setSelectedId] = React.useState<string | null>(null)
+
+  const startAdd = () => {
+    setEditingId('__new__')
+    setForm({ id: '', name: '', description: '', icon: 'Wrench', apps: [] })
+  }
+
+  const startEdit = (cat: CategoryDefinition) => {
+    setEditingId(cat.id)
+    setForm({ ...cat })
+  }
+
+  const save = () => {
+    if (!form.name.trim() || !form.id.trim()) return
+    let next: CategoryDefinition[] = [...categories]
+    if (editingId === '__new__') {
+      next = [...next, { ...form, id: form.id.toLowerCase().replace(/\s+/g, '-'), apps: [] }]
+    } else {
+      next = next.map(c => c.id === editingId ? { ...c, ...form, id: form.id.toLowerCase().replace(/\s+/g, '-') } : c)
+    }
+    onCategoriesChange(next)
+    localStorage.setItem('appforge-custom-categories', JSON.stringify(next))
+    setEditingId(null)
+    setForm({ id: '', name: '', description: '', icon: 'Wrench', apps: [] })
+  }
+
+  const remove = (id: string) => {
+    const next = categories.filter(c => c.id !== id)
+    onCategoriesChange(next)
+    localStorage.setItem('appforge-custom-categories', JSON.stringify(next))
+    if (selectedId === id) setSelectedId(null)
+  }
+
+  const Icon = iconMap[form.icon] || Wrench
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-foreground dark:text-foreground">Categories</h2>
+        <Button onClick={startAdd}><Plus className="h-4 w-4" /> Add Category</Button>
+      </div>
+
+      {editingId && (
+        <Card>
+          <h3 className="text-sm font-medium text-foreground">{editingId === '__new__' ? 'Add Category' : 'Edit Category'}</h3>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            <Input label="ID" value={form.id} onChange={(e) => setForm({ ...form, id: e.target.value })} placeholder="e.g. my-tools" />
+            <Input label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. My Tools" />
+            <Input label="Icon" value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} placeholder="e.g. Wrench" />
+            <div className="md:col-span-2">
+              <Input label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             </div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {categories.map(cat => {
-                const catApps = getAppsByCategory(cat.id)
-                const Icon = iconMap[cat.icon] || Wrench
-                return (
-                  <Card key={cat.id} className="cursor-pointer transition-all hover:shadow-md" onClick={() => setSelectedCategory(cat.id)}>
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground dark:text-foreground">{cat.name}</h3>
-                        <p className="text-xs text-muted-foreground">{catApps.length} apps</p>
-                      </div>
+          </div>
+          <div className="mt-3 flex gap-2">
+            <Button onClick={save}><Save className="h-4 w-4" /> Save</Button>
+            <Button variant="secondary" onClick={() => setEditingId(null)}><X className="h-4 w-4" /> Cancel</Button>
+          </div>
+        </Card>
+      )}
+
+      {selectedId ? (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={() => setSelectedId(null)}>← Back to categories</Button>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground dark:text-foreground capitalize">{selectedId}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{categories.find(c => c.id === selectedId)?.description || ''}</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {getAppsByCategory(selectedId).map(app => renderAppCard(app))}
+          </div>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {categories.map(cat => {
+            const catApps = getAppsByCategory(cat.id)
+            const CatIcon = iconMap[cat.icon] || Wrench
+            return (
+              <Card key={cat.id} className="transition-all hover:shadow-md">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                      <CatIcon className="h-5 w-5" />
                     </div>
-                    <p className="mt-2 text-sm text-muted-foreground">{cat.description}</p>
-                  </Card>
-                )
-              })}
-            </div>
-          )}
+                    <div>
+                      <h3 className="font-semibold text-foreground dark:text-foreground">{cat.name}</h3>
+                      <p className="text-xs text-muted-foreground">{catApps.length} apps</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => startEdit(cat)}><Edit2 className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => remove(cat.id)} className="text-red-500"><Trash2 className="h-4 w-4" /></Button>
+                  </div>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">{cat.description}</p>
+                <Button variant="secondary" size="sm" className="mt-3" onClick={() => setSelectedId(cat.id)}>View Apps</Button>
+              </Card>
+            )
+          })}
         </div>
       )}
     </div>

@@ -14,8 +14,6 @@ const sections = [
     items: [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/' },
       { id: 'all-apps', label: 'All Apps', icon: SearchCheck, path: '/apps' },
-      { id: 'favorites', label: 'Favorites', icon: Star, path: '/favorites' },
-      { id: 'recent', label: 'Recent', icon: Clock, path: '/recent' },
       { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
     ]
   },
