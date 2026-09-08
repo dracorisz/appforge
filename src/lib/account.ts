@@ -9,9 +9,31 @@ export interface AppProfile {
   bio: string | null
   website: string | null
   location: string | null
+  github_username: string | null
+  headline: string | null
+  skills: string[]
+  open_to_collaboration: boolean
   is_public: boolean
   created_at: string
   updated_at: string
+}
+
+export interface PrivateProfileInfo {
+  user_id: string
+  sex: string | null
+  birth_date: string | null
+  phone: string | null
+  address_line1: string | null
+  address_line2: string | null
+  city: string | null
+  region: string | null
+  postal_code: string | null
+  country: string | null
+  organization: string | null
+  job_title: string | null
+  notes: string | null
+  created_at?: string
+  updated_at?: string
 }
 
 export interface UserImage {
@@ -59,8 +81,31 @@ const profileDefaults = (user: User) => ({
   id: user.id,
   display_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'AppForge user',
   avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+  skills: [] as string[],
+  open_to_collaboration: true,
   is_public: true,
 })
+
+const privateDefaults = (userId: string): PrivateProfileInfo => ({
+  user_id: userId,
+  sex: null,
+  birth_date: null,
+  phone: null,
+  address_line1: null,
+  address_line2: null,
+  city: null,
+  region: null,
+  postal_code: null,
+  country: null,
+  organization: null,
+  job_title: null,
+  notes: null,
+})
+
+const trimOrNull = (value: unknown) => {
+  const text = String(value ?? '').trim()
+  return text || null
+}
 
 export async function ensureProfile(user: User): Promise<AppProfile> {
   const existing = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
@@ -73,19 +118,54 @@ export async function ensureProfile(user: User): Promise<AppProfile> {
 }
 
 export async function saveProfile(userId: string, patch: Partial<AppProfile>): Promise<AppProfile> {
+  const skills = Array.isArray(patch.skills)
+    ? patch.skills.map((skill) => skill.trim()).filter(Boolean).slice(0, 16)
+    : []
   const payload = {
-    display_name: patch.display_name ?? null,
-    username: patch.username?.trim() || null,
-    avatar_url: patch.avatar_url ?? null,
-    bio: patch.bio ?? null,
-    website: patch.website ?? null,
-    location: patch.location ?? null,
+    display_name: trimOrNull(patch.display_name),
+    username: trimOrNull(patch.username),
+    avatar_url: trimOrNull(patch.avatar_url),
+    bio: trimOrNull(patch.bio),
+    website: trimOrNull(patch.website),
+    location: trimOrNull(patch.location),
+    github_username: trimOrNull(patch.github_username)?.replace(/^@/, '') || null,
+    headline: trimOrNull(patch.headline),
+    skills,
+    open_to_collaboration: patch.open_to_collaboration ?? true,
     is_public: patch.is_public ?? true,
     updated_at: new Date().toISOString(),
   }
   const result = await supabase.from('profiles').update(payload).eq('id', userId).select('*').single()
   if (result.error) throw result.error
   return result.data as AppProfile
+}
+
+export async function getPrivateProfileInfo(userId: string): Promise<PrivateProfileInfo> {
+  const result = await supabase.from('profile_private_info').select('*').eq('user_id', userId).maybeSingle()
+  if (result.error) throw result.error
+  return result.data ? result.data as PrivateProfileInfo : privateDefaults(userId)
+}
+
+export async function savePrivateProfileInfo(userId: string, patch: Partial<PrivateProfileInfo>): Promise<PrivateProfileInfo> {
+  const payload = {
+    user_id: userId,
+    sex: trimOrNull(patch.sex),
+    birth_date: trimOrNull(patch.birth_date),
+    phone: trimOrNull(patch.phone),
+    address_line1: trimOrNull(patch.address_line1),
+    address_line2: trimOrNull(patch.address_line2),
+    city: trimOrNull(patch.city),
+    region: trimOrNull(patch.region),
+    postal_code: trimOrNull(patch.postal_code),
+    country: trimOrNull(patch.country),
+    organization: trimOrNull(patch.organization),
+    job_title: trimOrNull(patch.job_title),
+    notes: trimOrNull(patch.notes),
+    updated_at: new Date().toISOString(),
+  }
+  const result = await supabase.from('profile_private_info').upsert(payload, { onConflict: 'user_id' }).select('*').single()
+  if (result.error) throw result.error
+  return result.data as PrivateProfileInfo
 }
 
 export async function getRole(userId: string): Promise<'user' | 'admin'> {
