@@ -1,6 +1,17 @@
 import React from 'react'
 import { Card, Button, Input, Badge } from '@/components/ui'
-import { TrendingUp, ExternalLink, RefreshCw, AlertCircle, LayoutGrid, List, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
+  List,
+  RefreshCw,
+  Search,
+  Star,
+  TrendingDown,
+  TrendingUp,
+} from 'lucide-react'
 
 export interface CryptoCoin {
   id: string
@@ -13,389 +24,321 @@ export interface CryptoCoin {
   image?: string
 }
 
-const CRYPTO_LOGO_COM = 'https://crypto-logo.com/api/logo'
+type Provider = 'auto' | 'coingecko' | 'coinpaprika'
+type SortBy = 'marketCap' | 'price' | 'change24h' | 'name'
+type ViewMode = 'list' | 'grid'
 
-const getCryptoLogo = (id: string, symbol: string, coinMap?: Map<string, string>) => {
-  const sym = symbol.toLowerCase()
-  const name = id.toLowerCase()
-  if (coinMap) {
-    const bySymbol = coinMap.get(`symbol:${sym}`)
-    if (bySymbol) return bySymbol
-    const byName = coinMap.get(`name:${name}`)
-    if (byName) return byName
-    const byId = coinMap.get(`slug:${id}`)
-    if (byId) return byId
-  }
-  return `/crypto-logos/${id.toLowerCase().replace(/\s+/g, '-')}-${sym}.png`
+interface CryptoResponse {
+  ok: boolean
+  provider: string
+  updatedAt: string
+  coins: CryptoCoin[]
+  error?: string
+  details?: string[]
 }
 
-const getReliableLogo = (id: string, symbol: string, coinMap?: Map<string, string>): string => {
-  const sym = symbol.toLowerCase()
-  if (sym === 'xrp') return '/crypto-logos/xrp-xrp.png'
-  return getCryptoLogo(id, symbol, coinMap)
+const WATCHLIST_KEY = 'appforge-crypto-watchlist-v2'
+const PAGE_SIZE = 12
+
+const formatUsd = (value: number) => {
+  if (!Number.isFinite(value)) return '—'
+  if (Math.abs(value) < 0.01) return `$${value.toLocaleString(undefined, { maximumFractionDigits: 8 })}`
+  if (Math.abs(value) < 1) return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`
+  return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-const getCryptoLogoSvg = (id: string, symbol: string, coinMap?: Map<string, string>) => {
-  const sym = symbol.toLowerCase()
-  const name = id.toLowerCase()
-  if (coinMap) {
-    const bySymbol = coinMap.get(`symbol:${sym}`)
-    if (bySymbol) return bySymbol.replace('.png', '.svg')
-    const byName = coinMap.get(`name:${name}`)
-    if (byName) return byName.replace('.png', '.svg')
-    const byId = coinMap.get(`slug:${id}`)
-    if (byId) return byId.replace('.png', '.svg')
-  }
-  return `/crypto-logos/${id.toLowerCase().replace(/\s+/g, '-')}-${sym}.svg`
+const formatCompactUsd = (value?: number) => {
+  if (!value || !Number.isFinite(value)) return '—'
+  return new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: 'USD',
+    notation: 'compact',
+    maximumFractionDigits: 2,
+  }).format(value)
 }
 
-const EXCLUDED_COINS = new Set([
-  'HELOC',
-  'LEO',
-  'HL',
-  'USDS',
-  'WBTC',
-  'BKUSD'
-])
-
-const DEMO_COINS: CryptoCoin[] = [
-  { id: 'bitcoin', name: 'Bitcoin', symbol: 'BTC', price: 67432.12, change24h: 2.34, marketCap: 1324000000000, volume24h: 28500000000, image: '/crypto-logos/bitcoin-btc.png' },
-  { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', price: 3521.45, change24h: -1.23, marketCap: 423000000000, volume24h: 15200000000, image: '/crypto-logos/ethereum-eth.png' },
-  { id: 'solana', name: 'Solana', symbol: 'SOL', price: 178.90, change24h: 5.67, marketCap: 82000000000, volume24h: 3800000000, image: '/crypto-logos/solana-sol.png' },
-  { id: 'cardano', name: 'Cardano', symbol: 'ADA', price: 0.6234, change24h: -0.45, marketCap: 22000000000, volume24h: 850000000, image: '/crypto-logos/cardano-ada.png' },
-  { id: 'dogecoin', name: 'Dogecoin', symbol: 'DOGE', price: 0.1876, change24h: 8.90, marketCap: 27000000000, volume24h: 2100000000, image: '/crypto-logos/dogecoin-doge.png' },
-  { id: 'polkadot', name: 'Polkadot', symbol: 'DOT', price: 7.85, change24h: -2.10, marketCap: 11000000000, volume24h: 420000000, image: '/crypto-logos/polkadot-dot.png' },
-  { id: 'avalanche', name: 'Avalanche', symbol: 'AVAX', price: 42.30, change24h: 3.21, marketCap: 16000000000, volume24h: 680000000, image: '/crypto-logos/avalanche-avax.png' },
-  { id: 'chainlink', name: 'Chainlink', symbol: 'LINK', price: 18.45, change24h: 1.56, marketCap: 10800000000, volume24h: 520000000, image: '/crypto-logos/chainlink-link.png' },
-  { id: 'ripple', name: 'XRP', symbol: 'XRP', price: 0.6234, change24h: -0.89, marketCap: 34000000000, volume24h: 1200000000, image: '/crypto-logos/xrp-xrp.png' },
-  { id: 'toncoin', name: 'Toncoin', symbol: 'TON', price: 7.21, change24h: 4.32, marketCap: 28000000000, volume24h: 950000000, image: '/crypto-logos/toncoin-ton.png' }
-]
-
-const CORS_PROXIES = [
-  'https://api.allorigins.win/raw?url=',
-  'https://corsproxy.io/?',
-  'https://api.codetabs.com/v1/proxy?quest=',
-]
-
-const DEFAULT_CMC_KEY = '80ce520384dc44f7a3c9c91e591bfddd'
-
-const COINPAPRIKA_BASE = 'https://api.coinpaprika.com/v1'
-
-type ApiProvider = 'coingecko' | 'coinpaprika'
+const localLogo = (coin: CryptoCoin) => `/crypto-logos/${coin.id.toLowerCase().replace(/\s+/g, '-')}-${coin.symbol.toLowerCase()}.png`
 
 export function PF_CryptoTrack() {
-  const [coins, setCoins] = React.useState<CryptoCoin[]>(DEMO_COINS)
+  const [coins, setCoins] = React.useState<CryptoCoin[]>([])
   const [query, setQuery] = React.useState('')
-  const [loading, setLoading] = React.useState(false)
+  const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState('')
-  const [useDemo, setUseDemo] = React.useState(true)
-  const [proxyIndex, setProxyIndex] = React.useState(0)
-  const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('list')
-  const [apiProvider, setApiProvider] = React.useState<ApiProvider>('coingecko')
-  const [savedLogos, setSavedLogos] = React.useState<Record<string, string>>({})
-  const [coinMap, setCoinMap] = React.useState<Map<string, string>>(new Map())
-  const [page, setPage] = React.useState(1)
-  const PAGE_SIZE = 8
-  const [sortBy, setSortBy] = React.useState<'name' | 'price' | 'marketCap' | 'change24h'>('marketCap')
+  const [provider, setProvider] = React.useState<Provider>('auto')
+  const [resolvedProvider, setResolvedProvider] = React.useState('')
+  const [updatedAt, setUpdatedAt] = React.useState('')
+  const [viewMode, setViewMode] = React.useState<ViewMode>('list')
+  const [sortBy, setSortBy] = React.useState<SortBy>('marketCap')
   const [sortDir, setSortDir] = React.useState<'asc' | 'desc'>('desc')
-
-  React.useEffect(() => {
+  const [page, setPage] = React.useState(1)
+  const [watchlistOnly, setWatchlistOnly] = React.useState(false)
+  const [watchlist, setWatchlist] = React.useState<Set<string>>(() => {
     try {
-      const stored = localStorage.getItem('appforge-crypto-logos')
-      if (stored) setSavedLogos(JSON.parse(stored))
-    } catch { /* ignore */ }
+      const raw = localStorage.getItem(WATCHLIST_KEY)
+      return raw ? new Set(JSON.parse(raw)) : new Set()
+    } catch {
+      return new Set()
+    }
+  })
+  const [failedImages, setFailedImages] = React.useState<Set<string>>(new Set())
+
+  const fetchCoins = React.useCallback(async (selectedProvider: Provider = provider) => {
+    setLoading(true)
+    setError('')
+    try {
+      const response = await fetch(`/api/crypto?provider=${encodeURIComponent(selectedProvider)}`)
+      const data = await response.json() as CryptoResponse
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || `Market-data request failed with HTTP ${response.status}`)
+      }
+      setCoins(data.coins || [])
+      setResolvedProvider(data.provider || '')
+      setUpdatedAt(data.updatedAt || '')
+      setPage(1)
+    } catch (requestError) {
+      setCoins([])
+      setResolvedProvider('')
+      setError(requestError instanceof Error ? requestError.message : 'Could not load market data.')
+    } finally {
+      setLoading(false)
+    }
+  }, [provider])
+
+  React.useEffect(() => {
+    fetchCoins('auto')
   }, [])
 
   React.useEffect(() => {
-    let cancelled = false
-    const fetchCoinMap = async () => {
-      try {
-        const res = await fetch('/crypto-logos/coinmap.json')
-        if (!res.ok) return
-        const data = await res.json()
-        if (cancelled) return
-        const map = new Map<string, string>()
-        for (const [slug, entry] of Object.entries(data)) {
-          const e = entry as any
-          map.set(`slug:${slug}`, e.localPath)
-          map.set(`name:${e.name.toLowerCase()}`, e.localPath)
-          map.set(`symbol:${e.ticker.toLowerCase()}`, e.localPath)
-        }
-        setCoinMap(map)
-      } catch { /* ignore */ }
-    }
-    fetchCoinMap()
-    return () => { cancelled = true }
-  }, [])
+    localStorage.setItem(WATCHLIST_KEY, JSON.stringify(Array.from(watchlist)))
+  }, [watchlist])
 
-  const saveLogo = (id: string, url: string) => {
-    setSavedLogos(prev => {
-      const next = { ...prev, [id]: url }
-      localStorage.setItem('appforge-crypto-logos', JSON.stringify(next))
-      localStorage.setItem('projectforge-crypto-logos', JSON.stringify(next))
+  const toggleWatchlist = (coinId: string) => {
+    setWatchlist((current) => {
+      const next = new Set(current)
+      if (next.has(coinId)) next.delete(coinId)
+      else next.add(coinId)
       return next
     })
   }
 
-  const getLogo = (coin: CryptoCoin) => {
-    if (savedLogos[coin.id]) return savedLogos[coin.id]
-    if (coin.image) return coin.image
-    return getReliableLogo(coin.id, coin.symbol, coinMap)
-  }
+  const filtered = React.useMemo(() => {
+    const needle = query.trim().toLowerCase()
+    return coins.filter((coin) => {
+      if (watchlistOnly && !watchlist.has(coin.id)) return false
+      if (!needle) return true
+      return coin.name.toLowerCase().includes(needle) || coin.symbol.toLowerCase().includes(needle)
+    })
+  }, [coins, query, watchlistOnly, watchlist])
 
-  const clearSavedLogos = () => {
-    if (confirm('Clear all saved logos?')) {
-      setSavedLogos({})
-      localStorage.removeItem('appforge-crypto-logos')
-      localStorage.removeItem('projectforge-crypto-logos')
+  const sorted = React.useMemo(() => {
+    const next = [...filtered]
+    next.sort((a, b) => {
+      let comparison = 0
+      if (sortBy === 'name') comparison = a.name.localeCompare(b.name)
+      if (sortBy === 'price') comparison = a.price - b.price
+      if (sortBy === 'change24h') comparison = a.change24h - b.change24h
+      if (sortBy === 'marketCap') comparison = (a.marketCap || 0) - (b.marketCap || 0)
+      return sortDir === 'asc' ? comparison : -comparison
+    })
+    return next
+  }, [filtered, sortBy, sortDir])
+
+  React.useEffect(() => {
+    setPage(1)
+  }, [query, watchlistOnly, sortBy, sortDir])
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
+  const visible = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const renderLogo = (coin: CryptoCoin) => {
+    if (failedImages.has(coin.id)) {
+      return (
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-xs font-bold text-foreground">
+          {coin.symbol.slice(0, 3)}
+        </div>
+      )
     }
-  }
 
-  const fetchCoins = async () => {
-    setLoading(true)
-    setError('')
-    try {
-      if (apiProvider === 'coingecko') {
-        const baseUrl = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=24h'
-        let res: Response
-        try {
-          res = await fetch(baseUrl)
-        } catch (e) {
-          const proxyUrl = CORS_PROXIES[proxyIndex] + encodeURIComponent(baseUrl)
-          res = await fetch(proxyUrl)
-          if (!res.ok && CORS_PROXIES[proxyIndex + 1]) {
-            setProxyIndex(proxyIndex + 1)
-            throw new Error('CORS blocked, trying next proxy...')
+    return (
+      <img
+        src={coin.image || localLogo(coin)}
+        alt=""
+        loading="lazy"
+        className="h-9 w-9 rounded-full object-contain"
+        onError={(event) => {
+          if (coin.image && event.currentTarget.src !== new URL(localLogo(coin), window.location.origin).href) {
+            event.currentTarget.src = localLogo(coin)
+            return
           }
-        }
-        if (!res.ok) throw new Error('CoinGecko API error')
-        const data = await res.json()
-        const mapped: CryptoCoin[] = data
-          .filter((c: any) => !EXCLUDED_COINS.has((c.symbol || '').toUpperCase()))
-          .map((c: any) => {
-            const logo = getCryptoLogo(c.id, c.symbol, coinMap)
-            saveLogo(c.id, logo)
-            return {
-              id: c.id,
-              name: c.name,
-              symbol: c.symbol.toUpperCase(),
-              price: c.current_price || 0,
-              change24h: c.price_change_percentage_24h || 0,
-              marketCap: c.market_cap,
-              volume24h: c.total_volume,
-              image: logo
-            }
-          })
-        setCoins(mapped)
-        setUseDemo(false)
-      } else if (apiProvider === 'coinpaprika') {
-         const url = `${COINPAPRIKA_BASE}/tickers?start=0&limit=50&sort=market_cap&quotes[0][quote]=usd`
-        const res = await fetch(url)
-        if (!res.ok) throw new Error('CoinPaprika API error')
-        const data = await res.json()
-        const mapped: CryptoCoin[] = data
-          .filter((c: any) => !EXCLUDED_COINS.has((c.symbol || '').toUpperCase()))
-          .map((c: any) => {
-            const logo = getCryptoLogo(c.symbol || c.id, c.symbol || '', coinMap)
-            saveLogo(c.symbol || c.id, logo)
-            return {
-              id: c.id || c.symbol,
-              name: c.name || c.symbol,
-              symbol: (c.symbol || '').toUpperCase(),
-              price: c.quotes?.USD?.price || 0,
-              change24h: c.quotes?.USD?.percent_change_24h || 0,
-              marketCap: c.quotes?.USD?.market_cap,
-              volume24h: c.quotes?.USD?.volume_24h,
-              image: logo
-            }
-          })
-        setCoins(mapped)
-        setUseDemo(false)
-      }
-    } catch (e) {
-      setError((e as Error).message)
-      setUseDemo(true)
-    } finally {
-      setLoading(false)
-    }
+          setFailedImages((current) => new Set([...current, coin.id]))
+        }}
+      />
+    )
   }
-
-  const filtered = query
-    ? coins.filter(c => {
-        const symbolUpper = c.symbol.toUpperCase()
-        const nameLower = c.name.toLowerCase()
-        const queryLower = query.toLowerCase()
-        return !EXCLUDED_COINS.has(symbolUpper) && (nameLower.includes(queryLower) || symbolUpper.includes(queryLower))
-      })
-    : coins.filter(c => !EXCLUDED_COINS.has(c.symbol.toUpperCase()))
-
-  const sorted = [...filtered].sort((a, b) => {
-    let aVal: number | string = 0
-    let bVal: number | string = 0
-    switch (sortBy) {
-      case 'name':
-        aVal = a.name.toLowerCase()
-        bVal = b.name.toLowerCase()
-        break
-      case 'price':
-        aVal = a.price
-        bVal = b.price
-        break
-      case 'marketCap':
-        aVal = a.marketCap || 0
-        bVal = b.marketCap || 0
-        break
-      case 'change24h':
-        aVal = a.change24h
-        bVal = b.change24h
-        break
-    }
-    if (typeof aVal === 'string' && typeof bVal === 'string') {
-      return sortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal)
-    }
-    return sortDir === 'asc' ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number)
-  })
-
-  const totalPages = Math.ceil(sorted.length / PAGE_SIZE) || 1
-  const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-
-  const formatPrice = (p: number) => p < 1 ? `$${p.toFixed(6)}` : `$${p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-  const formatLarge = (n?: number) => n ? `$${(n / 1e9).toFixed(2)}B` : '-'
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Crypto Track</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Live cryptocurrency prices and market data. Uses CoinGecko / CoinPaprika API with demo fallback.</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground">Crypto Track</h1>
+            <Badge color="green">Live market data</Badge>
+            {resolvedProvider && <Badge color="slate">{resolvedProvider}</Badge>}
+          </div>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            Live cryptocurrency prices, 24-hour change, market cap, and volume through SSToken's server-side provider fallback. No exposed provider keys or silent demo prices.
+          </p>
+        </div>
+        <Button variant="secondary" onClick={() => fetchCoins(provider)} disabled={loading}>
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
+        </Button>
       </div>
 
       <Card>
-        <div className="flex flex-col gap-4 md:flex-row md:items-end">
-          <div className="flex-1">
-            <label className="mb-1 block text-sm font-medium text-foreground">Search</label>
-             <Input value={query} onChange={(e) => { setQuery(e.target.value); setPage(1) }} placeholder="Filter by name or symbol..." />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={fetchCoins} disabled={loading}><RefreshCw className="h-4 w-4" /> Refresh</Button>
-            <Button variant="secondary" onClick={clearSavedLogos} title="Clear saved logos"><Trash2 className="h-4 w-4" /> Logos</Button>
-            <Button variant="secondary" onClick={() => { setUseDemo(true); setCoins(DEMO_COINS); setError('') }}>Demo data</Button>
-            <div className="flex items-center gap-1 border-l border-input pl-2">
-              <button onClick={() => setViewMode('grid')} className={`rounded p-1 ${viewMode === 'grid' ? 'bg-accent' : 'hover:bg-accent'}`}>
-                <LayoutGrid className="h-4 w-4" />
-              </button>
-              <button onClick={() => setViewMode('list')} className={`rounded p-1 ${viewMode === 'list' ? 'bg-accent' : 'hover:bg-accent'}`}>
-                <List className="h-4 w-4" />
-              </button>
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-end">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">Search market</label>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Bitcoin, ETH, SOL…"
+                className="pl-9"
+              />
             </div>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">Provider</label>
             <select
-              value={apiProvider}
-              onChange={(e) => setApiProvider(e.target.value as ApiProvider)}
-              className="rounded-lg border border-input bg-white px-3 py-2 text-sm dark:border-border dark:bg-secondary dark:text-foreground"
+              value={provider}
+              onChange={(event) => {
+                const next = event.target.value as Provider
+                setProvider(next)
+                fetchCoins(next)
+              }}
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
             >
+              <option value="auto">Auto fallback</option>
               <option value="coingecko">CoinGecko</option>
               <option value="coinpaprika">CoinPaprika</option>
             </select>
           </div>
-        </div>
-        {error && (
-          <div className="mt-3 flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3">
-            <AlertCircle className="h-4 w-4 mt-0.5 text-destructive-foreground" />
-            <div>
-              <p className="text-sm text-destructive-foreground">{error}</p>
-              <p className="mt-1 text-xs text-muted-foreground">Showing demo data instead. Click Refresh to retry live API.</p>
-            </div>
+          <div className="flex items-center gap-1 rounded-lg border border-border p-1">
+            <button onClick={() => setViewMode('list')} aria-label="List view" className={`rounded p-1.5 ${viewMode === 'list' ? 'bg-accent' : 'text-muted-foreground hover:text-foreground'}`}><List className="h-4 w-4" /></button>
+            <button onClick={() => setViewMode('grid')} aria-label="Grid view" className={`rounded p-1.5 ${viewMode === 'grid' ? 'bg-accent' : 'text-muted-foreground hover:text-foreground'}`}><LayoutGrid className="h-4 w-4" /></button>
           </div>
-        )}
-        {useDemo && !error && (
-          <p className="mt-2 text-xs text-muted-foreground">Showing demo data. Click Refresh to try live API.</p>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setWatchlistOnly((value) => !value)}
+            className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium ${watchlistOnly ? 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'border-border text-muted-foreground hover:text-foreground'}`}
+          >
+            <Star className={`h-3.5 w-3.5 ${watchlistOnly ? 'fill-current' : ''}`} /> Watchlist {watchlist.size}
+          </button>
+          <span className="ml-1 text-xs text-muted-foreground">Sort:</span>
+          <select value={sortBy} onChange={(event) => setSortBy(event.target.value as SortBy)} className="rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground">
+            <option value="marketCap">Market cap</option>
+            <option value="price">Price</option>
+            <option value="change24h">24h change</option>
+            <option value="name">Name</option>
+          </select>
+          <button onClick={() => setSortDir((value) => value === 'asc' ? 'desc' : 'asc')} className="rounded-md border border-border px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+            {sortDir === 'desc' ? 'Descending' : 'Ascending'}
+          </button>
+          {updatedAt && <span className="ml-auto text-xs text-muted-foreground">Updated {new Date(updatedAt).toLocaleTimeString()}</span>}
+        </div>
+
+        {error && (
+          <div className="mt-4 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{error}</span>
+          </div>
         )}
       </Card>
 
-      {viewMode === 'grid' ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {paginated.map(coin => (
-            <Card key={coin.id} className="transition-colors hover:bg-accent/50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                   <img src={getLogo(coin)} alt={coin.name} className="h-6 w-6 rounded-full" onError={(e) => { const img = e.target as HTMLImageElement; img.src = `https://placehold.co/24x24/1e293b/ffffff?text=${coin.symbol.slice(0, 2)}` }} />
-                   <div>
-                     <h3 className="font-semibold text-foreground">{coin.name}</h3>
-                     <p className="text-xs text-muted-foreground">{coin.symbol}</p>
-                   </div>
-                </div>
-                <Badge color={coin.change24h >= 0 ? 'green' : 'red'}>{coin.change24h.toFixed(2)}%</Badge>
-              </div>
-              <div className="mt-3 space-y-1">
-                <p className="text-lg font-bold text-foreground">{formatPrice(coin.price)}</p>
-                {coin.marketCap && <p className="text-xs text-muted-foreground">Market Cap: {formatLarge(coin.marketCap)}</p>}
-                {coin.volume24h && <p className="text-xs text-muted-foreground">Volume 24h: {formatLarge(coin.volume24h)}</p>}
-              </div>
-              <div className="mt-3">
-                <a href={`https://www.coingecko.com/en/coins/${coin.id}`} target="_blank" rel="noopener noreferrer">
-                  <Button variant="ghost" className="w-full"><ExternalLink className="h-4 w-4" /> View on CoinGecko</Button>
-                </a>
-              </div>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-lg border border-border">
-          <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-muted/50 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            <div className="col-span-1">#</div>
-            <div className="col-span-3">
-              <button onClick={() => { setSortBy('name'); setSortDir(sortDir === 'asc' ? 'desc' : 'asc'); setPage(1) }} className="hover:text-foreground">
-                Coin {sortBy === 'name' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-              </button>
-            </div>
-            <div className="col-span-2 text-right">
-              <button onClick={() => { setSortBy('price'); setSortDir(sortDir === 'asc' ? 'desc' : 'asc'); setPage(1) }} className="hover:text-foreground">
-                Price {sortBy === 'price' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-              </button>
-            </div>
-            <div className="col-span-2 text-right">
-              <button onClick={() => { setSortBy('change24h'); setSortDir(sortDir === 'asc' ? 'desc' : 'asc'); setPage(1) }} className="hover:text-foreground">
-                24h Change {sortBy === 'change24h' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-              </button>
-            </div>
-            <div className="col-span-2 text-right">
-              <button onClick={() => { setSortBy('marketCap'); setSortDir(sortDir === 'asc' ? 'desc' : 'asc'); setPage(1) }} className="hover:text-foreground">
-                Market Cap {sortBy === 'marketCap' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-              </button>
-            </div>
-            <div className="col-span-2 text-right">Volume 24h</div>
+      {loading && coins.length === 0 ? (
+        <Card>
+          <div className="flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground">
+            <RefreshCw className="h-4 w-4 animate-spin" /> Loading live market data…
           </div>
-          <div className="divide-y divide-border">
-             {paginated.map((coin, idx) => (
-              <div key={coin.id} className="grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-accent/50 transition-colors">
-                <div className="col-span-1 text-sm text-muted-foreground">{(page - 1) * PAGE_SIZE + idx + 1}</div>
-                <div className="col-span-3 flex items-center gap-2">
-                  <img src={getLogo(coin)} alt={coin.name} className="h-6 w-6 rounded-full" onError={(e) => { const img = e.target as HTMLImageElement; img.src = `https://placehold.co/24x24/1e293b/ffffff?text=${coin.symbol.slice(0, 2)}` }} />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{coin.name}</p>
-                    <p className="text-xs text-muted-foreground">{coin.symbol}</p>
+        </Card>
+      ) : visible.length > 0 ? (
+        <>
+          <div className={viewMode === 'grid' ? 'grid gap-3 sm:grid-cols-2 xl:grid-cols-3' : 'space-y-2'}>
+            {visible.map((coin) => {
+              const positive = coin.change24h >= 0
+              const watching = watchlist.has(coin.id)
+
+              return viewMode === 'grid' ? (
+                <Card key={coin.id}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      {renderLogo(coin)}
+                      <div className="min-w-0">
+                        <h2 className="truncate font-semibold text-foreground">{coin.name}</h2>
+                        <p className="text-xs font-medium text-muted-foreground">{coin.symbol}</p>
+                      </div>
+                    </div>
+                    <button onClick={() => toggleWatchlist(coin.id)} aria-label={watching ? 'Remove from watchlist' : 'Add to watchlist'} className={`rounded-md p-1.5 ${watching ? 'text-amber-500' : 'text-muted-foreground hover:text-foreground'}`}>
+                      <Star className={`h-4 w-4 ${watching ? 'fill-current' : ''}`} />
+                    </button>
                   </div>
-                </div>
-                <div className="col-span-2 text-right text-sm font-medium text-foreground">{formatPrice(coin.price)}</div>
-                <div className="col-span-2 text-right">
-                  <Badge color={coin.change24h >= 0 ? 'green' : 'red'}>{coin.change24h.toFixed(2)}%</Badge>
-                </div>
-                <div className="col-span-2 text-right text-xs text-muted-foreground">{formatLarge(coin.marketCap)}</div>
-                <div className="col-span-2 text-right text-xs text-muted-foreground">{formatLarge(coin.volume24h)}</div>
-              </div>
-              ))
-            }
+                  <p className="mt-5 text-2xl font-bold tracking-tight text-foreground">{formatUsd(coin.price)}</p>
+                  <div className={`mt-1 inline-flex items-center gap-1 text-sm font-medium ${positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {positive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                    {positive ? '+' : ''}{coin.change24h.toFixed(2)}%
+                  </div>
+                  <div className="mt-5 grid grid-cols-2 gap-2 border-t border-border pt-4">
+                    <div><p className="text-[11px] uppercase tracking-wide text-muted-foreground">Market cap</p><p className="mt-1 text-sm font-medium text-foreground">{formatCompactUsd(coin.marketCap)}</p></div>
+                    <div><p className="text-[11px] uppercase tracking-wide text-muted-foreground">24h volume</p><p className="mt-1 text-sm font-medium text-foreground">{formatCompactUsd(coin.volume24h)}</p></div>
+                  </div>
+                </Card>
+              ) : (
+                <Card key={coin.id} className="p-3">
+                  <div className="grid grid-cols-[minmax(160px,1fr)_minmax(100px,.6fr)_minmax(90px,.5fr)_auto] items-center gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      {renderLogo(coin)}
+                      <div className="min-w-0">
+                        <h2 className="truncate text-sm font-semibold text-foreground">{coin.name}</h2>
+                        <p className="text-xs text-muted-foreground">{coin.symbol} · Cap {formatCompactUsd(coin.marketCap)}</p>
+                      </div>
+                    </div>
+                    <p className="text-right text-sm font-semibold text-foreground">{formatUsd(coin.price)}</p>
+                    <p className={`flex items-center justify-end gap-1 text-right text-sm font-medium ${positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                      {positive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+                      {positive ? '+' : ''}{coin.change24h.toFixed(2)}%
+                    </p>
+                    <button onClick={() => toggleWatchlist(coin.id)} aria-label={watching ? 'Remove from watchlist' : 'Add to watchlist'} className={`rounded-md p-1.5 ${watching ? 'text-amber-500' : 'text-muted-foreground hover:text-foreground'}`}>
+                      <Star className={`h-4 w-4 ${watching ? 'fill-current' : ''}`} />
+                    </button>
+                  </div>
+                </Card>
+              )
+            })}
           </div>
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-border">
-              <span className="text-xs text-muted-foreground">Showing {Math.min((page - 1) * PAGE_SIZE + 1, sorted.length)}–{Math.min(page * PAGE_SIZE, sorted.length)} of {sorted.length}</span>
-              <div className="flex items-center gap-1">
-                <Button variant="ghost" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}><ChevronLeft className="h-3 w-3" /></Button>
-                <span className="text-xs text-muted-foreground">Page {page} / {totalPages}</span>
-                <Button variant="ghost" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}><ChevronRight className="h-3 w-3" /></Button>
-              </div>
+
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, sorted.length)} of {sorted.length}</p>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" onClick={() => setPage((value) => Math.max(1, value - 1))} disabled={page === 1}><ChevronLeft className="h-4 w-4" /></Button>
+              <span className="px-2 text-xs text-muted-foreground">{page} / {totalPages}</span>
+              <Button variant="ghost" size="sm" onClick={() => setPage((value) => Math.min(totalPages, value + 1))} disabled={page >= totalPages}><ChevronRight className="h-4 w-4" /></Button>
             </div>
-          )}
-        </div>
+          </div>
+        </>
+      ) : (
+        <Card>
+          <div className="py-12 text-center">
+            <TrendingUp className="mx-auto h-7 w-7 text-muted-foreground" />
+            <h2 className="mt-3 text-sm font-medium text-foreground">{error ? 'Market data unavailable' : watchlistOnly ? 'Your watchlist is empty' : 'No matching assets'}</h2>
+            <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+              {error ? 'Try Auto fallback again. SSToken will use the next provider when the primary source is unavailable.' : watchlistOnly ? 'Star assets from the full market list to keep a lightweight watchlist on this device.' : 'Try a different coin name or symbol.'}
+            </p>
+          </div>
+        </Card>
       )}
     </div>
   )
