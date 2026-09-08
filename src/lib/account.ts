@@ -48,6 +48,13 @@ export interface AdminUser {
   is_public: boolean
 }
 
+export type AssuranceLevel = 'aal1' | 'aal2' | null
+
+const normalizeAssuranceLevel = (value: unknown): AssuranceLevel => {
+  if (value === 'aal1' || value === 'aal2') return value
+  return null
+}
+
 const profileDefaults = (user: User) => ({
   id: user.id,
   display_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'AppForge user',
@@ -172,7 +179,11 @@ export async function removeProfileImage(userId: string, image: UserImage) {
   if (image.storage_path) await supabase.storage.from('profile-media').remove([image.storage_path])
 }
 
-export async function getSecurityState() {
+export async function getSecurityState(): Promise<{
+  currentLevel: AssuranceLevel
+  nextLevel: AssuranceLevel
+  totp: Awaited<ReturnType<typeof supabase.auth.mfa.listFactors>>['data']['totp']
+}> {
   const [aal, factors] = await Promise.all([
     supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
     supabase.auth.mfa.listFactors(),
@@ -180,8 +191,8 @@ export async function getSecurityState() {
   if (aal.error) throw aal.error
   if (factors.error) throw factors.error
   return {
-    currentLevel: aal.data.currentLevel,
-    nextLevel: aal.data.nextLevel,
+    currentLevel: normalizeAssuranceLevel(aal.data.currentLevel),
+    nextLevel: normalizeAssuranceLevel(aal.data.nextLevel),
     totp: factors.data.totp,
   }
 }
