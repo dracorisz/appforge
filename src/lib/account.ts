@@ -182,7 +182,7 @@ export async function removeProfileImage(userId: string, image: UserImage) {
 export async function getSecurityState(): Promise<{
   currentLevel: AssuranceLevel
   nextLevel: AssuranceLevel
-  totp: Awaited<ReturnType<typeof supabase.auth.mfa.listFactors>>['data']['totp']
+  totp: any[]
 }> {
   const [aal, factors] = await Promise.all([
     supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
@@ -193,7 +193,7 @@ export async function getSecurityState(): Promise<{
   return {
     currentLevel: normalizeAssuranceLevel(aal.data.currentLevel),
     nextLevel: normalizeAssuranceLevel(aal.data.nextLevel),
-    totp: factors.data.totp,
+    totp: factors.data?.totp || [],
   }
 }
 
