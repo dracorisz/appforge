@@ -8,166 +8,210 @@ export interface Converter {
   description?: string
 }
 
+function parseCsv(input: string): string[][] {
+  const rows: string[][] = []
+  let row: string[] = []
+  let field = ''
+  let quoted = false
+
+  const source = input.replace(/^\uFEFF/, '')
+
+  for (let i = 0; i < source.length; i += 1) {
+    const char = source[i]
+    const next = source[i + 1]
+
+    if (char === '"') {
+      if (quoted && next === '"') {
+        field += '"'
+        i += 1
+      } else {
+        quoted = !quoted
+      }
+      continue
+    }
+
+    if (char === ',' && !quoted) {
+      row.push(field)
+      field = ''
+      continue
+    }
+
+    if ((char === '\n' || char === '\r') && !quoted) {
+      if (char === '\r' && next === '\n') i += 1
+      row.push(field)
+      if (row.some(cell => cell.length > 0)) rows.push(row)
+      row = []
+      field = ''
+      continue
+    }
+
+    field += char
+  }
+
+  if (quoted) throw new Error('Invalid CSV: an opening quote is missing its closing quote.')
+
+  row.push(field)
+  if (row.some(cell => cell.length > 0)) rows.push(row)
+
+  return rows
+}
+
+function csvCell(value: unknown): string {
+  if (value == null) return ''
+  const text = typeof value === 'object' ? JSON.stringify(value) : String(value)
+  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
+}
+
+function jsonArrayToCsv(input: string): string {
+  const data = JSON.parse(input)
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error('JSON → CSV expects a non-empty array of objects.')
+  }
+  if (data.some(item => item === null || Array.isArray(item) || typeof item !== 'object')) {
+    throw new Error('JSON → CSV expects every array item to be an object.')
+  }
+
+  const headers = Array.from(new Set(data.flatMap(item => Object.keys(item))))
+  if (headers.length === 0) throw new Error('The JSON objects do not contain any fields to export.')
+
+  return [
+    headers.map(csvCell).join(','),
+    ...data.map(row => headers.map(header => csvCell(row[header])).join(',')),
+  ].join('\n')
+}
+
+function csvToJson(input: string): string {
+  const rows = parseCsv(input)
+  if (rows.length < 2) throw new Error('CSV → JSON needs a header row and at least one data row.')
+
+  const headers = rows[0].map(header => header.trim())
+  if (headers.some(header => !header)) throw new Error('CSV header names cannot be empty.')
+
+  const result = rows.slice(1).map((values, rowIndex) => {
+    if (values.length > headers.length) {
+      throw new Error(`CSV row ${rowIndex + 2} has more values than the header row.`)
+    }
+    return Object.fromEntries(headers.map((header, index) => [header, values[index] ?? '']))
+  })
+
+  return JSON.stringify(result, null, 2)
+}
+
 const converters: Converter[] = [
   {
     id: 'json-to-csv',
     name: 'JSON → CSV',
     inputFormat: 'json',
     outputFormat: 'csv',
-    convert: (input) => {
-      const data = JSON.parse(input)
-      if (!Array.isArray(data) || data.length === 0) throw new Error('Input must be a JSON array of objects')
-      const headers = Object.keys(data[0])
-      const csv = [
-        headers.join(','),
-        ...data.map((row: any) => headers.map(h => JSON.stringify(row[h] ?? '')).join(','))
-      ].join('\n')
-      return csv
-    },
+    convert: jsonArrayToCsv,
     validate: (input) => {
-      try { JSON.parse(input); return true } catch { return false }
-    }
+      try {
+        const value = JSON.parse(input)
+        return Array.isArray(value) && value.length > 0 && value.every(item => item && typeof item === 'object' && !Array.isArray(item))
+      } catch {
+        return false
+      }
+    },
+    description: 'Convert an array of JSON objects to standards-friendly CSV, including quoted commas and newlines.',
   },
   {
     id: 'csv-to-json',
     name: 'CSV → JSON',
     inputFormat: 'csv',
     outputFormat: 'json',
-    convert: (input) => {
-      const lines = input.trim().split('\n')
-      const headers = lines[0].split(',').map(h => h.trim())
-      const result = lines.slice(1).map(line => {
-        const values = line.split(',').map(v => v.trim())
-        const obj: Record<string, string> = {}
-        headers.forEach((h, i) => { obj[h] = values[i] || '' })
-        return obj
-      })
-      return JSON.stringify(result, null, 2)
-    }
+    convert: csvToJson,
+    validate: (input) => {
+      try { return parseCsv(input).length >= 2 } catch { return false }
+    },
+    description: 'Parse CSV with quoted fields, escaped quotes, commas, and multiline values.',
   },
   {
     id: 'json-to-yaml',
     name: 'JSON → YAML',
     inputFormat: 'json',
     outputFormat: 'yaml',
-    convert: (input) => {
-      const data = JSON.parse(input)
-      return jsonToYaml(data)
-    },
+    convert: (input) => jsonToYaml(JSON.parse(input)),
     validate: (input) => {
       try { JSON.parse(input); return true } catch { return false }
-    }
+    },
   },
   {
     id: 'yaml-to-json',
     name: 'YAML → JSON',
     inputFormat: 'yaml',
     outputFormat: 'json',
-    convert: (input) => {
-      return JSON.stringify(yamlToJson(input), null, 2)
-    }
+    convert: (input) => JSON.stringify(yamlToJson(input), null, 2),
   },
   {
     id: 'xml-to-json',
     name: 'XML → JSON',
     inputFormat: 'xml',
     outputFormat: 'json',
-    convert: (input) => {
-      return JSON.stringify(xmlToJson(input), null, 2)
-    }
+    convert: (input) => JSON.stringify(xmlToJson(input), null, 2),
   },
   {
     id: 'markdown-to-html',
     name: 'Markdown → HTML',
     inputFormat: 'markdown',
     outputFormat: 'html',
-    convert: (input) => {
-      let html = input
-        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/`([^`]+)`/g, '<code>$1</code>')
-        .replace(/^\- (.*$)/gim, '<li>$1</li>')
-        .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-        .replace(/\n/g, '<br>')
-      return html
-    }
+    convert: markdownToHtml,
   },
   {
     id: 'html-to-markdown',
     name: 'HTML → Markdown',
     inputFormat: 'html',
     outputFormat: 'markdown',
-    convert: (input) => {
-      let md = input
-        .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n')
-        .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n')
-        .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n')
-        .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
-        .replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**')
-        .replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
-        .replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*')
-        .replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`')
-        .replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n')
-        .replace(/<[^>]+>/g, '')
-        .replace(/&nbsp;/g, ' ')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&amp;/g, '&')
-      return md.trim()
-    }
+    convert: htmlToMarkdown,
   },
   {
     id: 'base64-encode',
     name: 'Text → Base64',
     inputFormat: 'text',
     outputFormat: 'base64',
-    convert: (input) => btoa(unescape(encodeURIComponent(input)))
+    convert: (input) => bytesToBase64(new TextEncoder().encode(input)),
   },
   {
     id: 'base64-decode',
     name: 'Base64 → Text',
     inputFormat: 'base64',
     outputFormat: 'text',
-    convert: (input) => decodeURIComponent(escape(atob(input.trim())))
+    convert: (input) => new TextDecoder().decode(base64ToBytes(input.trim())),
   },
   {
     id: 'url-encode',
     name: 'Text → URL Encode',
     inputFormat: 'text',
     outputFormat: 'url-encoded',
-    convert: (input) => encodeURIComponent(input)
+    convert: (input) => encodeURIComponent(input),
   },
   {
     id: 'url-decode',
     name: 'URL Decode → Text',
     inputFormat: 'url-encoded',
     outputFormat: 'text',
-    convert: (input) => decodeURIComponent(input)
+    convert: (input) => decodeURIComponent(input),
   },
   {
     id: 'uppercase',
     name: 'UPPERCASE',
     inputFormat: 'text',
     outputFormat: 'text',
-    convert: (input) => input.toUpperCase()
+    convert: (input) => input.toUpperCase(),
   },
   {
     id: 'lowercase',
     name: 'lowercase',
     inputFormat: 'text',
     outputFormat: 'text',
-    convert: (input) => input.toLowerCase()
+    convert: (input) => input.toLowerCase(),
   },
   {
     id: 'title-case',
     name: 'Title Case',
     inputFormat: 'text',
     outputFormat: 'text',
-    convert: (input) => input.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())
-  }
+    convert: (input) => input.replace(/\w\S*/g, word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()),
+  },
 ]
 
 export function getConverters(): Converter[] {
@@ -175,106 +219,236 @@ export function getConverters(): Converter[] {
 }
 
 export function findConverter(inputFormat: string, outputFormat: string): Converter | undefined {
-  return converters.find(c => c.inputFormat === inputFormat && c.outputFormat === outputFormat)
+  return converters.find(converter => converter.inputFormat === inputFormat && converter.outputFormat === outputFormat)
+}
+
+export function getConvertersFrom(inputFormat: string): Converter[] {
+  return converters.filter(converter => converter.inputFormat === inputFormat)
 }
 
 export function getFormats(): { input: string[]; output: string[] } {
-  const inputFormats = Array.from(new Set(converters.map(c => c.inputFormat)))
-  const outputFormats = Array.from(new Set(converters.map(c => c.outputFormat)))
-  return { input: inputFormats.sort(), output: outputFormats.sort() }
+  return {
+    input: Array.from(new Set(converters.map(converter => converter.inputFormat))).sort(),
+    output: Array.from(new Set(converters.map(converter => converter.outputFormat))).sort(),
+  }
 }
 
-function jsonToYaml(obj: any, indent = 0): string {
-  const spaces = '  '.repeat(indent)
-  if (Array.isArray(obj)) {
-    return obj.map(item => `${spaces}- ${jsonToYaml(item, indent + 1).trim()}`).join('\n')
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = ''
+  bytes.forEach(byte => { binary += String.fromCharCode(byte) })
+  return btoa(binary)
+}
+
+function base64ToBytes(value: string): Uint8Array {
+  try {
+    const normalized = value.replace(/\s/g, '')
+    const binary = atob(normalized)
+    return Uint8Array.from(binary, char => char.charCodeAt(0))
+  } catch {
+    throw new Error('Invalid Base64 input.')
   }
-  if (typeof obj === 'object' && obj !== null) {
-    return Object.entries(obj).map(([key, value]) => {
-      const val = jsonToYaml(value, indent + 1)
-      return `${spaces}${key}: ${val.startsWith('-') ? '\n' + val : val}`
+}
+
+function yamlScalar(value: unknown): string {
+  if (value === null) return 'null'
+  if (typeof value === 'boolean' || typeof value === 'number') return String(value)
+  const text = String(value)
+  if (!text || /[:#\[\]{},&*!|>'"%@`\n\r\t]|^[-?:]\s/.test(text) || /^(true|false|null|~|[-+]?\d+(\.\d+)?)$/i.test(text)) {
+    return JSON.stringify(text)
+  }
+  return text
+}
+
+function jsonToYaml(value: unknown, indent = 0): string {
+  const pad = '  '.repeat(indent)
+
+  if (Array.isArray(value)) {
+    if (value.length === 0) return `${pad}[]`
+    return value.map(item => {
+      if (item && typeof item === 'object') {
+        return `${pad}-\n${jsonToYaml(item, indent + 1)}`
+      }
+      return `${pad}- ${yamlScalar(item)}`
     }).join('\n')
   }
-  if (typeof obj === 'string') return `"${obj}"`
-  return String(obj)
+
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+    if (entries.length === 0) return `${pad}{}`
+    return entries.map(([key, child]) => {
+      const safeKey = /^[A-Za-z0-9_.-]+$/.test(key) ? key : JSON.stringify(key)
+      if (child && typeof child === 'object') {
+        return `${pad}${safeKey}:\n${jsonToYaml(child, indent + 1)}`
+      }
+      return `${pad}${safeKey}: ${yamlScalar(child)}`
+    }).join('\n')
+  }
+
+  return `${pad}${yamlScalar(value)}`
 }
 
-function yamlToJson(yaml: string): any {
-  const lines = yaml.split('\n')
-  const result: any = {}
-  let current: any = result
-  const stack: any[] = [result]
-  let currentKey = ''
+function yamlToJson(yaml: string): unknown {
+  const meaningfulLines = yaml
+    .split(/\r?\n/)
+    .map((raw, index) => ({ raw, line: index + 1 }))
+    .filter(({ raw }) => raw.trim() && !raw.trimStart().startsWith('#'))
 
-  for (const line of lines) {
-    if (!line.trim()) continue
-    const match = line.match(/^(\s*)(- )?(.+)$/)
-    if (!match) continue
-    const [, indent, isArray, content] = match
-    const keyVal = content.split(':')
-    if (keyVal.length === 2) {
-      const key = keyVal[0].trim()
-      const val = keyVal[1].trim()
-      if (val) {
-        current[currentKey || key] = isArray ? [cleanYamlValue(val)] : cleanYamlValue(val)
-      } else {
-        if (isArray) {
-          const arr: any[] = []
-          current[currentKey || key] = arr
-          stack.push(current)
-          current = arr
-          currentKey = key
-        } else {
-          const obj: any = {}
-          current[currentKey || key] = obj
-          stack.push(current)
-          current = obj
-          currentKey = key
-        }
-      }
+  if (meaningfulLines.length === 0) return {}
+
+  const root: Record<string, unknown> = {}
+  const stack: Array<{ indent: number; value: Record<string, unknown> }> = [{ indent: -1, value: root }]
+
+  for (const { raw, line } of meaningfulLines) {
+    const indent = raw.match(/^\s*/)?.[0].length ?? 0
+    if (indent % 2 !== 0) throw new Error(`Unsupported YAML indentation on line ${line}; use two-space indentation.`)
+
+    const trimmed = raw.trim()
+    if (trimmed.startsWith('- ')) {
+      throw new Error(`YAML arrays are not supported by the lightweight parser yet (line ${line}). Use JSON → YAML for arrays.`)
+    }
+
+    const separator = trimmed.indexOf(':')
+    if (separator <= 0) throw new Error(`Invalid YAML mapping on line ${line}.`)
+
+    const rawKey = trimmed.slice(0, separator).trim()
+    const rawValue = trimmed.slice(separator + 1).trim()
+    const key = unquoteYaml(rawKey)
+
+    while (stack.length > 1 && indent <= stack[stack.length - 1].indent) stack.pop()
+    const parent = stack[stack.length - 1].value
+
+    if (!rawValue) {
+      const child: Record<string, unknown> = {}
+      parent[key] = child
+      stack.push({ indent, value: child })
+    } else {
+      parent[key] = parseYamlScalar(rawValue)
     }
   }
-  return result
+
+  return root
 }
 
-function cleanYamlValue(val: string): any {
-  if (val.startsWith('"') && val.endsWith('"')) return val.slice(1, -1)
-  if (val === 'true') return true
-  if (val === 'false') return false
-  if (!isNaN(Number(val))) return Number(val)
-  return val
+function unquoteYaml(value: string): string {
+  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    return value.slice(1, -1)
+  }
+  return value
 }
 
-function xmlToJson(xml: string): any {
-  const result: any = {}
-  const stack: any[] = [result]
-  let current: any = result
-  let currentKey = ''
+function parseYamlScalar(value: string): unknown {
+  if (value === 'null' || value === '~') return null
+  if (value === 'true') return true
+  if (value === 'false') return false
+  if (/^[-+]?\d+(\.\d+)?$/.test(value)) return Number(value)
+  if (value.startsWith('"') && value.endsWith('"')) {
+    try { return JSON.parse(value) } catch { return value.slice(1, -1) }
+  }
+  if (value.startsWith("'") && value.endsWith("'")) return value.slice(1, -1).replace(/''/g, "'")
+  return value
+}
 
+function xmlToJson(xml: string): unknown {
   const parser = new DOMParser()
   const doc = parser.parseFromString(xml, 'text/xml')
-  const root = doc.documentElement
+  const parserError = doc.querySelector('parsererror')
+  if (parserError) throw new Error('Invalid XML. Check tag names, closing tags, and document structure.')
 
-  function parseNode(node: Element): any {
-    const obj: any = {}
-    if (node.childNodes.length === 1 && node.childNodes[0].nodeType === Node.TEXT_NODE) {
-      return node.textContent?.trim() || ''
-    }
-    node.childNodes.forEach((child) => {
-      if (child.nodeType === Node.ELEMENT_NODE) {
-        const key = child.nodeName
-        const value = parseNode(child as Element)
-        if (obj[key]) {
-          if (!Array.isArray(obj[key])) obj[key] = [obj[key]]
-          obj[key].push(value)
-        } else {
-          obj[key] = value
-        }
-      }
+  const root = doc.documentElement
+  if (!root) throw new Error('XML document is empty.')
+
+  function parseNode(node: Element): unknown {
+    const attributes = Object.fromEntries(Array.from(node.attributes).map(attribute => [attribute.name, attribute.value]))
+    const elementChildren = Array.from(node.children)
+    const text = Array.from(node.childNodes)
+      .filter(child => child.nodeType === Node.TEXT_NODE)
+      .map(child => child.textContent?.trim() ?? '')
+      .filter(Boolean)
+      .join(' ')
+
+    if (elementChildren.length === 0 && Object.keys(attributes).length === 0) return text
+
+    const result: Record<string, unknown> = {}
+    if (Object.keys(attributes).length > 0) result['@attributes'] = attributes
+    if (text) result['#text'] = text
+
+    elementChildren.forEach(child => {
+      const value = parseNode(child)
+      const existing = result[child.tagName]
+      if (existing === undefined) result[child.tagName] = value
+      else if (Array.isArray(existing)) existing.push(value)
+      else result[child.tagName] = [existing, value]
     })
-    return obj
+
+    return result
   }
 
-  const parsed = parseNode(root)
-  return { [root.nodeName]: parsed }
+  return { [root.tagName]: parseNode(root) }
+}
+
+function markdownToHtml(input: string): string {
+  const escaped = input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+
+  const lines = escaped.split(/\r?\n/)
+  const output: string[] = []
+  let inList = false
+
+  const inline = (text: string) => text
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2">$1</a>')
+
+  lines.forEach(line => {
+    const listMatch = line.match(/^[-*]\s+(.+)$/)
+    if (listMatch) {
+      if (!inList) { output.push('<ul>'); inList = true }
+      output.push(`<li>${inline(listMatch[1])}</li>`)
+      return
+    }
+    if (inList) { output.push('</ul>'); inList = false }
+
+    const heading = line.match(/^(#{1,3})\s+(.+)$/)
+    if (heading) {
+      const level = heading[1].length
+      output.push(`<h${level}>${inline(heading[2])}</h${level}>`)
+    } else if (line.trim()) {
+      output.push(`<p>${inline(line)}</p>`)
+    }
+  })
+
+  if (inList) output.push('</ul>')
+  return output.join('\n')
+}
+
+function htmlToMarkdown(input: string): string {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(input, 'text/html')
+
+  const renderNode = (node: Node): string => {
+    if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? ''
+    if (node.nodeType !== Node.ELEMENT_NODE) return ''
+
+    const element = node as Element
+    const content = Array.from(element.childNodes).map(renderNode).join('')
+    const tag = element.tagName.toLowerCase()
+
+    if (tag === 'h1') return `# ${content}\n\n`
+    if (tag === 'h2') return `## ${content}\n\n`
+    if (tag === 'h3') return `### ${content}\n\n`
+    if (tag === 'strong' || tag === 'b') return `**${content}**`
+    if (tag === 'em' || tag === 'i') return `*${content}*`
+    if (tag === 'code') return `\`${content}\``
+    if (tag === 'a') return `[${content}](${element.getAttribute('href') ?? ''})`
+    if (tag === 'li') return `- ${content.trim()}\n`
+    if (tag === 'br') return '\n'
+    if (tag === 'p') return `${content.trim()}\n\n`
+    if (tag === 'ul' || tag === 'ol' || tag === 'body') return content
+    return content
+  }
+
+  return renderNode(doc.body).replace(/\n{3,}/g, '\n\n').trim()
 }
