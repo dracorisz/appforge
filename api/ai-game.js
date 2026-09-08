@@ -73,11 +73,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed.' })
   }
 
-  if (!process.env.OPENAI_API_KEY) return res.status(503).json({ error: 'Dragon Arena is offline until OPENAI_API_KEY is configured securely on the server.' })
-
   const token = getBearer(req)
   const user = await authenticate(token)
   if (!user?.id) return res.status(401).json({ error: 'Sign in to use Dragon Arena.' })
+
+  if (!process.env.OPENAI_API_KEY) return res.status(503).json({ error: 'Dragon Arena is offline until OPENAI_API_KEY is configured securely on the server.' })
 
   const { model = 'gpt-5.6-sol', action, history = [], turn = 1 } = req.body || {}
   if (!ALLOWED_MODELS.has(model)) return res.status(400).json({ error: 'This model is not enabled for Dragon Arena.' })
