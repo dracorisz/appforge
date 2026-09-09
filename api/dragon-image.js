@@ -336,15 +336,27 @@ const persistAsset = async ({ token, userId, sessionId, prompt, generated, saved
   return rows[0]
 }
 
+const publicAttempts = (attempts) => attempts.slice(0, 12).map((attempt) => ({
+  model: attempt.model,
+  code: attempt.code || null,
+  providers: Array.isArray(attempt.providers)
+    ? attempt.providers.slice(0, 8).map((provider) => ({ provider: provider.provider, code: provider.code || null }))
+    : [],
+}))
+
 export default async function handler(req, res) {
+  const startedAt = Date.now()
+  const requestId = crypto.randomUUID()
+  res.setHeader('x-appforge-request-id', requestId)
+
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST')
-    return res.status(405).json({ error: 'Method not allowed.' })
+    return res.status(405).json({ error: 'Method not allowed.', requestId })
   }
 
   const token = getBearer(req)
   const user = await authenticate(token)
-  if (!user?.id) return res.status(401).json({ error: 'Sign in to generate Dragon Arena scenes.' })
+  if (!user?.id) return res.status(401).json({ error: 'Sign in to generate Dragon Arena scenes.', requestId })
 
   const userHfToken = String(req.headers?.['x-hf-token'] || '').trim()
   const personalHfToken = userHfToken.startsWith('hf_') ? userHfToken : ''
@@ -352,20 +364,20 @@ export default async function handler(req, res) {
   const usingPersonalKey = Boolean(personalHfToken)
 
   if (!hfTokens.length) {
-    return res.status(503).json({ error: 'Scene generation is offline until a Hugging Face token is configured.' })
+    return res.status(503).json({ error: 'Scene generation is offline until a Hugging Face token is configured.', requestId })
   }
 
   const { prompt, sessionId, turnNumber } = req.body || {}
-  if (typeof prompt !== 'string' || prompt.trim().length < 8) return res.status(400).json({ error: 'Describe the scene to generate.' })
-  if (typeof sessionId !== 'string' || !sessionId.trim()) return res.status(400).json({ error: 'A Dragon Arena session is required.' })
-  if (!await verifySession(token, user.id, sessionId.trim())) return res.status(403).json({ error: 'This Dragon Arena session is not available to the signed-in user.' })
+  if (typeof prompt !== 'string' || prompt.trim().length < 8) return res.status(400).json({ error: 'Describe the scene to generate.', requestId })
+  if (typeof sessionId !== 'string' || !sessionId.trim()) return res.status(400).json({ error: 'A Dragon Arena session is required.', requestId })
+  if (!await verifySession(token, user.id, sessionId.trim())) return res.status(403).json({ error: 'This Dragon Arena session is not available to the signed-in user.', requestId })
 
   let reserved = false
   let saved = null
   const deadline = Date.now() + GENERATION_BUDGET_MS
   try {
     reserved = usingPersonalKey || await consumeImageRequest(token)
-    if (!reserved) return res.status(429).json({ error: 'Your Dragon Arena image turn for today has already been used. Come back after 00:00 UTC or add a personal Hugging Face token.' })
+    if (!reserved) return res.status(429).json({ error: 'Your Dragon Arena image turn for today has already been used. Come back after 00:00 UTC or add a personal Hugging Face token.', requestId })
 
     let lastError = null
     let generated = null
@@ -386,10 +398,13 @@ export default async function handler(req, res) {
 
     if (!generated) {
       if (!usingPersonalKey) await refundImageRequest(token)
-      console.error('Dragon Arena Hugging Face provider rotation exhausted', lastError, attempts)
+      console.error('Dragon Arena Hugging Face provider rotation exhausted', { requestId, lastError, attempts })
       return res.status(502).json({
         error: 'Hugging Face image providers could not render this scene right now. Your image turn was not consumed. Try again shortly or use a personal HF token with Inference Providers access.',
         provider: 'huggingface-inference-providers',
+        requestId,
+        durationMs: Date.now() - startedAt,
+        attempts: publicAttempts(attempts),
       })
     }
 
@@ -412,8 +427,8 @@ export default async function handler(req, res) {
     } catch (ledgerError) {
       await removeStoredImage(token, saved.storagePath)
       if (!usingPersonalKey) await refundImageRequest(token)
-      console.error('Dragon Arena scene asset ledger failed', ledgerError)
-      return res.status(502).json({ error: 'The scene was generated but could not be saved safely. Your image turn was not consumed.' })
+      console.error('Dragon Arena scene asset ledger failed', { requestId, ledgerError })
+      return res.status(502).json({ error: 'The scene was generated but could not be saved safely. Your image turn was not consumed.', requestId, durationMs: Date.now() - startedAt })
     }
 
     return res.status(200).json({
@@ -427,11 +442,13 @@ export default async function handler(req, res) {
       metadata: asset.metadata || {},
       personalKeyUsed: usingPersonalKey,
       provider: `huggingface:${generated.provider}`,
+      requestId,
+      durationMs: Date.now() - startedAt,
     })
   } catch (error) {
     if (saved?.storagePath) await removeStoredImage(token, saved.storagePath)
     if (reserved && !usingPersonalKey) await refundImageRequest(token)
-    console.error('Dragon Arena image request failed', error)
-    return res.status(502).json({ error: 'Could not reach the Dragon Arena Hugging Face scene generator. Your image turn was not consumed.' })
+    console.error('Dragon Arena image request failed', { requestId, error })
+    return res.status(502).json({ error: 'Could not reach the Dragon Arena Hugging Face scene generator. Your image turn was not consumed.', requestId, durationMs: Date.now() - startedAt })
   }
 }
