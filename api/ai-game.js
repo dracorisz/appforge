@@ -96,8 +96,8 @@ const callHfGameMaster = async ({ hfToken, model, instructions, input }) => {
           { role: 'system', content: instructions },
           { role: 'user', content: input },
         ],
-        temperature: 0.82,
-        max_tokens: 520,
+        temperature: 0.9,
+        max_tokens: 300,
       }),
     })
     const data = await response.json().catch(() => ({}))
@@ -135,8 +135,8 @@ const callPersonalOpenRouter = async ({ apiKey, instructions, input }) => {
           { role: 'system', content: instructions },
           { role: 'user', content: input },
         ],
-        temperature: 0.8,
-        max_tokens: 520,
+        temperature: 0.9,
+        max_tokens: 300,
       }),
     })
     const data = await response.json().catch(() => ({}))
@@ -150,26 +150,26 @@ const callPersonalOpenRouter = async ({ apiKey, instructions, input }) => {
 }
 
 const localFallback = ({ action, turn }) => {
-  const clean = action.trim().replace(/\s+/g, ' ').slice(0, 180)
+  const clean = action.trim().replace(/\s+/g, ' ').slice(0, 140)
   const turnNo = Math.max(1, Number(turn) || 1)
   const motifs = [
-    'A seam of blue fire wakes between the stones, outlining a rune shaped like a broken crown.',
-    'The Keep answers with a low metallic groan as dust falls from a dragon-carved arch.',
-    'A warm wind rolls through the vault carrying ash, cedar smoke, and the sound of distant chains.',
-    'Three old sigils flare in sequence, each one reacting differently to your presence.',
+    'Blue fire crawls across a broken-crown rune.',
+    'A dragon-carved arch groans and sheds dust.',
+    'Warm ash-laced wind carries the sound of chains.',
+    'Three old sigils flare in a warning sequence.',
   ]
   const consequences = [
-    'Something beyond the next chamber has noticed you.',
-    'The nearest rune brightens, but a second mark goes dark in payment.',
-    'A hidden mechanism unlocks somewhere below your feet.',
-    'The air becomes suddenly still, as if the Keep is waiting for a decision.',
+    'Something in the next chamber notices you.',
+    'One rune brightens while another dies in payment.',
+    'A hidden mechanism unlocks beneath your feet.',
+    'The Keep falls silent, waiting for your move.',
   ]
   const motif = motifs[(turnNo + clean.length) % motifs.length]
   const consequence = consequences[(turnNo * 3 + clean.length) % consequences.length]
   return {
     parsed: {
-      narrative: `You ${clean.charAt(0).toLowerCase()}${clean.slice(1)}. ${motif} ${consequence} The path remains yours to choose; the Keep does not reveal whether the change is invitation, warning, or trap.`,
-      choices: ['Inspect the awakened rune', 'Advance toward the hidden mechanism', 'Hold position and listen'],
+      narrative: `You ${clean.charAt(0).toLowerCase()}${clean.slice(1)}. ${motif}\n\n${consequence}`,
+      choices: ['Inspect rune', 'Push forward', 'Hold and listen'],
     },
     model: 'appforge/local-continuity-fallback',
   }
@@ -207,11 +207,11 @@ export default async function handler(req, res) {
   }
 
   const recent = Array.isArray(history)
-    ? history.slice(-10).map((entry) => `${entry?.role === 'player' ? 'PLAYER' : 'GAME MASTER'}: ${String(entry?.text || '').slice(0, 1200)}`).join('\n')
+    ? history.slice(-6).map((entry) => `${entry?.role === 'player' ? 'PLAYER' : 'GAME MASTER'}: ${String(entry?.text || '').slice(0, 700)}`).join('\n')
     : ''
 
-  const instructions = `You are the Game Master for WildDragons.ai Dragon Arena, a concise turn-based fantasy adventure. Continue from the supplied recent history and react specifically to the player's latest action. Keep continuity, introduce meaningful consequences, and never decide the player's next action for them. The setting is WildDragons Keep and its rune-lit vaults. Treat runes as persistent world objects with names, visual motifs, powers, costs, and consequences that can recur across sessions. Keep the narrative between 70 and 140 words. End with exactly three short, distinct choices. Return ONLY valid JSON with this shape: {"narrative":"...","choices":["...","...","..."]}. Do not use markdown.`
-  const input = `TURN: ${Number(turn) || 1}\nRECENT HISTORY:\n${recent}\n\nLATEST PLAYER ACTION: ${action.trim().slice(0, 1200)}`
+  const instructions = `You are the Game Master for WildDragons.ai Dragon Arena, a fast, choice-driven fantasy adventure. React directly to the player's latest action and preserve continuity. Each turn must create one clear consequence, discovery, danger, reward, or twist. Never decide the player's next action. Keep recurring runes, creatures, locations, costs, and clues consistent. Write 45-85 words total, split into 2 or 3 short paragraphs. Prefer vivid concrete sentences over lore exposition. Make something change every turn. Then give exactly three distinct action choices, each 2-6 words, starting with a strong verb. Return ONLY valid JSON: {"narrative":"...","choices":["...","...","..."]}. No markdown.`
+  const input = `TURN: ${Number(turn) || 1}\nRECENT HISTORY:\n${recent}\n\nLATEST PLAYER ACTION: ${action.trim().slice(0, 700)}`
 
   let result = null
   let provider = 'huggingface'
@@ -245,10 +245,6 @@ export default async function handler(req, res) {
     }
   }
 
-  // Never strand the game on a shared-provider rate limit/outage. This fallback is
-  // deliberately local and clearly identified in the response, so telemetry/UI can
-  // distinguish it from a real HF turn. It preserves gameplay continuity while HF
-  // remains the primary provider path.
   if (!result) {
     console.error('Dragon Arena provider rotation exhausted; using local fallback', lastError, attempts)
     result = localFallback({ action, turn })
@@ -257,7 +253,7 @@ export default async function handler(req, res) {
 
   return res.status(200).json({
     narrative: result.parsed.narrative,
-    choices: result.parsed.choices.length === 3 ? result.parsed.choices : ['Trace the nearest rune', 'Listen for movement beyond the vault', 'Retreat and study the markings'],
+    choices: result.parsed.choices.length === 3 ? result.parsed.choices : ['Trace the rune', 'Advance carefully', 'Hold and listen'],
     model: result.model,
     provider,
     degraded: provider === 'local-fallback',
