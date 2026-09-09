@@ -20,6 +20,7 @@ import {
   RotateCcw,
   Save,
   Search,
+  Sparkles,
   Star,
   Table2,
   Type,
@@ -32,6 +33,7 @@ import type { AppState } from '@/types'
 import type { AppDefinition, CategoryDefinition } from '@/lib/registry'
 import { getAllApps, getAppsByCategory, searchApps } from '@/lib/registry'
 import { IMPLEMENTED_UTILITY_ROUTES } from './UtilityWorkbench'
+import { DragonArenaIcon } from './DragonArenaIcon'
 import {
   loadCategoryOverrides,
   resetCategoryOverride,
@@ -42,7 +44,8 @@ import {
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   ArrowLeftRight, Binary, Braces, Calendar, Code, FileCode, FileText, Hash, Image: ImageIcon,
-  LayoutGrid, Lock, Palette, QrCode, Regex, Search, Table2, Type, Video, Wrench,
+  LayoutGrid, Lock, Palette, QrCode, Regex, Search, Sparkles, Table2, Type, Video, Wrench,
+  DragonArena: DragonArenaIcon,
 }
 
 const statusColor: Record<AppDefinition['status'], 'green' | 'yellow' | 'blue' | 'slate'> = {
@@ -66,10 +69,11 @@ function ToolCard({ app, favorite, onFavorite, onOpen }: {
 }) {
   const available = isOpenable(app)
   const status = displayStatus(app)
+  const iconName = app.id === 'ai-dragon-arena' ? 'DragonArena' : app.icon
   return (
     <Card className="group flex min-h-[178px] flex-col p-4 transition-colors hover:border-foreground/15">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/70 bg-background/45 text-foreground shadow-sm backdrop-blur-md"><AppIcon name={app.icon} /></div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/70 bg-background/45 text-foreground shadow-sm backdrop-blur-md"><AppIcon name={iconName} /></div>
         <button type="button" aria-label={favorite ? `Remove ${app.name} from favorites` : `Add ${app.name} to favorites`} onClick={onFavorite} className={`rounded-lg p-1.5 transition-colors hover:bg-accent ${favorite ? 'text-amber-500' : 'text-muted-foreground hover:text-foreground'}`}><Star className={`h-4 w-4 ${favorite ? 'fill-current' : ''}`} /></button>
       </div>
       <div className="mt-4 flex-1">
