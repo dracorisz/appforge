@@ -16,6 +16,8 @@ export type VaultMedia = {
   is_public: boolean
   metadata: Record<string, unknown>
   created_at: string
+  source_bucket?: 'user-media-vault' | 'dragon-arena-assets' | 'external'
+  external_url?: string | null
 }
 
 export type VaultQuota = {
@@ -31,10 +33,20 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://ixqoosixhahrs
 export const vaultPublicUrl = (path: string | null) =>
   path ? `${SUPABASE_URL}/storage/v1/object/public/user-media-vault/${path}` : null
 
-export const vaultSignedUrl = async (path: string, expires = 3600) => {
-  const { data, error } = await supabase.storage.from('user-media-vault').createSignedUrl(path, expires)
+export const vaultSignedUrl = async (path: string, expires = 3600, bucket = 'user-media-vault') => {
+  if (!path) return null
+  if (bucket === 'dragon-arena-assets') return `${SUPABASE_URL}/storage/v1/object/public/dragon-arena-assets/${path}`
+  const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expires)
   if (error) throw error
   return data?.signedUrl || null
+}
+
+export const vaultItemUrl = async (item: VaultMedia, expires = 3600) => {
+  if (item.source_bucket === 'external') return item.external_url || null
+  if (item.source_bucket === 'dragon-arena-assets') {
+    return item.storage_path ? `${SUPABASE_URL}/storage/v1/object/public/dragon-arena-assets/${item.storage_path}` : item.external_url || null
+  }
+  return vaultSignedUrl(item.storage_path, expires, 'user-media-vault')
 }
 
 export const vaultFolder = (item: Pick<VaultMedia, 'metadata'>): string => {
@@ -42,13 +54,78 @@ export const vaultFolder = (item: Pick<VaultMedia, 'metadata'>): string => {
   return typeof value === 'string' && value.trim() ? value.trim() : 'general'
 }
 
+const inferDragonKind = (assetType: string, metadata: Record<string, unknown>): VaultMedia['kind'] => {
+  if (assetType === 'scene' || assetType === 'image') return 'image'
+  const type = typeof metadata?.type === 'string' ? metadata.type : ''
+  if (type === 'video') return 'video'
+  if (type === 'image') return 'image'
+  if (type === 'article' || type === 'post') return 'document'
+  return 'other'
+}
+
+const mapDragonAsset = (asset: Record<string, any>): VaultMedia => {
+  const metadata = (asset.metadata || {}) as Record<string, unknown>
+  const isScrapper = asset.asset_type === 'scrapper-result'
+  const storagePath = typeof asset.storage_path === 'string' ? asset.storage_path : ''
+  const fileName = storagePath ? storagePath.split('/').pop() || null : null
+  const externalUrl = typeof asset.external_url === 'string' ? asset.external_url : null
+  return {
+    id: String(asset.id),
+    user_id: String(asset.user_id),
+    kind: inferDragonKind(String(asset.asset_type || ''), metadata),
+    storage_path: storagePath,
+    file_name: fileName,
+    mime_type: typeof asset.mime_type === 'string' ? asset.mime_type : typeof metadata.mime_type === 'string' ? String(metadata.mime_type) : null,
+    size_bytes: Number(metadata.size_bytes || 0),
+    width: null,
+    height: null,
+    duration_seconds: null,
+    title: typeof asset.title === 'string' ? asset.title : null,
+    description: typeof asset.prompt === 'string' ? asset.prompt : null,
+    is_public: Boolean(asset.is_public),
+    metadata: {
+      ...metadata,
+      folder: isScrapper ? 'scrapper-pro' : 'dragon-arena',
+      source_table: 'dragon_arena_assets',
+      source_asset_type: asset.asset_type,
+    },
+    created_at: String(asset.created_at),
+    source_bucket: storagePath ? 'dragon-arena-assets' : 'external',
+    external_url: externalUrl,
+  }
+}
+
 export async function listVaultMedia(kind?: VaultMedia['kind'], folder?: VaultFolder): Promise<VaultMedia[]> {
-  let query = supabase.from('user_media_vault').select('*').order('created_at', { ascending: false }).limit(200)
-  if (kind) query = query.eq('kind', kind)
-  if (folder && folder !== 'all') query = query.contains('metadata', { folder })
-  const { data, error } = await query
-  if (error) throw error
-  return (data || []) as VaultMedia[]
+  const includeVault = !folder || folder === 'all' || folder === 'general' || (folder !== 'dragon-arena' && folder !== 'scrapper-pro')
+  const includeDragon = !folder || folder === 'all' || folder === 'dragon-arena'
+  const includeScrapper = !folder || folder === 'all' || folder === 'scrapper-pro'
+  const items: VaultMedia[] = []
+
+  if (includeVault || folder === 'dragon-arena' || folder === 'scrapper-pro') {
+    let query = supabase.from('user_media_vault').select('*').order('created_at', { ascending: false }).limit(200)
+    if (kind) query = query.eq('kind', kind)
+    if (folder && folder !== 'all') query = query.contains('metadata', { folder })
+    const { data, error } = await query
+    if (error) throw error
+    items.push(...((data || []) as VaultMedia[]).map((item) => ({ ...item, source_bucket: 'user-media-vault' as const })))
+  }
+
+  if (includeDragon || includeScrapper) {
+    const { data: auth } = await supabase.auth.getUser()
+    const uid = auth.user?.id
+    if (uid) {
+      let query = supabase.from('dragon_arena_assets').select('*').eq('user_id', uid).order('created_at', { ascending: false }).limit(200)
+      if (folder === 'dragon-arena') query = query.eq('asset_type', 'scene')
+      else if (folder === 'scrapper-pro') query = query.eq('asset_type', 'scrapper-result')
+      else query = query.in('asset_type', ['scene', 'scrapper-result'])
+      const { data, error } = await query
+      if (error) throw error
+      const linked = (data || []).map((asset) => mapDragonAsset(asset as Record<string, any>))
+      items.push(...(kind ? linked.filter((item) => item.kind === kind) : linked))
+    }
+  }
+
+  return items.sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 300)
 }
 
 export async function getVaultQuota(): Promise<VaultQuota> {
@@ -75,16 +152,8 @@ export async function requestUploadUrl(params: {
 
   const response = await fetch('/api/user-media', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      kind: params.kind,
-      fileName: params.fileName,
-      mimeType: params.mimeType,
-      sizeBytes: params.sizeBytes,
-    }),
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ kind: params.kind, fileName: params.fileName, mimeType: params.mimeType, sizeBytes: params.sizeBytes }),
   })
   const payload = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(payload.error || 'Could not prepare upload.')
@@ -123,23 +192,30 @@ export async function confirmVaultUpload(params: {
     .select('*')
     .single()
   if (error) throw error
-  return data as VaultMedia
+  return { ...(data as VaultMedia), source_bucket: 'user-media-vault' }
 }
 
 export async function updateVaultMedia(id: string, patch: Partial<VaultMedia>): Promise<VaultMedia> {
   const { data, error } = await supabase.from('user_media_vault').update(patch).eq('id', id).select('*').single()
   if (error) throw error
-  return data as VaultMedia
+  return { ...(data as VaultMedia), source_bucket: 'user-media-vault' }
 }
 
-export async function deleteVaultMedia(id: string): Promise<void> {
+export async function deleteVaultMedia(itemOrId: VaultMedia | string): Promise<void> {
+  if (typeof itemOrId !== 'string' && itemOrId.metadata?.source_table === 'dragon_arena_assets') {
+    const item = itemOrId
+    const { error } = await supabase.from('dragon_arena_assets').delete().eq('id', item.id)
+    if (error) throw error
+    if (item.storage_path) await supabase.storage.from('dragon-arena-assets').remove([item.storage_path]).catch(() => undefined)
+    return
+  }
+
+  const id = typeof itemOrId === 'string' ? itemOrId : itemOrId.id
   const { data: row, error: fetchError } = await supabase.from('user_media_vault').select('storage_path').eq('id', id).maybeSingle()
   if (fetchError) throw fetchError
   const { error } = await supabase.from('user_media_vault').delete().eq('id', id)
   if (error) throw error
-  if (row?.storage_path) {
-    await supabase.storage.from('user-media-vault').remove([row.storage_path]).catch(() => undefined)
-  }
+  if (row?.storage_path) await supabase.storage.from('user-media-vault').remove([row.storage_path]).catch(() => undefined)
 }
 
 const inferKind = (file: File): VaultMedia['kind'] => {
@@ -171,12 +247,7 @@ export async function uploadVaultMedia(file: File, opts: UploadOptions = {}): Pr
 
   const upload = await fetch(prepared.uploadUrl, {
     method: 'POST',
-    headers: {
-      'Content-Type': file.type || 'application/octet-stream',
-      'x-upsert': 'false',
-      apikey: SUPABASE_PUBLISHABLE_KEY,
-      Authorization: `Bearer ${prepared.token}`,
-    },
+    headers: { 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'false', apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${prepared.token}` },
     body: file,
   })
   if (!upload.ok) {
@@ -202,9 +273,7 @@ export async function uploadVaultMedia(file: File, opts: UploadOptions = {}): Pr
   }
 }
 
-export async function uploadVaultMediaWithProgress(file: File, opts: UploadOptions & {
-  onProgress?: (progress: number) => void
-} = {}): Promise<VaultMedia> {
+export async function uploadVaultMediaWithProgress(file: File, opts: UploadOptions & { onProgress?: (progress: number) => void } = {}): Promise<VaultMedia> {
   const kind = opts.kind || inferKind(file)
   if (file.size > 104857600) throw new Error('Files over 100 MB are not allowed.')
   const prepared = await requestUploadUrl({ kind, fileName: file.name, mimeType: file.type || 'application/octet-stream', sizeBytes: file.size })
@@ -212,9 +281,7 @@ export async function uploadVaultMediaWithProgress(file: File, opts: UploadOptio
   const xhr = new XMLHttpRequest()
   return new Promise((resolve, reject) => {
     xhr.upload.addEventListener('progress', (event) => {
-      if (event.lengthComputable && opts.onProgress) {
-        opts.onProgress(Math.round((event.loaded / event.total) * 100))
-      }
+      if (event.lengthComputable && opts.onProgress) opts.onProgress(Math.round((event.loaded / event.total) * 100))
     })
     xhr.addEventListener('load', () => {
       if (xhr.status >= 200 && xhr.status < 300) {
