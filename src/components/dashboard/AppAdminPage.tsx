@@ -1,5 +1,5 @@
 import React from 'react'
-import { Card, Button, Badge, Input, Textarea, Select } from '@/components/ui'
+import { Card, Button, Badge, Input, Textarea } from '@/components/ui'
 import { Search, Plus, Save, Trash2, ExternalLink, Copy, Check, X } from 'lucide-react'
 import { getAllApps, updateApp, deleteApp, addApp, type AppDefinition } from '@/lib/registry'
 
@@ -62,7 +62,7 @@ export function AppAdminPage() {
         tags: form.tags || [],
         status: form.status || 'idea',
         version: form.version || '0.1.0',
-        coverImage: form.coverImage || null,
+        coverImage: form.coverImage || undefined,
         changelog: form.changelog || [],
       })
       setApps(getAllApps())
@@ -74,7 +74,7 @@ export function AppAdminPage() {
   }
 
   const copyRegistry = async () => {
-    const text = `// AppForge registry - regenerate with app admin page\nexport const APPS = [\n${apps.map((app) => `  app({ id: '${app.id}', name: '${app.name.replace(/'/g, "\\'")}', description: '${app.description.replace(/'/g, "\\'")}', category: '${app.category}', icon: '${app.icon}', route: '${app.route}', tags: [${app.tags.map((t) => `'${t}'`).join(', ')}], status: '${app.status}', version: '${app.version}'${app.coverImage ? `, coverImage: '${app.coverImage}'` : ''} }),`).join('\n')}\n]`}
+    const text = `// AppForge registry - regenerate with app admin page\nexport const APPS = [\n${apps.map((app) => `  app({ id: '${app.id}', name: '${app.name.replace(/'/g, "\\'")}', description: '${app.description.replace(/'/g, "\\'")}', category: '${app.category}', icon: '${app.icon}', route: '${app.route}', tags: [${app.tags.map((t) => `'${t}'`).join(', ')}], status: '${app.status}', version: '${app.version}'${app.coverImage ? `, coverImage: '${app.coverImage}'` : ''} }),`).join('\n')}\n]`
     await navigator.clipboard.writeText(text)
     setCopied(true)
     window.setTimeout(() => setCopied(false), 2000)

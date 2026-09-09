@@ -37,6 +37,14 @@ export interface PlanItem {
   items: string[]
 }
 
+export interface PlanMessage {
+  id: string
+  planId: string
+  author: string
+  text: string
+  timestamp: string
+}
+
 export interface Article {
   title: string
   body: string
@@ -54,6 +62,14 @@ export interface ChecklistItem {
   id: string
   text: string
   checked: boolean
+}
+
+export interface DocumentReadinessItem {
+  id: string
+  name: string
+  description: string
+  required: boolean
+  ready: boolean
 }
 
 export interface Settings {
@@ -77,6 +93,7 @@ export interface MiniApp {
   icon?: string
   branch: string
   forks: number
+  coverImage?: string
 }
 
 export interface ProjectVersion {
@@ -95,6 +112,8 @@ export interface AppState {
   sources: Source[]
   outreach: OutreachRow[]
   checklist: ChecklistItem[]
+  documentReadiness: DocumentReadinessItem[]
+  messages: PlanMessage[]
   settings: Settings
   miniApps: MiniApp[]
   versions: ProjectVersion[]
@@ -268,6 +287,10 @@ export const defaultChecklist: ChecklistItem[] = [
   { id: 'c6', text: 'Do not submit AI-generated or AI-rewritten article prose to Wikipedia as though it were independently written.', checked: false },
   { id: 'c7', text: 'Do not resubmit the Wikipedia draft until independent coverage is materially stronger and an uninvolved editor can assess the sources.', checked: false }
 ]
+
+export const defaultDocumentReadiness: DocumentReadinessItem[] = []
+
+export const defaultMessages: PlanMessage[] = []
 
 export const defaultPlan: PlanItem[] = [
   {

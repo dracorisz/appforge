@@ -10,6 +10,7 @@ import {
   KeyRound,
   Loader2,
   LockKeyhole,
+  MapPin,
   Monitor,
   Moon,
   RefreshCw,
@@ -157,13 +158,13 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
     } finally { setBusy('') }
   }
 
-  const uploadImage = async (file: File, kind: 'avatar' | 'gallery') => {
+  const uploadImage = async (file: File, kind: 'avatar' | 'gallery' | 'cover') => {
     if (!user) return
     setBusy(kind)
     try {
       await uploadProfileImage(user.id, file, kind)
       await refreshAccount()
-      flash(kind === 'avatar' ? 'Profile photo updated.' : 'Image added to your profile.')
+      flash(kind === 'avatar' ? 'Profile photo updated.' : kind === 'cover' ? 'Cover photo updated.' : 'Image added to your profile.')
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : 'Upload failed.')
     } finally { setBusy('') }
@@ -288,6 +289,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
               <div className="min-w-0"><div className="truncate text-sm font-semibold text-foreground">{profile?.display_name || user?.email || 'AppForge user'}</div><div className="truncate text-xs text-muted-foreground">{user?.email}</div><div className="mt-2 flex flex-wrap gap-1"><Badge color={role === 'admin' ? 'blue' : 'slate'}>{role}</Badge>{profile?.open_to_collaboration && <Badge color="green">Open to collaborate</Badge>}</div></div>
             </div>
             <label className="mt-4 block"><input type="file" accept="image/*" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, 'avatar'); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 bg-background/45 px-3 py-2 text-xs font-medium text-foreground hover:bg-accent"><ImagePlus className="h-4 w-4" />{busy === 'avatar' ? 'Uploading…' : 'Change avatar'}</span></label>
+            <label className="mt-2 block"><input type="file" accept="image/*" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, 'cover'); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 bg-background/45 px-3 py-2 text-xs font-medium text-foreground hover:bg-accent"><ImagePlus className="h-4 w-4" />{busy === 'cover' ? 'Uploading…' : 'Upload cover photo'}</span></label>
             <p className="mt-3 text-xs leading-5 text-muted-foreground">Avatar, headline, GitHub handle, skills and bio can appear in People when your profile is public. Personal details below never appear there.</p>
           </Card>
 
@@ -300,6 +302,40 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
               <div className="flex flex-col gap-2 text-sm text-foreground"><label className="flex items-center gap-2"><input type="checkbox" checked={profile.open_to_collaboration} onChange={(e) => setProfile({ ...profile, open_to_collaboration: e.target.checked })} /> Open to open-source collaboration</label><label className="flex items-center gap-2"><input type="checkbox" checked={profile.is_public} onChange={(e) => setProfile({ ...profile, is_public: e.target.checked })} /> Show my profile to other signed-in users</label></div>
               <Button onClick={() => void savePublicProfile()} disabled={busy === 'profile'}>{busy === 'profile' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Save public profile</Button>
             </div>}
+          </Card>
+
+          <Card className="p-4 lg:col-span-2">
+            <h2 className="text-sm font-semibold text-foreground">Public profile preview</h2>
+            <p className="mt-1 text-xs text-muted-foreground">This is exactly what other signed-in users see on the People page when your profile is public.</p>
+            {!profile?.is_public && <div className="mt-3 rounded-lg border border-border/70 bg-background/35 p-3 text-xs text-muted-foreground">Your profile is currently private. Turn on “Show my profile to other signed-in users” to preview it here.</div>}
+            <div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-muted text-muted-foreground">
+                  {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : <UserRound className="h-5 w-5" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="truncate text-sm font-semibold text-foreground">{profile?.display_name || 'AppForge user'}</h2>
+                    {profile?.open_to_collaboration && <Badge color="green">Collaborate</Badge>}
+                  </div>
+                  {profile?.username && <p className="truncate text-xs text-muted-foreground">@{profile.username}</p>}
+                  {profile?.headline && <p className="mt-1 text-xs font-medium text-foreground/80">{profile.headline}</p>}
+                </div>
+              </div>
+              {profile?.bio && <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">{profile.bio}</p>}
+              {(profile?.skills || []).length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{(profile.skills || []).slice(0, 8).map((skill) => <span key={skill} className="rounded-full border border-border/70 bg-background/45 px-2 py-0.5 text-[11px] text-muted-foreground">{skill}</span>)}</div>}
+              <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                {profile?.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {profile.location}</span>}
+                {profile?.github_username && <span className="inline-flex items-center gap-1"><Github className="h-3.5 w-3.5" /> GitHub</span>}
+                {profile?.website && <span className="inline-flex items-center gap-1"><ExternalLink className="h-3.5 w-3.5" /> Website</span>}
+              </div>
+            </div>
+            <div className="mt-3 grid gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-green-500" /> Display name, username, headline, bio, skills, location, GitHub, website</div>
+              <div className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-green-500" /> Avatar and gallery images</div>
+              <div className="flex items-center gap-2"><LockKeyhole className="h-3.5 w-3.5 text-red-500" /> Private personal information (sex, birth date, phone, address, notes)</div>
+              <div className="flex items-center gap-2"><LockKeyhole className="h-3.5 w-3.5 text-red-500" /> Email address and account ID</div>
+            </div>
           </Card>
 
           <Card className="p-4 lg:col-span-2">

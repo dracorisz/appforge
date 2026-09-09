@@ -50,7 +50,7 @@ const choiceIcon = (choice: string) => {
   if (lower.includes('creature') || lower.includes('call') || lower.includes('dragon')) return GiDragonHead
   if (lower.includes('search') || lower.includes('vault') || lower.includes('entrance')) return GiDungeonGate
   if (lower.includes('retreat') || lower.includes('study')) return GiScrollUnfurled
-  if (lower.includes('trace') || lower.includes('listen') || lower.includes('movement')) return GiMagicBolt
+  if (lower.includes('trace') || lower.includes('listen') || lower.includes('movement')) return GiSparkles
   return GiSpikedShield
 }
 
@@ -480,7 +480,7 @@ export function PF_AIDragonArena() {
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_280px]">
         <Card className="p-0 overflow-hidden">
           <div className="border-b border-border/70 px-4 py-3 flex items-center justify-between bg-gradient-to-r from-background/80 to-background/40">
-            <div className="flex items-center gap-2 text-sm font-medium"><GiMagicBolt className="h-4 w-4" /> AI Game Master</div>
+            <div className="flex items-center gap-2 text-sm font-medium"><GiSparkles className="h-4 w-4" /> AI Game Master</div>
             <div className="flex items-center gap-3">
               <span className="text-xs text-muted-foreground">Turn {turn}</span>
               {points && <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><Sparkles className="h-3.5 w-3.5" />{points.points} pts</span>}

@@ -48,6 +48,12 @@ export function PeoplePage() {
     .filter((image): image is UserImage => Boolean(image?.source_url))
     .slice(0, 4)
 
+  const coverFor = (profileId: string) => images
+    .filter((link) => link.profile_id === profileId && link.kind === 'cover')
+    .map(linkedImage)
+    .filter((image): image is UserImage => Boolean(image?.source_url))
+    .slice(0, 1)
+
   return (
     <div className="space-y-6 pb-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -75,9 +81,11 @@ export function PeoplePage() {
         <div className="grid gap-4 md:grid-cols-2">
           {visible.map((profile) => {
             const gallery = galleryFor(profile.id)
+            const cover = coverFor(profile.id)
             return (
               <Card key={profile.id} className="overflow-hidden p-0">
-                {gallery.length > 0 && (
+                {cover.length > 0 && <div className="relative h-32 w-full overflow-hidden rounded-t-xl"><img src={cover[0].source_url || ''} alt="" className="h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" /></div>}
+                {gallery.length > 0 && !cover.length && (
                   <div className={`grid h-40 gap-px bg-border ${gallery.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                     {gallery.slice(0, 4).map((image) => <img key={image.id} src={image.source_url || ''} alt="" className="h-full w-full object-cover" />)}
                   </div>
