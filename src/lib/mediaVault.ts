@@ -4,7 +4,7 @@ export type VaultMedia = {
   id: string
   user_id: string
   kind: 'image' | 'video' | 'document' | 'audio' | 'other'
-  storage_path: string
+  storage_path: string | null
   file_name: string | null
   mime_type: string | null
   size_bytes: number
@@ -16,6 +16,8 @@ export type VaultMedia = {
   is_public: boolean
   metadata: Record<string, unknown>
   created_at: string
+  source_app?: string | null
+  source_ref?: string | null
   source_bucket?: 'user-media-vault' | 'dragon-arena-assets' | 'external'
   external_url?: string | null
 }
@@ -27,6 +29,17 @@ export type VaultQuota = {
 }
 
 export type VaultFolder = 'general' | 'dragon-arena' | 'scrapper-pro' | string
+
+export type ScrapperVaultResult = {
+  source: string
+  type: 'image' | 'video' | 'article' | 'post'
+  title: string
+  originalUrl: string
+  thumbnail?: string
+  mediaUrl?: string
+  snippet?: string
+  date?: string
+}
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://ixqoosixhahrsgwoxyme.supabase.co'
 
@@ -42,16 +55,18 @@ export const vaultSignedUrl = async (path: string, expires = 3600, bucket = 'use
 }
 
 export const vaultItemUrl = async (item: VaultMedia, expires = 3600) => {
-  if (item.source_bucket === 'external') return item.external_url || null
+  if (item.source_bucket === 'external' || (!item.storage_path && item.external_url)) return item.external_url || null
   if (item.source_bucket === 'dragon-arena-assets') {
     return item.storage_path ? `${SUPABASE_URL}/storage/v1/object/public/dragon-arena-assets/${item.storage_path}` : item.external_url || null
   }
-  return vaultSignedUrl(item.storage_path, expires, 'user-media-vault')
+  return item.storage_path ? vaultSignedUrl(item.storage_path, expires, 'user-media-vault') : item.external_url || null
 }
 
-export const vaultFolder = (item: Pick<VaultMedia, 'metadata'>): string => {
+export const vaultFolder = (item: Pick<VaultMedia, 'metadata' | 'source_app'>): string => {
   const value = item.metadata?.folder
-  return typeof value === 'string' && value.trim() ? value.trim() : 'general'
+  if (typeof value === 'string' && value.trim()) return value.trim()
+  if (item.source_app === 'scrapper-pro') return 'scrapper-pro'
+  return 'general'
 }
 
 const inferDragonKind = (assetType: string, metadata: Record<string, unknown>): VaultMedia['kind'] => {
@@ -65,7 +80,6 @@ const inferDragonKind = (assetType: string, metadata: Record<string, unknown>): 
 
 const mapDragonAsset = (asset: Record<string, any>): VaultMedia => {
   const metadata = (asset.metadata || {}) as Record<string, unknown>
-  const isScrapper = asset.asset_type === 'scrapper-result'
   const storagePath = typeof asset.storage_path === 'string' ? asset.storage_path : ''
   const fileName = storagePath ? storagePath.split('/').pop() || null : null
   const externalUrl = typeof asset.external_url === 'string' ? asset.external_url : null
@@ -73,7 +87,7 @@ const mapDragonAsset = (asset: Record<string, any>): VaultMedia => {
     id: String(asset.id),
     user_id: String(asset.user_id),
     kind: inferDragonKind(String(asset.asset_type || ''), metadata),
-    storage_path: storagePath,
+    storage_path: storagePath || null,
     file_name: fileName,
     mime_type: typeof asset.mime_type === 'string' ? asset.mime_type : typeof metadata.mime_type === 'string' ? String(metadata.mime_type) : null,
     size_bytes: Number(metadata.size_bytes || 0),
@@ -85,39 +99,43 @@ const mapDragonAsset = (asset: Record<string, any>): VaultMedia => {
     is_public: Boolean(asset.is_public),
     metadata: {
       ...metadata,
-      folder: isScrapper ? 'scrapper-pro' : 'dragon-arena',
+      folder: 'dragon-arena',
       source_table: 'dragon_arena_assets',
       source_asset_type: asset.asset_type,
     },
     created_at: String(asset.created_at),
+    source_app: 'dragon-arena',
+    source_ref: String(asset.id),
     source_bucket: storagePath ? 'dragon-arena-assets' : 'external',
     external_url: externalUrl,
   }
 }
 
+const mapVaultRow = (item: VaultMedia): VaultMedia => ({
+  ...item,
+  storage_path: item.storage_path || null,
+  source_bucket: item.storage_path ? 'user-media-vault' : 'external',
+})
+
 export async function listVaultMedia(kind?: VaultMedia['kind'], folder?: VaultFolder): Promise<VaultMedia[]> {
-  const includeVault = !folder || folder === 'all' || folder === 'general' || (folder !== 'dragon-arena' && folder !== 'scrapper-pro')
+  const includeVault = !folder || folder === 'all' || folder !== 'dragon-arena'
   const includeDragon = !folder || folder === 'all' || folder === 'dragon-arena'
-  const includeScrapper = !folder || folder === 'all' || folder === 'scrapper-pro'
   const items: VaultMedia[] = []
 
-  if (includeVault || folder === 'dragon-arena' || folder === 'scrapper-pro') {
+  if (includeVault) {
     let query = supabase.from('user_media_vault').select('*').order('created_at', { ascending: false }).limit(200)
     if (kind) query = query.eq('kind', kind)
     if (folder && folder !== 'all') query = query.contains('metadata', { folder })
     const { data, error } = await query
     if (error) throw error
-    items.push(...((data || []) as VaultMedia[]).map((item) => ({ ...item, source_bucket: 'user-media-vault' as const })))
+    items.push(...((data || []) as VaultMedia[]).map(mapVaultRow))
   }
 
-  if (includeDragon || includeScrapper) {
+  if (includeDragon) {
     const { data: auth } = await supabase.auth.getUser()
     const uid = auth.user?.id
     if (uid) {
-      let query = supabase.from('dragon_arena_assets').select('*').eq('user_id', uid).order('created_at', { ascending: false }).limit(200)
-      if (folder === 'dragon-arena') query = query.eq('asset_type', 'scene')
-      else if (folder === 'scrapper-pro') query = query.eq('asset_type', 'scrapper-result')
-      else query = query.in('asset_type', ['scene', 'scrapper-result'])
+      let query = supabase.from('dragon_arena_assets').select('*').eq('user_id', uid).eq('asset_type', 'scene').order('created_at', { ascending: false }).limit(200)
       const { data, error } = await query
       if (error) throw error
       const linked = (data || []).map((asset) => mapDragonAsset(asset as Record<string, any>))
@@ -187,18 +205,84 @@ export async function confirmVaultUpload(params: {
       title: params.title || null,
       description: params.description || null,
       is_public: params.isPublic ?? false,
+      source_app: 'manual',
       metadata: params.metadata || { folder: 'general' },
     })
     .select('*')
     .single()
   if (error) throw error
-  return { ...(data as VaultMedia), source_bucket: 'user-media-vault' }
+  return mapVaultRow(data as VaultMedia)
+}
+
+const scrapperKind = (type: ScrapperVaultResult['type']): VaultMedia['kind'] => {
+  if (type === 'image') return 'image'
+  if (type === 'video') return 'video'
+  return 'document'
+}
+
+export async function saveScrapperVaultResult(result: ScrapperVaultResult): Promise<VaultMedia> {
+  const { data: auth } = await supabase.auth.getUser()
+  const userId = auth.user?.id
+  if (!userId) throw new Error('Sign in to save Scrapper Pro results to Media Vault.')
+
+  const sourceRef = result.originalUrl.trim()
+  if (!sourceRef) throw new Error('Scrapper result has no source URL.')
+
+  const existing = await supabase
+    .from('user_media_vault')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('source_app', 'scrapper-pro')
+    .eq('source_ref', sourceRef)
+    .maybeSingle()
+  if (existing.error) throw existing.error
+  if (existing.data) return mapVaultRow(existing.data as VaultMedia)
+
+  const externalUrl = result.mediaUrl || result.thumbnail || result.originalUrl
+  const payload = {
+    user_id: userId,
+    kind: scrapperKind(result.type),
+    storage_path: null,
+    file_name: null,
+    mime_type: null,
+    size_bytes: 0,
+    title: result.title || null,
+    description: result.snippet || null,
+    is_public: false,
+    external_url: externalUrl,
+    source_app: 'scrapper-pro',
+    source_ref: sourceRef,
+    metadata: {
+      folder: 'scrapper-pro',
+      source: result.source,
+      type: result.type,
+      original_url: result.originalUrl,
+      thumbnail: result.thumbnail || null,
+      media_url: result.mediaUrl || null,
+      date: result.date || null,
+      saved_at: new Date().toISOString(),
+    },
+  }
+
+  const inserted = await supabase.from('user_media_vault').insert(payload).select('*').single()
+  if (!inserted.error) return mapVaultRow(inserted.data as VaultMedia)
+
+  // A second tab may have saved the same URL between the lookup and insert.
+  const retry = await supabase
+    .from('user_media_vault')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('source_app', 'scrapper-pro')
+    .eq('source_ref', sourceRef)
+    .maybeSingle()
+  if (retry.error || !retry.data) throw inserted.error
+  return mapVaultRow(retry.data as VaultMedia)
 }
 
 export async function updateVaultMedia(id: string, patch: Partial<VaultMedia>): Promise<VaultMedia> {
   const { data, error } = await supabase.from('user_media_vault').update(patch).eq('id', id).select('*').single()
   if (error) throw error
-  return { ...(data as VaultMedia), source_bucket: 'user-media-vault' }
+  return mapVaultRow(data as VaultMedia)
 }
 
 export async function deleteVaultMedia(itemOrId: VaultMedia | string): Promise<void> {
