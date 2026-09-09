@@ -2,6 +2,7 @@ import React from 'react'
 import { Card, Button, Input, Badge, MediaShowbox } from '@/components/ui'
 import { downloadTextPdf } from '@/lib/simplePdf'
 import { supabase } from '@/lib/supabase'
+import { saveScrapperResult } from '@/lib/dragonArena'
 import {
   AlertCircle,
   Check,
@@ -128,6 +129,7 @@ export function PF_ScrapperPro() {
   const [error, setError] = React.useState('')
   const [copiedId, setCopiedId] = React.useState<string | null>(null)
   const [downloadingId, setDownloadingId] = React.useState<string | null>(null)
+  const [savingDragonId, setSavingDragonId] = React.useState<string | null>(null)
   const [preview, setPreview] = React.useState<ScrapperProResult | null>(null)
   const abortRef = React.useRef<AbortController | null>(null)
   const timerRef = React.useRef<ReturnType<typeof setInterval> | null>(null)
@@ -224,6 +226,28 @@ export function PF_ScrapperPro() {
   const toggleSaved = (result: ScrapperProResult) => {
     const exists = saved.some((item) => item.id === result.id || item.url === result.url)
     persistSaved(exists ? saved.filter((item) => item.id !== result.id && item.url !== result.url) : [result, ...saved].slice(0, 250))
+  }
+
+  const saveToDragonArena = async (result: ScrapperProResult) => {
+    const { data: auth } = await supabase.auth.getUser()
+    const user = auth.user
+    if (!user?.id) {
+      setError('Sign in to save assets to Dragon Arena.')
+      return
+    }
+    setSavingDragonId(result.id)
+    setError('')
+    try {
+      await saveScrapperResult(user.id, null, {
+        source: result.source,
+        type: result.type,
+        originalUrl: result.url,
+        thumbnail: result.thumbnail,
+        snippet: result.snippet,
+      })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not save to Dragon Arena.')
+    } finally { setSavingDragonId(null) }
   }
 
   const copyUrl = async (result: ScrapperProResult) => {

@@ -29,10 +29,13 @@ import {
   awardPoints,
   leaderboard,
   assetUrl,
+  DEFAULT_OPENING,
+  randomOpening,
   type DragonSession,
   type DragonAsset,
   type DragonPoints,
   type LeaderboardRow,
+  type OpeningScenario,
 } from '@/lib/dragonArena'
 
 type Turn = { role: 'player' | 'gm'; text: string }
@@ -41,8 +44,15 @@ type GameReply = { narrative: string; choices: string[]; model: string; dailyReq
 type SceneReply = { imageUrl: string; storagePath?: string; model: string; sessionId: string; personalKeyUsed?: boolean; error?: string }
 
 const MODEL = 'openrouter/free'
-const OPENING = 'You enter the Ember Vault beneath WildDragons Keep. Three rune-lit passages split ahead while something enormous breathes in the dark.'
-const OPENING_CHOICES = ['Follow the blue runes', 'Call out to the creature', 'Search the vault entrance']
+const resolveOpening = (metadata: unknown): OpeningScenario => {
+  if (metadata && typeof metadata === 'object') {
+    const value = (metadata as Record<string, unknown>).opening
+    if (value && typeof value === 'object' && 'narrative' in value && 'choices' in value && Array.isArray((value as OpeningScenario).choices)) {
+      return value as OpeningScenario
+    }
+  }
+  return DEFAULT_OPENING
+}
 
 const choiceIcon = (choice: string) => {
   const lower = choice.toLowerCase()
@@ -55,8 +65,9 @@ const choiceIcon = (choice: string) => {
 }
 
 export function PF_AIDragonArena() {
-  const [history, setHistory] = React.useState<Turn[]>([{ role: 'gm', text: OPENING }])
-  const [choices, setChoices] = React.useState<string[]>(OPENING_CHOICES)
+  const [opening, setOpening] = React.useState<OpeningScenario>(() => randomOpening())
+  const [history, setHistory] = React.useState<Turn[]>([{ role: 'gm', text: opening.narrative }])
+  const [choices, setChoices] = React.useState<string[]>([...opening.choices])
   const [action, setAction] = React.useState('')
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState('')
@@ -104,12 +115,15 @@ export function PF_AIDragonArena() {
 
       const { data: session, error: sessionError } = await supabase
         .from('dragon_arena_sessions')
-        .select('id')
+        .select('id,metadata')
         .eq('user_id', uid)
         .order('updated_at', { ascending: false })
         .limit(1)
         .maybeSingle()
       if (sessionError || !session?.id || cancelled) return
+
+      const restoredOpening = resolveOpening(session?.metadata)
+      setOpening(restoredOpening)
 
       const { data: savedTurns, error: turnsError } = await supabase
         .from('dragon_arena_turns')
@@ -119,10 +133,10 @@ export function PF_AIDragonArena() {
         .order('turn_number', { ascending: true })
       if (turnsError || !savedTurns?.length || cancelled) return
 
-      const restoredHistory: Turn[] = [{ role: 'gm', text: OPENING }]
+      const restoredHistory: Turn[] = [{ role: 'gm', text: restoredOpening.narrative }]
       const restoredCompleted: CompletedTurn[] = []
       for (const savedTurn of savedTurns) {
-        const savedChoices = Array.isArray(savedTurn.choices) ? savedTurn.choices.map(String).filter(Boolean).slice(0, 3) : OPENING_CHOICES
+        const savedChoices = Array.isArray(savedTurn.choices) ? savedTurn.choices.map(String).filter(Boolean).slice(0, 3) : restoredOpening.choices
         restoredHistory.push({ role: 'player', text: savedTurn.player_action })
         restoredHistory.push({ role: 'gm', text: savedTurn.narrative })
         restoredCompleted.push({
@@ -181,8 +195,10 @@ export function PF_AIDragonArena() {
   }
 
   const reset = () => {
-    setHistory([{ role: 'gm', text: OPENING }])
-    setChoices(OPENING_CHOICES)
+    const nextOpening = randomOpening()
+    setOpening(nextOpening)
+    setHistory([{ role: 'gm', text: nextOpening.narrative }])
+    setChoices([...nextOpening.choices])
     setAction('')
     setError('')
     setTurn(1)
@@ -218,7 +234,7 @@ export function PF_AIDragonArena() {
       const { data: sessionData } = await supabase.auth.getSession()
       const accessToken = sessionData.session?.access_token
       if (!accessToken) throw new Error('Sign in again to generate a scene.')
-      const latestNarrative = completedTurns[completedTurns.length - 1]?.narrative || OPENING
+      const latestNarrative = completedTurns[completedTurns.length - 1]?.narrative || opening.narrative
       const headers: Record<string, string> = { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` }
       if (personalKey.startsWith('sk-or-')) headers['x-openrouter-key'] = personalKey
       if (hfToken.startsWith('hf_')) headers['x-hf-token'] = hfToken
@@ -268,15 +284,15 @@ export function PF_AIDragonArena() {
 
     let activeSessionId = sessionId
     if (!activeSessionId) {
-      const { data: created, error: createError } = await supabase
-        .from('dragon_arena_sessions')
-        .insert({
-          user_id: uid,
-          title: 'Ember Vault run',
-          summary: nextTurns[0]?.narrative.slice(0, 240) || null,
-          turn_count: nextTurns.length,
-          metadata: { source: 'dragon-arena', model: MODEL },
-        })
+       const { data: created, error: createError } = await supabase
+         .from('dragon_arena_sessions')
+         .insert({
+           user_id: uid,
+           title: `${opening.label} run`,
+           summary: nextTurns[0]?.narrative.slice(0, 240) || null,
+           turn_count: nextTurns.length,
+           metadata: { source: 'dragon-arena', model: MODEL, opening_id: opening.id, opening: opening },
+         })
         .select('id')
         .single()
       if (createError || !created?.id) throw createError || new Error('Could not create Dragon Arena session.')
@@ -350,7 +366,7 @@ export function PF_AIDragonArena() {
       }
 
       const narrative = payload.narrative?.trim() || 'The vault shifts around you. Choose your next move.'
-      const nextChoices = Array.isArray(payload.choices) && payload.choices.length ? payload.choices.slice(0, 3) : OPENING_CHOICES
+      const nextChoices = Array.isArray(payload.choices) && payload.choices.length ? payload.choices.slice(0, 3) : opening.choices
       setHistory((current) => [...current, { role: 'gm', text: narrative }])
       setChoices(nextChoices)
       setTurn((value) => value + 1)
@@ -390,10 +406,12 @@ export function PF_AIDragonArena() {
         setSessionId(session.id)
         return
       }
-      const restoredHistory: Turn[] = [{ role: 'gm', text: OPENING }]
+      const switchesOpening = resolveOpening(session?.metadata)
+      setOpening(switchesOpening)
+      const restoredHistory: Turn[] = [{ role: 'gm', text: switchesOpening.narrative }]
       const restoredCompleted: CompletedTurn[] = []
       for (const t of turns) {
-        const savedChoices = Array.isArray(t.choices) ? t.choices.map(String).filter(Boolean).slice(0, 3) : OPENING_CHOICES
+        const savedChoices = Array.isArray(t.choices) ? t.choices.map(String).filter(Boolean).slice(0, 3) : switchesOpening.choices
         restoredHistory.push({ role: 'player', text: t.player_action })
         restoredHistory.push({ role: 'gm', text: t.narrative })
         restoredCompleted.push({

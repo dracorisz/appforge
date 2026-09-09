@@ -55,6 +55,47 @@ export type LeaderboardRow = {
   scenes_created: number
 }
 
+export type OpeningScenario = {
+  id: string
+  label: string
+  narrative: string
+  choices: [string, string, string]
+}
+
+export const DRAGON_ARENA_OPENINGS: OpeningScenario[] = [
+  {
+    id: 'ember-vault',
+    label: 'Ember Vault',
+    narrative: 'You enter the Ember Vault beneath WildDragons Keep. Three rune-lit passages split ahead while something enormous breathes in the dark.',
+    choices: ['Follow the blue runes', 'Call out to the creature', 'Search the vault entrance'],
+  },
+  {
+    id: 'sunken-library',
+    label: 'Sunken Library',
+    narrative: 'The obsidian library floats on black water; a single lantern drifts toward you, its flame spelling a warning in a language your blood remembers.',
+    choices: ['Row toward the lantern', 'Study the floating shelves', 'Sink beneath the surface'],
+  },
+  {
+    id: 'scale-bridge',
+    label: 'Scale Bridge',
+    narrative: 'Rope bridges sway between the ribs of a petrified dragon; each step groans like the beast remembering waking.',
+    choices: ['Cross the central span', 'Test the nearest cable', 'Climb up to the skull'],
+  },
+  {
+    id: 'forgotten-bazaar',
+    label: 'Forgotten Bazaar',
+    narrative: 'The market is frozen in ash; vendors of bone and bronze wait for a buyer, their wares whispering in the cinders.',
+    choices: ['Haggle with the coin-purse crow', 'Examine the glass vials', 'Walk past without looking'],
+  },
+]
+
+export const DEFAULT_OPENING: OpeningScenario = DRAGON_ARENA_OPENINGS[0]
+export const DEFAULT_OPENING_CHOICES: [string, string, string] = DEFAULT_OPENING.choices
+
+export function randomOpening(): OpeningScenario {
+  return DRAGON_ARENA_OPENINGS[Math.floor(Math.random() * DRAGON_ARENA_OPENINGS.length)]
+}
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://ixqoosixhahrsgwoxyme.supabase.co'
 
 const assetUrl = (path: string | null) =>
