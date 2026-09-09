@@ -1,10 +1,13 @@
 import React from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { ArrowLeftRight } from 'lucide-react'
 import { Layout } from './components/layout/Layout'
 import { PublicToolShell } from './components/public/PublicToolShell'
 import { PrivacyPolicyPage, TermsOfServicePage } from './components/public/LegalPages'
 import { HuggingFaceGalleryPage } from './components/public/HuggingFaceGalleryPage'
 import { PublicDashboard } from './components/dashboard/PublicDashboard'
+import { ScrapperProIcon, WeatherNowIcon } from './components/dashboard/AppIcons'
+import { DragonArenaIcon } from './components/dashboard/DragonArenaIcon'
 import {
   PF_ScrapperPro,
   PF_ImageLabeler,
@@ -125,10 +128,10 @@ function App() {
   if (location.pathname === '/login') return <LoginPage />
 
   if (!user && !loading) {
-    if (location.pathname === '/apps/scrapper-pro' || location.pathname === '/pf-scrapper-pro') return <PublicToolShell><PF_ScrapperPro /></PublicToolShell>
-    if (location.pathname === '/apps/weather-now' || location.pathname === '/pf-weather-now') return <PublicToolShell><PF_WeatherNow /></PublicToolShell>
-    if (location.pathname === '/apps/any-converter') return <PublicToolShell><AnyToAnyConverter /></PublicToolShell>
-    if (location.pathname === '/apps/ai-dragon-arena' || location.pathname === '/pf-ai-dragon-arena') return <PublicToolShell><PF_GuestDragonArena /></PublicToolShell>
+    if (location.pathname === '/apps/scrapper-pro' || location.pathname === '/pf-scrapper-pro') return <PublicToolShell toolName="Scrapper Pro" toolIcon={<ScrapperProIcon />}><PF_ScrapperPro /></PublicToolShell>
+    if (location.pathname === '/apps/weather-now' || location.pathname === '/pf-weather-now') return <PublicToolShell toolName="Weather Now" toolIcon={<WeatherNowIcon />}><PF_WeatherNow /></PublicToolShell>
+    if (location.pathname === '/apps/any-converter') return <PublicToolShell toolName="Any Converter" toolIcon={<ArrowLeftRight className="h-4 w-4" />}><AnyToAnyConverter /></PublicToolShell>
+    if (location.pathname === '/apps/ai-dragon-arena' || location.pathname === '/pf-ai-dragon-arena') return <PublicToolShell toolName="Story Studio" toolIcon={<DragonArenaIcon className="h-4 w-4" />}><PF_GuestDragonArena /></PublicToolShell>
   }
 
   if (loading || !user) return <LoginPage returnTo={requestedPath} />
