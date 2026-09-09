@@ -41,3 +41,17 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+  cloud-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: services/cloud-worker/package-lock.json
+      - run: npm ci --prefix services/cloud-worker
+      - run: npm test --prefix services/cloud-worker
+      - run: bash -n scripts/cloud/setup.sh scripts/cloud/experiment.sh

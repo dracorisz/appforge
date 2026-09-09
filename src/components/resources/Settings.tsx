@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router-dom'
 import { GEMINI_KEY_STORAGE } from '@/lib/aiProviders'
 import React from 'react'
 import {
@@ -67,7 +68,8 @@ const splitSkills = (value: string) => value.split(',').map((item) => item.trim(
 
 export function SettingsPage({ state, setState }: { state: AppState; setState: (s: AppState) => void }) {
   const { user, signOut } = useAuth()
-  const [activeTab, setActiveTab] = React.useState<TabId>('profile')
+  const [searchParams] = useSearchParams()
+  const [activeTab, setActiveTab] = React.useState<TabId>(() => searchParams.get('tab') === 'integrations' ? 'integrations' : 'profile')
   const [themeMode, setThemeMode] = React.useState<ThemeMode>('system')
   const [profile, setProfile] = React.useState<AppProfile | null>(null)
   const [privateInfo, setPrivateInfo] = React.useState<PrivateProfileInfo | null>(null)
@@ -414,24 +416,6 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
           <Card className="p-4">
             <h2 className="text-sm font-semibold text-foreground">Theme</h2>
             <div className="mt-4 flex flex-wrap gap-2">{([{ value: 'light', label: 'Light', icon: Sun }, { value: 'dark', label: 'Dark', icon: Moon }, { value: 'system', label: 'System', icon: Monitor }] as const).map(({ value, label, icon: Icon }) => <button key={value} onClick={() => setThemeMode(value)} className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${themeMode === value ? 'border-foreground/25 bg-accent' : 'border-border/70 hover:bg-accent/60'}`}><Icon className="h-4 w-4" /> {label}</button>)}</div>
-          </Card>
-          <Card className="p-4">
-            <h2 className="text-sm font-semibold text-foreground">Dragon Arena Theme</h2>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">Customize the appearance of Dragon Arena elements.</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button className="inline-flex items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm hover:bg-accent/60">
-                <span className="h-4 w-4 rounded-full bg-gradient-to-br from-orange-500 to-red-600" />
-                Ember Runes
-              </button>
-              <button className="inline-flex items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm hover:bg-accent/60">
-                <span className="h-4 w-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-600" />
-                Frost Wyrms
-              </button>
-              <button className="inline-flex items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm hover:bg-accent/60">
-                <span className="h-4 w-4 rounded-full bg-gradient-to-br from-green-500 to-emerald-600" />
-                Forest Dragons
-              </button>
-            </div>
           </Card>
         </div>
       )}

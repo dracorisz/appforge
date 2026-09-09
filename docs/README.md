@@ -7,6 +7,8 @@ This directory holds the long-form documentation for AppForge. It is the canonic
 | Path | Purpose |
 |---|---|
 | `README.md` | This index |
+| `CLOUD-EXPERIMENTS.md` | Private Vertex AI / Cloud Run setup under the $5/day operating target |
+| `LAUNCH-CHECKLIST.md` | Consolidated launch tasks and current evidence |
 | `DATABASE.md` | Database schema, migrations, and Supabase setup |
 | `BRANCHING.md` | Branch policy and contribution workflow |
 | `PWA.md` | Progressive Web App behavior and manifest |
