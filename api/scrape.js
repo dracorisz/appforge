@@ -1,3 +1,5 @@
+import { searchYouTube } from './_youtube-data.js'
+
 const SOURCES = {
   'duckduckgo-images': { name: 'DuckDuckGo Images', kind: 'image' },
   'bing-images': { name: 'Bing Images', kind: 'image' },
@@ -203,54 +205,7 @@ const scrapeReddit = async (query) => {
   }).filter(Boolean)
 }
 
-const scrapeYouTube = async (query) => {
-  const html = await fetchText(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&hl=en`)
-  const results = []
-  const seen = new Set()
-  const regex = /"videoRenderer":\{"videoId":"([A-Za-z0-9_-]{11})"[\s\S]{0,2600}?"title":\{"runs":\[\{"text":"((?:\\.|[^"\\])*)"/g
-  let match
-
-  while ((match = regex.exec(html)) !== null && results.length < 24) {
-    const id = match[1]
-    if (seen.has(id)) continue
-    seen.add(id)
-    const url = `https://www.youtube.com/watch?v=${id}`
-    const thumbnail = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`
-    results.push({
-      id: `youtube-${id}`,
-      source: 'YouTube',
-      type: 'video',
-      title: decodeJsonText(match[2], 'YouTube video'),
-      url,
-      mediaUrl: url,
-      thumbnail,
-      snippet: 'YouTube video',
-    })
-  }
-
-  if (!results.length) {
-    const fallback = [...html.matchAll(/"videoId":"([A-Za-z0-9_-]{11})"/g)]
-    for (const item of fallback) {
-      const id = item[1]
-      if (seen.has(id)) continue
-      seen.add(id)
-      results.push({
-        id: `youtube-${id}`,
-        source: 'YouTube',
-        type: 'video',
-        title: 'YouTube video',
-        url: `https://www.youtube.com/watch?v=${id}`,
-        mediaUrl: `https://www.youtube.com/watch?v=${id}`,
-        thumbnail: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
-        snippet: 'YouTube video',
-      })
-      if (results.length >= 24) break
-    }
-  }
-
-  if (!results.length) throw new Error('No YouTube videos parsed')
-  return results
-}
+const scrapeYouTube = async (query) => (await searchYouTube(query)).results
 
 const extractMarkdownLinks = (text) => {
   const results = []

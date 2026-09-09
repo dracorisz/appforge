@@ -39,6 +39,7 @@ export type ScrapperVaultResult = {
   mediaUrl?: string
   snippet?: string
   date?: string
+  provenance?: Record<string, unknown>
 }
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://ixqoosixhahrsgwoxyme.supabase.co'
@@ -260,6 +261,7 @@ export async function saveScrapperVaultResult(result: ScrapperVaultResult): Prom
       thumbnail: result.thumbnail || null,
       media_url: result.mediaUrl || null,
       date: result.date || null,
+      provenance: result.provenance || null,
       saved_at: new Date().toISOString(),
     },
   }

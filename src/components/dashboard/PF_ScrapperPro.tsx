@@ -35,6 +35,7 @@ export interface ScrapperProResult {
   date?: string
   thumbnail?: string
   mediaUrl?: string
+  provenance?: Record<string, unknown>
 }
 
 type SourceType = ScrapperProResult['type']
@@ -241,6 +242,7 @@ export function PF_ScrapperPro() {
         mediaUrl: result.mediaUrl,
         snippet: result.snippet,
         date: result.date,
+        provenance: result.provenance,
       })
       setVaultSavedIds((current) => new Set(current).add(result.id))
     } catch (e) {
@@ -337,7 +339,7 @@ export function PF_ScrapperPro() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div><div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-foreground">Scrapper Pro</h1><Badge color="green">Server-backed</Badge></div><p className="mt-1 max-w-2xl text-sm text-muted-foreground">Search public sources for real images, videos, posts, and articles. Saved results stay locally for guest use; signed-in users can also archive references into Media Vault.</p></div>
+        <div><div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-foreground">Scrapper Pro</h1><Badge color="green">Server-backed</Badge></div><p className="mt-1 max-w-2xl text-sm text-muted-foreground">Search public sources for real images, videos, posts, and articles. YouTube uses its official Data API and accepts text, video/channel URLs, IDs, and @handles. Signed-in users can archive provenance-rich references into Media Vault.</p></div>
         <div className="flex items-center gap-1 rounded-lg border border-border/70 bg-background/45 p-1 backdrop-blur-md"><button type="button" onClick={() => setViewMode('grid')} aria-label="Grid view" className={`rounded-md p-1.5 ${viewMode === 'grid' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}><Grid3X3 className="h-4 w-4" /></button><button type="button" onClick={() => setViewMode('list')} aria-label="List view" className={`rounded-md p-1.5 ${viewMode === 'list' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}><List className="h-4 w-4" /></button></div>
       </div>
 

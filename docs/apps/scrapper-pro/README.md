@@ -56,11 +56,27 @@ The source list is defined server-side in `api/scrape.js` and mirrored in the UI
 - Bing Images
 - Wikimedia Commons
 - Reddit
-- YouTube
+- YouTube Data API v3 (official API; requires server-side configuration)
 - DuckDuckGo Web
 - Medium
 
 Public search endpoints can rate-limit, change markup, or temporarily fail. Scrapper Pro reports individual source failures while keeping successful results.
+
+## YouTube Data API setup
+
+YouTube uses the official Data API v3, not YouTube page markup. Enable **YouTube Data API v3** in a Google Cloud project, create an API key, restrict it to that API, and set it only in the server/deployment environment:
+
+```bash
+YOUTUBE_API_KEY=your-restricted-server-key
+```
+
+Do not prefix the variable with `VITE_`; Vite-prefixed values are included in the browser bundle. A missing key disables only the YouTube source and is reported as a partial-source failure.
+
+The integration supports text discovery, video URLs/IDs, channel URLs/IDs, and `@handle` input. It uses `channels.list` for channel details, `playlistItems.list` for upload traversal, and `videos.list` for video details. Requests are deduplicated in-process for five minutes. Channel banners are feature-detected because YouTube does not return them for every channel.
+
+Media Vault saves retain the original URL plus YouTube video/channel IDs, channel identity, thumbnail variants and selected resolution, duration, public statistics, asset role, uploads-playlist ID, and fetch timestamp under `metadata.provenance`. The API key is never included.
+
+Fetched channel art remains third-party content. Public availability does not grant permission to republish, tokenize, or mint it; verify the creator's rights and permission before collectible export.
 
 ## Architecture
 
@@ -71,7 +87,8 @@ src/components/dashboard/PF_ScrapperPro.tsx
         v
 api/scrape.js
         |
-        +-- DuckDuckGo / Bing / Wikimedia / Reddit / YouTube / web readers
+        +-- DuckDuckGo / Bing / Wikimedia / Reddit / web readers
+        +-- YouTube Data API v3 (server-only key)
 
 Local save:
 PF_ScrapperPro -> localStorage(appforge-scrapper-saved)
@@ -109,6 +126,7 @@ interface ScrapperProResult {
   date?: string
   thumbnail?: string
   mediaUrl?: string
+  provenance?: Record<string, unknown>
 }
 ```
 
@@ -146,7 +164,7 @@ Never add API secrets to browser source or commit `.env` files. Use Vercel/Supab
 
 1. Search with the **Media** preset.
 2. Open an image in the showbox and download it.
-3. Open a YouTube result and confirm in-page playback.
+3. Search YouTube by text, a video URL, and an `@handle`; confirm channel art and upload videos render.
 4. Save one result locally, refresh, and confirm it remains in **Saved**.
 5. While signed in, archive a result to Media Vault.
 6. Archive the same result again and confirm no duplicate Media Vault row appears.
@@ -156,4 +174,4 @@ Never add API secrets to browser source or commit `.env` files. Use Vercel/Supab
 
 ## Version
 
-**Scrapper Pro 1.2.0** — direct Media Vault archive integration, deduplicated source references, clearer local-vs-account save semantics, and removal of the Dragon Arena storage dependency.
+**Scrapper Pro 1.3.0** — official server-side YouTube Data API ingestion, channel/video URL resolution, uploads-playlist traversal, enriched provenance, request caching, and clear configuration/quota failures.
