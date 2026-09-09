@@ -3,8 +3,6 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { ArrowLeftRight } from 'lucide-react'
 import { Layout } from './components/layout/Layout'
 import { PublicToolShell } from './components/public/PublicToolShell'
-import { PrivacyPolicyPage, TermsOfServicePage } from './components/public/LegalPages'
-import { HuggingFaceGalleryPage } from './components/public/HuggingFaceGalleryPage'
 import { PublicDashboard } from './components/dashboard/PublicDashboard'
 import { ScrapperProIcon, WeatherNowIcon } from './components/dashboard/AppIcons'
 import { DragonArenaIcon } from './components/dashboard/DragonArenaIcon'
@@ -26,8 +24,6 @@ import {
   PF_UserMediaVault,
 } from './components/dashboard'
 import { PF_GuestDragonArena } from './components/dashboard/PF_GuestDragonArena'
-import { SettingsPage } from './components/resources/Settings'
-import { PeoplePage } from './components/resources/People'
 import type { AppState, MiniApp } from './types'
 import {
   defaultArticle,
@@ -46,10 +42,31 @@ import { useAuth } from './auth/AuthProvider'
 import { LoginPage } from './auth/LoginPage'
 import { loadUserPreferences, saveUserPreferences } from './lib/preferences'
 import { loadCategoryOverrides, saveCategoryOverrides, subscribeCategoryOverrides } from './lib/categories'
+import { stripLegacyMiniAppCommerce } from './lib/legacyMiniApps'
 import { updateSeo } from './lib/seo'
 
+const SettingsPage = React.lazy(() => import('./components/resources/Settings').then((module) => ({ default: module.SettingsPage })))
+const PeoplePage = React.lazy(() => import('./components/resources/People').then((module) => ({ default: module.PeoplePage })))
+const HuggingFaceGalleryPage = React.lazy(() => import('./components/public/HuggingFaceGalleryPage').then((module) => ({ default: module.HuggingFaceGalleryPage })))
+const PrivacyPolicyPage = React.lazy(() => import('./components/public/LegalPages').then((module) => ({ default: module.PrivacyPolicyPage })))
+const TermsOfServicePage = React.lazy(() => import('./components/public/LegalPages').then((module) => ({ default: module.TermsOfServicePage })))
+
 const defaultSettings = { theme: 'system' as const }
-const defaultState: AppState = { plan: defaultPlan, article: defaultArticle, pitches: defaultPitches, sources: defaultSources, outreach: defaultOutreach, checklist: defaultChecklist, documentReadiness: defaultDocumentReadiness, messages: defaultMessages, settings: defaultSettings, miniApps: defaultMiniApps, versions: defaultVersions, favorites: [], recentApps: [] }
+const defaultState: AppState = {
+  plan: defaultPlan,
+  article: defaultArticle,
+  pitches: defaultPitches,
+  sources: defaultSources,
+  outreach: defaultOutreach,
+  checklist: defaultChecklist,
+  documentReadiness: defaultDocumentReadiness,
+  messages: defaultMessages,
+  settings: defaultSettings,
+  miniApps: stripLegacyMiniAppCommerce(defaultMiniApps),
+  versions: defaultVersions,
+  favorites: [],
+  recentApps: [],
+}
 
 const hydrateStoredState = (raw: string): AppState => {
   const parsed = JSON.parse(raw) as Partial<AppState>
@@ -57,12 +74,21 @@ const hydrateStoredState = (raw: string): AppState => {
     ...defaultState,
     ...parsed,
     settings: { ...defaultState.settings, ...(parsed.settings || {}) },
+    miniApps: stripLegacyMiniAppCommerce(Array.isArray(parsed.miniApps) ? parsed.miniApps : defaultState.miniApps),
     favorites: Array.isArray(parsed.favorites) ? parsed.favorites : [],
     recentApps: Array.isArray(parsed.recentApps) ? parsed.recentApps : [],
     documentReadiness: Array.isArray(parsed.documentReadiness) ? parsed.documentReadiness : defaultDocumentReadiness,
     messages: Array.isArray(parsed.messages) ? parsed.messages : defaultMessages,
   }
 }
+
+const routeFallback = (
+  <div className="flex min-h-[40vh] items-center justify-center px-4 text-sm text-muted-foreground">
+    Loading AppForge…
+  </div>
+)
+
+const lazyPage = (page: React.ReactNode) => <React.Suspense fallback={routeFallback}>{page}</React.Suspense>
 
 function App() {
   const location = useLocation()
@@ -75,7 +101,10 @@ function App() {
   })
 
   React.useEffect(() => { updateSeo(location.pathname) }, [location.pathname])
-  React.useEffect(() => { localStorage.setItem('appforge-workplan-v1', JSON.stringify(state)) }, [state])
+  React.useEffect(() => {
+    const current = { ...state, miniApps: stripLegacyMiniAppCommerce(state.miniApps) }
+    localStorage.setItem('appforge-workplan-v1', JSON.stringify(current))
+  }, [state])
 
   React.useEffect(() => {
     let cancelled = false
@@ -86,10 +115,17 @@ function App() {
         const remote = await loadUserPreferences(user.id)
         if (cancelled) return
         if (remote) {
-          if (remote.appState) setState((current) => ({ ...current, ...remote.appState, settings: { ...current.settings, ...(remote.appState?.settings || {}) } }))
+          if (remote.appState) {
+            setState((current) => ({
+              ...current,
+              ...remote.appState,
+              settings: { ...current.settings, ...(remote.appState?.settings || {}) },
+              miniApps: stripLegacyMiniAppCommerce(Array.isArray(remote.appState?.miniApps) ? remote.appState.miniApps : current.miniApps),
+            }))
+          }
           saveCategoryOverrides(remote.categoryOverrides || {})
         } else {
-          await saveUserPreferences(user.id, { appState: state, categoryOverrides: loadCategoryOverrides() })
+          await saveUserPreferences(user.id, { appState: { ...state, miniApps: stripLegacyMiniAppCommerce(state.miniApps) }, categoryOverrides: loadCategoryOverrides() })
         }
       } catch (error) { console.error('AppForge remote preference hydration failed', error) }
       finally { if (!cancelled) setRemoteReady(true) }
@@ -100,7 +136,10 @@ function App() {
 
   React.useEffect(() => {
     if (!user || !remoteReady) return
-    const timer = window.setTimeout(() => { void saveUserPreferences(user.id, { appState: state }).catch((error) => console.error('AppForge remote state sync failed', error)) }, 650)
+    const timer = window.setTimeout(() => {
+      const current = { ...state, miniApps: stripLegacyMiniAppCommerce(state.miniApps) }
+      void saveUserPreferences(user.id, { appState: current }).catch((error) => console.error('AppForge remote state sync failed', error))
+    }, 650)
     return () => window.clearTimeout(timer)
   }, [state, user, remoteReady])
 
@@ -121,9 +160,9 @@ function App() {
   const dashboard = <PublicDashboard state={state} onOpenApp={addToRecent} onToggleFavorite={toggleFavorite} />
   const requestedPath = `${location.pathname}${location.search}${location.hash}`
 
-  if (location.pathname === '/privacy') return <PrivacyPolicyPage />
-  if (location.pathname === '/terms') return <TermsOfServicePage />
-  if (location.pathname === '/huggingface') return <HuggingFaceGalleryPage />
+  if (location.pathname === '/privacy') return lazyPage(<PrivacyPolicyPage />)
+  if (location.pathname === '/terms') return lazyPage(<TermsOfServicePage />)
+  if (location.pathname === '/huggingface') return lazyPage(<HuggingFaceGalleryPage />)
   if (location.pathname === '/landing') return <LoginPage landingOnly />
   if (location.pathname === '/login') return <LoginPage />
 
@@ -145,7 +184,7 @@ function App() {
         <Route path="/recent" element={dashboard} />
         <Route path="/categories" element={dashboard} />
         <Route path="/category/:id" element={dashboard} />
-        <Route path="/people" element={<PeoplePage />} />
+        <Route path="/people" element={lazyPage(<PeoplePage />)} />
         <Route path="/workspace" element={<Navigate to="/apps" replace />} />
 
         <Route path="/apps/scrapper-pro" element={<PF_ScrapperPro />} />
@@ -158,7 +197,7 @@ function App() {
         <Route path="/apps/dns-txt-checker" element={<PF_DnsTxtChecker />} />
         <Route path="/apps/any-converter" element={<AnyToAnyConverter />} />
         <Route path="/apps/media-vault" element={<PF_UserMediaVault />} />
-        <Route path="/settings" element={<SettingsPage state={state} setState={setState} />} />
+        <Route path="/settings" element={lazyPage(<SettingsPage state={state} setState={setState} />)} />
 
         {['json-formatter','uuid-generator','password-generator','token-generator','base64-tool','hash-tool','url-encoder','html-encoder','jwt-decoder','hex-converter'].map((slug) => <Route key={slug} path={`/apps/${slug}`} element={<UtilityWorkbench />} />)}
         {['image-resizer','image-converter','image-compressor','image-metadata'].map((slug) => <Route key={slug} path={`/apps/${slug}`} element={<ImageWorkbench />} />)}
