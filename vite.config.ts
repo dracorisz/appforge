@@ -10,6 +10,14 @@ const appVersion = runtimeEnv.npm_package_version || '1.18.0'
 const gitSha = runtimeEnv.VERCEL_GIT_COMMIT_SHA || runtimeEnv.GITHUB_SHA || 'local'
 const buildTime = new Date().toISOString()
 
+const manualChunks = (id: string) => {
+  if (!id.includes('node_modules')) return undefined
+  if (/node_modules\/(react|react-dom|react-router|react-router-dom)\//.test(id)) return 'vendor-react'
+  if (id.includes('node_modules/@supabase/')) return 'vendor-supabase'
+  if (id.includes('node_modules/lucide-react/')) return 'vendor-icons'
+  return 'vendor'
+}
+
 export default defineConfig({
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),
@@ -20,6 +28,13 @@ export default defineConfig({
     alias: {
       '@': '/src'
     }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks,
+      },
+    },
   },
   server: {
     proxy: {
