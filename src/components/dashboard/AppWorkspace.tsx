@@ -193,9 +193,11 @@ export function AppWorkspace({ state, setState, onOpenApp, onToggleFavorite }: {
     const isFav = (state.favorites || []).includes(app.id)
 
     if (viewMode === 'grid') {
+      const cover = app.coverImage || null
       return (
         <Card key={app.id} className="transition-all hover:shadow-md">
-          <div className="flex items-start justify-between">
+          {cover && <div className="relative h-32 w-full overflow-hidden rounded-t-xl"><img src={cover} alt={app.name} className="h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" /></div>}
+          <div className="p-4">
             <div className="flex items-center gap-2">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                 <Icon className="h-5 w-5" />

@@ -5,6 +5,8 @@
 - **Dev**: `npm run dev` starts Vite on `5173` and API server on `5174`
 - **Typecheck**: `npm run typecheck` passes
 - **Git**: uncommitted changes present
+- **Last commit**: `0c05651` — Dragon Arena 1.3.0: HF tokens, asset gallery, points, dev API server, DNS checker
+- **Push status**: needs GitHub auth setup (SSH key or PAT) to push to `origin/main`
 
 ## Indexed roadmap
 | Status | Item | Files | Notes |
@@ -42,8 +44,21 @@
 - All runs are persisted per user in `dragon_arena_sessions` and `dragon_arena_turns`
 - Points are awarded for turns and scenes; leaderboard shows public profiles
 
-## Next steps
-- Verify Supabase RLS for `dragon_arena_assets` reads
-- Verify OpenRouter quota/model config
-- Verify HF tokens in Vercel env
-- Consider adding more opening narratives/branches
+## Vercel environment setup
+Required server-side env vars for Dragon Arena image generation:
+- `HF_TOKEN_1` — Hugging Face access token
+- `HF_TOKEN_2` — Hugging Face access token
+- `HF_TOKEN_3` — Hugging Face access token
+- `HF_IMAGE_MODEL` — optional, defaults to `stabilityai/stable-diffusion-xl-base-1.0`
+
+Import format for Vercel:
+```env
+HF_TOKEN_1=hf_...
+HF_TOKEN_2=hf_...
+HF_TOKEN_3=hf_...
+HF_IMAGE_MODEL=stabilityai/stable-diffusion-xl-base-1.0
+```
+
+Frontend-only optional keys (browser local storage, not server env):
+- Personal OpenRouter key: `sk-or-...`
+- Personal Hugging Face key: `hf_...`

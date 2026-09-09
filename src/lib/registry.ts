@@ -103,6 +103,26 @@ export function searchApps(query: string): AppDefinition[] {
 export function getAllApps(): AppDefinition[] { return APPS }
 export function getAllCategories(): CategoryDefinition[] { return CATEGORIES }
 
+export function updateApp(next: AppDefinition): void {
+  const index = APPS.findIndex((item) => item.id === next.id)
+  if (index < 0) throw new Error(`App not found: ${next.id}`)
+  APPS[index] = next
+  APP_MAP.set(next.id, next)
+}
+
+export function deleteApp(id: string): void {
+  const index = APPS.findIndex((item) => item.id === id)
+  if (index < 0) return
+  APPS.splice(index, 1)
+  APP_MAP.delete(id)
+}
+
+export function addApp(app: AppDefinition): void {
+  if (APP_MAP.has(app.id)) throw new Error(`App already exists: ${app.id}`)
+  APPS.push(app)
+  APP_MAP.set(app.id, app)
+}
+
 export { APPS, APP_MAP }
 export const APPFORGE_VERSION = BUILD_INFO.version
 export const APPFORGE_CHANGELOG = [

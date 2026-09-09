@@ -15,6 +15,7 @@ import {
   Users,
   GalleryThumbnails,
 } from 'lucide-react'
+import { GiRuneSword, GiSpikedShield, GiScrollUnfurled, GiHealthPotion, GiFireball, GiSparkles, GiDungeonGate, GiDragonHead, GiChest, GiNecklace } from 'react-icons/gi'
 import { Badge, Button, Card, Input } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
 import {
@@ -43,6 +44,16 @@ const MODEL = 'openrouter/free'
 const OPENING = 'You enter the Ember Vault beneath WildDragons Keep. Three rune-lit passages split ahead while something enormous breathes in the dark.'
 const OPENING_CHOICES = ['Follow the blue runes', 'Call out to the creature', 'Search the vault entrance']
 
+const choiceIcon = (choice: string) => {
+  const lower = choice.toLowerCase()
+  if (lower.includes('rune') || lower.includes('blue') || lower.includes('marking')) return GiRuneSword
+  if (lower.includes('creature') || lower.includes('call') || lower.includes('dragon')) return GiDragonHead
+  if (lower.includes('search') || lower.includes('vault') || lower.includes('entrance')) return GiDungeonGate
+  if (lower.includes('retreat') || lower.includes('study')) return GiScrollUnfurled
+  if (lower.includes('trace') || lower.includes('listen') || lower.includes('movement')) return GiMagicBolt
+  return GiSpikedShield
+}
+
 export function PF_AIDragonArena() {
   const [history, setHistory] = React.useState<Turn[]>([{ role: 'gm', text: OPENING }])
   const [choices, setChoices] = React.useState<string[]>(OPENING_CHOICES)
@@ -56,6 +67,7 @@ export function PF_AIDragonArena() {
   const [scene, setScene] = React.useState<string | null>(null)
   const [sceneLoading, setSceneLoading] = React.useState(false)
   const [imageDailyUsed, setImageDailyUsed] = React.useState(false)
+  const [generationStatus, setGenerationStatus] = React.useState<string>('')
 
   const [personalKey, setPersonalKey] = React.useState(() => localStorage.getItem('dragon-arena-openrouter-key') || '')
   const [showKeySettings, setShowKeySettings] = React.useState(false)
@@ -180,6 +192,7 @@ export function PF_AIDragonArena() {
     setImageDailyUsed(false)
     setDailyUsed(false)
     setAssets([])
+    setGenerationStatus('')
   }
 
   const savePersonalKey = () => {
@@ -200,6 +213,7 @@ export function PF_AIDragonArena() {
     if (!sessionId || sceneLoading || imageDailyUsed) return
     setSceneLoading(true)
     setError('')
+    setGenerationStatus('Starting scene generation...')
     try {
       const { data: sessionData } = await supabase.auth.getSession()
       const accessToken = sessionData.session?.access_token
@@ -208,6 +222,7 @@ export function PF_AIDragonArena() {
       const headers: Record<string, string> = { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` }
       if (personalKey.startsWith('sk-or-')) headers['x-openrouter-key'] = personalKey
       if (hfToken.startsWith('hf_')) headers['x-hf-token'] = hfToken
+      setGenerationStatus('Requesting scene from AI...')
       const response = await fetch('/api/dragon-image', {
         method: 'POST',
         headers,
@@ -218,6 +233,7 @@ export function PF_AIDragonArena() {
         if (response.status === 429) setImageDailyUsed(true)
         throw new Error(payload.error || 'The scene generator is unavailable.')
       }
+      setGenerationStatus('Saving scene to your gallery...')
       setScene(payload.imageUrl)
       const uid = sessionData.session?.user.id
       if (uid) {
@@ -235,8 +251,11 @@ export function PF_AIDragonArena() {
         await awardPoints(0, 0, 1)
         await refreshPoints(uid)
       }
+      setGenerationStatus('Scene generated successfully!')
+      window.setTimeout(() => setGenerationStatus(''), 3000)
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Could not generate a scene.')
+      setGenerationStatus('')
     } finally {
       setSceneLoading(false)
     }
@@ -460,14 +479,14 @@ export function PF_AIDragonArena() {
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_280px]">
         <Card className="p-0 overflow-hidden">
-          <div className="border-b border-border/70 px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm font-medium"><Bot className="h-4 w-4" /> AI Game Master</div>
+          <div className="border-b border-border/70 px-4 py-3 flex items-center justify-between bg-gradient-to-r from-background/80 to-background/40">
+            <div className="flex items-center gap-2 text-sm font-medium"><GiMagicBolt className="h-4 w-4" /> AI Game Master</div>
             <div className="flex items-center gap-3">
               <span className="text-xs text-muted-foreground">Turn {turn}</span>
               {points && <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><Sparkles className="h-3.5 w-3.5" />{points.points} pts</span>}
             </div>
           </div>
-          <div className="max-h-[520px] min-h-[360px] space-y-3 overflow-y-auto p-4">
+          <div className="max-h-[520px] min-h-[360px] space-y-3 overflow-y-auto p-4 bg-gradient-to-b from-background/60 to-background/20">
             {history.map((item, index) => (
               <div key={`${item.role}-${index}`} className={`flex ${item.role === 'player' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[86%] rounded-2xl px-4 py-3 text-sm leading-6 ${item.role === 'player' ? 'bg-foreground text-background' : 'border border-border/70 bg-background/55 text-foreground'}`}>
@@ -477,11 +496,11 @@ export function PF_AIDragonArena() {
             ))}
             {loading && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> The Game Master is deciding what happens next…</div>}
           </div>
-          <div className="border-t border-border/70 p-4 space-y-3">
+          <div className="border-t border-border/70 p-4 space-y-3 bg-background/40">
             {error && <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
             {dailyUsed && !usingPersonalKey && <div className="rounded-lg border border-border/70 bg-background/45 px-3 py-2 text-sm text-muted-foreground">Today’s owner-funded AI turn has been used. Add a personal OpenRouter key for unlimited play, or wait for 00:00 UTC.</div>}
             <div className="grid gap-2 sm:grid-cols-3">
-              {choices.map((choice) => <Button key={choice} variant="secondary" disabled={!canPlay} onClick={() => void play(choice)} className="h-auto min-h-10 whitespace-normal text-left">{choice}</Button>)}
+              {choices.map((choice) => { const Icon = choiceIcon(choice); return <Button key={choice} variant="secondary" disabled={!canPlay} onClick={() => void play(choice)} className="h-auto min-h-10 whitespace-normal text-left"><Icon className="h-4 w-4" /> {choice}</Button> })}
             </div>
             <div className="flex gap-2">
               <input value={action} disabled={!canPlay} onChange={(event) => setAction(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') void play() }} placeholder={dailyUsed && !usingPersonalKey ? 'Add a personal key or wait for tomorrow…' : 'Or type your own action…'} className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring" />

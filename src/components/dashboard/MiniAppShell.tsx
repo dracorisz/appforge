@@ -20,6 +20,7 @@ export function MiniAppShell({ app, onUpdate, onDelete, onToggleFavorite, isFavo
 
   return (
     <div className="space-y-6">
+      {app.coverImage && <div className="relative h-48 w-full overflow-hidden rounded-xl"><img src={app.coverImage} alt={app.name} className="h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" /></div>}
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{app.name}</h1>
