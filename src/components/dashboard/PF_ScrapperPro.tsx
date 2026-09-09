@@ -1,10 +1,10 @@
 import React from 'react'
 import { Card, Button, Input, Badge, MediaShowbox } from '@/components/ui'
 import { downloadTextPdf } from '@/lib/simplePdf'
-import { supabase } from '@/lib/supabase'
-import { saveScrapperResult } from '@/lib/dragonArena'
+import { saveScrapperVaultResult } from '@/lib/mediaVault'
 import {
   AlertCircle,
+  Archive,
   Check,
   Clock3,
   Copy,
@@ -23,7 +23,6 @@ import {
   Search,
   Square,
   Trash2,
-  Swords,
 } from 'lucide-react'
 
 export interface ScrapperProResult {
@@ -129,7 +128,8 @@ export function PF_ScrapperPro() {
   const [error, setError] = React.useState('')
   const [copiedId, setCopiedId] = React.useState<string | null>(null)
   const [downloadingId, setDownloadingId] = React.useState<string | null>(null)
-  const [savingDragonId, setSavingDragonId] = React.useState<string | null>(null)
+  const [savingVaultId, setSavingVaultId] = React.useState<string | null>(null)
+  const [vaultSavedIds, setVaultSavedIds] = React.useState<Set<string>>(() => new Set())
   const [preview, setPreview] = React.useState<ScrapperProResult | null>(null)
   const abortRef = React.useRef<AbortController | null>(null)
   const timerRef = React.useRef<ReturnType<typeof setInterval> | null>(null)
@@ -228,26 +228,24 @@ export function PF_ScrapperPro() {
     persistSaved(exists ? saved.filter((item) => item.id !== result.id && item.url !== result.url) : [result, ...saved].slice(0, 250))
   }
 
-  const saveToDragonArena = async (result: ScrapperProResult) => {
-    const { data: auth } = await supabase.auth.getUser()
-    const user = auth.user
-    if (!user?.id) {
-      setError('Sign in to save assets to Dragon Arena.')
-      return
-    }
-    setSavingDragonId(result.id)
+  const saveToMediaVault = async (result: ScrapperProResult) => {
+    setSavingVaultId(result.id)
     setError('')
     try {
-      await saveScrapperResult(user.id, null, {
+      await saveScrapperVaultResult({
         source: result.source,
         type: result.type,
+        title: result.title,
         originalUrl: result.url,
         thumbnail: result.thumbnail,
+        mediaUrl: result.mediaUrl,
         snippet: result.snippet,
+        date: result.date,
       })
+      setVaultSavedIds((current) => new Set(current).add(result.id))
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not save to Dragon Arena.')
-    } finally { setSavingDragonId(null) }
+      setError(e instanceof Error ? e.message : 'Could not save to Media Vault.')
+    } finally { setSavingVaultId(null) }
   }
 
   const copyUrl = async (result: ScrapperProResult) => {
@@ -339,7 +337,7 @@ export function PF_ScrapperPro() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div><div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-foreground">Scrapper Pro</h1><Badge color="green">Server-backed</Badge></div><p className="mt-1 max-w-2xl text-sm text-muted-foreground">Search public sources for real images, videos, posts, and articles. Preview media in-page, save useful results, and download supported items without browser CORS workarounds.</p></div>
+        <div><div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-foreground">Scrapper Pro</h1><Badge color="green">Server-backed</Badge></div><p className="mt-1 max-w-2xl text-sm text-muted-foreground">Search public sources for real images, videos, posts, and articles. Saved results stay locally for guest use; signed-in users can also archive references into Media Vault.</p></div>
         <div className="flex items-center gap-1 rounded-lg border border-border/70 bg-background/45 p-1 backdrop-blur-md"><button type="button" onClick={() => setViewMode('grid')} aria-label="Grid view" className={`rounded-md p-1.5 ${viewMode === 'grid' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}><Grid3X3 className="h-4 w-4" /></button><button type="button" onClick={() => setViewMode('list')} aria-label="List view" className={`rounded-md p-1.5 ${viewMode === 'list' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}><List className="h-4 w-4" /></button></div>
       </div>
 
@@ -354,7 +352,7 @@ export function PF_ScrapperPro() {
 
       {failures.length > 0 && <Card className="border-amber-500/30 bg-amber-500/5"><div className="flex items-start gap-2 p-4"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" /><div><h2 className="text-sm font-medium text-foreground">Some sources were unavailable</h2><p className="mt-1 text-xs text-muted-foreground">Public search pages can rate-limit or change markup. Successful results are still shown.</p><div className="mt-2 flex flex-wrap gap-1.5">{failures.map((failure) => <span key={failure.sourceId} title={failure.error} className="rounded-md border border-border bg-background/50 px-2 py-1 text-xs text-muted-foreground">{failure.source}</span>)}</div></div></div></Card>}
 
-      {activeResults.length > 0 ? <div className={viewMode === 'grid' ? 'grid gap-3 sm:grid-cols-2' : 'space-y-2'}>{activeResults.map((result) => { const Icon = typeIcon(result.type); const savedResult = isSaved(result); const previewable = result.type === 'image' || result.type === 'video'; const busy = downloadingId === result.id; return <Card key={`${filter}-${result.id}`} className={viewMode === 'list' ? 'p-3' : 'overflow-hidden p-0'}>{viewMode === 'grid' && result.thumbnail && <button type="button" onClick={() => previewable && setPreview(result)} className="group relative block h-72 w-full overflow-hidden bg-muted text-left" aria-label={previewable ? `Preview ${result.title}` : result.title}><img src={result.thumbnail} alt={result.title} loading="lazy" className="h-full w-full object-cover" onError={(event) => { (event.currentTarget as HTMLImageElement).style.opacity = '0' }} />{result.type === 'video' && <span className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white shadow-xl backdrop-blur-md transition-transform group-hover:scale-105"><Play className="ml-0.5 h-5 w-5 fill-current" /></span>}{previewable && <span className="absolute right-2 top-2 rounded-lg border border-white/15 bg-black/45 p-1.5 text-white/90 opacity-0 backdrop-blur-md transition-opacity group-hover:opacity-100"><Maximize2 className="h-3.5 w-3.5" /></span>}</button>}<div className={viewMode === 'grid' ? 'p-3' : 'flex items-center gap-3'}>{viewMode === 'list' && <button type="button" onClick={() => previewable && setPreview(result)} className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/60 bg-muted text-muted-foreground ${previewable ? 'cursor-pointer' : 'cursor-default'}`}>{result.thumbnail ? <img src={result.thumbnail} alt="" className="h-full w-full object-cover" /> : <Icon className="h-4 w-4" />}</button>}<div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-1.5"><Badge color={typeColor(result.type)}>{result.type}</Badge><span className="truncate text-[11px] text-muted-foreground">{result.source}</span></div><h3 className={`${previewable && viewMode === 'grid' ? 'mt-1 line-clamp-1 text-xs font-medium' : 'mt-2 line-clamp-2 text-sm font-semibold'} text-foreground`}>{result.title}</h3>{result.snippet && !(previewable && viewMode === 'grid') && <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{result.snippet}</p>}{!(previewable && viewMode === 'grid') && <p className="mt-2 truncate text-[11px] text-muted-foreground">{safeHost(result.url)}</p>}</div><div className={viewMode === 'grid' ? 'mt-2 flex items-center gap-1 border-t border-border/60 pt-2' : 'flex shrink-0 items-center gap-1'}>{previewable && <Button variant="secondary" size="sm" className={viewMode === 'grid' ? 'flex-1' : ''} onClick={() => setPreview(result)}><Maximize2 className="h-3.5 w-3.5" /> {viewMode === 'grid' ? 'View' : ''}</Button>}{!previewable && <a href={result.url} target="_blank" rel="noopener noreferrer" className={viewMode === 'grid' ? 'flex-1' : ''}><Button variant="secondary" size="sm" className={viewMode === 'grid' ? 'w-full' : ''}><ExternalLink className="h-3.5 w-3.5" /> {viewMode === 'grid' ? 'Open' : ''}</Button></a>}<Button variant="ghost" size="sm" onClick={() => downloadResult(result)} title={`Download ${downloadLabel(result)}`} disabled={busy}>{busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}{viewMode === 'grid' && !previewable ? downloadLabel(result) : ''}</Button><Button variant="ghost" size="sm" onClick={() => copyUrl(result)} title="Copy URL">{copiedId === result.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}</Button><Button variant="ghost" size="sm" onClick={() => toggleSaved(result)} title={savedResult ? 'Remove from saved' : 'Save result'}>{savedResult ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Save className="h-3.5 w-3.5" />}</Button><Button variant="ghost" size="sm" onClick={() => void saveToDragonArena(result)} title="Save to Dragon Arena" disabled={savingDragonId === result.id}>{savingDragonId === result.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Swords className="h-3.5 w-3.5" />}</Button></div></div></Card> })}</div> : !running ? <Card><div className="py-10 text-center"><Search className="mx-auto h-5 w-5 text-muted-foreground" /><h2 className="mt-3 text-sm font-medium text-foreground">{filter === 'saved' ? 'No saved results yet' : filter === 'media' ? 'No media results yet' : 'Ready to search'}</h2><p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">{filter === 'saved' ? 'Save useful results and they will stay on this device.' : 'Enter a query, choose sources, and search. Media results open inside AppForge; article results can be exported as PDF.'}</p></div></Card> : null}
+      {activeResults.length > 0 ? <div className={viewMode === 'grid' ? 'grid gap-3 sm:grid-cols-2' : 'space-y-2'}>{activeResults.map((result) => { const Icon = typeIcon(result.type); const savedResult = isSaved(result); const vaultSaved = vaultSavedIds.has(result.id); const previewable = result.type === 'image' || result.type === 'video'; const busy = downloadingId === result.id; return <Card key={`${filter}-${result.id}`} className={viewMode === 'list' ? 'p-3' : 'overflow-hidden p-0'}>{viewMode === 'grid' && result.thumbnail && <button type="button" onClick={() => previewable && setPreview(result)} className="group relative block h-72 w-full overflow-hidden bg-muted text-left" aria-label={previewable ? `Preview ${result.title}` : result.title}><img src={result.thumbnail} alt={result.title} loading="lazy" className="h-full w-full object-cover" onError={(event) => { (event.currentTarget as HTMLImageElement).style.opacity = '0' }} />{result.type === 'video' && <span className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white shadow-xl backdrop-blur-md transition-transform group-hover:scale-105"><Play className="ml-0.5 h-5 w-5 fill-current" /></span>}{previewable && <span className="absolute right-2 top-2 rounded-lg border border-white/15 bg-black/45 p-1.5 text-white/90 opacity-0 backdrop-blur-md transition-opacity group-hover:opacity-100"><Maximize2 className="h-3.5 w-3.5" /></span>}</button>}<div className={viewMode === 'grid' ? 'p-3' : 'flex items-center gap-3'}>{viewMode === 'list' && <button type="button" onClick={() => previewable && setPreview(result)} className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/60 bg-muted text-muted-foreground ${previewable ? 'cursor-pointer' : 'cursor-default'}`}>{result.thumbnail ? <img src={result.thumbnail} alt="" className="h-full w-full object-cover" /> : <Icon className="h-4 w-4" />}</button>}<div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-1.5"><Badge color={typeColor(result.type)}>{result.type}</Badge><span className="truncate text-[11px] text-muted-foreground">{result.source}</span></div><h3 className={`${previewable && viewMode === 'grid' ? 'mt-1 line-clamp-1 text-xs font-medium' : 'mt-2 line-clamp-2 text-sm font-semibold'} text-foreground`}>{result.title}</h3>{result.snippet && !(previewable && viewMode === 'grid') && <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{result.snippet}</p>}{!(previewable && viewMode === 'grid') && <p className="mt-2 truncate text-[11px] text-muted-foreground">{safeHost(result.url)}</p>}</div><div className={viewMode === 'grid' ? 'mt-2 flex items-center gap-1 border-t border-border/60 pt-2' : 'flex shrink-0 items-center gap-1'}>{previewable && <Button variant="secondary" size="sm" className={viewMode === 'grid' ? 'flex-1' : ''} onClick={() => setPreview(result)}><Maximize2 className="h-3.5 w-3.5" /> {viewMode === 'grid' ? 'View' : ''}</Button>}{!previewable && <a href={result.url} target="_blank" rel="noopener noreferrer" className={viewMode === 'grid' ? 'flex-1' : ''}><Button variant="secondary" size="sm" className={viewMode === 'grid' ? 'w-full' : ''}><ExternalLink className="h-3.5 w-3.5" /> {viewMode === 'grid' ? 'Open' : ''}</Button></a>}<Button variant="ghost" size="sm" onClick={() => downloadResult(result)} title={`Download ${downloadLabel(result)}`} disabled={busy}>{busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}{viewMode === 'grid' && !previewable ? downloadLabel(result) : ''}</Button><Button variant="ghost" size="sm" onClick={() => copyUrl(result)} title="Copy URL">{copiedId === result.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}</Button><Button variant="ghost" size="sm" onClick={() => toggleSaved(result)} title={savedResult ? 'Remove local save' : 'Save on this device'}>{savedResult ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Save className="h-3.5 w-3.5" />}</Button><Button variant="ghost" size="sm" onClick={() => void saveToMediaVault(result)} title={vaultSaved ? 'Saved to Media Vault' : 'Save to Media Vault'} disabled={savingVaultId === result.id || vaultSaved}>{savingVaultId === result.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : vaultSaved ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Archive className="h-3.5 w-3.5" />}</Button></div></div></Card> })}</div> : !running ? <Card><div className="py-10 text-center"><Search className="mx-auto h-5 w-5 text-muted-foreground" /><h2 className="mt-3 text-sm font-medium text-foreground">{filter === 'saved' ? 'No saved results yet' : filter === 'media' ? 'No media results yet' : 'Ready to search'}</h2><p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">{filter === 'saved' ? 'Local saves stay on this device. Signed-in users can also archive a result to the Scrapper Pro folder in Media Vault.' : 'Enter a query, choose sources, and search. Media results open inside AppForge; article results can be exported as PDF.'}</p></div></Card> : null}
 
       {saved.length > 0 && <div className="flex justify-end"><Button variant="ghost" size="sm" onClick={() => persistSaved([])}><Trash2 className="h-3.5 w-3.5" /> Clear saved results</Button></div>}
 
