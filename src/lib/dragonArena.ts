@@ -28,6 +28,7 @@ export type DragonAsset = {
   title: string | null
   storage_path: string | null
   external_url: string | null
+  mime_type?: string | null
   prompt: string | null
   metadata: Record<string, unknown>
   is_public: boolean
@@ -194,6 +195,17 @@ export async function saveAsset(params: {
   isPublic?: boolean
   metadata?: Record<string, unknown>
 }): Promise<DragonAsset> {
+  if (params.storagePath) {
+    const { data: existing, error: existingError } = await supabase
+      .from('dragon_arena_assets')
+      .select('*')
+      .eq('user_id', params.userId)
+      .eq('storage_path', params.storagePath)
+      .maybeSingle()
+    if (existingError) throw existingError
+    if (existing) return existing as DragonAsset
+  }
+
   const { data, error } = await supabase
     .from('dragon_arena_assets')
     .insert({
@@ -277,7 +289,6 @@ export async function deleteSession(sessionId: string): Promise<void> {
 
 export { assetUrl }
 
-// Scrapper Pro integration helpers
 export type ScrapperAssetMeta = {
   source: string
   type: 'image' | 'video' | 'article' | 'post'
@@ -299,7 +310,7 @@ export async function saveScrapperResult(
     storagePath: null,
     externalUrl: result.thumbnail || result.originalUrl,
     prompt: `Saved from ${result.source}: ${result.title || ''}`,
-      title: result.title || null,
+    title: result.title || null,
     isPublic: false,
     metadata: {
       source: result.source,
