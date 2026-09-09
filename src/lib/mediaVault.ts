@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabase, SUPABASE_PUBLISHABLE_KEY } from '@/lib/supabase'
 
 export type VaultMedia = {
   id: string
@@ -24,6 +24,8 @@ export type VaultQuota = {
   remaining_bytes: number
 }
 
+export type VaultFolder = 'general' | 'dragon-arena' | 'scrapper-pro' | string
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://ixqoosixhahrsgwoxyme.supabase.co'
 
 export const vaultPublicUrl = (path: string | null) =>
@@ -35,9 +37,15 @@ export const vaultSignedUrl = async (path: string, expires = 3600) => {
   return data?.signedUrl || null
 }
 
-export async function listVaultMedia(kind?: VaultMedia['kind']): Promise<VaultMedia[]> {
+export const vaultFolder = (item: Pick<VaultMedia, 'metadata'>): string => {
+  const value = item.metadata?.folder
+  return typeof value === 'string' && value.trim() ? value.trim() : 'general'
+}
+
+export async function listVaultMedia(kind?: VaultMedia['kind'], folder?: VaultFolder): Promise<VaultMedia[]> {
   let query = supabase.from('user_media_vault').select('*').order('created_at', { ascending: false }).limit(200)
   if (kind) query = query.eq('kind', kind)
+  if (folder && folder !== 'all') query = query.contains('metadata', { folder })
   const { data, error } = await query
   if (error) throw error
   return (data || []) as VaultMedia[]
@@ -94,9 +102,14 @@ export async function confirmVaultUpload(params: {
   isPublic?: boolean
   metadata?: Record<string, unknown>
 }): Promise<VaultMedia> {
+  const { data: auth } = await supabase.auth.getUser()
+  const userId = auth.user?.id
+  if (!userId) throw new Error('Sign in to save media metadata.')
+
   const { data, error } = await supabase
     .from('user_media_vault')
     .insert({
+      user_id: userId,
       storage_path: params.path,
       kind: params.kind,
       file_name: params.fileName,
@@ -105,7 +118,7 @@ export async function confirmVaultUpload(params: {
       title: params.title || null,
       description: params.description || null,
       is_public: params.isPublic ?? false,
-      metadata: params.metadata || {},
+      metadata: params.metadata || { folder: 'general' },
     })
     .select('*')
     .single()
@@ -129,13 +142,30 @@ export async function deleteVaultMedia(id: string): Promise<void> {
   }
 }
 
-export async function uploadVaultMedia(file: File, opts: {
+const inferKind = (file: File): VaultMedia['kind'] => {
+  if (file.type.startsWith('video/')) return 'video'
+  if (file.type.startsWith('image/')) return 'image'
+  if (file.type.startsWith('audio/')) return 'audio'
+  if (file.type === 'application/pdf' || file.type.startsWith('text/') || /\.(txt|md|json|pdf)$/i.test(file.name)) return 'document'
+  return 'other'
+}
+
+type UploadOptions = {
   kind?: VaultMedia['kind']
   title?: string
   description?: string
   isPublic?: boolean
-} = {}): Promise<VaultMedia> {
-  const kind = opts.kind || (file.type.startsWith('video/') ? 'video' : file.type.startsWith('image/') ? 'image' : 'other')
+  folder?: VaultFolder
+  metadata?: Record<string, unknown>
+}
+
+const uploadMetadata = (opts: UploadOptions) => ({
+  ...(opts.metadata || {}),
+  folder: opts.folder || (typeof opts.metadata?.folder === 'string' ? opts.metadata.folder : 'general'),
+})
+
+export async function uploadVaultMedia(file: File, opts: UploadOptions = {}): Promise<VaultMedia> {
+  const kind = opts.kind || inferKind(file)
   if (file.size > 104857600) throw new Error('Files over 100 MB are not allowed.')
   const prepared = await requestUploadUrl({ kind, fileName: file.name, mimeType: file.type || 'application/octet-stream', sizeBytes: file.size })
 
@@ -144,44 +174,46 @@ export async function uploadVaultMedia(file: File, opts: {
     headers: {
       'Content-Type': file.type || 'application/octet-stream',
       'x-upsert': 'false',
-      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '',
+      apikey: SUPABASE_PUBLISHABLE_KEY,
       Authorization: `Bearer ${prepared.token}`,
     },
     body: file,
   })
   if (!upload.ok) {
     const text = await upload.text().catch(() => '')
-    throw new Error(`Upload failed: ${upload.status} ${text.slice(0, 120)}`)
+    throw new Error(`Upload failed: ${upload.status} ${text.slice(0, 160)}`)
   }
 
-  return confirmVaultUpload({
-    path: prepared.path,
-    kind,
-    fileName: file.name,
-    mimeType: file.type || 'application/octet-stream',
-    sizeBytes: file.size,
-    title: opts.title,
-    description: opts.description,
-    isPublic: opts.isPublic,
-  })
+  try {
+    return await confirmVaultUpload({
+      path: prepared.path,
+      kind,
+      fileName: file.name,
+      mimeType: file.type || 'application/octet-stream',
+      sizeBytes: file.size,
+      title: opts.title,
+      description: opts.description,
+      isPublic: opts.isPublic,
+      metadata: uploadMetadata(opts),
+    })
+  } catch (error) {
+    await supabase.storage.from('user-media-vault').remove([prepared.path]).catch(() => undefined)
+    throw error
+  }
 }
 
-export async function uploadVaultMediaWithProgress(file: File, opts: {
-  kind?: VaultMedia['kind']
-  title?: string
-  description?: string
-  isPublic?: boolean
+export async function uploadVaultMediaWithProgress(file: File, opts: UploadOptions & {
   onProgress?: (progress: number) => void
 } = {}): Promise<VaultMedia> {
-  const kind = opts.kind || (file.type.startsWith('video/') ? 'video' : file.type.startsWith('image/') ? 'image' : 'other')
+  const kind = opts.kind || inferKind(file)
   if (file.size > 104857600) throw new Error('Files over 100 MB are not allowed.')
   const prepared = await requestUploadUrl({ kind, fileName: file.name, mimeType: file.type || 'application/octet-stream', sizeBytes: file.size })
 
   const xhr = new XMLHttpRequest()
   return new Promise((resolve, reject) => {
-    xhr.upload.addEventListener('progress', (e) => {
-      if (e.lengthComputable && opts.onProgress) {
-        opts.onProgress(Math.round((e.loaded / e.total) * 100))
+    xhr.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable && opts.onProgress) {
+        opts.onProgress(Math.round((event.loaded / event.total) * 100))
       }
     })
     xhr.addEventListener('load', () => {
@@ -195,16 +227,20 @@ export async function uploadVaultMediaWithProgress(file: File, opts: {
           title: opts.title,
           description: opts.description,
           isPublic: opts.isPublic,
-        }).then(resolve).catch(reject)
+          metadata: uploadMetadata(opts),
+        }).then(resolve).catch(async (error) => {
+          await supabase.storage.from('user-media-vault').remove([prepared.path]).catch(() => undefined)
+          reject(error)
+        })
       } else {
-        reject(new Error(`Upload failed: ${xhr.status}`))
+        reject(new Error(`Upload failed: ${xhr.status} ${String(xhr.responseText || '').slice(0, 160)}`))
       }
     })
     xhr.addEventListener('error', () => reject(new Error('Upload failed due to network error')))
     xhr.open('POST', prepared.uploadUrl)
     xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream')
     xhr.setRequestHeader('x-upsert', 'false')
-    xhr.setRequestHeader('apikey', import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '')
+    xhr.setRequestHeader('apikey', SUPABASE_PUBLISHABLE_KEY)
     xhr.setRequestHeader('Authorization', `Bearer ${prepared.token}`)
     xhr.send(file)
   })
