@@ -1,6 +1,6 @@
 import React from 'react'
 import { Card, Button, Input, Badge } from '@/components/ui'
-import { Search, ExternalLink, RefreshCw, AlertCircle, FileText, Terminal } from 'lucide-react'
+import { ExternalLink, RefreshCw, AlertCircle, FileText } from 'lucide-react'
 
 export interface PariflowDoc {
   id: string

@@ -44,14 +44,6 @@ const cleanText = (value, fallback = '') => {
   return (text || fallback).slice(0, 220)
 }
 
-const decodeJsonText = (value, fallback = '') => {
-  try {
-    return cleanText(JSON.parse(`"${value}"`), fallback)
-  } catch {
-    return cleanText(value, fallback)
-  }
-}
-
 const fetchText = async (url, options = {}, timeoutMs = 9000) => {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), timeoutMs)

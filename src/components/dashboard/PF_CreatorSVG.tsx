@@ -1,6 +1,6 @@
 import React from 'react'
-import { Card, Button, Input, Textarea, Badge } from '@/components/ui'
-import { Download, Eye, RefreshCw, Copy, Check, Image as ImageIcon, Code } from 'lucide-react'
+import { Card, Button, Input, Textarea } from '@/components/ui'
+import { Download, Eye, RefreshCw, Copy, Check, Image as ImageIcon } from 'lucide-react'
 
 export interface HeaderConfig {
   name: string

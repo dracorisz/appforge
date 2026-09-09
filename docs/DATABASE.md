@@ -1,17 +1,14 @@
 # AppForge Database Setup
 
 ## Current State
-AppForge currently runs entirely in the browser using `localStorage`. No database is required for the existing tools to work.
+AppForge uses Supabase PostgreSQL for authentication and signed-in persistence. Public/browser-local tools can still work without signing in.
 
-## Why Add a Database?
-- Sync favorites/recent apps across devices
-- Share app versions and progress with a team
-- Persist user-generated content beyond browser storage
-- Enable multi-user or auth scenarios later
+## Database stack
 
-## Recommended Stack
-- **Frontend DB / Backend**: Supabase (PostgreSQL)
-- **Optional MySQL**: If you already have MySQL hosting, you can use it instead
+- Supabase PostgreSQL
+- Supabase Auth
+- Supabase Storage
+- SQL migrations in `supabase/migrations/`
 
 ## Step 1 — Supabase Setup
 1. Open https://supabase.com/dashboard
@@ -22,28 +19,16 @@ AppForge currently runs entirely in the browser using `localStorage`. No databas
    - `SUPABASE_SERVICE_ROLE_KEY` = your service_role key (server-only)
 
 ## Step 2 — Schema
-Run the SQL from `scripts/setup-mysql.sql` adapted for Postgres, or create tables manually:
-- `apps`
-- `app_versions`
-- `favorites`
-- `recent_apps`
-- `settings`
-- `categories`
 
-## Step 3 — Client Integration
-Create `src/lib/supabase.ts`:
-- Initialize Supabase client with `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`
-- Replace localStorage reads/writes in `App.tsx` with Supabase calls for:
-  - favorites
-  - recent apps
-  - app versions
-  - categories CRUD
+Apply the versioned SQL files in `supabase/migrations/` through the Supabase CLI or the project's deployment workflow. Do not adapt the removed legacy MySQL schema: it did not represent the current application model.
 
-## Step 4 — Migration Strategy
-1. Keep localStorage as fallback
-2. Add a `db` abstraction layer in `src/lib/db.ts`
-3. Switch features to DB one by one
-4. Keep exports/imports for backup
+## Step 3 — Client integration
+
+`src/lib/supabase.ts` initializes the browser client with the public URL and publishable/anon key. Server routes use `SUPABASE_SERVICE_ROLE_KEY` only where elevated operations are required.
+
+## Step 4 — Browser-local data
+
+Some mini-apps intentionally retain local-only state. Keep their import/export paths as user-controlled backups and document when a feature syncs to Supabase.
 
 ## Step 5 — Verify
 ```bash
@@ -53,4 +38,4 @@ bash scripts/verify-deployment.sh
 ## Notes
 - Do NOT expose `SUPABASE_SERVICE_ROLE_KEY` to the browser
 - Use it only in Vercel serverless functions if you add backend endpoints
-- For now, the app works without any database
+- Never expose the service-role key in client code or a `VITE_` variable

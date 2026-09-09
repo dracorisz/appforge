@@ -6,7 +6,6 @@ import {
   FileText,
   Folder,
   Gamepad2,
-  Loader2,
   Maximize2,
   Play,
   RefreshCw,

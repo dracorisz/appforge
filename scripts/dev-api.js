@@ -1,5 +1,4 @@
 import { createServer } from 'node:http'
-import { readFileSync, existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
