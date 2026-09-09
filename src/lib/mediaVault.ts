@@ -165,3 +165,47 @@ export async function uploadVaultMedia(file: File, opts: {
     isPublic: opts.isPublic,
   })
 }
+
+export async function uploadVaultMediaWithProgress(file: File, opts: {
+  kind?: VaultMedia['kind']
+  title?: string
+  description?: string
+  isPublic?: boolean
+  onProgress?: (progress: number) => void
+} = {}): Promise<VaultMedia> {
+  const kind = opts.kind || (file.type.startsWith('video/') ? 'video' : file.type.startsWith('image/') ? 'image' : 'other')
+  if (file.size > 104857600) throw new Error('Files over 100 MB are not allowed.')
+  const prepared = await requestUploadUrl({ kind, fileName: file.name, mimeType: file.type || 'application/octet-stream', sizeBytes: file.size })
+
+  const xhr = new XMLHttpRequest()
+  return new Promise((resolve, reject) => {
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable && opts.onProgress) {
+        opts.onProgress(Math.round((e.loaded / e.total) * 100))
+      }
+    })
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        confirmVaultUpload({
+          path: prepared.path,
+          kind,
+          fileName: file.name,
+          mimeType: file.type || 'application/octet-stream',
+          sizeBytes: file.size,
+          title: opts.title,
+          description: opts.description,
+          isPublic: opts.isPublic,
+        }).then(resolve).catch(reject)
+      } else {
+        reject(new Error(`Upload failed: ${xhr.status}`))
+      }
+    })
+    xhr.addEventListener('error', () => reject(new Error('Upload failed due to network error')))
+    xhr.open('POST', prepared.uploadUrl)
+    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream')
+    xhr.setRequestHeader('x-upsert', 'false')
+    xhr.setRequestHeader('apikey', import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '')
+    xhr.setRequestHeader('Authorization', `Bearer ${prepared.token}`)
+    xhr.send(file)
+  })
+}

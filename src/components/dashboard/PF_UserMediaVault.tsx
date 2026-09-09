@@ -17,6 +17,7 @@ import {
   listVaultMedia,
   getVaultQuota,
   uploadVaultMedia,
+  uploadVaultMediaWithProgress,
   deleteVaultMedia,
   vaultSignedUrl,
   type VaultMedia,
@@ -114,7 +115,12 @@ export function PF_UserMediaVault() {
     for (const file of files) {
       try {
         setUploadProgress((p) => ({ ...p, [file.name]: 0 }))
-        const item = await uploadVaultMedia(file, { title: file.name })
+        const item = await uploadVaultMediaWithProgress(file, {
+          title: file.name,
+          onProgress: (progress) => {
+            setUploadProgress((p) => ({ ...p, [file.name]: progress }))
+          }
+        })
         setMedia((m) => [item, ...m])
         setUploadProgress((p) => ({ ...p, [file.name]: 100 }))
         await new Promise((r) => setTimeout(r, 300))
@@ -163,7 +169,7 @@ export function PF_UserMediaVault() {
         </div>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={() => void refresh()} disabled={loading}><RefreshCw className="h-4 w-4" /> Refresh</Button>
-          <input type="file" multiple accept="image/*,video/*,application/pdf,.txt,.md,.json" className="hidden" onChange={handleUpload} disabled={uploading} id="vault-upload" />
+          <input type="file" multiple accept="image/*,video/*,audio/*,application/pdf,.txt,.md,.json" className="hidden" onChange={handleUpload} disabled={uploading} id="vault-upload" />
           <label htmlFor="vault-upload" className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 bg-background/45 px-3 py-2 text-sm font-medium text-foreground hover:bg-accent"><Upload className="h-4 w-4" />{uploading ? ' Uploading…' : ' Upload'}</label>
         </div>
       </div>

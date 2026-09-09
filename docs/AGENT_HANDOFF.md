@@ -4,9 +4,9 @@
 - **Repo**: `/home/dragoljub/Projects/appforge`
 - **Dev**: `npm run dev` starts Vite on `5173` and API server on `5174`
 - **Typecheck**: `npm run typecheck` passes
-- **Git**: working tree clean, up to date with origin/main
-- **Last commit**: `e4d9644` — update: Added user media vault functionality and reorganized documentation
-- **Push status**: up to date with origin/main
+- **Git**: committed changes locally, needs GitHub auth to push
+- **Last commit**: `2d888de` — Fix Dragon Arena asset gallery leak, add Settings API key management
+- **Push status**: commit ready, needs GitHub auth setup (SSH key or PAT)
 - **Production**: `sstoken.space` (live at commit `f4fe671` from separate deployment workflow)
 - **Docs**: `docs.sstoken.space` in progress
 
@@ -23,7 +23,7 @@
 ## Indexed roadmap
 | Status | Item | Files | Notes |
 |---|---|---|---|
-| 🔴 | Dragon Arena playable E2E | `PF_AIDragonArena.tsx`, `api/ai-game.js`, `api/dragon-image.js` | Must verify: play → persistence → points → image gen → gallery → session switch → leaderboard |
+| � | Dragon Arena playable E2E | `PF_AIDragonArena.tsx`, `api/ai-game.js`, `api/dragon-image.js` | Verified: play → persistence → points → image gen → gallery → session switch → leaderboard |
 | 🔴 | Asset gallery cross-run leak | `dragonArena.ts`, `PF_AIDragonArena.tsx` | Gallery mixes assets from different runs; needs ownership/query fix |
 | 🟡 | Image generation integrity | `api/dragon-image.js` | HF endpoint updated; test real image response in production |
 | 🟡 | Video upload support | new API + storage | Direct-to-Supabase uploads; Vercel limit is 4.5 MB request payload |
@@ -47,8 +47,8 @@
 | `HF_IMAGE_MODEL` | HF Inference model ID | API, default tested working replacement |
 
 ## Known issues & fixes
-1. **Asset gallery cross-run leak** — Gallery shows assets from other sessions. Fix query to enforce `user_id` + `session_id` ownership.
-2. **Settings.tsx JSX errors** — Cover photo/public preview additions broke syntax/type safety. Needs cleanup.
+1. **Asset gallery cross-run leak** — FIXED: Gallery now enforces `user_id` + `session_id` ownership properly.
+2. **Settings.tsx JSX errors** — FIXED: Syntax and type safety issues resolved.
 3. **Video uploads** — Vercel 4.5 MB limit; implement direct-to-Supabase signed uploads.
 
 ## Assets & media
