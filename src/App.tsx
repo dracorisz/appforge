@@ -30,6 +30,8 @@ import {
   defaultSources,
   defaultOutreach,
   defaultChecklist,
+  defaultDocumentReadiness,
+  defaultMessages,
   defaultPlan,
   defaultMiniApps,
   defaultVersions,
@@ -42,15 +44,15 @@ import { loadCategoryOverrides, saveCategoryOverrides, subscribeCategoryOverride
 import { updateSeo } from './lib/seo'
 
 const defaultSettings = { theme: 'system' as const }
-const defaultState: AppState = { plan: defaultPlan, article: defaultArticle, pitches: defaultPitches, sources: defaultSources, outreach: defaultOutreach, checklist: defaultChecklist, settings: defaultSettings, miniApps: defaultMiniApps, versions: defaultVersions, favorites: [], recentApps: [] }
+const defaultState: AppState = { plan: defaultPlan, article: defaultArticle, pitches: defaultPitches, sources: defaultSources, outreach: defaultOutreach, checklist: defaultChecklist, documentReadiness: defaultDocumentReadiness, messages: defaultMessages, settings: defaultSettings, miniApps: defaultMiniApps, versions: defaultVersions, favorites: [], recentApps: [] }
 
 function App() {
   const location = useLocation()
   const { user, loading } = useAuth()
   const [remoteReady, setRemoteReady] = React.useState(false)
   const [state, setState] = React.useState<AppState>(() => {
-    try { const raw = localStorage.getItem('appforge-workplan-v1'); if (raw) return JSON.parse(raw) } catch { /* ignore */ }
-    try { const raw = localStorage.getItem('projectforge-workplan-v1'); if (raw) return JSON.parse(raw) } catch { /* ignore */ }
+    try { const raw = localStorage.getItem('appforge-workplan-v1'); if (raw) return { ...defaultState, ...JSON.parse(raw) } } catch { /* ignore */ }
+    try { const raw = localStorage.getItem('projectforge-workplan-v1'); if (raw) return { ...defaultState, ...JSON.parse(raw) } } catch { /* ignore */ }
     return defaultState
   })
 

@@ -9,15 +9,18 @@ echo ""
 
 # Check environment variables
 echo "1. Checking environment variables..."
-if [ -f .env ]; then
+if [ -f .env.local ]; then
+  echo "   ✓ .env.local file exists"
+  set -a; source .env.local; set +a
+elif [ -f .env ]; then
   echo "   ✓ .env file exists"
-  source .env
+  set -a; source .env; set +a
 else
-  echo "   ⚠ .env file not found, using .env.example as reference"
+  echo "   ⚠ no local env file found, using .env.example as reference"
 fi
 
 # Check required variables
-REQUIRED_VARS=("VITE_SUPABASE_URL" "MYSQL_HOST" "VERCEL_TOKEN")
+REQUIRED_VARS=("VITE_SUPABASE_URL" "VITE_SUPABASE_PUBLISHABLE_KEY")
 for var in "${REQUIRED_VARS[@]}"; do
   if [ -z "${!var}" ]; then
     echo "   ⚠ $var is not set"
@@ -44,25 +47,16 @@ else
 fi
 
 echo ""
-echo "4. Checking database connection..."
-if [ -n "$MYSQL_HOST" ]; then
-  echo "   MySQL host: $MYSQL_HOST"
-  echo "   MySQL database: $MYSQL_DATABASE"
-  echo "   Run: npm run db:setup"
-else
-  echo "   ⚠ MySQL not configured in .env"
-fi
-
-echo ""
-echo "5. Checking Supabase connection..."
+echo "4. Checking Supabase configuration..."
 if [ -n "$VITE_SUPABASE_URL" ]; then
   echo "   ✓ Supabase URL configured"
+  echo "   Migrations: supabase/migrations (npm run db:push)"
 else
   echo "   ⚠ Supabase URL not configured"
 fi
 
 echo ""
-echo "6. Checking Git setup..."
+echo "5. Checking Git setup..."
 if git remote -v > /dev/null 2>&1; then
   echo "   Git remotes:"
   git remote -v | sed 's/^/     /'
@@ -72,12 +66,11 @@ else
 fi
 
 echo ""
-echo "7. Deployment checklist:"
+echo "6. Deployment checklist:"
 echo "   [ ] Push code to GitHub"
 echo "   [ ] Set Vercel environment variables"
-echo "   [ ] Configure Supabase project"
-echo "   [ ] Set up MySQL database"
-echo "   [ ] Configure Namecheap DNS:"
+echo "   [ ] Configure Supabase project and push migrations"
+echo "   [ ] Configure DNS:"
 echo "       - Type: A, Host: @, Value: 76.76.21.21 (Vercel IP)"
 echo "       - Type: CNAME, Host: www, Value: cname.vercel-dns.com"
 echo "   [ ] Add custom domain in Vercel: sstoken.space"

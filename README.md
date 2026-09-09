@@ -191,14 +191,16 @@ Then open a pull request against `main`.
 
 Read:
 
+- `docs/README.md` — documentation index
 - `CONTRIBUTING.md` — coding and PR expectations
+- `docs/STATUS.md` — current roadmap and known issues
 - `docs/BRANCHING.md` — branch naming and access rules
 - `SECURITY.md` — secrets and vulnerability handling
 - `docs/PWA.md` — install/update/offline behavior
 
 ## Deployment
 
-The canonical production deployment is the Vercel `appforge` project connected to `main`.
+The canonical production deployment is the Vercel `appforge` project connected to `main`. Full setup, environment variables, and domain configuration live in `docs/DEPLOYMENT.md`; the Supabase schema and access rules are in `docs/DATABASE.md`.
 
 `main` is production. Contributor changes should arrive through focused pull requests once the public collaboration rules are enabled.
 
@@ -210,7 +212,7 @@ Production review paths:
 
 ## Environment and secrets
 
-Never commit real `.env` files. Variables prefixed with `VITE_` are browser-visible and must never contain server-only credentials.
+Never commit real `.env` files. Variables prefixed with `VITE_` are browser-visible and must never contain server-only credentials. `.env.example` lists every supported variable; `docs/DEPLOYMENT.md` explains what each one does.
 
 Use Vercel and Supabase environment/project settings for deployed secrets.
 
