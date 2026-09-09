@@ -1,10 +1,6 @@
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://ixqoosixhahrsgwoxyme.supabase.co'
 const SUPABASE_PUBLISHABLE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_b56EltHyMfwOQjVQcQFHwA_VUiSn9zN'
 
-// Keep the first models fast/cheap for normal play, then fall back to a larger model.
-// Hugging Face router policy suffixes are intentional: :fastest and :cheapest may
-// resolve to different providers, giving the rotation more resilience than changing
-// tokens alone (multiple tokens can still share the same account-level provider quota).
 const DEFAULT_HF_TEXT_MODELS = [
   'openai/gpt-oss-20b:fastest',
   'Qwen/Qwen2.5-7B-Instruct-1M:fastest',
@@ -14,11 +10,7 @@ const DEFAULT_HF_TEXT_MODELS = [
 const HF_TEXT_MODELS = [process.env.HF_TEXT_MODEL, ...DEFAULT_HF_TEXT_MODELS]
   .filter((value, index, list) => Boolean(value) && list.indexOf(value) === index)
 
-const SERVER_HF_TOKENS = [
-  process.env.HF_TOKEN_1,
-  process.env.HF_TOKEN_2,
-  process.env.HF_TOKEN_3,
-].filter(Boolean)
+const SERVER_HF_TOKENS = [process.env.HF_TOKEN_1, process.env.HF_TOKEN_2, process.env.HF_TOKEN_3].filter(Boolean)
 let hfTokenIndex = 0
 
 const orderedHfTokens = (personalToken = '') => {
@@ -70,15 +62,6 @@ const consumeDailyRequest = async (token) => {
   return response.json().catch(() => false)
 }
 
-const refundDailyRequest = async (token) => {
-  if (!token) return
-  try {
-    await supabaseRequest('/rest/v1/rpc/refund_dragon_arena_daily_request', token, { method: 'POST', body: '{}' })
-  } catch (error) {
-    console.error('Dragon Arena quota refund failed', error)
-  }
-}
-
 const callHfGameMaster = async ({ hfToken, model, instructions, input }) => {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 18000)
@@ -86,16 +69,10 @@ const callHfGameMaster = async ({ hfToken, model, instructions, input }) => {
     const response = await fetch('https://router.huggingface.co/v1/chat/completions', {
       method: 'POST',
       signal: controller.signal,
-      headers: {
-        Authorization: `Bearer ${hfToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { Authorization: `Bearer ${hfToken}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model,
-        messages: [
-          { role: 'system', content: instructions },
-          { role: 'user', content: input },
-        ],
+        messages: [{ role: 'system', content: instructions }, { role: 'user', content: input }],
         temperature: 0.9,
         max_tokens: 300,
       }),
@@ -107,8 +84,7 @@ const callHfGameMaster = async ({ hfToken, model, instructions, input }) => {
       error.status = response.status
       throw error
     }
-    const content = data?.choices?.[0]?.message?.content
-    const parsed = parseReply(content)
+    const parsed = parseReply(data?.choices?.[0]?.message?.content)
     if (!parsed.narrative) throw new Error(`HF_EMPTY_REPLY ${model}`)
     return { parsed, model: data?.model || model }
   } finally {
@@ -131,10 +107,7 @@ const callPersonalOpenRouter = async ({ apiKey, instructions, input }) => {
       },
       body: JSON.stringify({
         model: process.env.OPENROUTER_MODEL || 'openrouter/free',
-        messages: [
-          { role: 'system', content: instructions },
-          { role: 'user', content: input },
-        ],
+        messages: [{ role: 'system', content: instructions }, { role: 'user', content: input }],
         temperature: 0.9,
         max_tokens: 300,
       }),
@@ -195,14 +168,13 @@ export default async function handler(req, res) {
   const { action, history = [], turn = 1 } = req.body || {}
   if (typeof action !== 'string' || action.trim().length < 2) return res.status(400).json({ error: 'Choose or enter a meaningful action first.' })
 
-  let reserved = guestMode
-  if (!guestMode) {
+  let sharedQuotaAvailable = guestMode || usingPersonalOpenRouter || Boolean(personalHfToken)
+  if (!guestMode && !sharedQuotaAvailable) {
     try {
-      reserved = usingPersonalOpenRouter || Boolean(personalHfToken) || await consumeDailyRequest(token)
-      if (!reserved) return res.status(429).json({ error: 'Your Dragon Arena AI turn for today has already been used. Come back after 00:00 UTC or use a personal provider key.' })
+      sharedQuotaAvailable = await consumeDailyRequest(token)
     } catch (error) {
-      console.error('Dragon Arena quota check failed', error)
-      return res.status(503).json({ error: 'Could not verify today’s Dragon Arena allowance.' })
+      console.error('Dragon Arena quota check failed; continuing locally', error)
+      sharedQuotaAvailable = false
     }
   }
 
@@ -228,7 +200,7 @@ export default async function handler(req, res) {
     }
   }
 
-  if (!result && hfTokens.length) {
+  if (!result && sharedQuotaAvailable && hfTokens.length) {
     for (let tokenIndex = 0; tokenIndex < hfTokens.length && !result; tokenIndex += 1) {
       const hfToken = hfTokens[tokenIndex]
       for (const model of HF_TEXT_MODELS) {
@@ -246,7 +218,7 @@ export default async function handler(req, res) {
   }
 
   if (!result) {
-    console.error('Dragon Arena provider rotation exhausted; using local fallback', lastError, attempts)
+    if (sharedQuotaAvailable) console.error('Dragon Arena provider rotation exhausted; using local fallback', lastError, attempts)
     result = localFallback({ action, turn })
     provider = 'local-fallback'
   }
@@ -257,7 +229,8 @@ export default async function handler(req, res) {
     model: result.model,
     provider,
     degraded: provider === 'local-fallback',
-    dailyRequestUsed: true,
+    dailyRequestUsed: false,
+    sharedAiQuotaAvailable: Boolean(sharedQuotaAvailable),
     personalKeyUsed: usingPersonalOpenRouter || Boolean(personalHfToken),
     guestMode,
     resetAt: '00:00 UTC',
