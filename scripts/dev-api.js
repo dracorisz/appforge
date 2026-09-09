@@ -92,8 +92,8 @@ const server = createServer(async (req, res) => {
 
 async function main() {
   await loadHandlers()
-  server.listen(5174, () => {
-    console.log('AppForge API dev server running on http://localhost:5174')
+  server.listen(5175, () => {
+    console.log('AppForge API dev server running on http://localhost:5175')
   })
 }
 
