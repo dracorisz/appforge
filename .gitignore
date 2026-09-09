@@ -25,6 +25,9 @@ Thumbs.db
 *.log
 npm-debug.log*
 
+# Session/network captures
+*.har
+
 # Runtime
 pwa-192x192.png
 pwa-512x512.png
