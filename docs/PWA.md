@@ -12,7 +12,7 @@ AppForge therefore uses a **prompt-based update flow** instead of silently repla
 
 Choosing **Update now** activates the new worker and reloads the app so the Footer/build fingerprint matches the deployed source.
 
-## Canonical branding
+## Canonical branding 
 
 `public/favicon.svg` is the canonical AppForge brand mark and is included in the PWA manifest as the scalable SVG application icon.
 
