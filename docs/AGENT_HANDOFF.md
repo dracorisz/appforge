@@ -1,95 +1,145 @@
 # AppForge — Agent Handoff
 
 ## Quick start
+
 - **Repo**: `dracorisz/appforge`
 - **Branch**: `main`
-- **Dev**: `npm run dev` starts Vite on `5173` and the local API server on `5174`
+- **Production**: `https://www.sstoken.space/`
+- **Dev**: `npm run dev`
 - **Typecheck**: `npm run typecheck`
 - **Build**: `npm run build`
-- **Production**: `https://www.sstoken.space/`
-- **Docs**: repository `/docs` is the source of truth for the current handoff
+- **Stabilization source of truth**: `docs/STABILIZATION_TRACKER.md`
 
-## Current Dragon Arena state
-- Multiple opening scenarios with per-session restore are implemented.
-- Game Master remains OpenRouter-backed through `api/ai-game.js`.
-- Scene generation is Hugging Face-only through `api/dragon-image.js`.
-- HF generation uses the current `router.huggingface.co/hf-inference/models/...` route.
-- Server-side `HF_TOKEN_1/2/3` tokens rotate; on failure the request can try the remaining configured tokens.
-- A personal `x-hf-token` overrides the server pool and bypasses the owner-funded image quota.
-- Generated image responses are checked for image content, non-empty bytes, and a 15 MB maximum before storage.
-- Failed owner-funded image generation refunds the image quota reservation.
-- Generated scenes are stored in the `dragon-arena-assets` Supabase bucket and logged in `dragon_arena_assets` by the client.
-- Asset gallery reads are scoped by owner + session to prevent cross-run leakage.
-- Points, session switching, public leaderboard, Scrapper Pro asset saves, support link, and personal provider settings are implemented.
+Use the tracker before relying on older chat/session notes. It distinguishes code-complete work from production verification that may still be hidden by deployment lag.
 
-## Environment
+## Current architecture
 
-| Variable | Purpose | Where |
-|---|---|---|
-| `VITE_SUPABASE_URL` | Supabase project URL | Frontend + API |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable/anon key | Frontend + API |
-| `OPENROUTER_API_KEY` | Owner-funded Game Master requests | API |
-| `OPENROUTER_MODEL` | Game Master model override | `api/ai-game.js` |
-| `HF_TOKEN_1/2/3` | Hugging Face image-generation token pool | `api/dragon-image.js` |
-| `HF_IMAGE_MODEL` | HF text-to-image model override | `api/dragon-image.js` |
+### Dragon Arena
 
-Current default image model: `stabilityai/stable-diffusion-3-medium-diffusers`.
+- Signed-in sessions, turns, assets and points persist in Supabase.
+- Guest mode allows one browser-local turn per UTC day and does not expose account persistence or scene generation.
+- The primary game master is Hugging Face through `api/ai-game.js` with server token/model rotation.
+- If all remote GM attempts fail, a clearly identified AppForge local-continuity response keeps the run playable rather than returning the old API-limit dead end.
+- Personal OpenRouter remains a compatibility option; a personal Hugging Face token is also accepted.
+- Scene generation is Hugging Face provider-aware through `api/dragon-image.js`.
+- Image generation resolves each model's current Hugging Face `inferenceProviderMapping` and can route through `fal-ai`, `replicate`, `together`, `nscale`, or `hf-inference` when available.
+- Current preferred image models are FLUX.1-schnell, Hyper-SD, then SDXL, with an optional `HF_IMAGE_MODEL` override prepended.
+- Scene persistence is server-authoritative: validate → generate → validate bytes → Storage upload → `dragon_arena_assets` insert → success response.
+- Failed persistence removes the new object and refunds an owner-funded image turn.
+- The latest scene renders compactly inside Story; older scenes remain in Assets and Media Vault.
+- The first three generated scenes per user are public showcase assets exposed through `/huggingface`.
+- Scene rows retain generation model/provider/timestamp/MIME/size/turn metadata.
 
-## Dragon Arena flow
+### Media Vault
 
-1. New Run selects one of the code-defined opening scenarios.
-2. Player submits a choice or free-text action.
-3. `POST /api/ai-game` authenticates the user, applies the GM quota, and returns narrative + choices.
-4. The client persists the session and turn in Supabase.
-5. `POST /api/dragon-image` sends the latest narrative to Hugging Face Inference.
-6. The API validates the returned bytes and uploads the scene to `dragon-arena-assets`.
-7. The client records the asset, refreshes the current-run gallery, and awards scene points.
+- `General` stores manual uploads in the private `user-media-vault` bucket with `user_media_vault` rows.
+- `Dragon Arena` links authoritative scene rows from `dragon_arena_assets`; scene bytes are not copied.
+- `Scrapper Pro` now stores signed-in saves directly in `user_media_vault` as deduplicated zero-byte external references.
+- New Scrapper saves no longer create `dragon_arena_assets` records.
+- Manual uploads go only to General; Dragon Arena and Scrapper Pro are source-backed folders.
+- Production schema/RPC/bucket drift that previously caused Media Vault 404s has been repaired and tracked in migrations.
 
-## Completed items from the previous production plan
-- [x] Dragon Arena session persistence and session switching
-- [x] Multiple opening narratives with persisted restore
-- [x] Asset gallery scoped to the active run
-- [x] Server-side points award path
-- [x] Public-profile-only leaderboard
-- [x] Hugging Face token rotation
-- [x] Hugging Face-only scene generation
-- [x] Current Hugging Face router endpoint
-- [x] Basic generated-image integrity checks
-- [x] Failed-generation quota refund
-- [x] Personal HF token override
-- [x] Scrapper Pro → Dragon Arena asset save
-- [x] Direct-to-Supabase Media Vault uploads
-- [x] Media Vault quota foundation
-- [x] Dragon theme options in Settings
-- [x] Provider key management in Settings / Dragon Arena
-- [x] Dragon Arena support/payment link
-- [x] App admin CRUD and cover images
-- [x] Local `/api/*` development proxy
+### Scrapper Pro
 
-## Remaining lightweight verification
-These are verification items rather than planned code rewrites:
+- Guest/local saves remain in browser `localStorage`.
+- Signed-in users can separately archive a result to Media Vault.
+- Media Vault archive deduplication uses the original result URL as the stable source reference.
+- Existing preview, search, partial-source failure, article PDF, post TXT and supported media-download behavior remains intact.
 
-- [ ] Confirm `HF_TOKEN_1` (and optional `HF_TOKEN_2/3`) are present in the production Vercel environment.
-- [ ] Generate one real Dragon Arena scene in production and confirm it appears in the active session gallery.
-- [ ] Confirm the selected `HF_IMAGE_MODEL` is available to the configured HF tokens; override it in Vercel if needed.
-- [ ] Confirm `dragon_arena_assets` storage/RLS reads work for the authenticated owner after a fresh login.
-- [ ] Confirm the daily image quota is refunded after a deliberately failed HF request.
-- [ ] Run `npm run typecheck` and `npm run build` before a named release.
+### Profile / People
 
-## Known implementation notes
-- Scene generation no longer requires `OPENROUTER_IMAGE_MODEL` or an OpenRouter image-capable model.
-- A personal OpenRouter key is for Game Master turns; a personal Hugging Face token is for scene generation.
-- The client currently stores optional personal provider credentials in browser `localStorage`; server endpoints receive them only in request headers.
-- Route-level code splitting remains a separate build-hygiene improvement.
-- `docs/apps/dragon-arena.md` contains the detailed provider, quota, storage, and security behavior.
+- Profile data supports independent `show_skills`, `show_website`, `show_github`, `show_email`, and `public_email` fields.
+- People already respects those flags.
+- Settings still needs the corresponding field-visibility controls; keep this item OPEN until the controls and preview are updated.
+
+## Current environment
+
+```text
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+
+HF_TOKEN_1=hf_...
+HF_TOKEN_2=hf_...        # optional
+HF_TOKEN_3=hf_...        # optional
+HF_TEXT_MODEL=openai/gpt-oss-20b:fastest             # optional preferred override
+HF_IMAGE_MODEL=black-forest-labs/FLUX.1-schnell     # optional preferred override
+
+OPENROUTER_API_KEY=      # compatibility / personal-owner GM path if retained
+OPENROUTER_MODEL=        # optional
+```
+
+Do not expose server tokens in `VITE_*` variables.
+
+## Dragon Arena provider behavior
+
+### GM order
+
+Default text-model order:
+
+1. `openai/gpt-oss-20b:fastest`
+2. `Qwen/Qwen2.5-7B-Instruct-1M:fastest`
+3. `google/gemma-2-2b-it:fastest`
+4. `openai/gpt-oss-120b:cheapest`
+
+Server tokens rotate through `HF_TOKEN_1/2/3`. Multiple tokens from the same Hugging Face account may still share provider/account quota.
+
+### Scene order
+
+Default model preference:
+
+1. `black-forest-labs/FLUX.1-schnell`
+2. `ByteDance/Hyper-SD`
+3. `stabilityai/stable-diffusion-xl-base-1.0`
+
+Supported provider adapters:
+
+- `fal-ai`
+- `replicate`
+- `together`
+- `nscale`
+- `hf-inference`
+
+The request has an overall bounded generation budget so provider/model failover cannot run indefinitely.
+
+## Production data repairs already performed
+
+- Dragon Arena asset schema aligned with `scene` rows and `external_url`.
+- First-three public gallery policy/RPC added.
+- Legacy orphaned Dragon scene files recovered into the asset ledger where identifiable.
+- `award_dragon_arena_points` authenticated execution restored after an observed client 403.
+- Missing Media Vault tables/RPCs/private bucket/storage policies recreated in production and tracked in repo migrations.
+- Media Vault extended with external references + source identity for Scrapper Pro.
+
+## Version state
+
+Registry targets currently are:
+
+- Dragon Arena **1.6.0**
+- Scrapper Pro **1.2.0**
+- Media Vault **1.1.0**
+- AppForge changelog includes **1.21.0**
+
+The root `package.json` is still **1.18.0**. This is intentionally tracked as an OPEN version-alignment task rather than silently changing the package/lockfile during feature stabilization.
 
 ## Files to inspect first
-- `api/ai-game.js`
-- `api/dragon-image.js`
-- `src/components/dashboard/PF_AIDragonArena.tsx`
-- `src/lib/dragonArena.ts`
-- `docs/apps/dragon-arena.md`
-- `.env.example`
 
-## Next practical step
-Do one production scene-generation smoke test after the new deployment is live. If HF returns a provider/model error, change only `HF_IMAGE_MODEL` first; avoid reintroducing the old OpenRouter image fallback unless product requirements change.
+1. `docs/STABILIZATION_TRACKER.md`
+2. `api/ai-game.js`
+3. `api/dragon-image.js`
+4. `src/components/dashboard/PF_AIDragonArena.tsx`
+5. `src/lib/mediaVault.ts`
+6. `src/components/dashboard/PF_UserMediaVault.tsx`
+7. `src/components/dashboard/PF_ScrapperPro.tsx`
+8. `src/components/resources/Settings.tsx`
+9. `src/components/resources/People.tsx`
+10. `src/lib/registry.ts`
+
+## Next practical work
+
+Follow `docs/STABILIZATION_TRACKER.md`. Highest-value remaining code items are:
+
+1. add Settings → Profile field visibility controls and make its preview honor them;
+2. finish canonical Dragon Arena icon wiring in any remaining legacy renderer such as `/workspace`;
+3. align package/global versioning after the stabilization release boundary is chosen;
+4. remove dead MySQL setup and add real linting as separate build-hygiene changes;
+5. production-smoke-test the current Hugging Face scene provider routing after the latest deployment is active.
