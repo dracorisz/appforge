@@ -48,7 +48,6 @@ jobs:
           )
 
           replace('tsconfig.json', '"lib": ["ES2020", "DOM", "DOM.Iterable"]', '"lib": ["ES2021", "DOM", "DOM.Iterable"]')
-          replace('.github/workflows/ci.yml', 'node-version: 20', 'node-version: 22')
           PY
 
       - name: Commit fixes
@@ -59,6 +58,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/components/dashboard/PF_ScrapperProNext.tsx src/components/resources/MarketingStudio.tsx tsconfig.json .github/workflows/ci.yml
+          git add src/components/dashboard/PF_ScrapperProNext.tsx src/components/resources/MarketingStudio.tsx tsconfig.json
           git commit -m "fix: resolve integration typecheck errors [typecheck-fixes]"
           git push origin HEAD:codex/backlog-public-apps
