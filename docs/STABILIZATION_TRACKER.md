@@ -15,7 +15,7 @@ This file is the working source of truth for the consolidation/stabilization pas
 |---|---:|---|
 | Scrapper Pro | 1.2.0 | registry + docs synced |
 | Media Vault | 1.1.0 | registry + docs synced |
-| Dragon Arena | 1.6.0 | registry + detailed docs synced |
+| Dragon Arena | 1.6.1 | registry + detailed docs synced |
 | AppForge shell | package 1.18.0 | registry changelog is 1.21.0; root package/global build alignment remains open |
 
 ## P0 — Dragon Arena / Hugging Face
@@ -26,6 +26,7 @@ This file is the working source of truth for the consolidation/stabilization pas
 | Remove hard game stop on provider quota | VERIFY | local continuity fallback prevents provider-limit dead end. |
 | HF image generation provider routing | VERIFY | `/api/dragon-image` resolves live Hugging Face inference-provider mappings and supports provider-specific calls. |
 | Scene generation token/model/provider rotation | VERIFY | requires current production deployment + repeated Generate Scene tests. |
+| Generate Scene request telemetry | DONE | responses include request ID + duration; exhausted rotations return sanitized model/provider/status attempts. |
 | Server-authoritative scene persistence | DONE | Storage upload + `dragon_arena_assets` ledger insert complete before success response. |
 | Scene restore after refresh | VERIFY | code path complete; live UI smoke test required on current deployment. |
 | Public first-three showcase | DONE | DB policy/RPC and legacy scene recovery implemented. |
@@ -33,10 +34,10 @@ This file is the working source of truth for the consolidation/stabilization pas
 | Compact story scene presentation | VERIFY | implemented; old deployments may still show oversized images. |
 | Dragon Arena theme follows Appearance | VERIFY | semantic tokens and theme handling improved; visual sweep still warranted. |
 | Points RPC authenticated access | DONE | production grant repaired after observed 403. |
-| Dragon Arena registry metadata/version | DONE | Hugging Face copy, `DragonArena` icon key and v1.6.0 changelog are synced. |
-| Canonical Dragon icon on primary dashboard cards | DONE | PublicDashboard special-cases Dragon and registry now also uses `DragonArena`. |
-| Canonical Dragon icon in sidebar search | DONE | sidebar search now resolves `DragonArenaIcon`. |
-| Canonical Dragon icon in legacy `/workspace` renderer | OPEN | AppWorkspace has a separate icon map and can still fall back to Wrench. |
+| Dragon Arena registry metadata/version | DONE | Hugging Face copy, `DragonArena` icon key and v1.6.1 changelog are synced. |
+| Canonical Dragon icon on primary dashboard cards | DONE | PublicDashboard special-cases Dragon and registry uses `DragonArena`. |
+| Canonical Dragon icon in sidebar search | DONE | sidebar search resolves `DragonArenaIcon`. |
+| Legacy `/workspace` duplicate renderer | DONE | route redirects to `/apps` and obsolete `AppWorkspace.tsx` was removed, eliminating the remaining wrench-icon path. |
 
 ## P1 — Media Vault
 
@@ -76,7 +77,7 @@ This file is the working source of truth for the consolidation/stabilization pas
 | Profile `show_website` data model | DONE | account model supports it. |
 | Profile `show_github` data model | DONE | account model supports it. |
 | Profile `show_email` + `public_email` data model | DONE | email remains hidden by default. |
-| Settings → Profile visibility controls | DONE | skills, website, GitHub and public email switches are now editable and saved. |
+| Settings → Profile visibility controls | DONE | skills, website, GitHub and public email switches are editable and saved. |
 | People respects field visibility | DONE | People search/cards conditionally honor skills, GitHub, website and public email flags. |
 | Settings public-profile preview respects visibility | DONE | preview mirrors the People visibility rules and public-email choice. |
 | GitHub authentication integration | OPEN | roadmap/integration work remains. |
@@ -102,7 +103,7 @@ This file is the working source of truth for the consolidation/stabilization pas
 | Canonical app metadata interface | DONE | registry has name/description/category/icon/route/tags/status/version + optional cover/changelog. |
 | Normalize actual metadata values | OPEN | several lower-priority apps still use generic icons or uneven version history. |
 | AI category stale OpenAI copy | DONE | category description is provider-neutral. |
-| Dragon Arena metadata | DONE | Hugging Face architecture, icon and v1.6.0 synced. |
+| Dragon Arena metadata | DONE | Hugging Face architecture, icon and v1.6.1 synced. |
 | Media Vault metadata | DONE | v1.1.0 synced. |
 | Scrapper Pro metadata | DONE | v1.2.0 synced. |
 | Global version consistency | OPEN | package is 1.18.0 while registry changelog is 1.21.0. |
@@ -141,11 +142,15 @@ This file is the working source of truth for the consolidation/stabilization pas
 - `2d95eb89` — Dragon Arena 1.6 provider + Media Vault documentation sync.
 - `45bb69d5` — granular Settings profile field visibility controls + matching preview.
 - `2a771277` / `6c64c47e` — remove and ignore TypeScript incremental build cache.
+- `aee75ef9` / `d76c3ca5` — retire duplicate `/workspace` dashboard and remove its stale renderer.
+- `812b3f2e` — Generate Scene request telemetry with sanitized provider/model attempts.
+- `a13ce9ce` — Dragon Arena 1.6.1 registry version.
+- `675c68f3` — Dragon Arena 1.6.1 documentation.
 
 ## Next automatic pass
 
-1. Fix the remaining legacy `/workspace` Dragon Arena icon fallback.
-2. Audit/remove obsolete MySQL setup/dependency in an isolated build-hygiene commit.
-3. Add real linting without mixing React/Router major-version migrations into the same change.
-4. Re-check Hugging Face scene generation against the newest production deployment and capture provider/model telemetry from one successful generation.
-5. Finish low-risk metadata/icon polish for the remaining generic utility cards.
+1. Re-check Hugging Face scene generation against the newest production deployment and use `requestId` + `attempts` telemetry to identify any remaining provider adapter mismatch.
+2. Verify compact Story scene sizing and Appearance-theme behavior on the deployment that contains 1.6.1.
+3. Verify Dragon Arena scene refresh, Assets and Media Vault all resolve the same authoritative scene row after generation.
+4. Continue low-risk Dragon Arena game-UI polish only after the current generation/persistence path is production-confirmed.
+5. Return to global build hygiene (MySQL, lint, package-version alignment) after Dragon Arena verification.
