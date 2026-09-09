@@ -1,5 +1,5 @@
 import React from 'react'
-import { CheckCircle2, Clipboard, ExternalLink, Film, RefreshCw, Save, Send, Youtube } from 'lucide-react'
+import { CheckCircle2, Clipboard, ExternalLink, Film, Send, Youtube } from 'lucide-react'
 import { getAllApps } from '@/lib/registry'
 import { BUILD_INFO } from '@/lib/buildInfo'
 import { APPFORGE_CHANNEL_URL, DemoPackage, DemoStatus, makeDemoPackage, makePublication, MarketingFormat, PLAYLISTS, PublicationRecord, PublicationStatus } from '@/lib/marketing'
@@ -56,13 +56,14 @@ export default function MarketingStudio() {
   const selectedPublications = selectedDemo ? publications.filter((record) => record.demoId === selectedDemo.id) : []
 
   const markPublished = (record: PublicationRecord) => {
-    if (!record.remoteUrl.trim()) {
+    const remoteUrl = (record.remoteUrl || '').trim()
+    if (!remoteUrl) {
       setMessage('Add the published YouTube URL before marking the publication complete.')
       return
     }
-    const videoIdMatch = record.remoteUrl.match(/(?:v=|youtu\.be\/|shorts\/)([A-Za-z0-9_-]{6,})/)
-    updatePublication(record.id, { status: 'published', remoteId: videoIdMatch?.[1] || record.remoteId, publishedAt: new Date().toISOString(), attempts: Math.max(record.attempts, 1) })
-    if (selectedDemo) updateDemo(selectedDemo.id, { status: 'published', publishedUrl: record.remoteUrl })
+    const videoIdMatch = remoteUrl.match(/(?:v=|youtu\.be\/|shorts\/)([A-Za-z0-9_-]{6,})/)
+    updatePublication(record.id, { status: 'published', remoteId: videoIdMatch?.[1] || record.remoteId, remoteUrl, publishedAt: new Date().toISOString(), attempts: Math.max(record.attempts, 1) })
+    if (selectedDemo) updateDemo(selectedDemo.id, { status: 'published', publishedUrl: remoteUrl })
     setMessage('Publication marked as published and linked back to the demo record.')
   }
 

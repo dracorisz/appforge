@@ -121,7 +121,7 @@ export function PF_ScrapperProNext() {
       const others = sourceIds.filter((id) => id !== 'youtube')
       const [otherData, youtubeData] = await Promise.all([
         fetchOtherSources(cleanQuery, others).catch((error) => ({ results: [] as ScrapperProResult[], failures: [error instanceof Error ? error.message : 'Other sources failed'] })),
-        youtubeEnabled ? fetchYouTube(cleanQuery).catch((error) => ({ ok: false, results: [] as ScrapperProResult[], nextPageToken: null, error: error instanceof Error ? error.message : 'YouTube failed' })) : Promise.resolve({ ok: true, results: [] as ScrapperProResult[], nextPageToken: null }),
+        youtubeEnabled ? fetchYouTube(cleanQuery).catch((error) => ({ ok: false, results: [] as ScrapperProResult[], nextPageToken: null, error: error instanceof Error ? error.message : 'YouTube failed' })) : Promise.resolve({ ok: true, results: [] as ScrapperProResult[], nextPageToken: null, error: undefined } as YouTubeResponse),
       ])
       const combined = dedupe([...(otherData.results || []), ...(youtubeData.results || [])])
       setResults(combined)
