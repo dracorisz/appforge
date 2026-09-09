@@ -21,12 +21,20 @@ const HF_TOKENS = [
 ].filter(Boolean)
 let hfTokenIndex = 0
 
-const orderedHfTokens = (personalToken = '') => {
-  if (personalToken) return [personalToken]
+const orderedHfTokens = (personalTokens = []) => {
+  const validPersonal = Array.isArray(personalTokens)
+    ? [...new Set(personalTokens.filter((token) => typeof token === 'string' && token.startsWith('hf_')))].slice(0, 3)
+    : []
+  if (validPersonal.length) return validPersonal
   if (!HF_TOKENS.length) return []
   const start = hfTokenIndex % HF_TOKENS.length
   hfTokenIndex += 1
   return HF_TOKENS.map((_, offset) => HF_TOKENS[(start + offset) % HF_TOKENS.length])
+}
+
+export const parsePersonalHfTokens = (headers = {}) => {
+  const value = String(headers['x-hf-tokens'] || headers['x-hf-token'] || '')
+  return [...new Set(value.split(',').map((token) => token.trim()).filter((token) => token.startsWith('hf_')))].slice(0, 3)
 }
 
 const supabaseRequest = (path, token, init = {}) => fetch(`${SUPABASE_URL}${path}`, {
@@ -358,10 +366,9 @@ export default async function handler(req, res) {
   const user = await authenticate(token)
   if (!user?.id) return res.status(401).json({ error: 'Sign in to generate Dragon Arena scenes.', requestId })
 
-  const userHfToken = String(req.headers?.['x-hf-token'] || '').trim()
-  const personalHfToken = userHfToken.startsWith('hf_') ? userHfToken : ''
-  const hfTokens = orderedHfTokens(personalHfToken)
-  const usingPersonalKey = Boolean(personalHfToken)
+  const personalHfTokens = parsePersonalHfTokens(req.headers)
+  const hfTokens = orderedHfTokens(personalHfTokens)
+  const usingPersonalKey = personalHfTokens.length > 0
 
   if (!hfTokens.length) {
     return res.status(503).json({ error: 'Scene generation is offline until a Hugging Face token is configured.', requestId })
