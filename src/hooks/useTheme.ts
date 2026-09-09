@@ -40,16 +40,25 @@ export function useTheme() {
 
   useEffect(() => {
     const root = window.document.documentElement
-    const isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    root.classList.toggle('dark', isDark)
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
 
-    const accentData = accentColors[accent]
-    root.style.setProperty('--primary', accentData.light)
-    root.style.setProperty('--primary-foreground', '210 40% 98%')
-    root.style.setProperty('--ring', accentData.light)
-    root.style.setProperty('--radius', radiusMap[radius])
+    const apply = () => {
+      const isDark = mode === 'dark' || (mode === 'system' && media.matches)
+      root.classList.toggle('dark', isDark)
 
+      const accentData = accentColors[accent]
+      const primary = isDark ? accentData.dark : accentData.light
+      const primaryForeground = accent === 'default' && isDark ? '240 5.9% 10%' : '0 0% 98%'
+      root.style.setProperty('--primary', primary)
+      root.style.setProperty('--primary-foreground', primaryForeground)
+      root.style.setProperty('--ring', primary)
+      root.style.setProperty('--radius', radiusMap[radius])
+    }
+
+    apply()
+    if (mode === 'system') media.addEventListener('change', apply)
     localStorage.setItem('appforge-theme', JSON.stringify({ mode, accent, radius }))
+    return () => media.removeEventListener('change', apply)
   }, [mode, accent, radius])
 
   return { mode, setMode, accent, setAccent, radius, setRadius }
