@@ -2,42 +2,61 @@
 
 Last updated: 2026-09-09
 
-This file is the working source of truth for the consolidation/stabilization pass. Status meanings:
+This file is the working source of truth for the consolidation/stabilization and launch-readiness pass. Status meanings:
 
 - **DONE** — implemented in `main`; no known code gap remains for the scoped item.
 - **VERIFY** — implemented in `main`, but production behavior still needs a live smoke test after the matching deployment is active.
 - **OPEN** — code/product work remains.
 - **MANUAL** — requires account/provider administration outside normal repo code.
 
-## Current app versions
+## Product maturity rule
 
-| App | Version target | State |
-|---|---:|---|
-| Scrapper Pro | 1.2.0 | registry + docs synced |
-| Media Vault | 1.1.0 | registry + docs synced |
-| Dragon Arena | 1.6.1 | registry + detailed docs synced |
-| AppForge shell | package 1.18.0 | registry changelog is 1.21.0; root package/global build alignment remains open |
+AppForge mini-apps now follow the target ladder:
 
-## P0 — Dragon Arena / Hugging Face
+**Idea → Building → Beta → Launched → Full → Deprecated**
+
+`Full` is intentionally stronger than `Launched`: it means the app is production-ready inside AppForge and documented/isolated enough to be forked into an independent ready-made PWA. The formal gate lives in `docs/FULL_STATUS.md`.
+
+No app should receive Full status based on feature count alone.
+
+## Current app versions / launch posture
+
+| App | Current posture | Notes |
+|---|---|---|
+| Story Studio / Dragon Arena evolution | active beta | Novel + Comics direction established; requires further builder mechanics/export/fork packaging before Launched/Full |
+| Scrapper Pro | beta | strong public demo candidate; fork packaging/server dependency docs still needed for Full |
+| Media Vault | beta | shared authenticated storage surface; requires standalone auth/storage packaging for Full |
+| Any to Any Converter | beta / early Full candidate | browser-first and relatively portable; good candidate for first standalone extraction package |
+| Weather Now | beta/public | stable demo candidate; server API dependency must be packaged for Full |
+| AppForge shell | public beta | launchable as open-development platform; package/global version alignment still open |
+
+## P0 — Story Studio / Dragon Arena / Hugging Face
 
 | Item | Status | Notes |
 |---|---|---|
-| HF-first GM token/model rotation | VERIFY | `/api/ai-game` has rotation + local continuity fallback; production still needs repeat smoke tests. |
-| Remove hard game stop on provider quota | VERIFY | local continuity fallback prevents provider-limit dead end. |
+| Story Studio Novel + Comics mode surface | VERIFY | new shared story workspace added; production build path now compiles after Button variant fix. |
+| Compact generated-art thumbnail + lightbox | VERIFY | latest scene is now a small story thumbnail; tap/click expands in lightbox. |
+| Story toolbar above game window | VERIFY | Generate, Assets, Sessions, Leaderboard, New and provider settings moved into top toolbar. |
+| Remove old Dragon hero/badge/support chrome | VERIFY | Story Studio route no longer uses old decorative Dragon Arena header surface. |
+| Profile Appearance theme carries into Story Studio | VERIFY | semantic theme tokens retained; visual sweep still useful. |
+| Shorter story pacing | VERIFY | GM prompt targets 45–85 words, 2–3 short paragraphs and short action choices. |
+| Continue after shared AI quota | VERIFY | funded HF quota no longer hard-stops gameplay; local continuity keeps story playable. |
+| HF-first GM token/model rotation | VERIFY | `/api/ai-game` has rotation + local continuity fallback; production still benefits from repeat smoke tests. |
 | HF image generation provider routing | VERIFY | `/api/dragon-image` resolves live Hugging Face inference-provider mappings and supports provider-specific calls. |
-| Scene generation token/model/provider rotation | VERIFY | requires current production deployment + repeated Generate Scene tests. |
+| Scene generation token/model/provider rotation | VERIFY | requires repeated current-production Generate tests. |
 | Generate Scene request telemetry | DONE | responses include request ID + duration; exhausted rotations return sanitized model/provider/status attempts. |
 | Server-authoritative scene persistence | DONE | Storage upload + `dragon_arena_assets` ledger insert complete before success response. |
 | Scene restore after refresh | VERIFY | code path complete; live UI smoke test required on current deployment. |
 | Public first-three showcase | DONE | DB policy/RPC and legacy scene recovery implemented. |
 | Scene generation metadata | DONE | model/provider/timestamp/MIME/size/turn metadata persisted and surfaced. |
-| Compact story scene presentation | VERIFY | implemented; old deployments may still show oversized images. |
-| Dragon Arena theme follows Appearance | VERIFY | semantic tokens and theme handling improved; visual sweep still warranted. |
 | Points RPC authenticated access | DONE | production grant repaired after observed 403. |
-| Dragon Arena registry metadata/version | DONE | Hugging Face copy, `DragonArena` icon key and v1.6.1 changelog are synced. |
 | Canonical Dragon icon on primary dashboard cards | DONE | PublicDashboard special-cases Dragon and registry uses `DragonArena`. |
-| Canonical Dragon icon in sidebar search | DONE | sidebar search resolves `DragonArenaIcon`. |
-| Legacy `/workspace` duplicate renderer | DONE | route redirects to `/apps` and obsolete `AppWorkspace.tsx` was removed, eliminating the remaining wrench-icon path. |
+| Legacy `/workspace` duplicate renderer | DONE | route redirects to `/apps` and obsolete `AppWorkspace.tsx` was removed. |
+| Novel Builder project model | OPEN | chapters/scenes, editable prose, project title/metadata, continuity controls and export remain. |
+| Comics Builder project model | OPEN | panel/page composition, captions/dialogue, scene ordering and export remain. |
+| Shared character/world/lore memory | OPEN | target feature for both Novel and Comics modes. |
+| Builder export/version history | OPEN | target requirement before Launched/Full. |
+| Story Studio fork package | OPEN | must document/extract APIs, Supabase schema, provider env and PWA identity before Full. |
 
 ## P1 — Media Vault
 
@@ -45,14 +64,14 @@ This file is the working source of truth for the consolidation/stabilization pas
 |---|---|---|
 | Restore production tables/RPCs/bucket | DONE | previous 404 schema drift repaired. |
 | General direct uploads | VERIFY | schema/RPC/bucket restored; current deployment upload smoke test still useful. |
-| Dragon Arena folder | VERIFY | links authoritative `dragon_arena_assets` scene rows without copying bytes. |
+| Story/Dragon folder | VERIFY | links authoritative `dragon_arena_assets` scene rows without copying bytes. |
 | Scrapper Pro folder | DONE | new saves use `user_media_vault` directly instead of Dragon Arena. |
 | Scrapper legacy backfill | DONE | migration backfills old `scrapper-result` rows when present. |
 | Scrapper duplicate prevention | DONE | `(user_id, source_app, source_ref)` unique partial index + client lookup. |
 | Source-aware deletion | DONE | Dragon deletion warns that source asset is removed; Scrapper deletion only removes the reference. |
 | General-only manual upload UX | DONE | source-backed folders are no longer misleading manual upload targets. |
-| Media Vault docs | DONE | `docs/apps/media-vault.md` documents 1.1.0 architecture. |
-| Registry card version/copy | DONE | v1.1.0 + current shared-asset description/changelog. |
+| Media Vault docs | DONE | `docs/apps/media-vault.md` documents current architecture. |
+| Standalone fork package | OPEN | auth, private bucket, RLS/RPC, quota and env setup must be isolated/documented for Full. |
 
 ## P1 — Scrapper Pro
 
@@ -64,37 +83,46 @@ This file is the working source of truth for the consolidation/stabilization pas
 | Result dedupe | DONE | original URL is stable source reference. |
 | Preview/download behavior | DONE | existing media/article/post behavior retained. |
 | Local-vs-account save wording | DONE | UI distinguishes device save from Media Vault archive. |
-| Scrapper docs | DONE | `docs/apps/scrapper-pro/README.md` documents 1.2.0. |
-| Registry card version/copy | DONE | v1.2.0 + Media Vault archive semantics synced. |
+| Scrapper docs | DONE | app docs document current architecture. |
 | Small visual/hover polish | OPEN | low priority after functional smoke tests. |
+| Standalone fork package | OPEN | scrape/media/article API routes, optional account vault path and provider behavior need extraction guide. |
 
 ## P2 — Profile / People / Auth
 
 | Item | Status | Notes |
 |---|---|---|
 | Sidebar uses saved profile avatar | VERIFY | implementation exists; needs production visual confirmation. |
-| Profile `show_skills` data model | DONE | account model supports it. |
-| Profile `show_website` data model | DONE | account model supports it. |
-| Profile `show_github` data model | DONE | account model supports it. |
-| Profile `show_email` + `public_email` data model | DONE | email remains hidden by default. |
-| Settings → Profile visibility controls | DONE | skills, website, GitHub and public email switches are editable and saved. |
-| People respects field visibility | DONE | People search/cards conditionally honor skills, GitHub, website and public email flags. |
-| Settings public-profile preview respects visibility | DONE | preview mirrors the People visibility rules and public-email choice. |
+| Profile field visibility data model | DONE | skills, website, GitHub and public email flags supported. |
+| Settings → Profile visibility controls | DONE | switches are editable and saved. |
+| People respects field visibility | DONE | cards honor visibility flags. |
+| Settings public-profile preview respects visibility | DONE | preview mirrors People visibility rules. |
 | GitHub authentication integration | OPEN | roadmap/integration work remains. |
-| GitHub auth branch merge | DONE | no advanced GitHub-auth branch exists to merge; stale branches were audited. |
 
 ## P2 — Public / guest shell
 
 | Item | Status | Notes |
 |---|---|---|
-| Exactly four guest apps | DONE | Dragon Arena, Weather Now, Any to Any Converter, Scrapper Pro. |
-| Guest Dragon Arena one turn/day | VERIFY | browser-local UTC-day enforcement implemented. |
-| Guest Scrapper persistence | DONE | localStorage save path retained. |
-| Landing `Try now` guest entry | DONE | implemented. |
-| PayPal support action | DONE | `paypal.me/dracorisz`. |
-| Public `/huggingface` page | DONE | exact GM/image model inventory, image-provider list, public Dragon gallery. |
+| Public landing cleanup | VERIFY | lower feature-row clutter removed; footer keeps platform notes. |
+| Hugging Face foregrounded on public landing | VERIFY | replaces Dragon Arena as the featured fourth public entry and uses official HF logo asset URL. |
+| Scrapper Pro public route | VERIFY | smoke test before active marketing push. |
+| Weather public route | VERIFY | smoke test before active marketing push. |
+| Any Converter public route | VERIFY | smoke test before active marketing push. |
+| Public `/huggingface` page | DONE | model inventory/provider list/public gallery. |
 | Public gallery max first three/user | DONE | enforced in DB/RPC. |
-| SEO/public route handling | DONE | guest routes + `/huggingface` recognized. |
+| SEO/public route handling | DONE | public routes recognized. |
+
+## P2 — Full-status / forkability program
+
+| Item | Status | Notes |
+|---|---|---|
+| Define Full status | DONE | `docs/FULL_STATUS.md` is the canonical quality/fork-readiness gate. |
+| Add Full positioning to README | DONE | public README now explains the maturity ladder and forkable-PWA goal. |
+| First Full candidate selection | DONE | Any to Any Converter identified as a strong first candidate, pending verification/packaging. |
+| Registry/UI `Full` badge implementation | OPEN | add the literal status only when first app reaches the gate or as part of the first extraction pass. |
+| Per-app fork guide template | DONE | template included in Full standard. |
+| Any Converter fork package | OPEN | likely best first implementation target. |
+| Local developer-tool fork package | OPEN | second-wave candidates after Any Converter. |
+| Shared standalone-PWA starter/extraction script | OPEN | future leverage: automate manifest, entry route, env, package trimming and deploy docs. |
 
 ## P2 — App metadata / shell consistency
 
@@ -102,55 +130,56 @@ This file is the working source of truth for the consolidation/stabilization pas
 |---|---|---|
 | Canonical app metadata interface | DONE | registry has name/description/category/icon/route/tags/status/version + optional cover/changelog. |
 | Normalize actual metadata values | OPEN | several lower-priority apps still use generic icons or uneven version history. |
-| AI category stale OpenAI copy | DONE | category description is provider-neutral. |
-| Dragon Arena metadata | DONE | Hugging Face architecture, icon and v1.6.1 synced. |
-| Media Vault metadata | DONE | v1.1.0 synced. |
-| Scrapper Pro metadata | DONE | v1.2.0 synced. |
-| Global version consistency | OPEN | package is 1.18.0 while registry changelog is 1.21.0. |
+| Global version consistency | OPEN | package/global build alignment remains. |
 | Real lint configuration | OPEN | current `lint` script is still a no-op. |
 | Remove dead MySQL setup/dependency | OPEN | `mysql2` + `scripts/setup-mysql.sql` remain. |
-| Remove tracked `*.tsbuildinfo` | DONE | tracked `tsconfig.tsbuildinfo` removed and `*.tsbuildinfo` added to `.gitignore`. |
-| Dependency modernization | OPEN | separate migration; do not mix React/Router major upgrades into stabilization fixes. |
+| Remove tracked `*.tsbuildinfo` | DONE | cache removed and ignored. |
+| Dependency modernization | OPEN | separate migration; do not mix broad major upgrades into launch stabilization. |
+
+## P3 — Marketing / launch readiness
+
+| Item | Status | Notes |
+|---|---|---|
+| Marketing handoff document | DONE | `docs/MARKETING_HANDOFF.md`. |
+| Safe current claims vs future claims | DONE | documented to avoid overpromising Full/Novel/Comics/provider availability. |
+| Patreon positioning draft | DONE | supporter-first open-development framing prepared; pricing intentionally deferred to marketing session. |
+| Screenshot shot list | DONE | 12 target captures documented. |
+| Marketing deliverables checklist | DONE | tagline, descriptions, Patreon, social posts, screenshots, demo video, FAQ listed. |
+| Production launch smoke test | OPEN | perform immediately before advertising today. |
+| Patreon account/page creation | MANUAL | user-owned external account action. |
+| Social account/post publication | MANUAL | user-owned external account actions. |
+| Marketing screenshot capture | MANUAL/VERIFY | capture after confirming latest production UI. |
 
 ## P3 — Repository / security / deployment
 
 | Item | Status | Notes |
 |---|---|---|
-| Dry-audit branches | DONE | non-main branches were either behind or stale/diverged; no more advanced hidden branch found. |
-| Avoid stale branch merge | DONE | stale Devin cleanup was not merged wholesale. |
+| Dry-audit branches | DONE | stale branches audited; no advanced hidden branch found. |
 | Devin collaborator access | DONE | bot had no collaborator permission when checked. |
-| Close stale Devin PR | DONE | closed without merging old code. |
 | Remove Devin GitHub App installation | MANUAL | repository/account GitHub settings action if still installed. |
-| Rotate historically exposed credentials | MANUAL | credentials should be rotated even when files were later cleaned. |
+| Rotate historically exposed credentials | MANUAL | rotate even when files were later cleaned. |
 | Retire duplicate JS Vite config | DONE | TypeScript Vite config is authoritative. |
-| Current handoff docs | DONE | `docs/AGENT_HANDOFF.md` and Dragon docs reflect HF provider-aware + Media Vault architecture. |
-| Latest Vercel build active | VERIFY | deployment rate limiting has repeatedly caused production lag. |
-| Signed-out four-app regression pass | VERIFY | run after stable deployment. |
-| Signed-in Dragon persistence/media pass | VERIFY | run after stable deployment. |
+| Current handoff docs | DONE | architecture docs reflect current provider/Media Vault direction. |
+| Current code deployment health | DONE | a production deployment containing Story Studio source + Button fix reached READY on 2026-09-09. |
+| Latest docs-only deployment | VERIFY | latest main may still be building; no source-code delta from marketing docs should block launch behavior. |
+| Public regression pass | OPEN | landing, Hugging Face, Scrapper, Weather, Any Converter. |
+| Signed-in regression pass | OPEN | Story Studio turn, graceful generation failure/success, Media Vault schema behavior. |
 
-## Recent pass commits
+## Recent launch-readiness commits
 
-- `3c10b656` — database migration: decouple Scrapper Pro into Media Vault.
-- `52bd30a4` — Media Vault data layer becomes Scrapper Pro's account ledger.
-- `16d68fdf` — Scrapper Pro saves directly to Media Vault.
-- `e3c63a3e` — Media Vault source-folder/deletion UX polish.
-- `6c7e167b` — Media Vault 1.1.0 documentation.
-- `0e223806` — Scrapper Pro 1.2.0 documentation.
-- `12eb1932` — canonical Dragon Arena icon in sidebar search.
-- `950bd621` — registry metadata/version sync for Dragon, Media Vault and Scrapper Pro.
-- `489688f1` — current architecture handoff refresh.
-- `2d95eb89` — Dragon Arena 1.6 provider + Media Vault documentation sync.
-- `45bb69d5` — granular Settings profile field visibility controls + matching preview.
-- `2a771277` / `6c64c47e` — remove and ignore TypeScript incremental build cache.
-- `aee75ef9` / `d76c3ca5` — retire duplicate `/workspace` dashboard and remove its stale renderer.
-- `812b3f2e` — Generate Scene request telemetry with sanitized provider/model attempts.
-- `a13ce9ce` — Dragon Arena 1.6.1 registry version.
-- `675c68f3` — Dragon Arena 1.6.1 documentation.
+- `a3b37f0d` — introduce Novel/Comics Story Studio surface.
+- `c38f707a` — route Dragon Arena app to Story Studio.
+- `114c0c2e` — foreground Hugging Face on public landing.
+- `df81dcf8` — simplify public landing and remove redundant feature row.
+- `86e1b11d` — fix Button variant build blocker; subsequent production build reached READY.
+- `d1e53a43` — define Full status and fork-readiness standard.
+- `14e5d6ea` — prepare marketing/Patreon handoff.
+- `f312e40e` — reposition public README around Full forkable-PWA maturity.
 
-## Next automatic pass
+## Next logical pass
 
-1. Re-check Hugging Face scene generation against the newest production deployment and use `requestId` + `attempts` telemetry to identify any remaining provider adapter mismatch.
-2. Verify compact Story scene sizing and Appearance-theme behavior on the deployment that contains 1.6.1.
-3. Verify Dragon Arena scene refresh, Assets and Media Vault all resolve the same authoritative scene row after generation.
-4. Continue low-risk Dragon Arena game-UI polish only after the current generation/persistence path is production-confirmed.
-5. Return to global build hygiene (MySQL, lint, package-version alignment) after Dragon Arena verification.
+1. Run the **launch smoke test** against current production before paid/large public promotion.
+2. Fix only P0 launch regressions found in that pass; avoid unrelated refactors.
+3. Capture marketing screenshots once the production UI is confirmed.
+4. Use `docs/MARKETING_HANDOFF.md` for the dedicated Patreon/social-copy session.
+5. After today's launch, start the first **Full candidate extraction** with Any to Any Converter and build a repeatable standalone-PWA template from that work.
