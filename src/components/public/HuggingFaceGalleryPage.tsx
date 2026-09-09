@@ -25,9 +25,12 @@ const GAME_MASTER_MODELS = [
 ]
 
 const IMAGE_MODELS = [
-  { id: 'black-forest-labs/FLUX.1-schnell', role: 'Primary scene renderer', note: 'Fast text-to-image model used for Dragon Arena fantasy scenes.' },
-  { id: 'stabilityai/stable-diffusion-xl-base-1.0', role: 'Compatibility fallback', note: 'Stable Diffusion XL fallback for the HF Inference image route.' },
+  { id: 'black-forest-labs/FLUX.1-schnell', role: 'Primary scene renderer', note: 'Fast fantasy renderer; AppForge resolves its live Hugging Face provider mappings before generation.' },
+  { id: 'ByteDance/Hyper-SD', role: 'Fast diffusion fallback', note: 'Secondary image model used when FLUX providers are unavailable or exhausted.' },
+  { id: 'stabilityai/stable-diffusion-xl-base-1.0', role: 'Compatibility fallback', note: 'Established SDXL fallback retained for broad provider compatibility.' },
 ]
+
+const IMAGE_PROVIDERS = ['fal-ai', 'replicate', 'together', 'nscale', 'hf-inference']
 
 const publicAssetUrl = (asset: PublicDragonAsset) => {
   if (asset.storage_path) return `${SUPABASE_PROJECT_URL}/storage/v1/object/public/dragon-arena-assets/${asset.storage_path}`
@@ -86,7 +89,7 @@ export function HuggingFaceGalleryPage() {
         <section className="rounded-2xl border border-border/70 bg-card/70 p-5 shadow-sm">
           <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground"><Sparkles className="h-4 w-4" /> Hugging Face powered generation</div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Dragon Arena × Hugging Face</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Dragon Arena uses Hugging Face for the primary game-master rotation and cinematic scene generation. Each user’s first three generated scenes are public showcase assets. New scenes persist with model, provider, generation timestamp, MIME type, size and turn metadata.</p>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Dragon Arena uses Hugging Face for the primary game-master rotation and cinematic scene generation. Image requests resolve each model’s current Hugging Face provider mapping and fail over across compatible providers rather than relying on one fixed image backend. Each user’s first three generated scenes are public showcase assets.</p>
           <div className="mt-4 flex flex-wrap gap-2"><Link to="/" className="inline-flex items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm font-medium hover:bg-accent"><ArrowLeft className="h-4 w-4" /> Back to AppForge</Link><a href="https://huggingface.co/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm font-medium hover:bg-accent"><ExternalLink className="h-4 w-4" /> Hugging Face</a></div>
         </section>
 
@@ -98,9 +101,10 @@ export function HuggingFaceGalleryPage() {
           </Card>
 
           <Card className="p-4">
-            <div className="flex items-center gap-2 text-sm font-semibold"><ImageIcon className="h-4 w-4" /> Scene-model rotation</div>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">Scene requests rotate through Hugging Face tokens and these HF Inference-compatible models. `HF_IMAGE_MODEL` can prepend an override.</p>
+            <div className="flex items-center gap-2 text-sm font-semibold"><ImageIcon className="h-4 w-4" /> Scene-model + provider rotation</div>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">`HF_IMAGE_MODEL` can prepend an override. For each model AppForge checks its live Hugging Face provider mapping and tries supported providers within one bounded generation request.</p>
             <div className="mt-3 space-y-2">{IMAGE_MODELS.map((model, index) => <div key={model.id} className="rounded-xl border border-border/70 bg-background/35 p-3"><div className="flex items-start gap-2"><span className="rounded-md border border-border/70 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">{index + 1}</span><div className="min-w-0"><div className="break-all font-mono text-xs font-medium">{model.id}</div><div className="mt-1 text-xs font-medium text-foreground/80">{model.role}</div><div className="mt-0.5 text-xs leading-5 text-muted-foreground">{model.note}</div></div></div></div>)}</div>
+            <div className="mt-3 flex flex-wrap gap-1.5">{IMAGE_PROVIDERS.map((provider) => <Badge key={provider} color="slate">{provider}</Badge>)}</div>
           </Card>
         </section>
 
