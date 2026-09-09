@@ -3,11 +3,14 @@ import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { rememberReturnPath } from './returnPath'
 
+type OAuthProvider = 'google' | 'github'
+
 interface AuthContextValue {
   session: Session | null
   user: User | null
   loading: boolean
   signInWithGoogle: (returnTo?: string) => Promise<void>
+  signInWithGitHub: (returnTo?: string) => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -37,22 +40,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const signInWithGoogle = async (returnTo = '/') => {
+  const signInWithProvider = async (provider: OAuthProvider, returnTo = '/') => {
     rememberReturnPath(returnTo)
 
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
+      provider,
       options: {
         redirectTo: `${window.location.origin}/login`,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
+        ...(provider === 'google'
+          ? {
+              queryParams: {
+                access_type: 'offline',
+                prompt: 'consent',
+              },
+            }
+          : {}),
       },
     })
 
     if (error) throw error
   }
+
+  const signInWithGoogle = (returnTo = '/') => signInWithProvider('google', returnTo)
+  const signInWithGitHub = (returnTo = '/') => signInWithProvider('github', returnTo)
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut()
@@ -60,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user || null, loading, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ session, user: session?.user || null, loading, signInWithGoogle, signInWithGitHub, signOut }}>
       {children}
     </AuthContext.Provider>
   )
