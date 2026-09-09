@@ -6,6 +6,12 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "regions": ["iad1"],
+  "git": {
+    "deploymentEnabled": {
+      "*": false,
+      "main": true
+    }
+  },
   "functions": {
     "api/**/*.js": {
       "maxDuration": 30
