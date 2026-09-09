@@ -4,7 +4,6 @@ import { Layout } from './components/layout/Layout'
 import { PublicToolShell } from './components/public/PublicToolShell'
 import { PrivacyPolicyPage, TermsOfServicePage } from './components/public/LegalPages'
 import { HuggingFaceGalleryPage } from './components/public/HuggingFaceGalleryPage'
-import { AppWorkspace } from './components/dashboard/AppWorkspace'
 import { PublicDashboard } from './components/dashboard/PublicDashboard'
 import {
   PF_ScrapperPro,
@@ -143,7 +142,7 @@ function App() {
         <Route path="/categories" element={dashboard} />
         <Route path="/category/:id" element={dashboard} />
         <Route path="/people" element={<PeoplePage />} />
-        <Route path="/workspace" element={<AppWorkspace state={state} setState={setState} onOpenApp={addToRecent} onToggleFavorite={toggleFavorite} />} />
+        <Route path="/workspace" element={<Navigate to="/apps" replace />} />
 
         <Route path="/apps/scrapper-pro" element={<PF_ScrapperPro />} />
         <Route path="/apps/image-labeler" element={<PF_ImageLabeler />} />
