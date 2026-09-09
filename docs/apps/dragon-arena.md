@@ -11,7 +11,7 @@ A persistent, turn-based fantasy adventure powered by a server-side AI game mast
 1. **Play** — choose a suggested action or type your own.
 2. **GM turn** — `POST /api/ai-game` returns narrative + 3 choices.
 3. **Persist** — the turn is saved to `dragon_arena_turns` and the session is updated.
-4. **Scene** — `POST /api/dragon-image` generates a cinematic scene from the latest narrative.
+4. **Scene** — `POST /api/dragon-image` generates a cinematic scene from the latest narrative through Hugging Face Inference.
 5. **Points** — turns award 10 points, scenes award 1 point.
 6. **Leaderboard** — public profiles only.
 
@@ -36,20 +36,27 @@ Each opening ships three suggested first choices. Subsequent GM turns continue f
 | `dragon_arena_turns` | One row per turn; `session_id`, `user_id`, `turn_number`, `player_action`, `narrative`, `choices`, `model` |
 | `dragon_arena_assets` | Generated scenes + saved scrapper results; `session_id`, `user_id`, `asset_type`, `storage_path`, `external_url`, `is_public`, `mint_status`, `metadata` |
 | `dragon_arena_points` | Per-user points ledger; `points`, `turns_played`, `scenes_created` |
-| `dragon_arena_daily_usage` | Daily AI-turn quota (1/day unless personal key) |
-| `dragon_arena_image_usage` | Daily image-turn quota (1/day unless personal key) |
+| `dragon_arena_daily_usage` | Daily AI-turn quota (1/day unless personal OpenRouter key) |
+| `dragon_arena_image_usage` | Daily image-turn quota (1/day unless personal Hugging Face token) |
 
 ## Quota
 
 - **AI turns**: 1 per day (UTC) unless a personal OpenRouter key is supplied.
-- **Image turns**: 1 per day (UTC) unless a personal OpenRouter key is supplied.
-- Personal keys bypass the quota and are sent only for the active request; they are never stored.
+- **Image turns**: 1 per day (UTC) when using the owner-funded Hugging Face token pool.
+- A personal Hugging Face token bypasses the image quota and is used only for that image request.
+- Personal credentials are kept in the browser by the Dragon Arena UI and are sent only for the active request; AppForge does not persist them server-side.
 
 ## Providers
 
 - **Game master**: OpenRouter (`openrouter/free` by default; `OPENROUTER_MODEL` env override).
-- **Scene generation**: OpenRouter image modality first, then Hugging Face Inference API as a fallback.
-- **HF tokens**: `HF_TOKEN_1/2/3` rotate round-robin on the server. A personal HF token (`x-hf-token` header) overrides rotation.
+- **Scene generation**: Hugging Face Inference only, through `https://router.huggingface.co/hf-inference/models/<model>`.
+- **Default image model**: `stabilityai/stable-diffusion-3-medium-diffusers` unless `HF_IMAGE_MODEL` overrides it.
+- **HF tokens**: `HF_TOKEN_1/2/3` rotate on the server. If a server token fails, the request can try the remaining configured tokens before failing.
+- **Personal HF token**: the `x-hf-token` request header overrides the server token pool for that request.
+
+## Image integrity
+
+`api/dragon-image.js` rejects non-image responses, empty payloads, and generated payloads over 15 MB before uploading to the `dragon-arena-assets` bucket. Failed generation attempts refund an owner-funded daily image turn.
 
 ## Asset gallery
 
@@ -65,13 +72,25 @@ Each opening ships three suggested first choices. Subsequent GM turns continue f
 - Quota is enforced server-side via `security definer` RPCs that check `auth.uid()`.
 - Points are awarded via `award_dragon_arena_points`, which clamps deltas to non-negative.
 - RLS on all Dragon Arena tables is owner-only.
+- Hugging Face server tokens remain server-only environment variables.
+
+## Required environment for scene generation
+
+```text
+HF_TOKEN_1=hf_...
+HF_TOKEN_2=hf_...        # optional
+HF_TOKEN_3=hf_...        # optional
+HF_IMAGE_MODEL=stabilityai/stable-diffusion-3-medium-diffusers
+```
+
+At least one server-side HF token is required unless the active request supplies a personal HF token.
 
 ## Files
 
 | File | Role |
 |---|---|
 | `api/ai-game.js` | Game master endpoint |
-| `api/dragon-image.js` | Scene generation endpoint |
+| `api/dragon-image.js` | Hugging Face scene generation endpoint |
 | `src/lib/dragonArena.ts` | Client helpers (sessions, turns, assets, points, leaderboard) |
 | `src/components/dashboard/PF_AIDragonArena.tsx` | UI |
 | `supabase/migrations/20260908231934_dragon_arena_usage_and_session_logs.sql` | Sessions, turns, assets, daily usage |
