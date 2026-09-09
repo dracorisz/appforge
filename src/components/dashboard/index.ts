@@ -4,7 +4,7 @@ export { UtilityWorkbench, IMPLEMENTED_UTILITY_ROUTES } from './UtilityWorkbench
 export { ImageWorkbench, IMPLEMENTED_IMAGE_ROUTES } from './ImageWorkbench'
 export { LocalToolsWorkbench, IMPLEMENTED_LOCAL_TOOL_ROUTES } from './LocalToolsWorkbench'
 export { ColorPickerTool } from './ColorPickerTool'
-export { PF_ScrapperPro, type ScrapperProResult } from './PF_ScrapperPro'
+export { PF_ScrapperProNext as PF_ScrapperPro, type ScrapperProResult } from './PF_ScrapperProNext'
 export { PF_ImageLabeler, type ImageLabel } from './PF_ImageLabeler'
 export { PF_CreatorSVG, type HeaderConfig } from './PF_CreatorSVG'
 export { PF_CryptoTrack, type CryptoCoin } from './PF_CryptoTrack'
