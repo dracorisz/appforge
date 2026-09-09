@@ -1,6 +1,6 @@
 import React from 'react'
 import { Card, Button, Badge, Input, Textarea } from '@/components/ui'
-import { Search, Plus, Save, Trash2, ExternalLink, Copy, Check, X } from 'lucide-react'
+import { Search, Plus, Save, Trash2, Copy, X } from 'lucide-react'
 import { getAllApps, updateApp, deleteApp, addApp, type AppDefinition } from '@/lib/registry'
 
 export function AppAdminPage() {

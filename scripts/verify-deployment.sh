@@ -17,7 +17,7 @@ else
 fi
 
 # Check required variables
-REQUIRED_VARS=("VITE_SUPABASE_URL" "MYSQL_HOST" "VERCEL_TOKEN")
+REQUIRED_VARS=("VITE_SUPABASE_URL" "VITE_SUPABASE_ANON_KEY")
 for var in "${REQUIRED_VARS[@]}"; do
   if [ -z "${!var}" ]; then
     echo "   ⚠ $var is not set"
@@ -44,17 +44,7 @@ else
 fi
 
 echo ""
-echo "4. Checking database connection..."
-if [ -n "$MYSQL_HOST" ]; then
-  echo "   MySQL host: $MYSQL_HOST"
-  echo "   MySQL database: $MYSQL_DATABASE"
-  echo "   Run: npm run db:setup"
-else
-  echo "   ⚠ MySQL not configured in .env"
-fi
-
-echo ""
-echo "5. Checking Supabase connection..."
+echo "4. Checking Supabase connection..."
 if [ -n "$VITE_SUPABASE_URL" ]; then
   echo "   ✓ Supabase URL configured"
 else
@@ -62,7 +52,7 @@ else
 fi
 
 echo ""
-echo "6. Checking Git setup..."
+echo "5. Checking Git setup..."
 if git remote -v > /dev/null 2>&1; then
   echo "   Git remotes:"
   git remote -v | sed 's/^/     /'
@@ -72,11 +62,10 @@ else
 fi
 
 echo ""
-echo "7. Deployment checklist:"
+echo "6. Deployment checklist:"
 echo "   [ ] Push code to GitHub"
 echo "   [ ] Set Vercel environment variables"
 echo "   [ ] Configure Supabase project"
-echo "   [ ] Set up MySQL database"
 echo "   [ ] Configure Namecheap DNS:"
 echo "       - Type: A, Host: @, Value: 76.76.21.21 (Vercel IP)"
 echo "       - Type: CNAME, Host: www, Value: cname.vercel-dns.com"
