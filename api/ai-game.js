@@ -2,16 +2,6 @@ const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || 'openrouter/free'
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://ixqoosixhahrsgwoxyme.supabase.co'
 const SUPABASE_PUBLISHABLE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_b56EltHyMfwOQjVQcQFHwA_VUiSn9zN'
 
-const extractText = (response) => {
-  if (typeof response?.output_text === 'string' && response.output_text.trim()) return response.output_text.trim()
-  for (const item of response?.output || []) {
-    for (const part of item?.content || []) {
-      if (part?.type === 'output_text' && typeof part.text === 'string') return part.text.trim()
-    }
-  }
-  return ''
-}
-
 const parseReply = (text) => {
   const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
   try {
@@ -48,20 +38,15 @@ const authenticate = async (token) => {
 }
 
 const consumeDailyRequest = async (token) => {
-  const response = await supabaseRequest('/rest/v1/rpc/consume_dragon_arena_daily_request', token, {
-    method: 'POST',
-    body: '{}',
-  })
+  const response = await supabaseRequest('/rest/v1/rpc/consume_dragon_arena_daily_request', token, { method: 'POST', body: '{}' })
   if (!response.ok) throw new Error('quota_check_failed')
   return response.json().catch(() => false)
 }
 
 const refundDailyRequest = async (token) => {
+  if (!token) return
   try {
-    await supabaseRequest('/rest/v1/rpc/refund_dragon_arena_daily_request', token, {
-      method: 'POST',
-      body: '{}',
-    })
+    await supabaseRequest('/rest/v1/rpc/refund_dragon_arena_daily_request', token, { method: 'POST', body: '{}' })
   } catch (error) {
     console.error('Dragon Arena quota refund failed', error)
   }
@@ -75,24 +60,27 @@ export default async function handler(req, res) {
 
   const token = getBearer(req)
   const user = await authenticate(token)
-  if (!user?.id) return res.status(401).json({ error: 'Sign in to use Dragon Arena.' })
+  const guestMode = !user?.id && String(req.headers?.['x-appforge-guest'] || '') === 'dragon-arena'
+  if (!user?.id && !guestMode) return res.status(401).json({ error: 'Sign in to use Dragon Arena.' })
 
   const personalKey = String(req.headers?.['x-openrouter-key'] || '').trim()
   const apiKey = personalKey.startsWith('sk-or-') ? personalKey : process.env.OPENROUTER_API_KEY
-  const usingPersonalKey = Boolean(personalKey.startsWith('sk-or-'))
-  if (!apiKey) return res.status(503).json({ error: 'Dragon Arena is offline until an OpenRouter key is configured securely on the server or supplied for this session.' })
+  const usingPersonalKey = Boolean(personalKey.startsWith('sk-or-')) && !guestMode
+  if (!apiKey) return res.status(503).json({ error: 'Dragon Arena is offline until an OpenRouter key is configured securely on the server.' })
 
   const { model = DEFAULT_MODEL, action, history = [], turn = 1 } = req.body || {}
   if (model !== DEFAULT_MODEL) return res.status(400).json({ error: 'This model is not enabled for Dragon Arena.' })
   if (typeof action !== 'string' || action.trim().length < 2) return res.status(400).json({ error: 'Choose or enter a meaningful action first.' })
 
-  let reserved = false
-  try {
-    reserved = usingPersonalKey || await consumeDailyRequest(token)
-    if (!reserved) return res.status(429).json({ error: 'Your Dragon Arena AI turn for today has already been used. Come back after 00:00 UTC.' })
-  } catch (error) {
-    console.error('Dragon Arena quota check failed', error)
-    return res.status(503).json({ error: 'Could not verify today’s Dragon Arena allowance.' })
+  let reserved = guestMode
+  if (!guestMode) {
+    try {
+      reserved = usingPersonalKey || await consumeDailyRequest(token)
+      if (!reserved) return res.status(429).json({ error: 'Your Dragon Arena AI turn for today has already been used. Come back after 00:00 UTC.' })
+    } catch (error) {
+      console.error('Dragon Arena quota check failed', error)
+      return res.status(503).json({ error: 'Could not verify today’s Dragon Arena allowance.' })
+    }
   }
 
   const recent = Array.isArray(history)
@@ -124,16 +112,16 @@ export default async function handler(req, res) {
 
     const data = await openrouter.json().catch(() => ({}))
     if (!openrouter.ok) {
-      await refundDailyRequest(token)
+      if (!guestMode) await refundDailyRequest(token)
       console.error('OpenRouter Dragon Arena error', openrouter.status, data?.error?.message || data?.error?.code || 'unknown')
-      return res.status(openrouter.status === 429 ? 429 : 502).json({ error: openrouter.status === 429 ? 'The AI game master is at its API limit. Your daily turn was not consumed.' : 'The AI game master could not answer. Your daily turn was not consumed.' })
+      return res.status(openrouter.status === 429 ? 429 : 502).json({ error: openrouter.status === 429 ? 'The AI game master is at its API limit. Your turn was not consumed.' : 'The AI game master could not answer. Your turn was not consumed.' })
     }
 
     const content = data?.choices?.[0]?.message?.content
     const parsed = parseReply(typeof content === 'string' ? content : '')
     if (!parsed.narrative) {
-      await refundDailyRequest(token)
-      return res.status(502).json({ error: 'The AI game master returned an empty turn. Your daily turn was not consumed.' })
+      if (!guestMode) await refundDailyRequest(token)
+      return res.status(502).json({ error: 'The AI game master returned an empty turn. Your turn was not consumed.' })
     }
 
     return res.status(200).json({
@@ -142,11 +130,12 @@ export default async function handler(req, res) {
       model: data?.model || model,
       dailyRequestUsed: true,
       personalKeyUsed: usingPersonalKey,
+      guestMode,
       resetAt: '00:00 UTC',
     })
   } catch (error) {
-    if (reserved) await refundDailyRequest(token)
+    if (reserved && !guestMode) await refundDailyRequest(token)
     console.error('Dragon Arena request failed', error)
-    return res.status(502).json({ error: 'Could not reach the AI game master. Your daily turn was not consumed.' })
+    return res.status(502).json({ error: 'Could not reach the AI game master. Your turn was not consumed.' })
   }
 }
