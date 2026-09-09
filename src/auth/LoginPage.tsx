@@ -47,6 +47,8 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
     }
   }
 
+  const openWorkspace = () => navigate('/')
+
   return (
     <div className="min-h-dvh overflow-x-hidden bg-background text-foreground">
       <div className="relative isolate flex min-h-dvh flex-col overflow-hidden">
@@ -88,23 +90,29 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
                 AppForge brings practical web tools, creator workflows and experiments into one workspace — with a path for every mini-app to become a documented, forkable PWA.
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Button className="h-11 px-5" onClick={() => void login('google')} disabled={Boolean(busyProvider) || loading}>
-                  {loading ? 'Checking session…' : user ? 'Open workspace' : busyProvider === 'google' ? 'Opening Google…' : 'Continue with Google'}
-                  {!loading && busyProvider !== 'google' && <ArrowRight className="h-4 w-4" />}
-                </Button>
-                {!user && (
-                  <Button variant="secondary" className="h-11 px-5" onClick={() => void login('github')} disabled={Boolean(busyProvider) || loading}>
-                    <Github className="h-4 w-4" />
-                    {busyProvider === 'github' ? 'Opening GitHub…' : 'Continue with GitHub'}
+              <div className="mt-8 flex flex-wrap gap-3" aria-busy={Boolean(busyProvider) || loading}>
+                {user ? (
+                  <Button className="h-11 px-5" onClick={openWorkspace} disabled={loading}>
+                    Open workspace <ArrowRight className="h-4 w-4" />
                   </Button>
+                ) : (
+                  <>
+                    <Button className="h-11 px-5" onClick={() => void login('google')} disabled={Boolean(busyProvider) || loading}>
+                      {loading ? 'Checking session…' : busyProvider === 'google' ? 'Opening Google…' : 'Continue with Google'}
+                      {!loading && busyProvider !== 'google' && <ArrowRight className="h-4 w-4" />}
+                    </Button>
+                    <Button variant="secondary" className="h-11 px-5" onClick={() => void login('github')} disabled={Boolean(busyProvider) || loading}>
+                      <Github className="h-4 w-4" />
+                      {busyProvider === 'github' ? 'Opening GitHub…' : 'Continue with GitHub'}
+                    </Button>
+                  </>
                 )}
                 <Link to="/apps/weather-now" className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-border bg-background/70 px-5 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
                   Try a public tool <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
 
-              {error && <div className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
+              {error && <div role="alert" aria-live="polite" className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
 
               <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 border-t border-border/60 pt-5 text-xs text-muted-foreground">
                 <span><strong className="font-semibold text-foreground">{apps.length}</strong> registered apps</span>
@@ -135,7 +143,20 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
                 </div>
 
                 <Link to="/huggingface" className="group flex items-center gap-3 rounded-xl border border-border/70 bg-background/65 px-3 py-3 transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                  <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face" className="h-9 w-9 rounded-lg object-contain" loading="lazy" />
+                  <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/50 bg-background text-base" aria-hidden="true">
+                    <img
+                      src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg"
+                      alt=""
+                      className="h-9 w-9 object-contain"
+                      loading="lazy"
+                      onError={(event) => {
+                        event.currentTarget.style.display = 'none'
+                        const fallback = event.currentTarget.nextElementSibling
+                        fallback?.classList.remove('hidden')
+                      }}
+                    />
+                    <span className="hidden">🤗</span>
+                  </span>
                   <span className="min-w-0 flex-1"><span className="block text-sm font-medium">Hugging Face showcase</span><span className="block text-xs text-muted-foreground">Models, providers and creator-selected scenes</span></span>
                   <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                 </Link>
