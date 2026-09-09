@@ -1,9 +1,11 @@
 import type { AppState } from '@/types'
+import type { CategoryOverride } from './categories'
 
 export const WORKSPACE_BACKUP_FORMAT = 'appforge-workspace'
 export const WORKSPACE_BACKUP_VERSION = 2
 
 type UnknownRecord = Record<string, unknown>
+type CategoryOverrides = Record<string, CategoryOverride>
 
 export type WorkspaceBackupEnvelope = {
   format: typeof WORKSPACE_BACKUP_FORMAT
@@ -12,14 +14,14 @@ export type WorkspaceBackupEnvelope = {
   build?: unknown
   profile?: unknown
   workspace: AppState
-  categoryOverrides?: Record<string, string>
+  categoryOverrides?: CategoryOverrides
 }
 
 export type WorkspaceImportPreview = {
   version: number
   exportedAt: string | null
   workspace: AppState
-  categoryOverrides: Record<string, string>
+  categoryOverrides: CategoryOverrides
   summary: {
     favorites: number
     recentApps: number
@@ -59,9 +61,23 @@ export const mergeWorkspaceState = (incoming: unknown, current: AppState): AppSt
   }
 }
 
-const normalizeCategoryOverrides = (value: unknown) => {
+const normalizeCategoryOverride = (value: unknown): CategoryOverride | null => {
+  if (!isRecord(value)) return null
+  const override: CategoryOverride = {}
+  if (typeof value.name === 'string') override.name = value.name
+  if (typeof value.description === 'string') override.description = value.description
+  if (typeof value.icon === 'string') override.icon = value.icon
+  if (typeof value.visibleInSidebar === 'boolean') override.visibleInSidebar = value.visibleInSidebar
+  return override
+}
+
+const normalizeCategoryOverrides = (value: unknown): CategoryOverrides => {
   if (!isRecord(value)) return {}
-  return Object.fromEntries(Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === 'string'))
+  return Object.fromEntries(
+    Object.entries(value)
+      .map(([id, raw]) => [id, normalizeCategoryOverride(raw)] as const)
+      .filter((entry): entry is [string, CategoryOverride] => entry[1] !== null),
+  )
 }
 
 export const createWorkspaceBackup = (params: {
@@ -69,7 +85,7 @@ export const createWorkspaceBackup = (params: {
   exportedAt: string
   build?: unknown
   profile?: unknown
-  categoryOverrides?: Record<string, string>
+  categoryOverrides?: CategoryOverrides
 }): WorkspaceBackupEnvelope => ({
   format: WORKSPACE_BACKUP_FORMAT,
   version: WORKSPACE_BACKUP_VERSION,
