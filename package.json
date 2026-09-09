@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "lint": "echo 'No lint configured'",
     "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.js",
     "version:set": "node scripts/set-version.mjs",
     "db:setup": "mysql -h $MYSQL_HOST -P $MYSQL_PORT -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE < scripts/setup-mysql.sql",
     "db:migrate": "echo 'Migrations run via CI/CD'",
