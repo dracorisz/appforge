@@ -51,6 +51,12 @@ const formatBytes = (bytes: number) => {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
 }
 
+const sourceLabel = (item: VaultMedia) => {
+  if (item.source_app === 'scrapper-pro') return 'reference'
+  if (item.source_bucket === 'dragon-arena-assets') return 'game asset'
+  return item.size_bytes ? formatBytes(item.size_bytes) : 'stored'
+}
+
 const VaultThumb = ({ item }: { item: VaultMedia }) => {
   const [url, setUrl] = React.useState<string | null>(null)
   React.useEffect(() => {
@@ -80,7 +86,7 @@ const VaultActions = ({ item, onPreview, onDelete }: { item: VaultMedia; onPrevi
   return (
     <div className="flex items-center gap-1">
       <button onClick={onPreview} className="rounded p-1.5 hover:bg-accent" aria-label="Preview"><Maximize2 className="h-4 w-4" /></button>
-      <a href={downloadUrl} download className="rounded p-1.5 hover:bg-accent" aria-label="Download"><Download className="h-4 w-4" /></a>
+      <a href={downloadUrl} download target={item.source_bucket === 'external' ? '_blank' : undefined} rel={item.source_bucket === 'external' ? 'noreferrer' : undefined} className="rounded p-1.5 hover:bg-accent" aria-label={item.source_bucket === 'external' ? 'Open source asset' : 'Download'}><Download className="h-4 w-4" /></a>
       <button onClick={onDelete} className="rounded p-1.5 text-destructive hover:bg-destructive/10" aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
     </div>
   )
@@ -91,7 +97,6 @@ export function PF_UserMediaVault() {
   const [loading, setLoading] = React.useState(false)
   const [filterKind, setFilterKind] = React.useState<VaultMedia['kind'] | 'all'>('all')
   const [folder, setFolder] = React.useState<VaultFolder | 'all'>('all')
-  const [uploadFolder, setUploadFolder] = React.useState<VaultFolder>('general')
   const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid')
   const [uploading, setUploading] = React.useState(false)
   const [uploadProgress, setUploadProgress] = React.useState<Record<string, number>>({})
@@ -131,11 +136,11 @@ export function PF_UserMediaVault() {
         setUploadProgress((current) => ({ ...current, [file.name]: 0 }))
         const item = await uploadVaultMediaWithProgress(file, {
           title: file.name,
-          folder: uploadFolder,
-          metadata: { source: uploadFolder === 'general' ? 'manual-upload' : uploadFolder },
+          folder: 'general',
+          metadata: { source: 'manual-upload' },
           onProgress: (progress) => setUploadProgress((current) => ({ ...current, [file.name]: progress })),
         })
-        if (folder === 'all' || folder === uploadFolder) setMedia((current) => [item, ...current])
+        if (folder === 'all' || folder === 'general') setMedia((current) => [item, ...current])
         setUploadProgress((current) => ({ ...current, [file.name]: 100 }))
       } catch (uploadError) {
         failures.push(`${file.name}: ${uploadError instanceof Error ? uploadError.message : 'upload failed'}`)
@@ -149,13 +154,19 @@ export function PF_UserMediaVault() {
   }
 
   const handleDelete = async (item: VaultMedia) => {
-    if (!confirm(`Delete "${item.title || item.file_name || 'this file'}"?`)) return
+    const label = item.title || item.file_name || 'this item'
+    const warning = item.source_bucket === 'dragon-arena-assets'
+      ? `Delete "${label}" from Dragon Arena and remove its stored image?`
+      : item.source_app === 'scrapper-pro'
+        ? `Remove "${label}" from the Scrapper Pro folder? The original source is not deleted.`
+        : `Delete "${label}" from Media Vault?`
+    if (!confirm(warning)) return
     try {
       await deleteVaultMedia(item)
       setMedia((current) => current.filter((row) => row.id !== item.id))
       void refresh()
     } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : 'Could not delete file.')
+      setError(deleteError instanceof Error ? deleteError.message : 'Could not delete item.')
     }
   }
 
@@ -163,6 +174,7 @@ export function PF_UserMediaVault() {
     try {
       const url = await vaultItemUrl(item)
       if (url) setPreview({ item, url })
+      else setError('No preview URL is available for this item.')
     } catch {
       setError('Could not open preview.')
     }
@@ -176,20 +188,15 @@ export function PF_UserMediaVault() {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge color="purple">Private vault</Badge>
-            <span className="text-xs text-muted-foreground">Direct uploads + linked Dragon Arena / Scrapper Pro assets</span>
+            <span className="text-xs text-muted-foreground">General uploads · Dragon Arena assets · Scrapper Pro references</span>
           </div>
           <h1 className="mt-1 flex items-center gap-2 text-2xl font-semibold tracking-tight"><Upload className="h-6 w-6" /> Media Vault</h1>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">General uploads live in the private vault. Dragon Arena scenes and Scrapper Pro saved results are linked into their folders from their source ledgers so refreshes stay consistent.</p>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">Media Vault is AppForge's shared asset surface. Manual files live in General, Dragon Arena scenes stay linked to the game ledger, and signed-in Scrapper Pro saves are archived here as deduplicated source references.</p>
         </div>
-        <div className="flex flex-wrap items-end gap-2">
-          <label className="text-xs text-muted-foreground">Upload to
-            <select value={uploadFolder} onChange={(event) => setUploadFolder(event.target.value)} className="ml-2 rounded-lg border border-input bg-background px-2 py-2 text-sm text-foreground">
-              {FOLDERS.filter((item) => item.id !== 'all').map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
-            </select>
-          </label>
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="secondary" onClick={() => void refresh()} disabled={loading}><RefreshCw className="h-4 w-4" /> Refresh</Button>
           <input type="file" multiple accept="image/*,video/*,audio/*,application/pdf,.txt,.md,.json" className="hidden" onChange={handleUpload} disabled={uploading} id="vault-upload" />
-          <label htmlFor="vault-upload" className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 bg-background/45 px-3 py-2 text-sm font-medium text-foreground hover:bg-accent"><Upload className="h-4 w-4" />{uploading ? ' Uploading…' : ' Upload'}</label>
+          <label htmlFor="vault-upload" title="Manual uploads are stored in General" className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 bg-background/45 px-3 py-2 text-sm font-medium text-foreground hover:bg-accent"><Upload className="h-4 w-4" />{uploading ? ' Uploading…' : ' Upload to General'}</label>
         </div>
       </div>
 
@@ -210,7 +217,7 @@ export function PF_UserMediaVault() {
       <Card className="p-3">
         <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Private upload quota used</span><span>{formatBytes(quota.used_bytes)} / {formatBytes(quota.quota_bytes)} ({usedPct}%)</span></div>
         <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-accent transition-all" style={{ width: `${usedPct}%` }} /></div>
-        <p className="mt-2 text-xs text-muted-foreground">{formatBytes(quota.remaining_bytes)} remaining. Linked Dragon Arena/Scrapper assets are not double-counted against this quota.</p>
+        <p className="mt-2 text-xs text-muted-foreground">{formatBytes(quota.remaining_bytes)} remaining. Dragon Arena scenes and Scrapper Pro references are not double-counted against the General upload quota.</p>
       </Card>
 
       {error && <Card className="border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</Card>}
@@ -228,17 +235,17 @@ export function PF_UserMediaVault() {
           <div className="col-span-full rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground"><Upload className="mx-auto h-10 w-10 text-muted-foreground/50" /><p className="mt-2">No media in this folder/filter yet.</p></div>
         ) : media.map((item) => {
           const Icon = kindIcon(item.kind)
-          return <Card key={`${item.metadata?.source_table || 'vault'}-${item.id}`} className={viewMode === 'list' ? 'flex items-center gap-3 p-3' : 'overflow-hidden p-0'}>
+          return <Card key={`${item.metadata?.source_table || item.source_app || 'vault'}-${item.id}`} className={viewMode === 'list' ? 'flex items-center gap-3 p-3' : 'overflow-hidden p-0'}>
             {viewMode === 'grid' && <button type="button" onClick={() => void openPreview(item)} className="relative block aspect-video w-full overflow-hidden bg-muted" aria-label={`Preview ${item.title || item.file_name || 'file'}`}><VaultThumb item={item} /></button>}
             <div className={viewMode === 'grid' ? 'p-3' : 'min-w-0 flex-1'}>
-              <div className="flex items-start justify-between gap-2"><div className={viewMode === 'list' ? 'flex min-w-0 items-center gap-2' : 'flex min-w-0 flex-col gap-1'}>{viewMode === 'list' && <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />}<div className="min-w-0"><p className="truncate text-sm font-medium">{item.title || item.file_name || 'Untitled'}</p><div className="flex flex-wrap items-center gap-1.5">{kindBadge(item.kind)}<Badge color="slate">{vaultFolder(item)}</Badge>{item.is_public && <Badge color="green">public</Badge>}<span className="text-[10px] text-muted-foreground">{item.size_bytes ? formatBytes(item.size_bytes) : 'linked'}</span></div></div></div><VaultActions item={item} onPreview={() => void openPreview(item)} onDelete={() => void handleDelete(item)} /></div>
+              <div className="flex items-start justify-between gap-2"><div className={viewMode === 'list' ? 'flex min-w-0 items-center gap-2' : 'flex min-w-0 flex-col gap-1'}>{viewMode === 'list' && <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />}<div className="min-w-0"><p className="truncate text-sm font-medium">{item.title || item.file_name || 'Untitled'}</p><div className="flex flex-wrap items-center gap-1.5">{kindBadge(item.kind)}<Badge color="slate">{vaultFolder(item)}</Badge>{item.is_public && <Badge color="green">public</Badge>}<span className="text-[10px] text-muted-foreground">{sourceLabel(item)}</span></div></div></div><VaultActions item={item} onPreview={() => void openPreview(item)} onDelete={() => void handleDelete(item)} /></div>
               <p className="mt-1 text-xs text-muted-foreground">{new Date(item.created_at).toLocaleString()}</p>
             </div>
           </Card>
         })}
       </div>
 
-      {preview && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={() => setPreview(null)}>{preview.item.kind === 'video' ? <video src={preview.url} controls autoPlay className="max-h-[90vh] max-w-[90vw] rounded-xl" onClick={(event) => event.stopPropagation()} /> : preview.item.kind === 'image' ? <img src={preview.url} alt={preview.item.title || ''} className="max-h-[90vh] max-w-[90vw] rounded-xl" onClick={(event) => event.stopPropagation()} /> : <div className="max-w-md rounded-xl border border-border/70 bg-background p-6 text-center text-muted-foreground">Preview not available for this file type.</div>}<button onClick={() => setPreview(null)} className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"><X className="h-5 w-5" /></button></div>}
+      {preview && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={() => setPreview(null)}>{preview.item.kind === 'video' ? <video src={preview.url} controls autoPlay className="max-h-[90vh] max-w-[90vw] rounded-xl" onClick={(event) => event.stopPropagation()} /> : preview.item.kind === 'image' ? <img src={preview.url} alt={preview.item.title || ''} className="max-h-[90vh] max-w-[90vw] rounded-xl" onClick={(event) => event.stopPropagation()} /> : <div className="max-w-md rounded-xl border border-border/70 bg-background p-6 text-center text-muted-foreground">Preview is not available for this item type. Use the source/download action to open it.</div>}<button onClick={() => setPreview(null)} className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"><X className="h-5 w-5" /></button></div>}
     </div>
   )
 }
