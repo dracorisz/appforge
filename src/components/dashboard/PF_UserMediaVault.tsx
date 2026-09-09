@@ -21,7 +21,7 @@ import {
   getVaultQuota,
   uploadVaultMediaWithProgress,
   deleteVaultMedia,
-  vaultSignedUrl,
+  vaultItemUrl,
   vaultFolder,
   type VaultFolder,
   type VaultMedia,
@@ -55,9 +55,9 @@ const VaultThumb = ({ item }: { item: VaultMedia }) => {
   const [url, setUrl] = React.useState<string | null>(null)
   React.useEffect(() => {
     let cancelled = false
-    void vaultSignedUrl(item.storage_path).then((value) => { if (!cancelled && value) setUrl(value) }).catch(() => undefined)
+    void vaultItemUrl(item).then((value) => { if (!cancelled && value) setUrl(value) }).catch(() => undefined)
     return () => { cancelled = true }
-  }, [item.storage_path])
+  }, [item])
 
   const Icon = kindIcon(item.kind)
   if (item.kind === 'image' && url) return <img src={url} alt={item.title || item.file_name || ''} loading="lazy" className="h-full w-full object-cover" />
@@ -74,9 +74,9 @@ const VaultActions = ({ item, onPreview, onDelete }: { item: VaultMedia; onPrevi
   const [downloadUrl, setDownloadUrl] = React.useState('#')
   React.useEffect(() => {
     let cancelled = false
-    void vaultSignedUrl(item.storage_path).then((value) => { if (!cancelled && value) setDownloadUrl(value) }).catch(() => undefined)
+    void vaultItemUrl(item).then((value) => { if (!cancelled && value) setDownloadUrl(value) }).catch(() => undefined)
     return () => { cancelled = true }
-  }, [item.storage_path])
+  }, [item])
   return (
     <div className="flex items-center gap-1">
       <button onClick={onPreview} className="rounded p-1.5 hover:bg-accent" aria-label="Preview"><Maximize2 className="h-4 w-4" /></button>
@@ -151,7 +151,7 @@ export function PF_UserMediaVault() {
   const handleDelete = async (item: VaultMedia) => {
     if (!confirm(`Delete "${item.title || item.file_name || 'this file'}"?`)) return
     try {
-      await deleteVaultMedia(item.id)
+      await deleteVaultMedia(item)
       setMedia((current) => current.filter((row) => row.id !== item.id))
       void refresh()
     } catch (deleteError) {
@@ -161,7 +161,7 @@ export function PF_UserMediaVault() {
 
   const openPreview = async (item: VaultMedia) => {
     try {
-      const url = await vaultSignedUrl(item.storage_path)
+      const url = await vaultItemUrl(item)
       if (url) setPreview({ item, url })
     } catch {
       setError('Could not open preview.')
@@ -176,10 +176,10 @@ export function PF_UserMediaVault() {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge color="purple">Private vault</Badge>
-            <span className="text-xs text-muted-foreground">Direct-to-Supabase uploads · 200 MB default quota</span>
+            <span className="text-xs text-muted-foreground">Direct uploads + linked Dragon Arena / Scrapper Pro assets</span>
           </div>
           <h1 className="mt-1 flex items-center gap-2 text-2xl font-semibold tracking-tight"><Upload className="h-6 w-6" /> Media Vault</h1>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">Store images, videos, audio and documents. Use folders to keep Dragon Arena and Scrapper Pro media separated from general uploads.</p>
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">General uploads live in the private vault. Dragon Arena scenes and Scrapper Pro saved results are linked into their folders from their source ledgers so refreshes stay consistent.</p>
         </div>
         <div className="flex flex-wrap items-end gap-2">
           <label className="text-xs text-muted-foreground">Upload to
@@ -208,9 +208,9 @@ export function PF_UserMediaVault() {
       )}
 
       <Card className="p-3">
-        <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Quota used</span><span>{formatBytes(quota.used_bytes)} / {formatBytes(quota.quota_bytes)} ({usedPct}%)</span></div>
+        <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Private upload quota used</span><span>{formatBytes(quota.used_bytes)} / {formatBytes(quota.quota_bytes)} ({usedPct}%)</span></div>
         <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-accent transition-all" style={{ width: `${usedPct}%` }} /></div>
-        <p className="mt-2 text-xs text-muted-foreground">{formatBytes(quota.remaining_bytes)} remaining.</p>
+        <p className="mt-2 text-xs text-muted-foreground">{formatBytes(quota.remaining_bytes)} remaining. Linked Dragon Arena/Scrapper assets are not double-counted against this quota.</p>
       </Card>
 
       {error && <Card className="border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</Card>}
@@ -228,10 +228,10 @@ export function PF_UserMediaVault() {
           <div className="col-span-full rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground"><Upload className="mx-auto h-10 w-10 text-muted-foreground/50" /><p className="mt-2">No media in this folder/filter yet.</p></div>
         ) : media.map((item) => {
           const Icon = kindIcon(item.kind)
-          return <Card key={item.id} className={viewMode === 'list' ? 'flex items-center gap-3 p-3' : 'overflow-hidden p-0'}>
+          return <Card key={`${item.metadata?.source_table || 'vault'}-${item.id}`} className={viewMode === 'list' ? 'flex items-center gap-3 p-3' : 'overflow-hidden p-0'}>
             {viewMode === 'grid' && <button type="button" onClick={() => void openPreview(item)} className="relative block aspect-video w-full overflow-hidden bg-muted" aria-label={`Preview ${item.title || item.file_name || 'file'}`}><VaultThumb item={item} /></button>}
             <div className={viewMode === 'grid' ? 'p-3' : 'min-w-0 flex-1'}>
-              <div className="flex items-start justify-between gap-2"><div className={viewMode === 'list' ? 'flex min-w-0 items-center gap-2' : 'flex min-w-0 flex-col gap-1'}>{viewMode === 'list' && <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />}<div className="min-w-0"><p className="truncate text-sm font-medium">{item.title || item.file_name || 'Untitled'}</p><div className="flex flex-wrap items-center gap-1.5">{kindBadge(item.kind)}<Badge color="slate">{vaultFolder(item)}</Badge><span className="text-[10px] text-muted-foreground">{formatBytes(item.size_bytes)}</span></div></div></div><VaultActions item={item} onPreview={() => void openPreview(item)} onDelete={() => void handleDelete(item)} /></div>
+              <div className="flex items-start justify-between gap-2"><div className={viewMode === 'list' ? 'flex min-w-0 items-center gap-2' : 'flex min-w-0 flex-col gap-1'}>{viewMode === 'list' && <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />}<div className="min-w-0"><p className="truncate text-sm font-medium">{item.title || item.file_name || 'Untitled'}</p><div className="flex flex-wrap items-center gap-1.5">{kindBadge(item.kind)}<Badge color="slate">{vaultFolder(item)}</Badge>{item.is_public && <Badge color="green">public</Badge>}<span className="text-[10px] text-muted-foreground">{item.size_bytes ? formatBytes(item.size_bytes) : 'linked'}</span></div></div></div><VaultActions item={item} onPreview={() => void openPreview(item)} onDelete={() => void handleDelete(item)} /></div>
               <p className="mt-1 text-xs text-muted-foreground">{new Date(item.created_at).toLocaleString()}</p>
             </div>
           </Card>
