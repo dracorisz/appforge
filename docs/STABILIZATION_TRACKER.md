@@ -76,9 +76,9 @@ This file is the working source of truth for the consolidation/stabilization pas
 | Profile `show_website` data model | DONE | account model supports it. |
 | Profile `show_github` data model | DONE | account model supports it. |
 | Profile `show_email` + `public_email` data model | DONE | email remains hidden by default. |
-| Settings → Profile visibility controls | OPEN | controls still need to be added to Settings UI. |
+| Settings → Profile visibility controls | DONE | skills, website, GitHub and public email switches are now editable and saved. |
 | People respects field visibility | DONE | People search/cards conditionally honor skills, GitHub, website and public email flags. |
-| Settings public-profile preview respects visibility | OPEN | preview still renders skills/GitHub/website regardless of visibility flags and needs public-email preview. |
+| Settings public-profile preview respects visibility | DONE | preview mirrors the People visibility rules and public-email choice. |
 | GitHub authentication integration | OPEN | roadmap/integration work remains. |
 | GitHub auth branch merge | DONE | no advanced GitHub-auth branch exists to merge; stale branches were audited. |
 
@@ -108,7 +108,7 @@ This file is the working source of truth for the consolidation/stabilization pas
 | Global version consistency | OPEN | package is 1.18.0 while registry changelog is 1.21.0. |
 | Real lint configuration | OPEN | current `lint` script is still a no-op. |
 | Remove dead MySQL setup/dependency | OPEN | `mysql2` + `scripts/setup-mysql.sql` remain. |
-| Remove tracked `*.tsbuildinfo` | OPEN | verify tracking + `.gitignore`. |
+| Remove tracked `*.tsbuildinfo` | DONE | tracked `tsconfig.tsbuildinfo` removed and `*.tsbuildinfo` added to `.gitignore`. |
 | Dependency modernization | OPEN | separate migration; do not mix React/Router major upgrades into stabilization fixes. |
 
 ## P3 — Repository / security / deployment
@@ -122,7 +122,7 @@ This file is the working source of truth for the consolidation/stabilization pas
 | Remove Devin GitHub App installation | MANUAL | repository/account GitHub settings action if still installed. |
 | Rotate historically exposed credentials | MANUAL | credentials should be rotated even when files were later cleaned. |
 | Retire duplicate JS Vite config | DONE | TypeScript Vite config is authoritative. |
-| Current handoff docs | DONE | `docs/AGENT_HANDOFF.md` and Dragon docs now reflect HF provider-aware + Media Vault architecture. |
+| Current handoff docs | DONE | `docs/AGENT_HANDOFF.md` and Dragon docs reflect HF provider-aware + Media Vault architecture. |
 | Latest Vercel build active | VERIFY | deployment rate limiting has repeatedly caused production lag. |
 | Signed-out four-app regression pass | VERIFY | run after stable deployment. |
 | Signed-in Dragon persistence/media pass | VERIFY | run after stable deployment. |
@@ -139,11 +139,13 @@ This file is the working source of truth for the consolidation/stabilization pas
 - `950bd621` — registry metadata/version sync for Dragon, Media Vault and Scrapper Pro.
 - `489688f1` — current architecture handoff refresh.
 - `2d95eb89` — Dragon Arena 1.6 provider + Media Vault documentation sync.
+- `45bb69d5` — granular Settings profile field visibility controls + matching preview.
+- `2a771277` / `6c64c47e` — remove and ignore TypeScript incremental build cache.
 
 ## Next automatic pass
 
-1. Add Settings → Profile field-visibility controls and make its preview honor the same flags People already uses.
-2. Fix the remaining legacy `/workspace` Dragon Arena icon fallback.
-3. Audit/remove obsolete MySQL setup and tracked TypeScript build artifacts in isolated build-hygiene commits.
-4. Add real linting without mixing React/Router major-version migrations into the same change.
-5. Re-check Hugging Face scene generation against the newest production deployment and capture provider/model telemetry from one successful generation.
+1. Fix the remaining legacy `/workspace` Dragon Arena icon fallback.
+2. Audit/remove obsolete MySQL setup/dependency in an isolated build-hygiene commit.
+3. Add real linting without mixing React/Router major-version migrations into the same change.
+4. Re-check Hugging Face scene generation against the newest production deployment and capture provider/model telemetry from one successful generation.
+5. Finish low-risk metadata/icon polish for the remaining generic utility cards.
