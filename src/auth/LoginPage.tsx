@@ -18,7 +18,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
   const [busy, setBusy] = React.useState(false)
   const [error, setError] = React.useState('')
   const apps = React.useMemo(() => getAllApps(), [])
-  const liveCount = apps.filter((app) => app.status === 'launched' || app.status === 'beta' || app.status === 'building' || app.status === 'full').length
+  const liveCount = apps.filter((app) => app.status === 'launched' || app.status === 'beta' || app.status === 'building').length
 
   React.useEffect(() => {
     if (landingOnly || loading || !user) return
