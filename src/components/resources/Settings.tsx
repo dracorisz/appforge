@@ -81,6 +81,8 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
   const [error, setError] = React.useState('')
   const [liveUrl, setLiveUrl] = React.useState(() => localStorage.getItem(LIVE_URL_KEY) || 'https://www.sstoken.space')
   const [skillsDraft, setSkillsDraft] = React.useState('')
+  const [openRouterKey, setOpenRouterKey] = React.useState(() => localStorage.getItem('dragon-arena-openrouter-key') || '')
+  const [hfToken, setHfToken] = React.useState(() => localStorage.getItem('dragon-arena-hf-key') || '')
 
   const refreshAccount = React.useCallback(async () => {
     if (!user) return
@@ -156,6 +158,18 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Could not save private information.')
     } finally { setBusy('') }
+  }
+
+  const saveOpenRouterKey = () => {
+    const trimmed = openRouterKey.trim()
+    localStorage.setItem('dragon-arena-openrouter-key', trimmed)
+    flash('OpenRouter key saved.')
+  }
+
+  const saveHfToken = () => {
+    const trimmed = hfToken.trim()
+    localStorage.setItem('dragon-arena-hf-key', trimmed)
+    flash('Hugging Face token saved.')
   }
 
   const uploadImage = async (file: File, kind: 'avatar' | 'gallery' | 'cover') => {
@@ -355,7 +369,32 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
         </div>
       )}
 
-      {activeTab === 'appearance' && <Card className="p-4"><h2 className="text-sm font-semibold text-foreground">Appearance</h2><div className="mt-4 flex flex-wrap gap-2">{([{ value: 'light', label: 'Light', icon: Sun }, { value: 'dark', label: 'Dark', icon: Moon }, { value: 'system', label: 'System', icon: Monitor }] as const).map(({ value, label, icon: Icon }) => <button key={value} onClick={() => setThemeMode(value)} className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${themeMode === value ? 'border-foreground/25 bg-accent' : 'border-border/70 hover:bg-accent/60'}`}><Icon className="h-4 w-4" /> {label}</button>)}</div></Card>}
+      {activeTab === 'appearance' && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card className="p-4">
+            <h2 className="text-sm font-semibold text-foreground">Theme</h2>
+            <div className="mt-4 flex flex-wrap gap-2">{([{ value: 'light', label: 'Light', icon: Sun }, { value: 'dark', label: 'Dark', icon: Moon }, { value: 'system', label: 'System', icon: Monitor }] as const).map(({ value, label, icon: Icon }) => <button key={value} onClick={() => setThemeMode(value)} className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${themeMode === value ? 'border-foreground/25 bg-accent' : 'border-border/70 hover:bg-accent/60'}`}><Icon className="h-4 w-4" /> {label}</button>)}</div>
+          </Card>
+          <Card className="p-4">
+            <h2 className="text-sm font-semibold text-foreground">Dragon Arena Theme</h2>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">Customize the appearance of Dragon Arena elements.</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button className="inline-flex items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm hover:bg-accent/60">
+                <span className="h-4 w-4 rounded-full bg-gradient-to-br from-orange-500 to-red-600" />
+                Ember Runes
+              </button>
+              <button className="inline-flex items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm hover:bg-accent/60">
+                <span className="h-4 w-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-600" />
+                Frost Wyrms
+              </button>
+              <button className="inline-flex items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm hover:bg-accent/60">
+                <span className="h-4 w-4 rounded-full bg-gradient-to-br from-green-500 to-emerald-600" />
+                Forest Dragons
+              </button>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {activeTab === 'security' && (
         <div className="grid gap-4 lg:grid-cols-2">
@@ -367,7 +406,33 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
 
       {activeTab === 'data' && <Card className="p-4"><h2 className="text-sm font-semibold text-foreground">Workspace data</h2><p className="mt-1 text-xs leading-5 text-muted-foreground">Authenticated preferences and personalized category titles sync to Supabase. Browser-only tools can still keep their own local data.</p><div className="mt-4 flex flex-wrap gap-2"><Button onClick={exportWorkspace}><Download className="h-4 w-4" /> Export JSON</Button><label><input type="file" accept="application/json,.json" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) importWorkspace(file); e.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm font-medium hover:bg-accent"><Upload className="h-4 w-4" /> Import JSON</span></label></div></Card>}
 
-      {activeTab === 'integrations' && <div className="grid gap-3 sm:grid-cols-2">{[['Supabase', 'Authentication, profiles, private personal data, preferences, roles, TOTP and profile media.', Cloud], ['Vercel', 'Vite frontend plus same-origin serverless APIs for network-backed tools.', RefreshCw], ['GitHub', 'Public source, contributors, issues, pull requests and CI.', Github], ['Google', 'OAuth identity provider; basic identity scopes only.', ShieldCheck]].map(([name, description, Icon]: any) => <Card key={name} className="p-4"><Icon className="h-5 w-5 text-muted-foreground" /><h2 className="mt-3 text-sm font-semibold text-foreground">{name}</h2><p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p></Card>)}</div>}
+      {activeTab === 'integrations' && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">{[['Supabase', 'Authentication, profiles, private personal data, preferences, roles, TOTP and profile media.', Cloud], ['Vercel', 'Vite frontend plus same-origin serverless APIs for network-backed tools.', RefreshCw], ['GitHub', 'Public source, contributors, issues, pull requests and CI.', Github], ['Google', 'OAuth identity provider; basic identity scopes only.', ShieldCheck]].map(([name, description, Icon]: any) => <Card key={name} className="p-4"><Icon className="h-5 w-5 text-muted-foreground" /><h2 className="mt-3 text-sm font-semibold text-foreground">{name}</h2><p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p></Card>)}</div>
+          <Card className="p-4">
+            <h2 className="text-sm font-semibold text-foreground">Dragon Arena API Keys</h2>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">Personal keys stored in your browser only. When provided, Dragon Arena bypasses the daily owner-funded quota.</p>
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-foreground mb-1.5">OpenRouter personal key</label>
+                <div className="flex gap-2">
+                  <Input value={openRouterKey} onChange={(e) => setOpenRouterKey(e.target.value)} placeholder="sk-or-..." className="flex-1" />
+                  <Button onClick={saveOpenRouterKey} disabled={!openRouterKey.startsWith('sk-or-')}><Check className="h-4 w-4" /></Button>
+                  {openRouterKey && <Button variant="destructive" onClick={() => { setOpenRouterKey(''); localStorage.removeItem('dragon-arena-openrouter-key') }}><Trash2 className="h-4 w-4" /></Button>}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-foreground mb-1.5">Hugging Face personal token</label>
+                <div className="flex gap-2">
+                  <Input value={hfToken} onChange={(e) => setHfToken(e.target.value)} placeholder="hf_..." className="flex-1" />
+                  <Button onClick={saveHfToken} disabled={!hfToken.startsWith('hf_')}><Check className="h-4 w-4" /></Button>
+                  {hfToken && <Button variant="destructive" onClick={() => { setHfToken(''); localStorage.removeItem('dragon-arena-hf-key') }}><Trash2 className="h-4 w-4" /></Button>}
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {activeTab === 'deployment' && <Card className="p-4"><div className="flex flex-wrap items-start justify-between gap-4"><div><h2 className="text-sm font-semibold text-foreground">Deployment</h2><p className="mt-1 text-xs text-muted-foreground">One AppForge project deploys the Vite frontend and colocated `/api/*` functions.</p></div><BuildBadge /></div><div className="mt-4 grid gap-3 sm:grid-cols-2"><Input label="Live URL" value={liveUrl} onChange={(e) => { setLiveUrl(e.target.value); localStorage.setItem(LIVE_URL_KEY, e.target.value) }} /><Input label="Product version" value={BUILD_INFO.version} disabled /><Input label="Commit" value={BUILD_INFO.shortSha} disabled /><Input label="Built" value={BUILD_INFO.builtAtLabel} disabled /></div><a href={liveUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"><ExternalLink className="h-3.5 w-3.5" /> Open production</a></Card>}
 

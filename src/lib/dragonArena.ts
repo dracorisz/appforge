@@ -129,7 +129,7 @@ export async function listAssets(
   } else {
     query = query.eq('user_id', userId)
   }
-  if (opts.sessionId) {
+  if (opts.sessionId && !opts.publicOnly) {
     query = query.eq('session_id', opts.sessionId)
   }
   if (opts.assetType) {

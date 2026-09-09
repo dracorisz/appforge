@@ -4,9 +4,9 @@
 - **Repo**: `/home/dragoljub/Projects/appforge`
 - **Dev**: `npm run dev` starts Vite on `5173` and API server on `5174`
 - **Typecheck**: `npm run typecheck` passes
-- **Git**: uncommitted changes present
-- **Last commit**: `d558061` — Add app admin CRUD, cover image backgrounds, Dragon Arena UI polish
-- **Push status**: needs GitHub auth setup (SSH key or PAT) to push to `origin/main`
+- **Git**: working tree clean, up to date with origin/main
+- **Last commit**: `e4d9644` — update: Added user media vault functionality and reorganized documentation
+- **Push status**: up to date with origin/main
 - **Production**: `sstoken.space` (live at commit `f4fe671` from separate deployment workflow)
 - **Docs**: `docs.sstoken.space` in progress
 
@@ -50,7 +50,6 @@
 1. **Asset gallery cross-run leak** — Gallery shows assets from other sessions. Fix query to enforce `user_id` + `session_id` ownership.
 2. **Settings.tsx JSX errors** — Cover photo/public preview additions broke syntax/type safety. Needs cleanup.
 3. **Video uploads** — Vercel 4.5 MB limit; implement direct-to-Supabase signed uploads.
-4. **GitHub push** — No CLI credential; local commit exists but not pushed.
 
 ## Assets & media
 - **Dragon Arena cover**: `public/Dragon Arena.png` is used as the app header background.

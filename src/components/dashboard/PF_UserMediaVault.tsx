@@ -1,17 +1,13 @@
 import React from 'react'
 import {
-  ChevronLeft,
-  ChevronRight,
   Download,
   FileVideo,
   FileImage,
   FileText,
   Loader2,
-  MoreVertical,
+  Maximize2,
   Play,
-  Plus,
   RefreshCw,
-  Search,
   Trash2,
   Upload,
   X,
@@ -204,8 +200,8 @@ export function PF_UserMediaVault() {
         ))}
         <div className="flex-1" />
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" onClick={() => setViewMode('grid')><FileImage className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="icon" onClick={() => setViewMode('list')}><FileText className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="sm" onClick={() => setViewMode('grid')}><FileImage className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="sm" onClick={() => setViewMode('list')}><FileText className="h-4 w-4" /></Button>
         </div>
       </div>
 
@@ -240,7 +236,7 @@ export function PF_UserMediaVault() {
                 <div className={viewMode === 'grid' ? 'p-3' : 'flex-1 min-w-0'}>
                   <div className="flex items-start justify-between gap-2">
                     <div className={viewMode === 'list' ? 'flex items-center gap-2' : 'flex flex-col gap-1'}>
-                      {viewMode === 'list' && (() => { const Icon = kindIcon(item.kind); return <Icon className="h-5 w-5 text-muted-foreground" /> })()}
+                      {viewMode === 'list' && <Icon className="h-5 w-5 text-muted-foreground" />}
                       <p className="truncate text-sm font-medium">{item.title || item.file_name || 'Untitled'}</p>
                       <div className="flex flex-wrap items-center gap-1.5">
                         {kindBadge(item.kind)}
@@ -250,7 +246,7 @@ export function PF_UserMediaVault() {
                     <VaultActions item={item} onPreview={() => void openPreview(item)} onDelete={() => void handleDelete(item)} />
                   </div>
                   {viewMode === 'list' && item.description && <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{item.description}</p>}
-                  <p className={viewMode === 'grid' ? 'mt-1' : 'mt-0'} className="text-xs text-muted-foreground">{new Date(item.created_at).toLocaleString()}</p>
+                  <p className={viewMode === 'grid' ? 'mt-1 text-xs text-muted-foreground' : 'mt-0 text-xs text-muted-foreground'}>{new Date(item.created_at).toLocaleString()}</p>
                 </div>
               </Card>
             )
