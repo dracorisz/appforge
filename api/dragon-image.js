@@ -1,6 +1,10 @@
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://ixqoosixhahrsgwoxyme.supabase.co'
 const SUPABASE_PUBLISHABLE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_b56EltHyMfwOQjVQcQFHwA_VUiSn9zN'
-const HF_IMAGE_MODEL = process.env.HF_IMAGE_MODEL || 'stabilityai/stable-diffusion-3-medium-diffusers'
+const DEFAULT_HF_IMAGE_MODELS = [
+  'black-forest-labs/FLUX.1-schnell',
+  'stabilityai/stable-diffusion-xl-base-1.0',
+]
+const HF_IMAGE_MODELS = [process.env.HF_IMAGE_MODEL, ...DEFAULT_HF_IMAGE_MODELS].filter((value, index, list) => Boolean(value) && list.indexOf(value) === index)
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024
 
 const HF_TOKENS = [
@@ -49,8 +53,8 @@ const refundImageRequest = async (token) => {
   await supabaseRequest('/rest/v1/rpc/refund_dragon_arena_image_request', token, { method: 'POST', body: '{}' }).catch(() => undefined)
 }
 
-const generateImageFromHf = async (prompt, hfToken) => {
-  const response = await fetch(`https://router.huggingface.co/hf-inference/models/${encodeURIComponent(HF_IMAGE_MODEL)}`, {
+const generateImageFromHf = async (prompt, hfToken, model) => {
+  const response = await fetch(`https://router.huggingface.co/hf-inference/models/${encodeURIComponent(model)}`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${hfToken}`,
@@ -63,20 +67,20 @@ const generateImageFromHf = async (prompt, hfToken) => {
 
   if (!response.ok) {
     const text = await response.text().catch(() => '')
-    throw new Error(`HF_${response.status}: ${text.slice(0, 200)}`)
+    throw new Error(`HF_${response.status} ${model}: ${text.slice(0, 180)}`)
   }
 
   const mimeType = response.headers.get('content-type') || 'image/png'
   if (!mimeType.startsWith('image/') && mimeType !== 'application/octet-stream') {
     const text = await response.text().catch(() => '')
-    throw new Error(`HF_INVALID_RESPONSE: ${text.slice(0, 200)}`)
+    throw new Error(`HF_INVALID_RESPONSE ${model}: ${text.slice(0, 180)}`)
   }
 
   const buffer = Buffer.from(await response.arrayBuffer())
-  if (!buffer.length) throw new Error('HF_EMPTY_IMAGE')
-  if (buffer.length > MAX_IMAGE_BYTES) throw new Error('HF_IMAGE_TOO_LARGE')
+  if (!buffer.length) throw new Error(`HF_EMPTY_IMAGE ${model}`)
+  if (buffer.length > MAX_IMAGE_BYTES) throw new Error(`HF_IMAGE_TOO_LARGE ${model}`)
 
-  return { buffer, mimeType: mimeType.startsWith('image/') ? mimeType : 'image/png' }
+  return { buffer, mimeType: mimeType.startsWith('image/') ? mimeType : 'image/png', model }
 }
 
 const saveImage = async (token, userId, bytes, mimeType) => {
@@ -123,19 +127,21 @@ export default async function handler(req, res) {
 
     let lastError = null
     for (const hfToken of hfTokens) {
-      try {
-        const generated = await generateImageFromHf(prompt, hfToken)
-        const saved = await saveImage(token, user.id, generated.buffer, generated.mimeType)
-        return res.status(200).json({
-          imageUrl: saved.publicUrl,
-          storagePath: saved.storagePath,
-          model: HF_IMAGE_MODEL,
-          sessionId,
-          personalKeyUsed: usingPersonalKey,
-          provider: 'huggingface',
-        })
-      } catch (hfError) {
-        lastError = hfError
+      for (const model of HF_IMAGE_MODELS) {
+        try {
+          const generated = await generateImageFromHf(prompt, hfToken, model)
+          const saved = await saveImage(token, user.id, generated.buffer, generated.mimeType)
+          return res.status(200).json({
+            imageUrl: saved.publicUrl,
+            storagePath: saved.storagePath,
+            model: generated.model,
+            sessionId,
+            personalKeyUsed: usingPersonalKey,
+            provider: 'huggingface',
+          })
+        } catch (hfError) {
+          lastError = hfError
+        }
       }
     }
 
