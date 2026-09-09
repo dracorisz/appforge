@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Layout } from './components/layout/Layout'
 import { PublicToolShell } from './components/public/PublicToolShell'
 import { PrivacyPolicyPage, TermsOfServicePage } from './components/public/LegalPages'
+import { HuggingFaceGalleryPage } from './components/public/HuggingFaceGalleryPage'
 import { AppWorkspace } from './components/dashboard/AppWorkspace'
 import { PublicDashboard } from './components/dashboard/PublicDashboard'
 import {
@@ -120,6 +121,7 @@ function App() {
 
   if (location.pathname === '/privacy') return <PrivacyPolicyPage />
   if (location.pathname === '/terms') return <TermsOfServicePage />
+  if (location.pathname === '/huggingface') return <HuggingFaceGalleryPage />
   if (location.pathname === '/login') return <LoginPage />
 
   if (!user && !loading) {
