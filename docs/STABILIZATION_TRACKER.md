@@ -2,184 +2,127 @@
 
 Last updated: 2026-09-09
 
-This file is the working source of truth for the consolidation/stabilization and launch-readiness pass. Status meanings:
+GitHub Issues are now the canonical actionable backlog. See `docs/ISSUE_ROADMAP.md` for publish-soon ordering. This file records implementation/verification state.
+
+Status meanings:
 
 - **DONE** — implemented in `main`; no known code gap remains for the scoped item.
-- **VERIFY** — implemented in `main`, but production behavior still needs a live smoke test after the matching deployment is active.
-- **OPEN** — code/product work remains.
-- **MANUAL** — requires account/provider administration outside normal repo code.
+- **VERIFY** — implemented in `main`, but production behavior still needs live confirmation on the matching deployment.
+- **OPEN** — product/code work remains.
+- **MANUAL** — requires external account/provider administration.
 
 ## Product maturity rule
 
-AppForge mini-apps now follow the target ladder:
+AppForge mini-apps target:
 
 **Idea → Building → Beta → Launched → Full → Deprecated**
 
-`Full` is intentionally stronger than `Launched`: it means the app is production-ready inside AppForge and documented/isolated enough to be forked into an independent ready-made PWA. The formal gate lives in `docs/FULL_STATUS.md`.
+`Full` means production-ready inside AppForge **and** documented/isolated enough to be forked into an independent ready-made PWA. See `docs/FULL_STATUS.md`.
 
-No app should receive Full status based on feature count alone.
+## P0 — publish-soon state
 
-## Current app versions / launch posture
+| Item | Status | Issue | Notes |
+|---|---|---:|---|
+| Public beta regression pass | OPEN | #1 | Final smoke pass before wider promotion. |
+| Patreon/launch/funding materials | OPEN/MANUAL | #3 | Repo prep exists; external account/publication work remains. |
+| Story Studio HF text/image reliability | VERIFY | #7 | Provider-aware generation exists; current production success/failure path must be tested. |
+| Story Studio Novel + Comics product flow | VERIFY | #8 | Modes, turn-linked imagery and first exports are implemented; deeper project model remains. |
+| Public landing polish | VERIFY | #9 | New hierarchy implemented; capture final screenshot after deployment verification. |
+| Canonical app registry/uniform shell audit | OPEN | #11 | Registry exists but lower-priority metadata still needs systematic normalization. |
 
-| App | Current posture | Notes |
-|---|---|---|
-| Story Studio / Dragon Arena evolution | active beta | Novel + Comics direction established; requires further builder mechanics/export/fork packaging before Launched/Full |
-| Scrapper Pro | beta | strong public demo candidate; fork packaging/server dependency docs still needed for Full |
-| Media Vault | beta | shared authenticated storage surface; requires standalone auth/storage packaging for Full |
-| Any to Any Converter | beta / early Full candidate | browser-first and relatively portable; good candidate for first standalone extraction package |
-| Weather Now | beta/public | stable demo candidate; server API dependency must be packaged for Full |
-| AppForge shell | public beta | launchable as open-development platform; package/global version alignment still open |
-
-## P0 — Story Studio / Dragon Arena / Hugging Face
+## Story Studio / former Dragon Arena
 
 | Item | Status | Notes |
 |---|---|---|
-| Story Studio Novel + Comics mode surface | VERIFY | new shared story workspace added; production build path now compiles after Button variant fix. |
-| Compact generated-art thumbnail + lightbox | VERIFY | latest scene is now a small story thumbnail; tap/click expands in lightbox. |
-| Story toolbar above game window | VERIFY | Generate, Assets, Sessions, Leaderboard, New and provider settings moved into top toolbar. |
-| Remove old Dragon hero/badge/support chrome | VERIFY | Story Studio route no longer uses old decorative Dragon Arena header surface. |
-| Profile Appearance theme carries into Story Studio | VERIFY | semantic theme tokens retained; visual sweep still useful. |
-| Shorter story pacing | VERIFY | GM prompt targets 45–85 words, 2–3 short paragraphs and short action choices. |
-| Continue after shared AI quota | VERIFY | funded HF quota no longer hard-stops gameplay; local continuity keeps story playable. |
-| HF-first GM token/model rotation | VERIFY | `/api/ai-game` has rotation + local continuity fallback; production still benefits from repeat smoke tests. |
-| HF image generation provider routing | VERIFY | `/api/dragon-image` resolves live Hugging Face inference-provider mappings and supports provider-specific calls. |
-| Scene generation token/model/provider rotation | VERIFY | requires repeated current-production Generate tests. |
-| Generate Scene request telemetry | DONE | responses include request ID + duration; exhausted rotations return sanitized model/provider/status attempts. |
-| Server-authoritative scene persistence | DONE | Storage upload + `dragon_arena_assets` ledger insert complete before success response. |
-| Scene restore after refresh | VERIFY | code path complete; live UI smoke test required on current deployment. |
-| Public first-three showcase | DONE | DB policy/RPC and legacy scene recovery implemented. |
-| Scene generation metadata | DONE | model/provider/timestamp/MIME/size/turn metadata persisted and surfaced. |
-| Points RPC authenticated access | DONE | production grant repaired after observed 403. |
-| Canonical Dragon icon on primary dashboard cards | DONE | PublicDashboard special-cases Dragon and registry uses `DragonArena`. |
-| Legacy `/workspace` duplicate renderer | DONE | route redirects to `/apps` and obsolete `AppWorkspace.tsx` was removed. |
-| Novel Builder project model | OPEN | chapters/scenes, editable prose, project title/metadata, continuity controls and export remain. |
-| Comics Builder project model | OPEN | panel/page composition, captions/dialogue, scene ordering and export remain. |
-| Shared character/world/lore memory | OPEN | target feature for both Novel and Comics modes. |
-| Builder export/version history | OPEN | target requirement before Launched/Full. |
-| Story Studio fork package | OPEN | must document/extract APIs, Supabase schema, provider env and PWA identity before Full. |
+| Novel / Comics mode switch | DONE | One shared persistent Story Studio with mode-specific prompting. |
+| Generate / Assets / Sessions / Leaderboard top toolbar | DONE | App-local controls remain above the story work surface. |
+| Old decorative Dragon hero/support chrome | DONE | Removed from the active Story Studio route. |
+| Shorter narrative pacing | DONE | Novel and Comics now have distinct compact prompt contracts. |
+| Continue after shared text quota | DONE | Local continuity fallback prevents hard-stop play. |
+| Scene model/provider routing | DONE | Hugging Face provider mapping + bounded failover in `/api/dragon-image`. |
+| Scene request telemetry | DONE | Request ID, duration and sanitized provider/model attempts. |
+| Server-authoritative scene persistence | DONE | Storage + asset ledger complete before success. |
+| Turn-linked inline artwork | VERIFY | Scene `turn_number` metadata is used to attach small thumbnails beside the corresponding GM narrative. |
+| Lightbox for scene art | DONE | Inline thumbnails expand on click/touch. |
+| Assets view | DONE | Remains the richer gallery/management surface. |
+| Public sharing is creator controlled | DONE | Automatic first-three trigger removed; new scenes are private by default and Assets provides Public/Private toggle. |
+| Public Hugging Face gallery | DONE | RPC returns only `is_public=true` creator-selected scenes. |
+| Novel export | VERIFY | Markdown export implemented; deeper title/chapter/cover model still open. |
+| Comics export | VERIFY | Standalone HTML panel/story export implemented; page composition/PDF/CBZ remain future work. |
+| Settings Appearance usage | VERIFY | Studio uses semantic theme tokens; visual sweep still useful. |
+| Up to 3 personal HF keys in Story Studio | VERIFY | UI stores local token slots and text API rotates them. Image API multi-token handling still needs verification/work under #17. |
+| OpenRouter removed from game controls | DONE | Account/Profile integration may remain in Settings; Story Studio UI no longer exposes it. |
+| Shared character/world/lore memory | OPEN | Needed for stronger long-form continuity. |
+| Chapter/page/project metadata | OPEN | Needed before Launched/Full. |
+| Standalone Story Studio fork package | OPEN | Supabase/provider/env/PWA extraction guide required. |
 
-## P1 — Media Vault
+## Public landing / shell
 
 | Item | Status | Notes |
 |---|---|---|
-| Restore production tables/RPCs/bucket | DONE | previous 404 schema drift repaired. |
-| General direct uploads | VERIFY | schema/RPC/bucket restored; current deployment upload smoke test still useful. |
-| Story/Dragon folder | VERIFY | links authoritative `dragon_arena_assets` scene rows without copying bytes. |
-| Scrapper Pro folder | DONE | new saves use `user_media_vault` directly instead of Dragon Arena. |
-| Scrapper legacy backfill | DONE | migration backfills old `scrapper-result` rows when present. |
-| Scrapper duplicate prevention | DONE | `(user_id, source_app, source_ref)` unique partial index + client lookup. |
-| Source-aware deletion | DONE | Dragon deletion warns that source asset is removed; Scrapper deletion only removes the reference. |
-| General-only manual upload UX | DONE | source-backed folders are no longer misleading manual upload targets. |
-| Media Vault docs | DONE | `docs/apps/media-vault.md` documents current architecture. |
-| Standalone fork package | OPEN | auth, private bucket, RLS/RPC, quota and env setup must be isolated/documented for Full. |
+| GitHub CTA in header | DONE | Red external CTA; old blurred follow-development button removed. |
+| Hugging Face separated from public mini-app cards | DONE | Official HF mark + dedicated section. |
+| Three public mini-app cards balanced | VERIFY | Weather / Any Converter / Scrapper Pro use unified card structure. |
+| Google sign-in CTA present | DONE | Auth flow already functional; authenticated button opens workspace. |
+| Signed-in `/landing` route | DONE | Allows returning to public landing after login. |
+| Sidebar simplification | DONE | Removed All Apps / Recent / Favorites / Categories from sidebar; kept Landing / Dashboard / People / Settings + app search. |
+| Favorites/Recent/category routes/state | DONE | Kept for compatibility/discovery even though no longer sidebar top-level items. |
+| Landing Builder plan | DONE | `docs/LANDING_BUILDER_PLAN.md`; tracked in #10. |
+| Landing Builder implementation | OPEN | Future fourth featured no-login mini-app. |
 
-## P1 — Scrapper Pro
-
-| Item | Status | Notes |
-|---|---|---|
-| Guest/local saved results | DONE | browser `localStorage` path retained. |
-| Signed-in save to Media Vault | DONE | direct `saveScrapperVaultResult()` path. |
-| Remove new Dragon Arena ledger dependency | DONE | new Scrapper saves no longer create `dragon_arena_assets` rows. |
-| Result dedupe | DONE | original URL is stable source reference. |
-| Preview/download behavior | DONE | existing media/article/post behavior retained. |
-| Local-vs-account save wording | DONE | UI distinguishes device save from Media Vault archive. |
-| Scrapper docs | DONE | app docs document current architecture. |
-| Small visual/hover polish | OPEN | low priority after functional smoke tests. |
-| Standalone fork package | OPEN | scrape/media/article API routes, optional account vault path and provider behavior need extraction guide. |
-
-## P2 — Profile / People / Auth
+## Media Vault + Scrapper Pro
 
 | Item | Status | Notes |
 |---|---|---|
-| Sidebar uses saved profile avatar | VERIFY | implementation exists; needs production visual confirmation. |
-| Profile field visibility data model | DONE | skills, website, GitHub and public email flags supported. |
-| Settings → Profile visibility controls | DONE | switches are editable and saved. |
-| People respects field visibility | DONE | cards honor visibility flags. |
-| Settings public-profile preview respects visibility | DONE | preview mirrors People visibility rules. |
-| GitHub authentication integration | OPEN | roadmap/integration work remains. |
+| Restore Media Vault production schema/RPCs/bucket | DONE | Previous production drift repaired. |
+| Scrapper account saves use Media Vault directly | DONE | No new Dragon/Story asset rows for Scrapper references. |
+| Scrapper URL dedupe | DONE | Stable source reference prevents duplicate account saves. |
+| Story scenes linked into Media Vault | VERIFY | Same authoritative scene rows should surface without copying bytes. |
+| Source-aware deletion | DONE | Scrapper removes reference; Story scene deletion affects source asset/file. |
+| Production end-to-end validation | OPEN | Track under #14. |
+| Standalone fork packages | OPEN | Auth/storage/server dependencies need extraction guides. |
 
-## P2 — Public / guest shell
-
-| Item | Status | Notes |
-|---|---|---|
-| Public landing cleanup | VERIFY | lower feature-row clutter removed; footer keeps platform notes. |
-| Hugging Face foregrounded on public landing | VERIFY | replaces Dragon Arena as the featured fourth public entry and uses official HF logo asset URL. |
-| Scrapper Pro public route | VERIFY | smoke test before active marketing push. |
-| Weather public route | VERIFY | smoke test before active marketing push. |
-| Any Converter public route | VERIFY | smoke test before active marketing push. |
-| Public `/huggingface` page | DONE | model inventory/provider list/public gallery. |
-| Public gallery max first three/user | DONE | enforced in DB/RPC. |
-| SEO/public route handling | DONE | public routes recognized. |
-
-## P2 — Full-status / forkability program
+## Settings / profile / portability
 
 | Item | Status | Notes |
 |---|---|---|
-| Define Full status | DONE | `docs/FULL_STATUS.md` is the canonical quality/fork-readiness gate. |
-| Add Full positioning to README | DONE | public README now explains the maturity ladder and forkable-PWA goal. |
-| First Full candidate selection | DONE | Any to Any Converter identified as a strong first candidate, pending verification/packaging. |
-| Registry/UI `Full` badge implementation | OPEN | add the literal status only when first app reaches the gate or as part of the first extraction pass. |
-| Per-app fork guide template | DONE | template included in Full standard. |
-| Any Converter fork package | OPEN | likely best first implementation target. |
-| Local developer-tool fork package | OPEN | second-wave candidates after Any Converter. |
-| Shared standalone-PWA starter/extraction script | OPEN | future leverage: automate manifest, entry route, env, package trimming and deploy docs. |
+| Profile field visibility controls | DONE | Skills/website/GitHub/public-email visibility supported. |
+| People honors visibility | DONE | Public cards respect saved flags. |
+| Appearance dark/system accent correctness | DONE | Semantic primary/ring tokens update with active appearance. |
+| Workspace export/import exists | DONE | JSON workspace backup is implemented in Settings. |
+| Workspace import hardening/version validation | OPEN | Track under #13. |
+| Workspace-vs-product-export semantics | DONE (docs) | Explained in `docs/APP_MODEL.md`; UI copy still tracked under #13. |
+| OpenRouter account key retained | DONE | Remains an integration/profile-level setting; not a Story Studio control. |
 
-## P2 — App metadata / shell consistency
-
-| Item | Status | Notes |
-|---|---|---|
-| Canonical app metadata interface | DONE | registry has name/description/category/icon/route/tags/status/version + optional cover/changelog. |
-| Normalize actual metadata values | OPEN | several lower-priority apps still use generic icons or uneven version history. |
-| Global version consistency | OPEN | package/global build alignment remains. |
-| Real lint configuration | OPEN | current `lint` script is still a no-op. |
-| Remove dead MySQL setup/dependency | OPEN | `mysql2` + `scripts/setup-mysql.sql` remain. |
-| Remove tracked `*.tsbuildinfo` | DONE | cache removed and ignored. |
-| Dependency modernization | OPEN | separate migration; do not mix broad major upgrades into launch stabilization. |
-
-## P3 — Marketing / launch readiness
+## Full-status / forkability program
 
 | Item | Status | Notes |
 |---|---|---|
-| Marketing handoff document | DONE | `docs/MARKETING_HANDOFF.md`. |
-| Safe current claims vs future claims | DONE | documented to avoid overpromising Full/Novel/Comics/provider availability. |
-| Patreon positioning draft | DONE | supporter-first open-development framing prepared; pricing intentionally deferred to marketing session. |
-| Screenshot shot list | DONE | 12 target captures documented. |
-| Marketing deliverables checklist | DONE | tagline, descriptions, Patreon, social posts, screenshots, demo video, FAQ listed. |
-| Production launch smoke test | OPEN | perform immediately before advertising today. |
-| Patreon account/page creation | MANUAL | user-owned external account action. |
-| Social account/post publication | MANUAL | user-owned external account actions. |
-| Marketing screenshot capture | MANUAL/VERIFY | capture after confirming latest production UI. |
+| Full-status definition | DONE | `docs/FULL_STATUS.md`. |
+| Canonical app model | DONE (docs) | `docs/APP_MODEL.md`. |
+| Prioritized issue roadmap | DONE | `docs/ISSUE_ROADMAP.md`. |
+| Any Converter first Full candidate | OPEN | #18. |
+| Shared extraction/PWA starter | OPEN | #12. |
+| SVG Icons future Full candidate | OPEN | #6. |
+| Landing Builder future Full candidate | OPEN | #10. |
 
-## P3 — Repository / security / deployment
+## Repository / engineering health
 
 | Item | Status | Notes |
 |---|---|---|
-| Dry-audit branches | DONE | stale branches audited; no advanced hidden branch found. |
-| Devin collaborator access | DONE | bot had no collaborator permission when checked. |
-| Remove Devin GitHub App installation | MANUAL | repository/account GitHub settings action if still installed. |
-| Rotate historically exposed credentials | MANUAL | rotate even when files were later cleaned. |
-| Retire duplicate JS Vite config | DONE | TypeScript Vite config is authoritative. |
-| Current handoff docs | DONE | architecture docs reflect current provider/Media Vault direction. |
-| Current code deployment health | DONE | a production deployment containing Story Studio source + Button fix reached READY on 2026-09-09. |
-| Latest docs-only deployment | VERIFY | latest main may still be building; no source-code delta from marketing docs should block launch behavior. |
-| Public regression pass | OPEN | landing, Hugging Face, Scrapper, Weather, Any Converter. |
-| Signed-in regression pass | OPEN | Story Studio turn, graceful generation failure/success, Media Vault schema behavior. |
+| Retired legacy `/workspace` renderer | DONE | Duplicate dashboard removed. |
+| Ignore generated TS build cache | DONE | `*.tsbuildinfo` ignored. |
+| Real linting | OPEN | #15. |
+| Remove stale MySQL setup/dependency | OPEN | #15. |
+| Dependency modernization | OPEN | Do after launch-critical cleanup; avoid broad upgrades mixed into P0 fixes. |
+| Bundle/PWA-cache performance audit | OPEN | #16. |
 
-## Recent launch-readiness commits
+## Current publish-soon order
 
-- `a3b37f0d` — introduce Novel/Comics Story Studio surface.
-- `c38f707a` — route Dragon Arena app to Story Studio.
-- `114c0c2e` — foreground Hugging Face on public landing.
-- `df81dcf8` — simplify public landing and remove redundant feature row.
-- `86e1b11d` — fix Button variant build blocker; subsequent production build reached READY.
-- `d1e53a43` — define Full status and fork-readiness standard.
-- `14e5d6ea` — prepare marketing/Patreon handoff.
-- `f312e40e` — reposition public README around Full forkable-PWA maturity.
-
-## Next logical pass
-
-1. Run the **launch smoke test** against current production before paid/large public promotion.
-2. Fix only P0 launch regressions found in that pass; avoid unrelated refactors.
-3. Capture marketing screenshots once the production UI is confirmed.
-4. Use `docs/MARKETING_HANDOFF.md` for the dedicated Patreon/social-copy session.
-5. After today's launch, start the first **Full candidate extraction** with Any to Any Converter and build a repeatable standalone-PWA template from that work.
+1. #1 production regression pass.
+2. #7 Story Studio generation/persistence smoke test.
+3. #9 final landing screenshot/visual check.
+4. #11 registry accuracy sweep for anything visible in marketing.
+5. #3 Patreon/marketing asset session and external account setup.
+6. Fix only P0 regressions found above.
+7. After publication, start #18 Any Converter Full extraction and #12 shared standalone-PWA pattern.
