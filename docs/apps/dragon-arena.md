@@ -4,28 +4,40 @@ A turn-based fantasy adventure with a Hugging Face-powered game master and scene
 
 ## Current app version
 
-**Dragon Arena 1.6.1** — Hugging Face-first GM rotation, provider-aware scene generation, atomic asset persistence, public showcase metadata, compact theme-aware story UI, Media Vault linkage, and request-level Generate Scene telemetry.
+**Dragon Arena 1.7.0** — faster choice-driven turns, compact Story artwork, one funded Hugging Face GM turn per day with unlimited local continuity afterward, provider-aware scene generation, atomic asset persistence, public showcase metadata, theme-aware UI, Media Vault linkage, and Generate Scene telemetry.
 
 ## Routes
 
 - Game: `/apps/ai-dragon-arena` (legacy `/pf-ai-dragon-arena` redirects here)
 - Public Hugging Face integration + generated showcase: `/huggingface`
-- Legacy `/workspace` now redirects to `/apps`; the duplicate app renderer was retired so Dragon Arena metadata/icon rendering has one canonical dashboard path.
+- Legacy `/workspace` redirects to `/apps`; the duplicate app renderer was retired so Dragon Arena metadata/icon rendering has one canonical dashboard path.
 
 ## Gameplay loop
 
 1. Choose a suggested action or type an action.
-2. `POST /api/ai-game` requests a narrative + exactly three choices.
-3. Signed-in turns persist to `dragon_arena_turns` and update the active session.
-4. `POST /api/dragon-image` generates a cinematic scene from the latest narrative.
-5. The image endpoint uploads validated bytes and writes the authoritative `dragon_arena_assets` row before returning success.
-6. The latest generated scene restores after refresh and renders as a compact cinematic beat inside Story; older scenes remain in Assets/Media Vault.
-7. The first three generated scene assets for each user are automatically public showcase assets. Later assets remain owner-only unless explicitly published.
-8. Media Vault links Dragon Arena scenes from the same authoritative ledger instead of duplicating files.
+2. `POST /api/ai-game` returns a short 45–85 word narrative beat plus exactly three concise choices.
+3. Each GM beat should introduce one clear consequence, discovery, danger, reward, or twist instead of long exposition.
+4. Signed-in turns persist to `dragon_arena_turns` and update the active session.
+5. The owner-funded Hugging Face GM allowance is one remote turn per UTC day; after it is consumed, signed-in play continues through the local continuity GM rather than locking the game.
+6. `POST /api/dragon-image` generates a cinematic scene from the latest narrative.
+7. The image endpoint uploads validated bytes and writes the authoritative `dragon_arena_assets` row before returning success.
+8. The latest generated scene restores after refresh and renders as a compact visual beat inside Story; older scenes remain in Assets/Media Vault.
+9. The first three generated scene assets for each user are automatically public showcase assets. Later assets remain owner-only unless explicitly published.
+
+## Game-master pacing
+
+Dragon Arena 1.7 changes the response contract to keep turns playable:
+
+- Narrative target: **45–85 words**.
+- Structure: **2–3 short paragraphs**.
+- Every turn must materially change the situation.
+- Choices: exactly **three**, each **2–6 words**, beginning with a strong action verb where practical.
+- Recent context sent to the GM is intentionally bounded to the latest six entries to reduce repetition and latency.
+- The local continuity fallback follows the same compact pacing instead of producing a long prose block.
 
 ## Hugging Face game-master rotation
 
-Normal AppForge and guest traffic uses the Hugging Face OpenAI-compatible router:
+Normal owner-funded traffic uses the Hugging Face OpenAI-compatible router:
 
 `https://router.huggingface.co/v1/chat/completions`
 
@@ -40,17 +52,18 @@ Default order:
 
 `HF_TEXT_MODEL` can prepend an environment-selected preferred model.
 
-A signed-in user can still supply a personal `sk-or-...` OpenRouter key as a compatibility path. `api/ai-game.js` also accepts `x-hf-token` for a personal Hugging Face token.
+A signed-in user can supply a personal `sk-or-...` OpenRouter key as a compatibility path. `api/ai-game.js` also accepts `x-hf-token` for a personal Hugging Face token.
 
-### GM failure behavior
+### GM quota and failure behavior
 
 - Every Hugging Face request has an 18-second timeout.
 - The endpoint exhausts token × model combinations before giving up on HF.
 - Provider errors are logged server-side without exposing tokens.
-- If all remote providers fail, Dragon Arena returns a clearly identified `appforge/local-continuity-fallback` narrative instead of stopping the game with an API-limit error.
-- The response includes `provider`, `model`, and `degraded` so the UI/telemetry can distinguish a real HF turn from local continuity fallback.
+- If the shared daily HF allowance has already been consumed, signed-in play continues immediately through `appforge/local-continuity-fallback` rather than returning HTTP 429.
+- If remote providers fail during an otherwise eligible funded request, the same local fallback keeps the game moving.
+- The response includes `provider`, `model`, and `degraded` so the UI/telemetry can distinguish a real HF turn from local continuity.
 
-The local fallback is continuity protection, not a replacement for Hugging Face; HF remains the primary game-master path.
+The local fallback is continuity protection, not a replacement for Hugging Face; HF remains the primary funded game-master path.
 
 ## Hugging Face scene rotation
 
@@ -72,7 +85,7 @@ Supported routed image providers:
 - `nscale`
 - `hf-inference`
 
-`HF_IMAGE_MODEL` can prepend a preferred model. The full retry space is effectively **server token × image model × live provider mapping**, bounded by an overall ~52-second request budget so a scene request cannot hang indefinitely.
+`HF_IMAGE_MODEL` can prepend a preferred model. The retry space is effectively **server token × image model × live provider mapping**, bounded by an overall ~52-second request budget.
 
 Provider-specific adapters currently cover:
 
@@ -81,21 +94,18 @@ Provider-specific adapters currently cover:
 - Together/Nscale OpenAI-style image-generation responses;
 - raw HF Inference image bytes as a compatibility route.
 
-Hugging Face's current Inference Providers guidance recommends provider `auto` for automatic provider selection/failover. AppForge currently performs its own provider-aware rotation using the live model mapping so it can preserve explicit provider/model telemetry and keep the existing no-extra-runtime-dependency deployment shape.
+The retired `stabilityai/stable-diffusion-3-medium-diffusers` default remains removed.
 
-### Generate Scene telemetry
+## Generate Scene telemetry
 
-Dragon Arena 1.6.1 adds request-level diagnostics without exposing credentials:
+Generate Scene responses include sanitized troubleshooting metadata:
 
-- every `/api/dragon-image` response gets an `x-appforge-request-id` header;
-- JSON responses include `requestId` and `durationMs`;
-- successful responses include the selected model and provider;
-- exhausted-provider failures include a sanitized `attempts` array with model, provider name and HTTP/status code only;
-- server logs attach the same request ID so a browser failure can be correlated with one server request.
+- `requestId`
+- `durationMs`
+- selected model/provider on success
+- model/provider/status attempt summaries on provider-rotation failure
 
-No Hugging Face token, bearer token, Supabase token, prompt credential, or provider secret is returned in telemetry.
-
-The retired `stabilityai/stable-diffusion-3-medium-diffusers` default remains removed after Hugging Face stopped supporting it on the old route.
+No Hugging Face token, Supabase token, or other provider secret is included in client-visible telemetry.
 
 ## Scene persistence integrity
 
@@ -118,7 +128,7 @@ Production schema fixes are tracked by:
 - `20260909084011_dragon_arena_allow_scene_asset_type.sql`
 - `20260909084319_dragon_arena_allow_external_scrapper_assets.sql` — historical compatibility; new Scrapper saves have since moved out of the Dragon ledger.
 
-## Theme-aware game UI
+## Theme-aware Story UI
 
 The signed-in game surface uses AppForge semantic theme tokens controlled by Settings → Appearance:
 
@@ -127,14 +137,14 @@ The signed-in game surface uses AppForge semantic theme tokens controlled by Set
 - `bg-primary` / `text-primary-foreground` for player/action emphasis
 - shared themed `Button`, `Card`, `Input`, and `Badge` components
 
-The cinematic hero artwork remains an image treatment, but its overlay is theme-aware. Only the latest generated scene is shown in Story; the full scene history remains available from Assets and Media Vault.
+Only the latest generated scene appears inline in Story. In 1.7 it is intentionally rendered as a compact visual beat rather than a gallery-sized image: desktop width is capped around 27rem with an approximately 10.5rem-high crop; mobile uses a shorter full-width crop. Clicking still opens the full asset. Older scenes remain in Assets and Media Vault.
 
 ## Quotas
 
 - Guest game: one turn per UTC day using browser localStorage; no account persistence, points, private gallery or scene generation.
-- Signed-in owner-funded game: one turn per UTC day.
+- Signed-in shared GM: one owner-funded Hugging Face turn per UTC day, then unlimited local continuity turns so gameplay remains available.
 - Signed-in owner-funded scene: one image turn per UTC day.
-- Personal OpenRouter key: compatibility path that bypasses the signed-in shared GM allowance for that user.
+- Personal OpenRouter key: compatibility path that can power GM turns without the shared allowance.
 - Personal Hugging Face token: bypasses the owner-funded image allowance and can also be used for GM requests.
 - Failed owner-funded image generation or persistence refunds the image turn.
 
@@ -142,33 +152,24 @@ The cinematic hero artwork remains an image treatment, but its overlay is theme-
 
 `/huggingface` is public and uses AppForge branding. It contains the exact GM/image model rotations, currently supported image-provider set, and a live generated-scene gallery.
 
-The public RPC returns at most the first three public scenes per user and includes:
-
-- model
-- provider
-- provider model for provider-aware generations
-- generation timestamp
-- MIME type
-- byte size
-- turn number when available
-- prompt and creator public-profile information
+The public RPC returns at most the first three public scenes per user and includes model, provider, provider model, generation timestamp, MIME type, byte size, turn number when available, prompt, and creator public-profile information.
 
 Two legacy orphaned scene files were recovered into the ledger. Their exact image model was not persisted by the old flow, so they are labeled `unknown-legacy` rather than guessing a model.
 
 ## Media Vault integration
 
-Media Vault now uses source-specific ownership rather than treating every feature as a Dragon Arena asset:
+Media Vault uses source-specific ownership:
 
-- **Dragon Arena** reads the signed-in user's `dragon_arena_assets` rows with `asset_type = 'scene'`; the game ledger remains authoritative.
-- **Scrapper Pro** signed-in saves now live directly in `user_media_vault` as external source references with `source_app = 'scrapper-pro'`.
+- **Dragon Arena** reads the signed-in user's `dragon_arena_assets` scene rows; the game ledger remains authoritative.
+- **Scrapper Pro** signed-in saves live directly in `user_media_vault` as external source references.
 - **General** manual uploads use `user_media_vault` plus the private `user-media-vault` bucket.
-- Dragon Arena scenes are not copied into the private vault, and Scrapper references contain zero stored bytes, so neither is double-counted against General upload quota.
+- Dragon Arena scenes are not copied into the private vault, and Scrapper references contain zero stored bytes.
 
 Migration `20260909174500_decouple_scrapper_pro_into_media_vault.sql` removes the new-save dependency between Scrapper Pro and Dragon Arena while preserving/backfilling historical `scrapper-result` rows when present.
 
 ## Points
 
-`award_dragon_arena_points()` is a security-definer RPC that derives the target user from `auth.uid()`. Production originally had EXECUTE restricted to `service_role`, which caused client `403` responses even though gameplay persistence succeeded. Authenticated EXECUTE has been restored; the function still cannot award points to a caller-supplied user ID.
+`award_dragon_arena_points()` is a security-definer RPC that derives the target user from `auth.uid()`. Authenticated EXECUTE is enabled; the function cannot award points to a caller-supplied user ID.
 
 ## Required environment
 
@@ -190,16 +191,17 @@ Hugging Face tokens need permission to make calls to Inference Providers. Three 
 | `dragon_arena_turns` | Player actions, GM narrative, choices and model |
 | `dragon_arena_assets` | Dragon Arena generated scenes and historical compatibility assets |
 | `dragon_arena_points` | Points, turns played and scenes created |
-| `dragon_arena_daily_usage` | Signed-in daily GM allowance |
+| `dragon_arena_daily_usage` | Owner-funded remote GM allowance |
 | `dragon_arena_image_usage` | Signed-in daily scene allowance |
 
 ## Important files
 
 | File | Role |
 |---|---|
-| `api/ai-game.js` | Hugging Face-first GM endpoint with token/model rotation + continuity fallback |
-| `api/dragon-image.js` | Provider-aware Hugging Face scene endpoint with atomic storage, asset-ledger persistence and sanitized request telemetry |
-| `src/components/dashboard/PF_AIDragonArena.tsx` | Theme-aware signed-in story UI with compact inline latest scene |
+| `api/ai-game.js` | Hugging Face-first GM with compact pacing and unlimited local continuity after shared quota |
+| `api/dragon-image.js` | Provider-aware Hugging Face scene endpoint with telemetry and atomic persistence |
+| `src/components/dashboard/PF_AIDragonArena.tsx` | Theme-aware signed-in Story UI |
+| `src/index.css` | Compact inline Dragon Arena scene presentation |
 | `src/components/dashboard/PF_GuestDragonArena.tsx` | Guest one-turn UI |
 | `src/components/public/HuggingFaceGalleryPage.tsx` | Public HF integration/model/provider/metadata/gallery page |
 | `src/lib/dragonArena.ts` | Sessions, turns, assets, points and leaderboard helpers |
