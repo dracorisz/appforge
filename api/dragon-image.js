@@ -76,11 +76,15 @@ const generateImageFromHf = async (prompt, hfToken) => {
 }
 
 const saveImage = async (token, userId, imageUrl, fallbackBuffer, fallbackMime) => {
-  const bytes = fallbackBuffer || (() => {
-    const imageResponse = imageUrl.startsWith('data:') ? null : await fetch(imageUrl)
-    const mimeType = imageUrl.match(/^data:([^;]+);base64,/)?.[1] || imageResponse?.headers.get('content-type') || 'image/png'
-    return imageUrl.startsWith('data:') ? Buffer.from(imageUrl.split(',')[1], 'base64') : Buffer.from(await imageResponse.arrayBuffer())
-  })()
+  let bytes = fallbackBuffer
+  if (!bytes) {
+    if (imageUrl.startsWith('data:')) {
+      bytes = Buffer.from(imageUrl.split(',')[1], 'base64')
+    } else {
+      const imageResponse = await fetch(imageUrl)
+      bytes = Buffer.from(await imageResponse.arrayBuffer())
+    }
+  }
   const mimeType = fallbackMime || 'image/png'
   const storagePath = `${userId}/${crypto.randomUUID()}.png`
   const upload = await supabaseRequest(`/storage/v1/object/dragon-arena-assets/${storagePath}`, token, {

@@ -20,6 +20,7 @@ import {
   ImageWorkbench,
   LocalToolsWorkbench,
   ColorPickerTool,
+  PF_UserMediaVault,
 } from './components/dashboard'
 import { SettingsPage } from './components/resources/Settings'
 import { PeoplePage } from './components/resources/People'
@@ -33,6 +34,8 @@ import {
   defaultPlan,
   defaultMiniApps,
   defaultVersions,
+  defaultDocumentReadiness,
+  defaultMessages,
 } from './types'
 import { BUILD_INFO } from './lib/buildInfo'
 import { useAuth } from './auth/AuthProvider'
@@ -42,7 +45,7 @@ import { loadCategoryOverrides, saveCategoryOverrides, subscribeCategoryOverride
 import { updateSeo } from './lib/seo'
 
 const defaultSettings = { theme: 'system' as const }
-const defaultState: AppState = { plan: defaultPlan, article: defaultArticle, pitches: defaultPitches, sources: defaultSources, outreach: defaultOutreach, checklist: defaultChecklist, settings: defaultSettings, miniApps: defaultMiniApps, versions: defaultVersions, favorites: [], recentApps: [] }
+const defaultState: AppState = { plan: defaultPlan, article: defaultArticle, pitches: defaultPitches, sources: defaultSources, outreach: defaultOutreach, checklist: defaultChecklist, documentReadiness: defaultDocumentReadiness, messages: defaultMessages, settings: defaultSettings, miniApps: defaultMiniApps, versions: defaultVersions, favorites: [], recentApps: [] }
 
 function App() {
   const location = useLocation()
@@ -130,6 +133,7 @@ function App() {
         <Route path="/apps/ai-dragon-arena" element={<PF_AIDragonArena />} />
         <Route path="/apps/dns-txt-checker" element={<PF_DnsTxtChecker />} />
         <Route path="/apps/any-converter" element={<AnyToAnyConverter />} />
+        <Route path="/apps/media-vault" element={<PF_UserMediaVault />} />
         <Route path="/settings" element={<SettingsPage state={state} setState={setState} />} />
 
         {['json-formatter','uuid-generator','password-generator','token-generator','base64-tool','hash-tool','url-encoder','html-encoder','jwt-decoder','hex-converter'].map((slug) => <Route key={slug} path={`/apps/${slug}`} element={<UtilityWorkbench />} />)}
@@ -161,6 +165,7 @@ function App() {
         <Route path="/pf-qr-generator" element={<Navigate to="/apps/qr-generator" replace />} />
         <Route path="/pf-color-picker" element={<Navigate to="/apps/color-picker" replace />} />
         <Route path="/pf-resume-forge" element={<Navigate to="/apps/resume-forge" replace />} />
+        <Route path="/pf-media-vault" element={<Navigate to="/apps/media-vault" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

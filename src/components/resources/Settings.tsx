@@ -323,7 +323,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
                 </div>
               </div>
               {profile?.bio && <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">{profile.bio}</p>}
-              {(profile?.skills || []).length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{(profile.skills || []).slice(0, 8).map((skill) => <span key={skill} className="rounded-full border border-border/70 bg-background/45 px-2 py-0.5 text-[11px] text-muted-foreground">{skill}</span>)}</div>}
+              {(profile?.skills || []).length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{(profile?.skills || []).slice(0, 8).map((skill) => <span key={skill} className="rounded-full border border-border/70 bg-background/45 px-2 py-0.5 text-[11px] text-muted-foreground">{skill}</span>)}</div>}
               <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
                 {profile?.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {profile.location}</span>}
                 {profile?.github_username && <span className="inline-flex items-center gap-1"><Github className="h-3.5 w-3.5" /> GitHub</span>}

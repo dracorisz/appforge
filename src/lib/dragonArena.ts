@@ -124,11 +124,14 @@ export async function listAssets(
   opts: { sessionId?: string | null; publicOnly?: boolean; assetType?: string } = {}
 ): Promise<DragonAsset[]> {
   let query = supabase.from('dragon_arena_assets').select('*')
-  const orParts: string[] = [`is_public.eq.true`, `user_id.eq.${userId}`]
-  if (opts.sessionId) {
-    orParts.push(`session_id.eq.${opts.sessionId}`)
+  if (opts.publicOnly) {
+    query = query.eq('is_public', true)
+  } else {
+    query = query.eq('user_id', userId)
   }
-  query = query.or(orParts.join(','))
+  if (opts.sessionId) {
+    query = query.eq('session_id', opts.sessionId)
+  }
   if (opts.assetType) {
     query = query.eq('asset_type', opts.assetType)
   }

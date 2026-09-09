@@ -21,7 +21,7 @@ async function loadHandlers() {
   for (const file of files) {
     try {
       const mod = await import(path.join(apiDir, file))
-      const route = `/api/${file.replace(/\.js$/, '')}`
+      const route = file.replace(/\.js$/, '')
       handlers.set(route, mod.default)
     } catch { /* skip broken routes */ }
   }
