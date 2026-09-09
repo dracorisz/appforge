@@ -2,7 +2,7 @@ import React from 'react'
 
 export function Button({ children, variant = 'primary', size = 'md', className = '', disabled, onClick, type = 'button', title }: {
   children: React.ReactNode
-  variant?: 'primary' | 'secondary' | 'ghost' | 'destructive'
+  variant?: 'default' | 'primary' | 'secondary' | 'ghost' | 'destructive'
   size?: 'sm' | 'md' | 'lg'
   className?: string
   disabled?: boolean
@@ -12,6 +12,7 @@ export function Button({ children, variant = 'primary', size = 'md', className =
 }) {
   const base = 'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-[background-color,border-color,color,box-shadow,transform] duration-150 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:ring-offset-1 focus:ring-offset-background active:translate-y-px disabled:pointer-events-none disabled:opacity-50'
   const variants = {
+    default: 'border border-primary/90 bg-primary text-primary-foreground shadow-sm hover:bg-primary/92 hover:shadow-md',
     primary: 'border border-primary/90 bg-primary text-primary-foreground shadow-sm hover:bg-primary/92 hover:shadow-md',
     secondary: 'border border-border/70 bg-secondary/72 text-secondary-foreground shadow-sm backdrop-blur-md hover:border-foreground/15 hover:bg-secondary/88',
     ghost: 'border border-transparent text-foreground hover:border-border/60 hover:bg-accent/70 hover:text-accent-foreground',
