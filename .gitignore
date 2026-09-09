@@ -32,3 +32,5 @@ appforge-*.json
 projectforge-*.json
 appforge-workplan-v1.json
 projectforge-workplan-v1.json
+.vercel
+.env*

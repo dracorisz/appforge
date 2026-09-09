@@ -13,7 +13,7 @@
   },
   "env": {
     "VITE_APP_NAME": "SSToken",
-    "VITE_APP_URL": "https://sstoken.space"
+    "VITE_APP_URL": "https://www.sstoken.space"
   },
   "rewrites": [
     {

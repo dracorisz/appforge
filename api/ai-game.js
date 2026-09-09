@@ -1,4 +1,4 @@
-const ALLOWED_MODELS = new Set(['gpt-5.6-sol'])
+const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || 'openrouter/free'
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://ixqoosixhahrsgwoxyme.supabase.co'
 const SUPABASE_PUBLISHABLE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_b56EltHyMfwOQjVQcQFHwA_VUiSn9zN'
 
@@ -77,15 +77,18 @@ export default async function handler(req, res) {
   const user = await authenticate(token)
   if (!user?.id) return res.status(401).json({ error: 'Sign in to use Dragon Arena.' })
 
-  if (!process.env.OPENAI_API_KEY) return res.status(503).json({ error: 'Dragon Arena is offline until OPENAI_API_KEY is configured securely on the server.' })
+  const personalKey = String(req.headers?.['x-openrouter-key'] || '').trim()
+  const apiKey = personalKey.startsWith('sk-or-') ? personalKey : process.env.OPENROUTER_API_KEY
+  const usingPersonalKey = Boolean(personalKey.startsWith('sk-or-'))
+  if (!apiKey) return res.status(503).json({ error: 'Dragon Arena is offline until an OpenRouter key is configured securely on the server or supplied for this session.' })
 
-  const { model = 'gpt-5.6-sol', action, history = [], turn = 1 } = req.body || {}
-  if (!ALLOWED_MODELS.has(model)) return res.status(400).json({ error: 'This model is not enabled for Dragon Arena.' })
+  const { model = DEFAULT_MODEL, action, history = [], turn = 1 } = req.body || {}
+  if (model !== DEFAULT_MODEL) return res.status(400).json({ error: 'This model is not enabled for Dragon Arena.' })
   if (typeof action !== 'string' || action.trim().length < 2) return res.status(400).json({ error: 'Choose or enter a meaningful action first.' })
 
   let reserved = false
   try {
-    reserved = await consumeDailyRequest(token)
+    reserved = usingPersonalKey || await consumeDailyRequest(token)
     if (!reserved) return res.status(429).json({ error: 'Your Dragon Arena AI turn for today has already been used. Come back after 00:00 UTC.' })
   } catch (error) {
     console.error('Dragon Arena quota check failed', error)
@@ -100,30 +103,34 @@ export default async function handler(req, res) {
   const input = `TURN: ${Number(turn) || 1}\nRECENT HISTORY:\n${recent}\n\nLATEST PLAYER ACTION: ${action.trim().slice(0, 1200)}`
 
   try {
-    const openai = await fetch('https://api.openai.com/v1/responses', {
+    const openrouter = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
+        'HTTP-Referer': process.env.VITE_APP_URL || 'https://www.sstoken.space',
+        'X-OpenRouter-Title': process.env.VITE_APP_NAME || 'AppForge Dragon Arena',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model,
-        instructions,
-        input,
-        reasoning: { effort: 'medium' },
-        max_output_tokens: 650,
-        safety_identifier: `dragon-arena-${user.id}`,
+        messages: [
+          { role: 'system', content: instructions },
+          { role: 'user', content: input },
+        ],
+        temperature: 0.8,
+        max_tokens: 650,
       }),
     })
 
-    const data = await openai.json().catch(() => ({}))
-    if (!openai.ok) {
+    const data = await openrouter.json().catch(() => ({}))
+    if (!openrouter.ok) {
       await refundDailyRequest(token)
-      console.error('OpenAI Dragon Arena error', openai.status, data?.error?.type || data?.error?.code || 'unknown')
-      return res.status(openai.status === 429 ? 429 : 502).json({ error: openai.status === 429 ? 'The AI game master is at its API limit. Your daily turn was not consumed.' : 'The AI game master could not answer. Your daily turn was not consumed.' })
+      console.error('OpenRouter Dragon Arena error', openrouter.status, data?.error?.message || data?.error?.code || 'unknown')
+      return res.status(openrouter.status === 429 ? 429 : 502).json({ error: openrouter.status === 429 ? 'The AI game master is at its API limit. Your daily turn was not consumed.' : 'The AI game master could not answer. Your daily turn was not consumed.' })
     }
 
-    const parsed = parseReply(extractText(data))
+    const content = data?.choices?.[0]?.message?.content
+    const parsed = parseReply(typeof content === 'string' ? content : '')
     if (!parsed.narrative) {
       await refundDailyRequest(token)
       return res.status(502).json({ error: 'The AI game master returned an empty turn. Your daily turn was not consumed.' })
@@ -132,8 +139,9 @@ export default async function handler(req, res) {
     return res.status(200).json({
       narrative: parsed.narrative,
       choices: parsed.choices.length === 3 ? parsed.choices : ['Trace the nearest rune', 'Listen for movement beyond the vault', 'Retreat and study the markings'],
-      model,
+      model: data?.model || model,
       dailyRequestUsed: true,
+      personalKeyUsed: usingPersonalKey,
       resetAt: '00:00 UTC',
     })
   } catch (error) {

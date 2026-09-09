@@ -38,6 +38,7 @@ import { useAuth } from './auth/AuthProvider'
 import { LoginPage } from './auth/LoginPage'
 import { loadUserPreferences, saveUserPreferences } from './lib/preferences'
 import { loadCategoryOverrides, saveCategoryOverrides, subscribeCategoryOverrides } from './lib/categories'
+import { updateSeo } from './lib/seo'
 
 const defaultSettings = { theme: 'system' as const }
 const defaultState: AppState = { plan: defaultPlan, article: defaultArticle, pitches: defaultPitches, sources: defaultSources, outreach: defaultOutreach, checklist: defaultChecklist, settings: defaultSettings, miniApps: defaultMiniApps, versions: defaultVersions, favorites: [], recentApps: [] }
@@ -51,6 +52,8 @@ function App() {
     try { const raw = localStorage.getItem('projectforge-workplan-v1'); if (raw) return JSON.parse(raw) } catch { /* ignore */ }
     return defaultState
   })
+
+  React.useEffect(() => { updateSeo(location.pathname) }, [location.pathname])
 
   React.useEffect(() => { localStorage.setItem('appforge-workplan-v1', JSON.stringify(state)) }, [state])
 

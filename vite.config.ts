@@ -25,12 +25,12 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['favicon.svg', 'robots.txt', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
+      includeAssets: ['favicon.svg', 'robots.txt', 'favicon/site.webmanifest', 'favicon/favicon.ico', 'favicon/favicon-16x16.png', 'favicon/favicon-32x32.png', 'favicon/apple-touch-icon.png', 'favicon/android-chrome-192x192.png', 'favicon/android-chrome-512x512.png'],
       manifest: {
         id: '/',
         name: 'AppForge — Simple, powerful tools',
         short_name: 'AppForge',
-        description: 'A polished open-source toolbox of focused utilities, media tools and authenticated workspace features.',
+        description: 'An open-source toolbox of focused web utilities, media tools, and practical browser apps.',
         start_url: '/',
         scope: '/',
         theme_color: '#0f172a',
@@ -39,19 +39,19 @@ export default defineConfig({
         categories: ['utilities', 'productivity', 'developer'],
         icons: [
           {
-            src: 'favicon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
-            purpose: 'any'
-          },
-          {
-            src: 'pwa-192x192.png',
+            src: 'favicon/android-chrome-192x192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'favicon/android-chrome-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: 'favicon/android-chrome-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'

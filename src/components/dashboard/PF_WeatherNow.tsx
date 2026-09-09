@@ -47,6 +47,7 @@ export function PF_WeatherNow() {
   const [sortBy, setSortBy] = React.useState<SortBy>('name')
   const [viewMode, setViewMode] = React.useState<ViewMode>('grid')
   const [unit, setUnit] = React.useState<Unit>('c')
+  const [locating, setLocating] = React.useState(false)
 
   React.useEffect(() => {
     try {
@@ -63,6 +64,28 @@ export function PF_WeatherNow() {
   React.useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cities))
   }, [cities])
+
+  const requestWeatherAtCoordinates = async (latitude: number, longitude: number): Promise<WeatherData> => {
+    const response = await fetch(`/api/weather?lat=${encodeURIComponent(latitude)}&lon=${encodeURIComponent(longitude)}`)
+    const data = await response.json()
+    if (!response.ok || data.error) throw new Error(data.error || `Weather request failed with HTTP ${response.status}`)
+    return data as WeatherData
+  }
+
+  React.useEffect(() => {
+    if (!navigator.geolocation) return
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        void requestWeatherAtCoordinates(position.coords.latitude, position.coords.longitude)
+          .then(upsertCity)
+          .catch(() => undefined)
+          .finally(() => setLocating(false))
+      },
+      () => setLocating(false),
+      { enableHighAccuracy: false, maximumAge: 300000, timeout: 10000 },
+    )
+  }, [])
 
   const requestWeather = async (location: string): Promise<WeatherData> => {
     const response = await fetch(`/api/weather?q=${encodeURIComponent(location)}`)
@@ -95,6 +118,25 @@ export function PF_WeatherNow() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const useMyLocation = () => {
+    if (!navigator.geolocation || locating) return
+    setLocating(true)
+    setError('')
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        void requestWeatherAtCoordinates(position.coords.latitude, position.coords.longitude)
+          .then(upsertCity)
+          .catch((requestError) => setError(requestError instanceof Error ? requestError.message : 'Could not load your location.'))
+          .finally(() => setLocating(false))
+      },
+      (locationError) => {
+        setLocating(false)
+        setError(locationError.message || 'Location permission was not granted.')
+      },
+      { enableHighAccuracy: false, maximumAge: 300000, timeout: 10000 },
+    )
   }
 
   const refreshCity = async (weather: WeatherData) => {
@@ -198,6 +240,10 @@ export function PF_WeatherNow() {
             <Button onClick={addCity} disabled={!query.trim() || loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Cloud className="h-4 w-4" />}
               Add location
+            </Button>
+            <Button variant="secondary" onClick={useMyLocation} disabled={locating || loading}>
+              {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+              Use my location
             </Button>
             <Button variant="secondary" onClick={addEuropeanCities} disabled={loading}>+ 10 EU cities</Button>
           </div>

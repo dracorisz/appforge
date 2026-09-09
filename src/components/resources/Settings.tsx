@@ -79,6 +79,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
   const [message, setMessage] = React.useState('')
   const [error, setError] = React.useState('')
   const [liveUrl, setLiveUrl] = React.useState(() => localStorage.getItem(LIVE_URL_KEY) || 'https://www.sstoken.space')
+  const [skillsDraft, setSkillsDraft] = React.useState('')
 
   const refreshAccount = React.useCallback(async () => {
     if (!user) return
@@ -93,6 +94,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
         listProfileImages(user.id),
       ])
       setProfile(nextProfile)
+      setSkillsDraft((nextProfile.skills || []).join(', '))
       setPrivateInfo(nextPrivate)
       setRole(nextRole)
       setCurrentLevel(security.currentLevel)
@@ -135,7 +137,9 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
     if (!user || !profile) return
     setBusy('profile')
     try {
-      setProfile(await saveProfile(user.id, profile))
+      const saved = await saveProfile(user.id, { ...profile, skills: splitSkills(skillsDraft) })
+      setProfile(saved)
+      setSkillsDraft((saved.skills || []).join(', '))
       flash('Public profile saved.')
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Could not save profile.')
@@ -291,7 +295,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
             <h2 className="text-sm font-semibold text-foreground">Public collaboration profile</h2>
             {loading || !profile ? <div className="py-8 text-center text-sm text-muted-foreground">Loading profile…</div> : <div className="mt-4 space-y-3">
               <div className="grid gap-3 sm:grid-cols-2"><Input label="Display name" value={profile.display_name || ''} onChange={(e) => setProfile({ ...profile, display_name: e.target.value })} /><Input label="Username" value={profile.username || ''} onChange={(e) => setProfile({ ...profile, username: e.target.value })} placeholder="your-handle" /><Input label="Headline" value={profile.headline || ''} onChange={(e) => setProfile({ ...profile, headline: e.target.value })} placeholder="Frontend engineer · tool builder" /><Input label="GitHub username" value={profile.github_username || ''} onChange={(e) => setProfile({ ...profile, github_username: e.target.value })} placeholder="github-handle" /><Input label="Public location" value={profile.location || ''} onChange={(e) => setProfile({ ...profile, location: e.target.value })} placeholder="City / country only if you want" /><Input label="Website" value={profile.website || ''} onChange={(e) => setProfile({ ...profile, website: e.target.value })} placeholder="https://…" /></div>
-              <Input label="Skills (comma separated)" value={(profile.skills || []).join(', ')} onChange={(e) => setProfile({ ...profile, skills: splitSkills(e.target.value) })} placeholder="React, TypeScript, Supabase" />
+              <Input label="Skills (comma separated)" value={skillsDraft} onChange={(e) => setSkillsDraft(e.target.value)} placeholder="React, TypeScript, Supabase" />
               <Textarea label="Bio" value={profile.bio || ''} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} rows={4} />
               <div className="flex flex-col gap-2 text-sm text-foreground"><label className="flex items-center gap-2"><input type="checkbox" checked={profile.open_to_collaboration} onChange={(e) => setProfile({ ...profile, open_to_collaboration: e.target.checked })} /> Open to open-source collaboration</label><label className="flex items-center gap-2"><input type="checkbox" checked={profile.is_public} onChange={(e) => setProfile({ ...profile, is_public: e.target.checked })} /> Show my profile to other signed-in users</label></div>
               <Button onClick={() => void savePublicProfile()} disabled={busy === 'profile'}>{busy === 'profile' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Save public profile</Button>

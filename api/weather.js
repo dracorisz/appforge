@@ -30,26 +30,37 @@ export default async function handler(req, res) {
   }
 
   const query = String(req.query?.q || '').trim()
-  if (!query) return res.status(400).json({ error: 'City or postal code is required' })
+  const latitude = Number(req.query?.lat)
+  const longitude = Number(req.query?.lon)
+  const hasCoordinates = Number.isFinite(latitude) && Number.isFinite(longitude)
+    && latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180
+  if (!query && !hasCoordinates) return res.status(400).json({ error: 'City, postal code, or valid coordinates are required' })
   if (query.length > 120) return res.status(400).json({ error: 'Location query is too long' })
 
   try {
-    const geo = await fetchJson(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`)
-    const place = geo?.results?.[0]
-    if (!place) return res.status(404).json({ error: `No location found for “${query}”` })
+    let place = null
+    let forecastLatitude = latitude
+    let forecastLongitude = longitude
+    if (!hasCoordinates) {
+      const geo = await fetchJson(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`)
+      place = geo?.results?.[0]
+      if (!place) return res.status(404).json({ error: `No location found for “${query}”` })
+      forecastLatitude = place.latitude
+      forecastLongitude = place.longitude
+    }
 
     const forecast = await fetchJson(
-      `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(place.latitude)}&longitude=${encodeURIComponent(place.longitude)}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto`
+      `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(forecastLatitude)}&longitude=${encodeURIComponent(forecastLongitude)}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto`
     )
     const current = forecast?.current
     if (!current) throw new Error('Weather provider returned no current conditions')
 
     return res.status(200).json({
       ok: true,
-      location: [place.name, place.admin1, place.country].filter(Boolean).join(', '),
-      countryCode: place.country_code,
-      latitude: place.latitude,
-      longitude: place.longitude,
+      location: place ? [place.name, place.admin1, place.country].filter(Boolean).join(', ') : 'Your location',
+      countryCode: place?.country_code,
+      latitude: forecastLatitude,
+      longitude: forecastLongitude,
       timezone: forecast.timezone,
       temp_c: current.temperature_2m,
       feelslike_c: current.apparent_temperature,
