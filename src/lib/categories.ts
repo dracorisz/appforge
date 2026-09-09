@@ -5,6 +5,14 @@ export interface CategoryOverride {
   name?: string
   description?: string
   icon?: string
+  visibleInSidebar?: boolean
+}
+
+export const DEFAULT_SIDEBAR_CATEGORY_IDS = ['ai', 'utilities', 'image', 'converters'] as const
+
+export function isCategoryVisibleInSidebar(id: string, override?: CategoryOverride) {
+  if (typeof override?.visibleInSidebar === 'boolean') return override.visibleInSidebar
+  return DEFAULT_SIDEBAR_CATEGORY_IDS.includes(id as typeof DEFAULT_SIDEBAR_CATEGORY_IDS[number])
 }
 
 const STORAGE_KEY = 'appforge-category-overrides-v2'

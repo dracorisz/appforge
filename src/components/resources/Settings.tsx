@@ -26,6 +26,15 @@ import type { AppState, Settings } from '@/types'
 import { useAuth } from '@/auth/AuthProvider'
 import { BUILD_INFO } from '@/lib/buildInfo'
 import {
+  DEFAULT_SIDEBAR_CATEGORY_IDS,
+  isCategoryVisibleInSidebar,
+  loadCategoryOverrides,
+  resolveCategories,
+  saveCategoryOverrides,
+  subscribeCategoryOverrides,
+  updateCategoryOverride,
+} from '@/lib/categories'
+import {
   adminDeleteUser,
   adminListUsers,
   adminSetRole,
@@ -53,7 +62,7 @@ import {
 const LIVE_URL_KEY = 'appforge-live-url'
 const PAYPAL_URL = 'https://www.paypal.com/paypalme/dracorisz'
 type ThemeMode = 'light' | 'dark' | 'system'
-type TabId = 'profile' | 'appearance' | 'security' | 'data' | 'integrations' | 'deployment' | 'about' | 'admin'
+type TabId = 'profile' | 'appearance' | 'categories' | 'security' | 'data' | 'integrations' | 'deployment' | 'about' | 'admin'
 
 const imageFromLink = (link: ProfileImageLink) => {
   const value = link.user_images
@@ -84,6 +93,9 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
   const [skillsDraft, setSkillsDraft] = React.useState('')
   const [openRouterKey, setOpenRouterKey] = React.useState(() => localStorage.getItem('dragon-arena-openrouter-key') || '')
   const [hfToken, setHfToken] = React.useState(() => localStorage.getItem('dragon-arena-hf-key') || '')
+  const [categoryOverrides, setCategoryOverrides] = React.useState(loadCategoryOverrides)
+
+  React.useEffect(() => subscribeCategoryOverrides(() => setCategoryOverrides(loadCategoryOverrides())), [])
 
   const refreshAccount = React.useCallback(async () => {
     if (!user) return
@@ -277,6 +289,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
   const tabs: { id: TabId; label: string }[] = [
     { id: 'profile', label: 'Profile' },
     { id: 'appearance', label: 'Appearance' },
+    { id: 'categories', label: 'Categories' },
     { id: 'security', label: 'Security' },
     { id: 'data', label: 'Data' },
     { id: 'integrations', label: 'Integrations' },
@@ -410,6 +423,8 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
           </Card>
         </div>
       )}
+
+      {activeTab === 'categories' && <Card className="p-4"><div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between"><div><h2 className="text-sm font-semibold text-foreground">Sidebar categories</h2><p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">Choose the small set of category shortcuts shown below Workspace. AI, Utilities, Image, and Converters are enabled by default; every category remains available from Dashboard.</p></div><Button variant="secondary" size="sm" onClick={() => { const next = loadCategoryOverrides(); resolveCategories(next).forEach((category) => { next[category.id] = { ...(next[category.id] || {}), visibleInSidebar: DEFAULT_SIDEBAR_CATEGORY_IDS.includes(category.id as typeof DEFAULT_SIDEBAR_CATEGORY_IDS[number]) } }); saveCategoryOverrides(next); setCategoryOverrides(next) }}>Restore defaults</Button></div><div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{resolveCategories(categoryOverrides).map((category) => { const visible = isCategoryVisibleInSidebar(category.id, categoryOverrides[category.id]); return <label key={category.id} className="flex cursor-pointer items-start gap-3 rounded-xl border border-border/70 bg-background/35 p-3 hover:bg-accent/40"><input type="checkbox" className="mt-0.5" checked={visible} onChange={(event) => { const next = updateCategoryOverride(category.id, { visibleInSidebar: event.target.checked }); setCategoryOverrides(next) }} /><span><span className="block text-sm font-medium text-foreground">{category.name}</span><span className="mt-0.5 block text-xs leading-4 text-muted-foreground">{category.description}</span></span></label> })}</div></Card>}
 
       {activeTab === 'security' && (
         <div className="grid gap-4 lg:grid-cols-2">
