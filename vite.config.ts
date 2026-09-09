@@ -15,7 +15,7 @@ const manualChunks = (id: string) => {
   if (/node_modules\/(react|react-dom|react-router|react-router-dom)\//.test(id)) return 'vendor-react'
   if (id.includes('node_modules/@supabase/')) return 'vendor-supabase'
   if (id.includes('node_modules/lucide-react/')) return 'vendor-icons'
-  return 'vendor'
+  return undefined
 }
 
 export default defineConfig({
