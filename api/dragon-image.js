@@ -1,7 +1,7 @@
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://ixqoosixhahrsgwoxyme.supabase.co'
 const SUPABASE_PUBLISHABLE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_b56EltHyMfwOQjVQcQFHwA_VUiSn9zN'
 const DEFAULT_HF_IMAGE_MODELS = [
-  'black-forest-labs/FLUX.1-schnell',
+  'stabilityai/stable-diffusion-3-medium-diffusers',
   'stabilityai/stable-diffusion-xl-base-1.0',
 ]
 const HF_IMAGE_MODELS = [process.env.HF_IMAGE_MODEL, ...DEFAULT_HF_IMAGE_MODELS].filter((value, index, list) => Boolean(value) && list.indexOf(value) === index)
@@ -61,7 +61,7 @@ const generateImageFromHf = async (prompt, hfToken, model) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      inputs: `${prompt.trim().slice(0, 900)} Cinematic fantasy game scene, dramatic lighting, detailed environment. No words, logos, UI, or watermark.`,
+      inputs: `${prompt.trim().slice(0, 900)} Cinematic dark-fantasy game scene set in WildDragons Keep, atmospheric depth, dramatic volumetric lighting, detailed environment, coherent medieval-fantasy architecture, no words, logos, UI, watermark, captions, or text.`,
     }),
   })
 
@@ -84,7 +84,8 @@ const generateImageFromHf = async (prompt, hfToken, model) => {
 }
 
 const saveImage = async (token, userId, bytes, mimeType) => {
-  const storagePath = `${userId}/${crypto.randomUUID()}.png`
+  const ext = mimeType === 'image/jpeg' ? 'jpg' : mimeType === 'image/webp' ? 'webp' : 'png'
+  const storagePath = `${userId}/${crypto.randomUUID()}.${ext}`
   const upload = await supabaseRequest(`/storage/v1/object/dragon-arena-assets/${storagePath}`, token, {
     method: 'POST',
     headers: { 'Content-Type': mimeType || 'image/png', 'x-upsert': 'false' },
@@ -137,7 +138,7 @@ export default async function handler(req, res) {
             model: generated.model,
             sessionId,
             personalKeyUsed: usingPersonalKey,
-            provider: 'huggingface',
+            provider: 'huggingface-hf-inference',
           })
         } catch (hfError) {
           lastError = hfError
