@@ -59,6 +59,7 @@ The source list is defined server-side in `api/scrape.js` and mirrored in the UI
 - YouTube Data API v3 (official API; requires server-side configuration)
 - DuckDuckGo Web
 - Medium
+- TikTok — visible as a disabled placeholder pending approval for a suitable official API product and scopes
 
 Public search endpoints can rate-limit, change markup, or temporarily fail. Scrapper Pro reports individual source failures while keeping successful results.
 
@@ -77,6 +78,12 @@ The integration supports text discovery, video URLs/IDs, channel URLs/IDs, and `
 Media Vault saves retain the original URL plus YouTube video/channel IDs, channel identity, thumbnail variants and selected resolution, duration, public statistics, asset role, uploads-playlist ID, and fetch timestamp under `metadata.provenance`. The API key is never included.
 
 Fetched channel art remains third-party content. Public availability does not grant permission to republish, tokenize, or mint it; verify the creator's rights and permission before collectible export.
+
+## TikTok placeholder
+
+TikTok is intentionally visible but disabled. AppForgePf has a developer application, but TikTok's client-credentials token is currently documented for the Research API and Commercial Content API; it is not a general public creator/video search grant. Before enabling the source, confirm the approved product and scopes in the TikTok developer portal.
+
+Future credentials must use server-only variables named `TIKTOK_CLIENT_KEY` and `TIKTOK_CLIENT_SECRET`. The server will exchange them for a short-lived client access token and cache that token; neither credential nor bearer token may be returned to the browser. Implementation is tracked in GitHub issue #21.
 
 ## Architecture
 
