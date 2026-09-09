@@ -4,10 +4,10 @@
 
 <h1 align="center">AppForge</h1>
 
-<p align="center">A growing open-source toolbox of focused web utilities, media tools, and an authenticated personal workspace.</p>
+<p align="center">Useful web apps today. Forkable standalone PWAs tomorrow.</p>
 
 <p align="center">
-  <a href="https://www.sstoken.space/apps/scrapper-pro">Try the public beta</a> ·
+  <a href="https://www.sstoken.space/">Try the public beta</a> ·
   <a href="https://github.com/dracorisz/appforge/issues/new?template=bug_report.yml">Report a bug</a> ·
   <a href="https://github.com/dracorisz/appforge/issues/new?template=feature_request.yml">Request a tool</a> ·
   <a href="./CONTRIBUTING.md">Contribute</a>
@@ -15,7 +15,9 @@
 
 ## What AppForge is
 
-AppForge is a single React/Vite application containing compact mini-apps that share one design system, registry, version/build identity, authentication layer, and narrow Vercel `/api` endpoints where browser-only execution is not reliable or safe.
+AppForge is an open-source workshop of focused web utilities, media tools, creative AI experiments, and authenticated personal-workspace apps. They share one React/Vite/PWA platform while they are developed, tested, versioned, and gradually prepared to stand on their own.
+
+The long-term goal is that each mini-app can mature into a complete independent product rather than remain permanently coupled to one monolithic toolbox.
 
 The project is intentionally practical:
 
@@ -26,16 +28,36 @@ The project is intentionally practical:
 - direct routes must survive hard reloads,
 - public beta surfaces for testing,
 - authenticated personal workspace for synced state,
-- open-source contribution workflow.
+- shared PWA/version/build infrastructure,
+- open-source contribution workflow,
+- a documented path from mini-app to independently forkable PWA.
+
+## App maturity: Idea → Full
+
+AppForge uses a product maturity ladder:
+
+- **Idea** — planned concept or early preview.
+- **Building** — active implementation.
+- **Beta** — useful end-to-end, but still has verification, polish, portability, or documentation gaps.
+- **Launched** — production-ready inside AppForge with stable primary workflows.
+- **Full** — production-ready inside AppForge **and** intentionally packaged/documented so developers can fork it into an independent ready-made PWA.
+- **Deprecated** — compatibility/history only.
+
+`Full` is deliberately a strong promise, not a cosmetic badge. A Full app must have a stable primary workflow, PWA-ready metadata, documented APIs/environment/migrations, a fork guide, build/type/lint quality gates, production smoke tests, and no known P0/P1 blocker.
+
+See [`docs/FULL_STATUS.md`](./docs/FULL_STATUS.md) for the complete standard.
 
 ## Public beta access model
 
 **Public without an account**
 
 - landing / sign-in page,
-- Scrapper Pro live route,
+- Hugging Face integration + public generated-scene gallery,
+- Scrapper Pro,
+- Weather Now,
+- Any → Any Converter,
 - installable PWA shell,
-- repository/docs once GitHub visibility is public.
+- public repository and docs.
 
 **Authenticated workspace**
 
@@ -43,8 +65,10 @@ The project is intentionally practical:
 - favorites and recent tools,
 - profile and image relationships,
 - settings/category overrides,
+- shared Appearance theme,
 - synced per-user preferences,
-- protected mini-apps.
+- protected mini-apps,
+- Story Studio projects and personal Media Vault.
 
 **Admin**
 
@@ -61,16 +85,30 @@ The current mark is deliberately simple so it scales from browser favicon to app
 
 ## Featured working apps
 
+### Story Studio / Dragon Arena evolution
+
+The Dragon Arena story engine is evolving into a broader Story Studio with **Novel** and **Comics** builder modes sharing the same persistent story/session data.
+
+Current beta direction includes short choice-driven story beats, persistent sessions, Hugging Face-backed generation paths, generated-scene assets, compact tap-to-expand artwork, profile Appearance theming, and local continuity when shared AI quota is unavailable.
+
+This is an active beta, not yet a Full Novel/Comics authoring product.
+
 ### Scrapper Pro
 
-Public media search with real image/video cards, in-page showbox navigation, saved results, same-origin downloads, article-to-PDF export, and partial-source failure handling.
+Public media search with real image/video cards, in-page showbox navigation, saved results, same-origin downloads, article-to-PDF export, partial-source failure handling, and signed-in Media Vault archiving.
 
 - Live: `https://www.sstoken.space/apps/scrapper-pro`
 - Docs: `docs/apps/scrapper-pro/README.md`
 
+### Media Vault
+
+Shared signed-in asset surface for General uploads, linked Story/Dragon generated scenes, and deduplicated Scrapper Pro source references.
+
 ### Any → Any Converter
 
 Registry-based conversion with validation, local file loading, safe format-pair selection, copy/download output, and hardened CSV/JSON/YAML/XML handling.
+
+This is a strong candidate for one of the first Full-status standalone packages because it is browser-first and has relatively few server dependencies.
 
 ### Image Labeler
 
@@ -144,18 +182,24 @@ api/
   article.js                      readable article content for PDF export
   crypto.js                       server-backed crypto market data
   weather.js                      keyless weather/geocoding layer
-supabase/migrations/               reproducible auth/profile/admin schema
+  ai-game.js                      Story/Dragon narrative provider rotation + continuity
+  dragon-image.js                generated-scene provider routing + persistence
+supabase/migrations/               reproducible auth/profile/admin/app schema
 scripts/                           release/version tooling
-docs/apps/<app-id>/README.md       app-specific implementation docs
+docs/apps/<app-id>/                app-specific implementation docs
+docs/FULL_STATUS.md                fork-readiness quality standard
+docs/MARKETING_HANDOFF.md          launch/Patreon/marketing-session starting point
 ```
 
 ## PWA direction
 
-AppForge is designed to install as a standalone web app.
+AppForge is designed to install as a standalone web app today, while individual mini-apps are progressively prepared for independent PWA extraction.
 
 The service worker uses a prompt-based update flow so a reviewer can explicitly move from an old build to the newest deployment. The app shell and local tools can remain useful after they have been cached, while live APIs, OAuth, and server-backed tools still require connectivity.
 
-See `docs/PWA.md` for install, update, offline and cache-debugging guidance.
+A Full app must additionally document its own standalone manifest-ready identity, offline behavior, dependencies, APIs, migrations, environment variables and extraction steps.
+
+See `docs/PWA.md` for install/update/offline/cache guidance and `docs/FULL_STATUS.md` for standalone readiness.
 
 ## Versioning and deployment tracking
 
@@ -173,7 +217,9 @@ When reporting a bug, include the exact Footer build fingerprint so maintainers 
 
 ## Contributing
 
-Outside contributions are welcome once repository visibility is public.
+Outside contributions are welcome.
+
+A useful contribution can be a focused bug fix, a new mini-app, or work that moves one existing app closer to Full status: better failure handling, standalone documentation, dependency isolation, accessibility, tests, PWA packaging, or fork instructions.
 
 Recommended flow:
 
@@ -192,6 +238,7 @@ Then open a pull request against `main`.
 Read:
 
 - `CONTRIBUTING.md` — coding and PR expectations
+- `docs/FULL_STATUS.md` — Full/fork-ready app standard
 - `docs/BRANCHING.md` — branch naming and access rules
 - `SECURITY.md` — secrets and vulnerability handling
 - `docs/PWA.md` — install/update/offline behavior
@@ -200,13 +247,22 @@ Read:
 
 The canonical production deployment is the Vercel `appforge` project connected to `main`.
 
-`main` is production. Contributor changes should arrive through focused pull requests once the public collaboration rules are enabled.
+`main` is production. Contributor changes should arrive through focused pull requests once collaboration rules are enabled.
 
 Production review paths:
 
 - `https://www.sstoken.space/`
+- `https://www.sstoken.space/huggingface`
 - `https://www.sstoken.space/apps/scrapper-pro`
 - `https://www.sstoken.space/apps/any-converter`
+
+## Launch and support
+
+AppForge can be promoted today as a **public beta / open-development project**. Marketing should distinguish current working beta functionality from the future Full-status promise.
+
+The prepared marketing handoff includes positioning, safe claims, Patreon framing, screenshot targets and launch-material checklists:
+
+- [`docs/MARKETING_HANDOFF.md`](./docs/MARKETING_HANDOFF.md)
 
 ## Environment and secrets
 
