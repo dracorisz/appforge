@@ -88,6 +88,18 @@ export const DRAGON_ARENA_OPENINGS: OpeningScenario[] = [
     narrative: 'The market is frozen in ash; vendors of bone and bronze wait for a buyer, their wares whispering in the cinders.',
     choices: ['Haggle with the coin-purse crow', 'Examine the glass vials', 'Walk past without looking'],
   },
+  {
+    id: 'zeraphiora-heartforge',
+    label: 'Zeraphiora Heartforge',
+    narrative: 'Zeraphiora rises between mountain walls and the river, prosperous above and restless below. Deep under the old city, the Heartforge that once gave dragons life and power begins to pulse again, and tonight its rhythm matches your heartbeat.',
+    choices: ['Descend toward the Heartforge', 'Question a scholar of old Zerathos-Valen', 'Follow the river tunnels beneath the city'],
+  },
+  {
+    id: 'roads-of-diamat',
+    label: 'Roads of Diamat',
+    narrative: 'You arrive at a crossroads where caravans from the far cities of Diamat exchange coins, rumors, maps, and impossible stories. Every city keeps its own laws and loyalties, but the same dragons circle above them all, watching a new alliance begin to form.',
+    choices: ['Join the caravan bound for the mountain cities', 'Trade for a map of the southern river kingdoms', 'Follow the dragon shadow leaving the road'],
+  },
 ]
 
 export const DEFAULT_OPENING: OpeningScenario = DRAGON_ARENA_OPENINGS[0]
