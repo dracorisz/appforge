@@ -12,8 +12,10 @@ trash/
 .env.*.local
 
 # IDE
+.devin/
 .idea/
 .vscode/
+.kilo/
 *.swp
 *.swo
 
@@ -39,3 +41,4 @@ appforge-workplan-v1.json
 projectforge-workplan-v1.json
 .vercel
 .env*
+

@@ -4,8 +4,8 @@ import { getAllApps } from '@/lib/registry'
 import { BUILD_INFO } from '@/lib/buildInfo'
 import { APPFORGE_CHANNEL_URL, DemoPackage, DemoStatus, makeDemoPackage, makePublication, MarketingFormat, PLAYLISTS, PublicationRecord, PublicationStatus } from '@/lib/marketing'
 
-const DEMOS_KEY = 'appforge-marketing-demos-v1'
-const PUBLICATIONS_KEY = 'appforge-marketing-publications-v1'
+const DEMOS_KEY = 'faviconeting-demos-v1'
+const PUBLICATIONS_KEY = 'faviconeting-publications-v1'
 
 const readArray = <T,>(key: string): T[] => {
   try {

@@ -6,7 +6,7 @@ The public landing surface is implemented by `src/auth/LoginPage.tsx`. It serves
 
 ## Brand asset
 
-`public/appforge-mark.svg` is the canonical 512×512 AppForge triangle mark for the landing hero and small identity treatments. It is original project artwork, uses vector geometry, and adapts its foreground to the browser light/dark color scheme.
+`public/favicon.svg` is the canonical 512×512 AppForge triangle mark for the landing hero and small identity treatments. It is original project artwork, uses vector geometry, and adapts its foreground to the browser light/dark color scheme.
 
 Use the SVG source for UI rendering and derive raster/social variants from this source when needed. Do not replace the existing PWA/favicon set without a separate compatibility pass.
 

@@ -7,7 +7,7 @@ import { useAuth } from './AuthProvider'
 import { consumeReturnPath, normalizeReturnPath } from './returnPath'
 
 const YOUTUBE_EMBED_URL = 'https://www.youtube-nocookie.com/embed/tWnZNkPxlOo?rel=0&modestbranding=1'
-const APPFORGE_MARK = '/appforge-mark.svg?v=2'
+const APPFORGE_MARK = '/favicon.svg?v=2'
 
 const publicTools = [
   { label: 'Weather Now', description: 'Live weather lookup', path: '/apps/weather-now', icon: Cloud },
