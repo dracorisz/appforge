@@ -1,5 +1,5 @@
 import React from 'react'
-import { BookOpen, GalleryThumbnails, ImagePlus, KeyRound, Loader2, RefreshCcw, Send, Sparkles, Trophy, Users, X } from 'lucide-react'
+import { BookOpen, Download, GalleryThumbnails, Globe2, ImagePlus, KeyRound, Loader2, LockKeyhole, RefreshCcw, Send, Trophy, Users, X } from 'lucide-react'
 import { GiDragonHead, GiDungeonGate, GiRuneSword, GiScrollUnfurled, GiSparkles, GiSpikedShield } from 'react-icons/gi'
 import { Button, Card, Input } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
@@ -22,17 +22,21 @@ import {
 
 type Turn = { role: 'player' | 'gm'; text: string }
 type CompletedTurn = { turnNumber: number; playerAction: string; narrative: string; choices: string[]; model: string }
-type GameReply = { narrative?: string; choices?: string[]; model?: string; personalKeyUsed?: boolean; provider?: string; degraded?: boolean; error?: string }
+type GameReply = { narrative?: string; choices?: string[]; model?: string; provider?: string; degraded?: boolean; error?: string }
 type BuilderMode = 'novel' | 'comics'
+type Panel = 'assets' | 'sessions' | 'leaderboard' | null
 
-type SceneReply = {
-  imageUrl?: string
-  model?: string
-  isPublic?: boolean
-  error?: string
-}
+type SceneReply = { imageUrl?: string; model?: string; isPublic?: boolean; error?: string }
 
 const MODEL = 'huggingface-rotation'
+
+const loadHfTokens = () => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem('dragon-arena-hf-keys') || '[]')
+    if (Array.isArray(parsed)) return [0, 1, 2].map((index) => String(parsed[index] || ''))
+  } catch { /* migrate legacy value below */ }
+  return [localStorage.getItem('dragon-arena-hf-key') || '', '', '']
+}
 
 const resolveOpening = (metadata: unknown): OpeningScenario => {
   if (metadata && typeof metadata === 'object') {
@@ -57,7 +61,24 @@ const sceneModel = (asset: DragonAsset) => {
   return typeof value === 'string' && value.trim() ? value : 'Hugging Face'
 }
 
+const sceneTurn = (asset: DragonAsset) => {
+  const value = Number(asset.metadata?.turn_number)
+  return Number.isFinite(value) && value > 0 ? value : null
+}
+
 const paragraphize = (text: string) => text.split(/\n{2,}/).map((part) => part.trim()).filter(Boolean)
+
+const downloadText = (name: string, content: string, type: string) => {
+  const blob = new Blob([content], { type })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = name
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+const escapeHtml = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 export function PF_AIDragonArenaStudio() {
   const [mode, setMode] = React.useState<BuilderMode>(() => (localStorage.getItem('dragon-builder-mode') === 'comics' ? 'comics' : 'novel'))
@@ -78,19 +99,23 @@ export function PF_AIDragonArenaStudio() {
   const [points, setPoints] = React.useState<DragonPoints | null>(null)
   const [sceneLoading, setSceneLoading] = React.useState(false)
   const [imageDailyUsed, setImageDailyUsed] = React.useState(false)
-  const [panel, setPanel] = React.useState<'assets' | 'sessions' | 'leaderboard' | null>(null)
+  const [panel, setPanel] = React.useState<Panel>(null)
   const [lightbox, setLightbox] = React.useState<string | null>(null)
+  const [sharingAsset, setSharingAsset] = React.useState<string | null>(null)
 
-  const [personalKey, setPersonalKey] = React.useState(() => localStorage.getItem('dragon-arena-openrouter-key') || '')
-  const [hfToken, setHfToken] = React.useState(() => localStorage.getItem('dragon-arena-hf-key') || '')
+  const [hfTokens, setHfTokens] = React.useState<string[]>(loadHfTokens)
   const [showProviderSettings, setShowProviderSettings] = React.useState(false)
 
   React.useEffect(() => { localStorage.setItem('dragon-builder-mode', mode) }, [mode])
+  React.useEffect(() => {
+    localStorage.setItem('dragon-arena-hf-keys', JSON.stringify(hfTokens))
+    const primary = hfTokens.find((token) => token.startsWith('hf_')) || ''
+    if (primary) localStorage.setItem('dragon-arena-hf-key', primary)
+    else localStorage.removeItem('dragon-arena-hf-key')
+  }, [hfTokens])
 
-  const storyScenes = React.useMemo(
-    () => assets.filter((asset) => asset.asset_type === 'scene').slice().sort((a, b) => a.created_at.localeCompare(b.created_at)),
-    [assets],
-  )
+  const personalHfTokens = React.useMemo(() => hfTokens.map((token) => token.trim()).filter((token) => token.startsWith('hf_')), [hfTokens])
+  const storyScenes = React.useMemo(() => assets.filter((asset) => asset.asset_type === 'scene').slice().sort((a, b) => a.created_at.localeCompare(b.created_at)), [assets])
   const latestScene = storyScenes[storyScenes.length - 1] || null
 
   const refreshAssets = React.useCallback(async (sid: string | null, uid: string | null) => {
@@ -108,30 +133,8 @@ export function PF_AIDragonArenaStudio() {
     try { setPoints(await getPoints(uid)) } catch { /* optional */ }
   }, [])
 
-  React.useEffect(() => {
-    let cancelled = false
-    const restore = async () => {
-      const { data: auth } = await supabase.auth.getUser()
-      if (!auth.user || cancelled) return
-      const uid = auth.user.id
-      setUserId(uid)
-      await Promise.all([refreshSessions(uid), refreshPoints(uid)])
-
-      const { data: session } = await supabase
-        .from('dragon_arena_sessions')
-        .select('*')
-        .eq('user_id', uid)
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      if (!session?.id || cancelled) return
-      await loadSession(session as DragonSession, uid)
-    }
-    void restore()
-    return () => { cancelled = true }
-  }, [refreshPoints, refreshSessions])
-
-  const loadSession = async (session: DragonSession, uid = userId) => {
+  const loadSession = React.useCallback(async (session: DragonSession, uidOverride?: string | null) => {
+    const uid = uidOverride || userId
     if (!uid) return
     setLoading(true)
     setError('')
@@ -140,6 +143,8 @@ export function PF_AIDragonArenaStudio() {
       const turns = await listTurns(session.id)
       setOpening(sessionOpening)
       setSessionId(session.id)
+      const savedMode = session.metadata?.builder_mode === 'comics' ? 'comics' : session.metadata?.builder_mode === 'novel' ? 'novel' : null
+      if (savedMode) setMode(savedMode)
       await refreshAssets(session.id, uid)
 
       const nextHistory: Turn[] = [{ role: 'gm', text: sessionOpening.narrative }]
@@ -154,7 +159,23 @@ export function PF_AIDragonArenaStudio() {
       setChoices(nextCompleted.length ? nextCompleted[nextCompleted.length - 1].choices : [...sessionOpening.choices])
       setTurn(nextCompleted.length ? nextCompleted[nextCompleted.length - 1].turnNumber + 1 : 1)
     } finally { setLoading(false) }
-  }
+  }, [refreshAssets, userId])
+
+  React.useEffect(() => {
+    let cancelled = false
+    const restore = async () => {
+      const { data: auth } = await supabase.auth.getUser()
+      if (!auth.user || cancelled) return
+      const uid = auth.user.id
+      setUserId(uid)
+      await Promise.all([refreshSessions(uid), refreshPoints(uid)])
+      const { data: session } = await supabase.from('dragon_arena_sessions').select('*').eq('user_id', uid).order('updated_at', { ascending: false }).limit(1).maybeSingle()
+      if (!session?.id || cancelled) return
+      await loadSession(session as DragonSession, uid)
+    }
+    void restore()
+    return () => { cancelled = true }
+  }, [loadSession, refreshPoints, refreshSessions])
 
   const reset = () => {
     const next = randomOpening()
@@ -178,11 +199,13 @@ export function PF_AIDragonArenaStudio() {
     let sid = sessionId
 
     if (!sid) {
-      const { data: created, error: createError } = await supabase
-        .from('dragon_arena_sessions')
-        .insert({ user_id: uid, title: `${opening.label} story`, summary: nextTurns[0]?.narrative.slice(0, 180) || null, turn_count: nextTurns.length, metadata: { source: 'story-studio', builder_mode: mode, model: MODEL, opening_id: opening.id, opening } })
-        .select('id')
-        .single()
+      const { data: created, error: createError } = await supabase.from('dragon_arena_sessions').insert({
+        user_id: uid,
+        title: `${opening.label} ${mode === 'comics' ? 'comic' : 'novel'}`,
+        summary: nextTurns[0]?.narrative.slice(0, 180) || null,
+        turn_count: nextTurns.length,
+        metadata: { source: 'story-studio', builder_mode: mode, model: MODEL, opening_id: opening.id, opening },
+      }).select('id').single()
       if (createError || !created?.id) throw createError || new Error('Could not create story session.')
       sid = created.id
       setSessionId(sid)
@@ -217,8 +240,7 @@ export function PF_AIDragonArenaStudio() {
       const token = sessionData.session?.access_token
       if (!token) throw new Error('Sign in again to continue.')
       const headers: Record<string, string> = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-      if (personalKey.startsWith('sk-or-')) headers['x-openrouter-key'] = personalKey
-      if (hfToken.startsWith('hf_')) headers['x-hf-token'] = hfToken
+      if (personalHfTokens.length) headers['x-hf-tokens'] = personalHfTokens.join(',')
       const response = await fetch('/api/ai-game', { method: 'POST', headers, body: JSON.stringify({ turn, action: playerAction, history: pendingHistory.slice(-6), builderMode: mode }) })
       const payload = await response.json().catch(() => ({})) as GameReply
       if (!response.ok) throw new Error(payload.error || 'The story engine is unavailable.')
@@ -249,7 +271,7 @@ export function PF_AIDragonArenaStudio() {
       const uid = sessionData.session?.user.id
       if (!token || !uid) throw new Error('Sign in again to generate art.')
       const headers: Record<string, string> = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-      if (hfToken.startsWith('hf_')) headers['x-hf-token'] = hfToken
+      if (personalHfTokens.length) headers['x-hf-tokens'] = personalHfTokens.join(',')
       const prompt = completedTurns[completedTurns.length - 1]?.narrative || opening.narrative
       const response = await fetch('/api/dragon-image', { method: 'POST', headers, body: JSON.stringify({ sessionId, prompt, turnNumber: Math.max(1, completedTurns.length), builderMode: mode }) })
       const payload = await response.json().catch(() => ({})) as SceneReply
@@ -263,7 +285,19 @@ export function PF_AIDragonArenaStudio() {
     finally { setSceneLoading(false) }
   }
 
-  const togglePanel = async (next: 'assets' | 'sessions' | 'leaderboard') => {
+  const togglePublic = async (asset: DragonAsset) => {
+    if (!userId) return
+    setSharingAsset(asset.id)
+    setError('')
+    try {
+      const { error: shareError } = await supabase.from('dragon_arena_assets').update({ is_public: !asset.is_public }).eq('id', asset.id).eq('user_id', userId)
+      if (shareError) throw shareError
+      if (sessionId) await refreshAssets(sessionId, userId)
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not change showcase visibility.') }
+    finally { setSharingAsset(null) }
+  }
+
+  const togglePanel = async (next: Exclude<Panel, null>) => {
     const openingPanel = panel !== next
     setPanel(openingPanel ? next : null)
     if (!openingPanel) return
@@ -274,8 +308,33 @@ export function PF_AIDragonArenaStudio() {
     }
   }
 
-  const latestSceneSrc = latestScene ? assetUrl(latestScene.storage_path) || latestScene.external_url || '' : ''
-  const canGenerate = Boolean(sessionId) && !sceneLoading && (!imageDailyUsed || hfToken.startsWith('hf_'))
+  const exportProduct = () => {
+    const stamp = new Date().toISOString().slice(0, 10)
+    if (mode === 'novel') {
+      const body = completedTurns.map((item) => `## Turn ${item.turnNumber}\n\n**Choice:** ${item.playerAction}\n\n${item.narrative}`).join('\n\n---\n\n')
+      downloadText(`appforge-novel-${stamp}.md`, `# ${opening.label}\n\n${opening.narrative}\n\n${body}\n`, 'text/markdown;charset=utf-8')
+      return
+    }
+
+    const panels = completedTurns.map((item) => {
+      const scene = storyScenes.find((asset) => sceneTurn(asset) === item.turnNumber)
+      const src = scene ? assetUrl(scene.storage_path) || scene.external_url || '' : ''
+      return `<section class="panel">${src ? `<img src="${escapeHtml(src)}" alt="Panel ${item.turnNumber}">` : ''}<div><small>Turn ${item.turnNumber} · ${escapeHtml(item.playerAction)}</small><p>${escapeHtml(item.narrative).replace(/\n/g, '<br>')}</p></div></section>`
+    }).join('')
+    const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escapeHtml(opening.label)} comic</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:40px auto;padding:0 20px;background:#111;color:#eee}.panel{display:grid;grid-template-columns:minmax(180px,36%) 1fr;gap:20px;border-bottom:1px solid #333;padding:22px 0}.panel img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px}.panel p{line-height:1.65}small{color:#aaa}@media(max-width:620px){.panel{grid-template-columns:1fr}}</style></head><body><h1>${escapeHtml(opening.label)}</h1><p>${escapeHtml(opening.narrative)}</p>${panels}</body></html>`
+    downloadText(`appforge-comic-${stamp}.html`, html, 'text/html;charset=utf-8')
+  }
+
+  const sceneForHistoryIndex = (index: number) => {
+    if (index <= 0 || index % 2 !== 0) return null
+    const turnNumber = index / 2
+    const exact = storyScenes.find((asset) => sceneTurn(asset) === turnNumber)
+    if (exact) return exact
+    const isLatestGm = index === history.length - 1 && history[index]?.role === 'gm'
+    return isLatestGm && latestScene && sceneTurn(latestScene) === null ? latestScene : null
+  }
+
+  const canGenerate = Boolean(sessionId) && !sceneLoading && (!imageDailyUsed || personalHfTokens.length > 0)
 
   return (
     <div className="mx-auto max-w-6xl space-y-3 pb-10 text-foreground">
@@ -284,7 +343,7 @@ export function PF_AIDragonArenaStudio() {
           <button onClick={() => setMode('novel')} className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${mode === 'novel' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}><BookOpen className="h-4 w-4" /> Novel</button>
           <button onClick={() => setMode('comics')} className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${mode === 'comics' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}><GalleryThumbnails className="h-4 w-4" /> Comics</button>
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground"><span>Turn {turn}</span>{points && <span>· {points.points} pts</span>}</div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground"><span>Turn {turn}</span>{points && <span>· {points.points} pts</span>}<span>· Appearance theme</span></div>
       </div>
 
       <Card className="overflow-hidden p-0">
@@ -293,46 +352,49 @@ export function PF_AIDragonArenaStudio() {
           <Button size="sm" variant={panel === 'assets' ? 'default' : 'ghost'} onClick={() => void togglePanel('assets')}><GalleryThumbnails className="h-4 w-4" /> Assets <span className="text-xs opacity-70">{storyScenes.length}</span></Button>
           <Button size="sm" variant={panel === 'sessions' ? 'default' : 'ghost'} onClick={() => void togglePanel('sessions')}><Users className="h-4 w-4" /> Sessions</Button>
           <Button size="sm" variant={panel === 'leaderboard' ? 'default' : 'ghost'} onClick={() => void togglePanel('leaderboard')}><Trophy className="h-4 w-4" /> Leaderboard</Button>
+          <Button size="sm" variant="ghost" onClick={exportProduct} disabled={!completedTurns.length}><Download className="h-4 w-4" /> Export {mode === 'novel' ? 'Novel' : 'Comic'}</Button>
           <div className="ml-auto flex items-center gap-1">
             <Button size="sm" variant="ghost" onClick={reset}><RefreshCcw className="h-4 w-4" /> New</Button>
-            <Button size="sm" variant="ghost" onClick={() => setShowProviderSettings((value) => !value)}><KeyRound className="h-4 w-4" /></Button>
+            <Button size="sm" variant="ghost" onClick={() => setShowProviderSettings((value) => !value)} title="Hugging Face keys"><KeyRound className="h-4 w-4" /></Button>
           </div>
         </div>
 
-        {showProviderSettings && <div className="grid gap-2 border-b border-border/70 bg-background/55 p-3 md:grid-cols-2"><Input value={personalKey} onChange={(event) => setPersonalKey(event.target.value)} onBlur={() => localStorage.setItem('dragon-arena-openrouter-key', personalKey.trim())} placeholder="Optional GM key · sk-or-…" /><Input value={hfToken} onChange={(event) => setHfToken(event.target.value)} onBlur={() => localStorage.setItem('dragon-arena-hf-key', hfToken.trim())} placeholder="Optional Hugging Face token · hf_…" /></div>}
+        {showProviderSettings && <div className="border-b border-border/70 bg-background/55 p-3"><div className="mb-2"><div className="text-xs font-semibold">Personal Hugging Face tokens</div><div className="mt-1 text-[11px] leading-4 text-muted-foreground">Optional. Add up to three tokens with Inference Providers access. Story Studio rotates them before server-funded keys. OpenRouter remains an account/profile integration, not a game control.</div></div><div className="grid gap-2 md:grid-cols-3">{hfTokens.map((value, index) => <Input key={index} value={value} onChange={(event) => setHfTokens((current) => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={`HF token ${index + 1} · hf_…`} />)}</div></div>}
 
         {panel && <div className="border-b border-border/70 bg-background/70 p-3">
-          {panel === 'assets' && <div className="flex gap-2 overflow-x-auto pb-1">{assets.length === 0 ? <div className="text-xs text-muted-foreground">No generated scenes yet.</div> : assets.map((asset) => { const src = assetUrl(asset.storage_path) || asset.external_url || ''; return <button key={asset.id} type="button" onClick={() => src && setLightbox(src)} className="w-24 shrink-0 text-left"><div className="h-16 overflow-hidden rounded-lg border border-border bg-muted">{src && <img src={src} alt="" className="h-full w-full object-cover" />}</div><div className="mt-1 truncate text-[10px] text-muted-foreground">{sceneModel(asset)}</div></button> })}</div>}
+          {panel === 'assets' && <div className="flex gap-2 overflow-x-auto pb-1">{assets.length === 0 ? <div className="text-xs text-muted-foreground">No generated scenes yet.</div> : assets.map((asset) => { const src = assetUrl(asset.storage_path) || asset.external_url || ''; return <div key={asset.id} className="w-28 shrink-0"><button type="button" onClick={() => src && setLightbox(src)} className="w-full text-left"><div className="h-16 overflow-hidden rounded-lg border border-border bg-muted">{src && <img src={src} alt="" className="h-full w-full object-cover" />}</div><div className="mt-1 truncate text-[10px] text-muted-foreground">{sceneModel(asset)}</div></button><button type="button" disabled={sharingAsset === asset.id} onClick={() => void togglePublic(asset)} className={`mt-1 inline-flex w-full items-center justify-center gap-1 rounded-md border px-1.5 py-1 text-[10px] ${asset.is_public ? 'border-primary/30 bg-accent text-foreground' : 'border-border text-muted-foreground hover:text-foreground'}`}>{asset.is_public ? <><Globe2 className="h-3 w-3" /> Public</> : <><LockKeyhole className="h-3 w-3" /> Private</>}</button></div> })}</div>}
           {panel === 'sessions' && <div className="flex gap-2 overflow-x-auto pb-1">{sessions.length === 0 ? <div className="text-xs text-muted-foreground">No saved stories yet.</div> : sessions.map((session) => <button key={session.id} type="button" onClick={() => void loadSession(session)} className={`min-w-44 rounded-lg border px-3 py-2 text-left text-xs ${session.id === sessionId ? 'border-primary/50 bg-accent' : 'border-border hover:bg-accent/60'}`}><div className="truncate font-medium">{session.title || 'Untitled story'}</div><div className="mt-1 text-muted-foreground">{session.turn_count} turns</div></button>)}</div>}
           {panel === 'leaderboard' && <div className="grid gap-1 sm:grid-cols-2 lg:grid-cols-4">{leaderboardRows.slice(0, 8).map((row, index) => <div key={row.user_id} className="flex items-center justify-between rounded-lg border border-border/70 px-3 py-2 text-xs"><span>#{index + 1} {row.display_name || 'Writer'}</span><span className="text-muted-foreground">{row.points}</span></div>)}</div>}
         </div>}
 
-        <div className={`relative min-h-[430px] overflow-hidden ${mode === 'comics' && latestSceneSrc ? 'bg-card' : 'bg-gradient-to-b from-card via-background/90 to-background'}`}>
-          {mode === 'comics' && latestSceneSrc && <button type="button" aria-label="Open latest scene" onClick={() => setLightbox(latestSceneSrc)} className="absolute inset-0 w-full"><img src={latestSceneSrc} alt="" className="h-full w-full object-cover opacity-20" /><div className="absolute inset-0 bg-gradient-to-b from-background/55 via-background/75 to-background" /></button>}
-
-          <div className="relative z-10 max-h-[570px] min-h-[430px] space-y-3 overflow-y-auto p-4 sm:p-5">
-            {history.map((item, index) => (
-              <div key={`${item.role}-${index}`} className={`flex ${item.role === 'player' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[82%] rounded-xl px-3.5 py-2.5 text-sm leading-5 ${item.role === 'player' ? 'bg-primary text-primary-foreground' : 'border border-border/65 bg-card/90 shadow-sm'}`}>
-                  {paragraphize(item.text).map((paragraph, paragraphIndex) => <p key={paragraphIndex} className={paragraphIndex ? 'mt-2' : ''}>{paragraph}</p>)}
+        <div className="min-h-[430px] bg-gradient-to-b from-card via-background/90 to-background">
+          <div className="max-h-[570px] min-h-[430px] space-y-3 overflow-y-auto p-4 sm:p-5">
+            {history.map((item, index) => {
+              const attachedScene = item.role === 'gm' ? sceneForHistoryIndex(index) : null
+              const attachedSrc = attachedScene ? assetUrl(attachedScene.storage_path) || attachedScene.external_url || '' : ''
+              return <div key={`${item.role}-${index}`} className={`flex ${item.role === 'player' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`flex max-w-[92%] items-start gap-2 ${item.role === 'player' ? 'flex-row-reverse' : ''}`}>
+                  <div className={`rounded-xl px-3.5 py-2.5 text-sm leading-5 ${item.role === 'player' ? 'bg-primary text-primary-foreground' : 'border border-border/65 bg-card/90 shadow-sm'}`}>
+                    {paragraphize(item.text).map((paragraph, paragraphIndex) => <p key={paragraphIndex} className={paragraphIndex ? 'mt-2' : ''}>{paragraph}</p>)}
+                  </div>
+                  {attachedSrc && <button type="button" onClick={() => setLightbox(attachedSrc)} className={`group shrink-0 overflow-hidden rounded-lg border border-border/70 bg-muted shadow-sm ${mode === 'comics' ? 'h-24 w-32 sm:h-28 sm:w-40' : 'h-16 w-20 sm:h-20 sm:w-28'}`} title="Open scene"><img src={attachedSrc} alt={`Scene for turn ${sceneTurn(attachedScene!) || ''}`} className="h-full w-full object-cover transition-transform group-hover:scale-105" /></button>}
                 </div>
               </div>
-            ))}
-
-            {latestSceneSrc && <div className="flex justify-start pl-1"><button type="button" onClick={() => setLightbox(latestSceneSrc)} className="group relative h-16 w-24 overflow-hidden rounded-lg border border-border/70 bg-muted shadow-sm sm:h-20 sm:w-32"><img src={latestSceneSrc} alt="Latest generated scene" className="h-full w-full object-cover transition-transform group-hover:scale-105" /><span className="absolute inset-x-0 bottom-0 bg-black/55 px-1.5 py-1 text-[9px] text-white">tap to expand</span></button></div>}
-
+            })}
             {loading && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Writing next beat…</div>}
+            {sceneLoading && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating art for the latest beat…</div>}
           </div>
         </div>
 
         <div className="space-y-2 border-t border-border/70 bg-card p-3 sm:p-4">
           {error && <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">{error}</div>}
+          {imageDailyUsed && !personalHfTokens.length && <div className="rounded-lg border border-border/70 bg-background/50 px-3 py-2 text-[11px] text-muted-foreground">Today’s shared image turn is used. Add a personal Hugging Face token to continue generating artwork.</div>}
           <div className="grid gap-2 sm:grid-cols-3">{choices.map((choice) => { const Icon = choiceIcon(choice); return <Button key={choice} variant="secondary" disabled={loading} onClick={() => void play(choice)} className="h-10 justify-start truncate px-3 text-left text-xs"><Icon className="h-4 w-4 shrink-0" /> {choice}</Button> })}</div>
           <div className="flex gap-2"><input value={action} disabled={loading} onChange={(event) => setAction(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') void play() }} placeholder={mode === 'novel' ? 'Write your next move…' : 'Direct the next panel…'} className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" /><Button disabled={loading || !action.trim()} onClick={() => void play()}><Send className="h-4 w-4" /> Act</Button></div>
         </div>
       </Card>
 
-      <p className="px-1 text-[11px] leading-5 text-muted-foreground">Novel keeps the writing foregrounded. Comics uses generated art as atmosphere while preserving the same story memory. Both inherit your AppForge Appearance theme.</p>
+      <div className="grid gap-2 sm:grid-cols-3"><div className="rounded-lg border border-border/60 bg-card/50 px-3 py-2 text-[11px] text-muted-foreground"><span className="font-medium text-foreground">Novel:</span> writing-first story flow with Markdown export.</div><div className="rounded-lg border border-border/60 bg-card/50 px-3 py-2 text-[11px] text-muted-foreground"><span className="font-medium text-foreground">Comics:</span> larger beat-linked panels with standalone HTML export.</div><div className="rounded-lg border border-border/60 bg-card/50 px-3 py-2 text-[11px] text-muted-foreground"><span className="font-medium text-foreground">Appearance:</span> profile theme and accent style the complete studio surface.</div></div>
 
       {lightbox && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4" role="dialog" aria-modal="true" onClick={() => setLightbox(null)}><button type="button" onClick={() => setLightbox(null)} className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white"><X className="h-5 w-5" /></button><img src={lightbox} alt="Generated story scene" className="max-h-[88vh] max-w-[92vw] rounded-xl object-contain shadow-2xl" onClick={(event) => event.stopPropagation()} /></div>}
     </div>
