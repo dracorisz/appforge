@@ -1,6 +1,6 @@
 # Scrapper Pro
 
-Scrapper Pro is AppForge's server-backed public-media search tool. It searches supported public sources, normalizes results into one result model, keeps useful results locally, previews media inside AppForge, and exports supported content.
+Scrapper Pro is AppForge's server-backed public-media search tool. It searches supported public sources, normalizes results into one result model, keeps optional guest/local saves in the browser, previews media inside AppForge, exports supported content, and lets signed-in users archive source references into Media Vault.
 
 ## User-facing features
 
@@ -9,16 +9,44 @@ Scrapper Pro is AppForge's server-backed public-media search tool. It searches s
 - In-page showbox/lightbox for large image previews.
 - In-page video playback for direct video URLs.
 - Privacy-enhanced YouTube embeds using `youtube-nocookie.com`.
-- Save/unsave results in local storage.
+- Local save/unsave for guest/offline-friendly browser persistence.
+- Signed-in **Save to Media Vault** action with deduplication by original source URL.
 - Copy original result URL.
 - JSON export for complete result sets.
 - Image downloads through AppForge's same-origin media endpoint.
-- Direct-video downloads when the source provides an actual video file URL (for example some Reddit-hosted video results).
+- Direct-video downloads when the source provides an actual video file URL.
 - YouTube thumbnail download. AppForge intentionally does not implement a YouTube ripping/downloading path.
 - Article export to a generated PDF using readable article text.
 - Post export to `.txt`.
 - Grid/list result layouts and Media / Images / Videos / Articles / Posts / All / Saved filters.
 - Search cancellation, elapsed time, partial-source failure reporting, and source presets.
+
+## Save semantics
+
+Scrapper Pro now has two intentionally different save paths:
+
+### Local save
+
+The normal Save/check action stores the normalized result in browser `localStorage` under `appforge-scrapper-saved`.
+
+- available to guest users;
+- persists on that browser/device;
+- capped by the UI to the most recent 250 saved results;
+- does not create a Supabase record.
+
+### Media Vault save
+
+The archive action stores a signed-in user's result in `user_media_vault` through `saveScrapperVaultResult()`.
+
+- folder: `scrapper-pro`;
+- source app: `scrapper-pro`;
+- source reference: original result URL;
+- duplicate saves return the existing row instead of creating another record;
+- the third-party object is not copied into AppForge storage;
+- `external_url` points to the best available direct media/thumbnail/source URL;
+- source, result type, original URL, thumbnail, direct media URL, snippet and source date are retained as metadata.
+
+Earlier builds wrote `scrapper-result` rows into `dragon_arena_assets`. Migration `20260909174500_decouple_scrapper_pro_into_media_vault.sql` backfills those legacy rows into Media Vault. New Scrapper saves no longer depend on Dragon Arena.
 
 ## Supported sources
 
@@ -44,6 +72,14 @@ src/components/dashboard/PF_ScrapperPro.tsx
 api/scrape.js
         |
         +-- DuckDuckGo / Bing / Wikimedia / Reddit / YouTube / web readers
+
+Local save:
+PF_ScrapperPro -> localStorage(appforge-scrapper-saved)
+
+Signed-in archive:
+PF_ScrapperPro -> saveScrapperVaultResult()
+               -> user_media_vault
+               -> Media Vault / Scrapper Pro folder
 
 Media preview:
 src/components/ui/MediaShowbox.tsx
@@ -102,40 +138,22 @@ Post results export as a small `.txt` file containing title, snippet, and source
 
 `/api/media` is intentionally not a general-purpose proxy. Keep the private-network checks, redirect limit, content-type checks, timeout, and size limit when modifying it.
 
+Media Vault references remain owner-scoped through `user_media_vault` RLS. Saving a reference never modifies or republishes the third-party source.
+
 Never add API secrets to browser source or commit `.env` files. Use Vercel/Supabase environment configuration for server-side secrets.
 
-## Local development
+## Production smoke test
 
-```bash
-npm install
-npm run dev
-```
-
-Vite handles the UI locally. Vercel serverless endpoints under `/api` require a Vercel-compatible local runtime for full end-to-end testing, or test against a preview deployment.
-
-## Production test path
-
-- `https://www.sstoken.space/apps/scrapper-pro`
-- API health: `https://www.sstoken.space/api/scrape`
-
-Recommended smoke test:
-
-1. Search a person, place, or product with the **Media** preset.
+1. Search with the **Media** preset.
 2. Open an image in the showbox and download it.
 3. Open a YouTube result and confirm in-page playback.
-4. Download the YouTube thumbnail and verify the label says thumbnail.
-5. Find a Reddit direct-video result and test the direct video download when available.
-6. Enable web/article sources, download an article as PDF, and open the generated PDF.
-7. Save several results, switch to **Saved**, refresh the page, and confirm persistence.
+4. Save one result locally, refresh, and confirm it remains in **Saved**.
+5. While signed in, archive a result to Media Vault.
+6. Archive the same result again and confirm no duplicate Media Vault row appears.
+7. Open Media Vault → **Scrapper Pro** and confirm title/type/source preview metadata is present.
+8. Delete the Media Vault reference and confirm the original source remains unaffected.
+9. Enable web/article sources and export an article as PDF.
 
-## Extension rules
+## Version
 
-When adding a new source:
-
-1. Add the source and scraper to `api/scrape.js`.
-2. Normalize results to `ScrapperProResult`.
-3. Add the source to the UI selector in `PF_ScrapperPro.tsx`.
-4. Do not return fake placeholder media.
-5. Prefer real `mediaUrl` + `thumbnail` pairs for media sources.
-6. Preserve partial-failure behavior; one source failure must not fail the whole search.
-7. Update this README.
+**Scrapper Pro 1.2.0** — direct Media Vault archive integration, deduplicated source references, clearer local-vs-account save semantics, and removal of the Dragon Arena storage dependency.
