@@ -50,7 +50,7 @@ export default async function handler(req, res) {
     }
 
     const forecast = await fetchJson(
-      `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(forecastLatitude)}&longitude=${encodeURIComponent(forecastLongitude)}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto`
+      `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(forecastLatitude)}&longitude=${encodeURIComponent(forecastLongitude)}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,surface_pressure,cloud_cover,visibility&daily=sunrise,sunset&forecast_days=1&timezone=auto`
     )
     const current = forecast?.current
     if (!current) throw new Error('Weather provider returned no current conditions')
@@ -66,6 +66,11 @@ export default async function handler(req, res) {
       feelslike_c: current.apparent_temperature,
       humidity: current.relative_humidity_2m,
       wind_kph: current.wind_speed_10m,
+      pressure_hpa: current.surface_pressure,
+      cloud_cover: current.cloud_cover,
+      visibility_km: typeof current.visibility === 'number' ? current.visibility / 1000 : undefined,
+      sunrise: forecast.daily?.sunrise?.[0],
+      sunset: forecast.daily?.sunset?.[0],
       condition: weatherText(current.weather_code),
       weather_code: current.weather_code,
       local_time: current.time,

@@ -9,3 +9,4 @@ export { Tabs, EmptyState, Toast, Progress, ProgressBar, CopyButton } from './Mi
 export { DataTable } from './DataTable'
 export { BuildBadge } from './BuildBadge'
 export { MediaShowbox } from './MediaShowbox'
+export { Switch } from './Switch'

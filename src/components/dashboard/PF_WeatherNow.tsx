@@ -4,6 +4,10 @@ import {
   ArrowUpDown,
   Cloud,
   CloudRain,
+  CloudSun,
+  Droplets,
+  Eye,
+  Gauge,
   LayoutGrid,
   List,
   Loader2,
@@ -11,6 +15,9 @@ import {
   RefreshCw,
   Snowflake,
   Sun,
+  Sunrise,
+  Sunset,
+  Thermometer,
   Wind,
   X,
 } from 'lucide-react'
@@ -27,6 +34,11 @@ export interface WeatherData {
   latitude?: number
   longitude?: number
   source?: string
+  pressure_hpa?: number
+  cloud_cover?: number
+  visibility_km?: number
+  sunrise?: string
+  sunset?: string
 }
 
 type SortBy = 'name' | 'temp' | 'humidity' | 'wind'
@@ -37,6 +49,11 @@ const STORAGE_KEY = 'appforge-weather-cities-v2'
 const EU_CITIES = ['Paris', 'Berlin', 'Madrid', 'Rome', 'Vienna', 'Amsterdam', 'Lisbon', 'Athens', 'Warsaw', 'Prague']
 
 const toFahrenheit = (celsius: number) => (celsius * 9) / 5 + 32
+const timeOnly = (value?: string) => value ? value.split('T')[1]?.slice(0, 5) || value : '—'
+
+function Metric({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string }) {
+  return <div className="group rounded-xl border border-border/70 bg-background/45 p-3 backdrop-blur-sm transition-colors hover:border-foreground/15 hover:bg-accent/35"><div className="flex items-center gap-2 text-muted-foreground"><Icon className="h-3.5 w-3.5" /><span className="text-[10px] font-semibold uppercase tracking-[0.12em]">{label}</span></div><p className="mt-2 text-sm font-semibold tabular-nums text-foreground">{value}</p></div>
+}
 
 export function PF_WeatherNow() {
   const [query, setQuery] = React.useState('')
@@ -275,7 +292,9 @@ export function PF_WeatherNow() {
       {sortedCities.length > 0 ? (
         <div className={viewMode === 'grid' ? 'grid gap-3 md:grid-cols-2 xl:grid-cols-3' : 'space-y-2'}>
           {sortedCities.map((weather) => (
-            <Card key={weather.location} className={viewMode === 'list' ? 'p-3' : ''}>
+            <Card key={weather.location} className={`relative overflow-hidden ${viewMode === 'list' ? 'p-3' : 'p-0'}`}>
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/25" />
+              <div className={viewMode === 'list' ? 'relative' : 'relative p-4'}>
               <div className={viewMode === 'list' ? 'flex flex-wrap items-center gap-4' : ''}>
                 <div className="flex min-w-0 items-start justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2">
@@ -295,29 +314,28 @@ export function PF_WeatherNow() {
                   </div>
                 </div>
 
-                <div className={viewMode === 'list' ? 'ml-auto flex items-center gap-6' : 'mt-5'}>
+                <div className={viewMode === 'list' ? 'ml-auto flex flex-1 flex-wrap items-center justify-end gap-6' : 'mt-5'}>
                   <div className="flex items-center justify-between gap-5">
                     <div>
-                      <p className="text-3xl font-bold tracking-tight text-foreground">{displayTemp(weather.temp_c)}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">Feels like {displayTemp(weather.feelslike_c)}</p>
+                      <p className="text-4xl font-bold tracking-[-0.04em] text-foreground">{displayTemp(weather.temp_c)}</p>
+                      <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground"><Thermometer className="h-3.5 w-3.5" /> Feels like {displayTemp(weather.feelslike_c)}</p>
                     </div>
-                    <div className="flex flex-col items-end gap-1.5">
-                      {weatherIcon(weather.condition)}
+                    <div className="flex flex-col items-end gap-2">
+                      <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border/60 bg-background/55 shadow-sm backdrop-blur-md">{weatherIcon(weather.condition)}</span>
                       <Badge color="slate">{weather.condition}</Badge>
                     </div>
                   </div>
 
-                  <div className={viewMode === 'list' ? 'grid grid-cols-2 gap-2' : 'mt-4 grid grid-cols-2 gap-2'}>
-                    <div className="rounded-lg border border-border bg-muted/30 p-3">
-                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Humidity</p>
-                      <p className="mt-1 text-sm font-semibold text-foreground">{weather.humidity}%</p>
-                    </div>
-                    <div className="rounded-lg border border-border bg-muted/30 p-3">
-                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Wind</p>
-                      <p className="mt-1 text-sm font-semibold text-foreground">{weather.wind_kph.toFixed(1)} km/h</p>
-                    </div>
+                  <div className={viewMode === 'list' ? 'grid min-w-[300px] grid-cols-2 gap-2 xl:grid-cols-4' : 'mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3'}>
+                    <Metric icon={Droplets} label="Humidity" value={`${weather.humidity}%`} />
+                    <Metric icon={Wind} label="Wind" value={`${weather.wind_kph.toFixed(1)} km/h`} />
+                    <Metric icon={Gauge} label="Pressure" value={typeof weather.pressure_hpa === 'number' ? `${Math.round(weather.pressure_hpa)} hPa` : '—'} />
+                    <Metric icon={CloudSun} label="Cloud cover" value={typeof weather.cloud_cover === 'number' ? `${Math.round(weather.cloud_cover)}%` : '—'} />
+                    <Metric icon={Eye} label="Visibility" value={typeof weather.visibility_km === 'number' ? `${weather.visibility_km.toFixed(1)} km` : '—'} />
+                    <div className="grid grid-cols-2 gap-2"><Metric icon={Sunrise} label="Sunrise" value={timeOnly(weather.sunrise)} /><Metric icon={Sunset} label="Sunset" value={timeOnly(weather.sunset)} /></div>
                   </div>
                 </div>
+              </div>
               </div>
             </Card>
           ))}
