@@ -15,6 +15,8 @@ const manualChunks = (id: string) => {
   if (/node_modules\/(react|react-dom|react-router|react-router-dom)\//.test(id)) return 'vendor-react'
   if (id.includes('node_modules/@supabase/')) return 'vendor-supabase'
   if (id.includes('node_modules/lucide-react/')) return 'vendor-icons'
+  const reactIconsPack = id.match(/node_modules\/react-icons\/([^/]+)\//)?.[1]
+  if (reactIconsPack) return `icons-pack-${reactIconsPack}`
   return undefined
 }
 
@@ -105,10 +107,25 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globIgnores: ['**/icons-pack-*.js'],
         cleanupOutdatedCaches: true,
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
+          {
+            urlPattern: /\/assets\/icons-pack-.*\.js$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'appforge-icon-packs',
+              expiration: {
+                maxEntries: 8,
+                maxAgeSeconds: 60 * 60 * 24 * 30
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',

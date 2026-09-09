@@ -1,6 +1,6 @@
 import React from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { ArrowLeftRight } from 'lucide-react'
+import { ArrowLeftRight, Image as ImageIcon, Palette, PanelsTopLeft } from 'lucide-react'
 import { Layout } from './components/layout/Layout'
 import { PublicToolShell } from './components/public/PublicToolShell'
 import { PublicDashboard } from './components/dashboard/PublicDashboard'
@@ -47,9 +47,13 @@ import { updateSeo } from './lib/seo'
 
 const SettingsPage = React.lazy(() => import('./components/resources/Settings').then((module) => ({ default: module.SettingsPage })))
 const PeoplePage = React.lazy(() => import('./components/resources/People').then((module) => ({ default: module.PeoplePage })))
+const MarketingStudio = React.lazy(() => import('./components/resources/MarketingStudio'))
 const HuggingFaceGalleryPage = React.lazy(() => import('./components/public/HuggingFaceGalleryPage').then((module) => ({ default: module.HuggingFaceGalleryPage })))
 const PrivacyPolicyPage = React.lazy(() => import('./components/public/LegalPages').then((module) => ({ default: module.PrivacyPolicyPage })))
 const TermsOfServicePage = React.lazy(() => import('./components/public/LegalPages').then((module) => ({ default: module.TermsOfServicePage })))
+const FaviconStudio = React.lazy(() => import('./components/public/FaviconStudio'))
+const SvgIconsBrowser = React.lazy(() => import('./components/public/SvgIconsBrowser'))
+const LandingBuilder = React.lazy(() => import('./components/public/LandingBuilder'))
 
 const defaultSettings = { theme: 'system' as const }
 const defaultState: AppState = {
@@ -170,6 +174,9 @@ function App() {
     if (location.pathname === '/apps/scrapper-pro' || location.pathname === '/pf-scrapper-pro') return <PublicToolShell toolName="Scrapper Pro" toolIcon={<ScrapperProIcon />}><PF_ScrapperPro /></PublicToolShell>
     if (location.pathname === '/apps/weather-now' || location.pathname === '/pf-weather-now') return <PublicToolShell toolName="Weather Now" toolIcon={<WeatherNowIcon />}><PF_WeatherNow /></PublicToolShell>
     if (location.pathname === '/apps/any-converter') return <PublicToolShell toolName="Any Converter" toolIcon={<ArrowLeftRight className="h-4 w-4" />}><AnyToAnyConverter /></PublicToolShell>
+    if (location.pathname === '/apps/favicon-studio') return <PublicToolShell toolName="Favicon Studio" toolIcon={<ImageIcon className="h-4 w-4" />}>{lazyPage(<FaviconStudio />)}</PublicToolShell>
+    if (location.pathname === '/apps/svg-icons') return <PublicToolShell toolName="SVG Icons" toolIcon={<Palette className="h-4 w-4" />}>{lazyPage(<SvgIconsBrowser />)}</PublicToolShell>
+    if (location.pathname === '/apps/landing-builder') return <PublicToolShell toolName="Landing Builder" toolIcon={<PanelsTopLeft className="h-4 w-4" />}>{lazyPage(<LandingBuilder />)}</PublicToolShell>
     if (location.pathname === '/apps/ai-dragon-arena' || location.pathname === '/pf-ai-dragon-arena') return <PublicToolShell toolName="Story Studio" toolIcon={<DragonArenaIcon className="h-4 w-4" />}><PF_GuestDragonArena /></PublicToolShell>
   }
 
@@ -197,6 +204,10 @@ function App() {
         <Route path="/apps/dns-txt-checker" element={<PF_DnsTxtChecker />} />
         <Route path="/apps/any-converter" element={<AnyToAnyConverter />} />
         <Route path="/apps/media-vault" element={<PF_UserMediaVault />} />
+        <Route path="/apps/favicon-studio" element={lazyPage(<FaviconStudio />)} />
+        <Route path="/apps/svg-icons" element={lazyPage(<SvgIconsBrowser />)} />
+        <Route path="/apps/landing-builder" element={lazyPage(<LandingBuilder />)} />
+        <Route path="/marketing" element={lazyPage(<MarketingStudio />)} />
         <Route path="/settings" element={lazyPage(<SettingsPage state={state} setState={setState} />)} />
 
         {['json-formatter','uuid-generator','password-generator','token-generator','base64-tool','hash-tool','url-encoder','html-encoder','jwt-decoder','hex-converter'].map((slug) => <Route key={slug} path={`/apps/${slug}`} element={<UtilityWorkbench />} />)}
