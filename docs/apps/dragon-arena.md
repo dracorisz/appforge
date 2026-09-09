@@ -1,6 +1,6 @@
 # Dragon Arena
 
-A turn-based fantasy adventure with a Hugging Face-powered game master and scene generator. Signed-in runs persist to AppForge; guest mode allows one browser-local AI turn per UTC day.
+A turn-based fantasy adventure with a Hugging Face-powered game master and scene generator. Signed-in runs persist to AppForge; guest mode allows one browser-local turn per UTC day.
 
 ## Routes
 
@@ -14,25 +14,36 @@ A turn-based fantasy adventure with a Hugging Face-powered game master and scene
 3. Signed-in turns persist to `dragon_arena_turns` and update the active session.
 4. `POST /api/dragon-image` generates a cinematic scene from the latest narrative.
 5. Generated scenes persist to `dragon_arena_assets`; turns/scenes contribute to points.
-6. The first three generated scene assets for each user are automatically marked public for the `/huggingface` showcase. Later assets remain owner-only unless explicitly published later.
+6. The first three generated scene assets for each user are automatically public showcase assets. Later assets remain owner-only unless explicitly published.
 
 ## Hugging Face game-master rotation
 
-Normal AppForge and guest traffic no longer depends on the shared OpenRouter free endpoint. `api/ai-game.js` calls the Hugging Face OpenAI-compatible router:
+Normal AppForge and guest traffic uses the Hugging Face OpenAI-compatible router:
 
 `https://router.huggingface.co/v1/chat/completions`
 
-Server tokens rotate through `HF_TOKEN_1`, `HF_TOKEN_2`, and `HF_TOKEN_3`. For each token the endpoint tries the model list until one succeeds.
+Server tokens rotate through `HF_TOKEN_1`, `HF_TOKEN_2`, and `HF_TOKEN_3`. For each token the endpoint tries the model list until one succeeds. Multiple tokens belonging to the same Hugging Face account can still share an account-level provider/credit limit, so model/provider policy rotation matters as much as token rotation.
 
 Default order:
 
-1. `Qwen/Qwen2.5-7B-Instruct-1M:cheapest` — primary long-context conversational model.
-2. `google/gemma-2-2b-it:cheapest` — compact instruction-following fallback.
-3. `openai/gpt-oss-120b:cheapest` — larger capability fallback routed through Hugging Face Inference Providers.
+1. `openai/gpt-oss-20b:fastest` — primary low-latency conversational model.
+2. `Qwen/Qwen2.5-7B-Instruct-1M:fastest` — long-context instruction-following fallback.
+3. `google/gemma-2-2b-it:fastest` — compact fallback.
+4. `openai/gpt-oss-120b:cheapest` — larger capability fallback.
 
 `HF_TEXT_MODEL` can prepend an environment-selected preferred model.
 
-A signed-in user can still supply a personal `sk-or-...` OpenRouter key. That personal request remains isolated from the shared Hugging Face pool and is not persisted server-side.
+A signed-in user can still supply a personal `sk-or-...` OpenRouter key. `api/ai-game.js` also accepts `x-hf-token` when a personal Hugging Face token is wired from the UI.
+
+### GM failure behavior
+
+- Every Hugging Face request has an 18-second timeout.
+- The endpoint exhausts token × model combinations before giving up on HF.
+- Provider errors are logged server-side without exposing tokens.
+- If all remote providers fail, Dragon Arena returns a clearly identified `appforge/local-continuity-fallback` narrative instead of stopping the game with an API-limit error.
+- The response includes `provider`, `model`, and `degraded` so the UI/telemetry can distinguish a real HF turn from local continuity fallback.
+
+The local fallback is continuity protection, not a replacement for Hugging Face; HF remains the primary game-master path.
 
 ## Hugging Face scene rotation
 
@@ -42,37 +53,27 @@ A signed-in user can still supply a personal `sk-or-...` OpenRouter key. That pe
 
 Default image order:
 
-1. `stabilityai/stable-diffusion-3-medium-diffusers` — primary Dragon Arena renderer.
+1. `black-forest-labs/FLUX.1-schnell` — primary fast fantasy scene renderer.
 2. `stabilityai/stable-diffusion-xl-base-1.0` — compatibility fallback.
 
-`HF_IMAGE_MODEL` can prepend a preferred compatible model. Each scene request rotates across both available server tokens and image models before it fails.
+The retired `stabilityai/stable-diffusion-3-medium-diffusers` default was removed after Hugging Face reported it unavailable/deprecated on this route.
 
-Newer provider-routed image models such as FLUX or Qwen Image are intentionally not mixed into the raw HF Inference request path yet because they may require a different Inference Provider contract. They should be added when the image endpoint moves to the provider SDK or a provider-specific REST implementation.
+`HF_IMAGE_MODEL` can prepend a preferred compatible model. Each scene request rotates across available server tokens and image models before failing. Image calls use a 45-second timeout.
 
-## Quotas and failure behavior
+## Quotas
 
-- Guest game: one AI turn per UTC day using browser localStorage; no account persistence, points, gallery or scene generation.
-- Signed-in owner-funded game: one AI turn per UTC day.
+- Guest game: one turn per UTC day using browser localStorage; no account persistence, points, private gallery or scene generation.
+- Signed-in owner-funded game: one turn per UTC day.
 - Signed-in owner-funded scene: one image turn per UTC day.
-- Personal OpenRouter key: bypasses the signed-in GM allowance for that user.
-- Personal Hugging Face token: bypasses the owner-funded image allowance for that scene request.
-- Provider/model failures rotate to the remaining model/token combinations.
-- If every shared GM provider attempt fails, the signed-in owner-funded turn is refunded and the UI receives a neutral temporary-unavailable message rather than exposing a provider rate-limit message.
-- If every image attempt fails, the owner-funded image turn is refunded.
+- Personal OpenRouter key: bypasses the signed-in shared GM allowance for that user.
+- Personal Hugging Face token: bypasses the owner-funded image allowance; the API also supports it for GM requests when the UI sends it.
+- Failed owner-funded image generation refunds the image turn.
 
 ## Public Hugging Face gallery
 
-`/huggingface` is public and uses the AppForge favicon/branding. It contains:
+`/huggingface` is public and uses AppForge branding. It contains the exact GM/image model rotations and a live generated-scene gallery.
 
-- the exact game-master model rotation;
-- the exact image model rotation;
-- a live public gallery of generated Dragon Arena scenes;
-- creator display name/avatar only when the creator profile is public;
-- up to three showcase scenes per user.
-
-Migration `20260909153000_dragon_arena_public_gallery.sql` installs a `before insert` trigger so a user's first three `scene` assets are automatically public, backfills the same rule for existing scenes, and exposes the capped `dragon_arena_public_gallery()` RPC to `anon` and `authenticated`. The RPC deliberately does not expose the creator's Supabase user ID.
-
-The signed-in Dragon Arena gallery remains owner-scoped via existing RLS and `listAssets()` behavior.
+Migration `20260909153000_dragon_arena_public_gallery.sql` installs the first-three-public showcase policy and exposes the capped `dragon_arena_public_gallery()` RPC to `anon` and `authenticated`. The signed-in Dragon Arena gallery remains owner-scoped via RLS and `listAssets()`.
 
 ## Image integrity
 
@@ -90,11 +91,11 @@ Generated image responses are validated before upload:
 HF_TOKEN_1=hf_...
 HF_TOKEN_2=hf_...        # optional
 HF_TOKEN_3=hf_...        # optional
-HF_TEXT_MODEL=Qwen/Qwen2.5-7B-Instruct-1M:cheapest  # optional preferred override
-HF_IMAGE_MODEL=stabilityai/stable-diffusion-3-medium-diffusers  # optional preferred override
+HF_TEXT_MODEL=openai/gpt-oss-20b:fastest              # optional preferred override
+HF_IMAGE_MODEL=black-forest-labs/FLUX.1-schnell      # optional preferred override
 ```
 
-Hugging Face tokens need permission to make calls to Inference Providers.
+Hugging Face tokens need permission to make calls to Inference Providers. Three tokens do not necessarily provide three independent quotas when they belong to the same HF account.
 
 ## Persistence
 
@@ -111,7 +112,7 @@ Hugging Face tokens need permission to make calls to Inference Providers.
 
 | File | Role |
 |---|---|
-| `api/ai-game.js` | Hugging Face-first GM endpoint with token/model rotation |
+| `api/ai-game.js` | Hugging Face-first GM endpoint with token/model/provider rotation + continuity fallback |
 | `api/dragon-image.js` | Hugging Face scene endpoint with token/model rotation |
 | `src/components/dashboard/PF_AIDragonArena.tsx` | Signed-in Dragon Arena UI |
 | `src/components/dashboard/PF_GuestDragonArena.tsx` | Guest one-turn UI |
