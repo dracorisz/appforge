@@ -26,7 +26,7 @@ jobs:
               p = Path(path)
               text = p.read_text()
               if old not in text:
-                  raise SystemExit(f'Expected source not found in {path}: {old[:80]!r}')
+                  raise SystemExit(f'Expected source not found in {path}: {old[:90]!r}')
               p.write_text(text.replace(old, new))
 
           replace(
@@ -35,26 +35,27 @@ jobs:
               "Promise.resolve({ ok: true, results: [] as ScrapperProResult[], nextPageToken: null, error: undefined } as YouTubeResponse)",
           )
 
-          replace(
-              'src/components/public/FaviconStudio.tsx',
-              "const escapeXml = (value: string) => value\n  .replaceAll('&', '&amp;')\n  .replaceAll('<', '&lt;')\n  .replaceAll('>', '&gt;')\n  .replaceAll('\\\"', '&quot;')\n  .replaceAll(\"'\", '&apos;')",
-              "const escapeXml = (value: string) => value\n  .replace(/&/g, '&amp;')\n  .replace(/</g, '&lt;')\n  .replace(/>/g, '&gt;')\n  .replace(/\\\"/g, '&quot;')\n  .replace(/'/g, '&apos;')",
-          )
+          favicon = 'src/components/public/FaviconStudio.tsx'
+          replace(favicon, ".replaceAll('&', '&amp;')", ".replace(/&/g, '&amp;')")
+          replace(favicon, ".replaceAll('<', '&lt;')", ".replace(/</g, '&lt;')")
+          replace(favicon, ".replaceAll('>', '&gt;')", ".replace(/>/g, '&gt;')")
+          replace(favicon, ".replaceAll('\\\"', '&quot;')", ".replace(/\\\"/g, '&quot;')")
+          replace(favicon, ".replaceAll(\"'\", '&apos;')", ".replace(/'/g, '&apos;')")
 
-          replace(
-              'src/components/public/LandingBuilder.tsx',
-              "const escapeHtml = (value: string) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('\\\"', '&quot;')",
-              "const escapeHtml = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\\\"/g, '&quot;')",
-          )
+          landing = 'src/components/public/LandingBuilder.tsx'
+          replace(landing, ".replaceAll('&', '&amp;')", ".replace(/&/g, '&amp;')")
+          replace(landing, ".replaceAll('<', '&lt;')", ".replace(/</g, '&lt;')")
+          replace(landing, ".replaceAll('>', '&gt;')", ".replace(/>/g, '&gt;')")
+          replace(landing, ".replaceAll('\\\"', '&quot;')", ".replace(/\\\"/g, '&quot;')")
 
+          marketing = 'src/components/resources/MarketingStudio.tsx'
           replace(
-              'src/components/resources/MarketingStudio.tsx',
+              marketing,
               "import { CheckCircle2, Clipboard, ExternalLink, Film, RefreshCw, Save, Send, Youtube } from 'lucide-react'",
               "import { CheckCircle2, Clipboard, ExternalLink, Film, Send, Youtube } from 'lucide-react'",
           )
-
           replace(
-              'src/components/resources/MarketingStudio.tsx',
+              marketing,
               "  const markPublished = (record: PublicationRecord) => {\n    if (!record.remoteUrl.trim()) {\n      setMessage('Add the published YouTube URL before marking the publication complete.')\n      return\n    }\n    const videoIdMatch = record.remoteUrl.match(/(?:v=|youtu\\.be\\/|shorts\\/)([A-Za-z0-9_-]{6,})/)\n    updatePublication(record.id, { status: 'published', remoteId: videoIdMatch?.[1] || record.remoteId, publishedAt: new Date().toISOString(), attempts: Math.max(record.attempts, 1) })\n    if (selectedDemo) updateDemo(selectedDemo.id, { status: 'published', publishedUrl: record.remoteUrl })",
               "  const markPublished = (record: PublicationRecord) => {\n    const remoteUrl = (record.remoteUrl || '').trim()\n    if (!remoteUrl) {\n      setMessage('Add the published YouTube URL before marking the publication complete.')\n      return\n    }\n    const videoIdMatch = remoteUrl.match(/(?:v=|youtu\\.be\\/|shorts\\/)([A-Za-z0-9_-]{6,})/)\n    updatePublication(record.id, { status: 'published', remoteId: videoIdMatch?.[1] || record.remoteId, remoteUrl, publishedAt: new Date().toISOString(), attempts: Math.max(record.attempts, 1) })\n    if (selectedDemo) updateDemo(selectedDemo.id, { status: 'published', publishedUrl: remoteUrl })",
           )
