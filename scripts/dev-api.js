@@ -21,8 +21,7 @@ async function loadHandlers() {
   for (const file of files) {
     try {
       const mod = await import(path.join(apiDir, file))
-      const route = `/api/${file.replace(/\.js$/, '')}`
-      handlers.set(route, mod.default)
+      handlers.set(file.replace(/\.js$/, ''), mod.default)
     } catch { /* skip broken routes */ }
   }
 }
@@ -56,6 +55,7 @@ const server = createServer(async (req, res) => {
     method: req.method,
     headers: req.headers,
     body,
+    query: Object.fromEntries(url.searchParams),
     url: url.pathname + url.search,
   }
 
@@ -67,7 +67,13 @@ const server = createServer(async (req, res) => {
       res.end(JSON.stringify(data))
       return this
     },
-    end(data) { res.end(typeof data === 'string' ? data : ''); return this },
+    end(data) { res.end(data === undefined ? undefined : (typeof data === 'string' || Buffer.isBuffer(data) ? data : Buffer.from(data))); return this },
+    send(data) {
+      if (data === undefined || data === null) { res.end(); return this }
+      if (typeof data === 'string' || Buffer.isBuffer(data)) { res.end(data); return this }
+      if (data instanceof Uint8Array || data instanceof ArrayBuffer) { res.end(Buffer.from(data)); return this }
+      return this.json(data)
+    },
   }
 
   try { await handler(vercelReq, vercelRes) }
