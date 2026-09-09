@@ -22,6 +22,7 @@ import {
   ColorPickerTool,
   PF_UserMediaVault,
 } from './components/dashboard'
+import { PF_GuestDragonArena } from './components/dashboard/PF_GuestDragonArena'
 import { SettingsPage } from './components/resources/Settings'
 import { PeoplePage } from './components/resources/People'
 import type { AppState, MiniApp } from './types'
@@ -47,18 +48,30 @@ import { updateSeo } from './lib/seo'
 const defaultSettings = { theme: 'system' as const }
 const defaultState: AppState = { plan: defaultPlan, article: defaultArticle, pitches: defaultPitches, sources: defaultSources, outreach: defaultOutreach, checklist: defaultChecklist, documentReadiness: defaultDocumentReadiness, messages: defaultMessages, settings: defaultSettings, miniApps: defaultMiniApps, versions: defaultVersions, favorites: [], recentApps: [] }
 
+const hydrateStoredState = (raw: string): AppState => {
+  const parsed = JSON.parse(raw) as Partial<AppState>
+  return {
+    ...defaultState,
+    ...parsed,
+    settings: { ...defaultState.settings, ...(parsed.settings || {}) },
+    favorites: Array.isArray(parsed.favorites) ? parsed.favorites : [],
+    recentApps: Array.isArray(parsed.recentApps) ? parsed.recentApps : [],
+    documentReadiness: Array.isArray(parsed.documentReadiness) ? parsed.documentReadiness : defaultDocumentReadiness,
+    messages: Array.isArray(parsed.messages) ? parsed.messages : defaultMessages,
+  }
+}
+
 function App() {
   const location = useLocation()
   const { user, loading } = useAuth()
   const [remoteReady, setRemoteReady] = React.useState(false)
   const [state, setState] = React.useState<AppState>(() => {
-    try { const raw = localStorage.getItem('appforge-workplan-v1'); if (raw) return JSON.parse(raw) } catch { /* ignore */ }
-    try { const raw = localStorage.getItem('projectforge-workplan-v1'); if (raw) return JSON.parse(raw) } catch { /* ignore */ }
+    try { const raw = localStorage.getItem('appforge-workplan-v1'); if (raw) return hydrateStoredState(raw) } catch { /* ignore */ }
+    try { const raw = localStorage.getItem('projectforge-workplan-v1'); if (raw) return hydrateStoredState(raw) } catch { /* ignore */ }
     return defaultState
   })
 
   React.useEffect(() => { updateSeo(location.pathname) }, [location.pathname])
-
   React.useEffect(() => { localStorage.setItem('appforge-workplan-v1', JSON.stringify(state)) }, [state])
 
   React.useEffect(() => {
@@ -104,12 +117,18 @@ function App() {
 
   const dashboard = <PublicDashboard state={state} onOpenApp={addToRecent} onToggleFavorite={toggleFavorite} />
   const requestedPath = `${location.pathname}${location.search}${location.hash}`
-  const isPublicScrapper = location.pathname === '/apps/scrapper-pro' || location.pathname === '/pf-scrapper-pro'
 
   if (location.pathname === '/privacy') return <PrivacyPolicyPage />
   if (location.pathname === '/terms') return <TermsOfServicePage />
-  if (isPublicScrapper && !user) return <PublicToolShell><PF_ScrapperPro /></PublicToolShell>
   if (location.pathname === '/login') return <LoginPage />
+
+  if (!user && !loading) {
+    if (location.pathname === '/apps/scrapper-pro' || location.pathname === '/pf-scrapper-pro') return <PublicToolShell><PF_ScrapperPro /></PublicToolShell>
+    if (location.pathname === '/apps/weather-now' || location.pathname === '/pf-weather-now') return <PublicToolShell><PF_WeatherNow /></PublicToolShell>
+    if (location.pathname === '/apps/any-converter') return <PublicToolShell><AnyToAnyConverter /></PublicToolShell>
+    if (location.pathname === '/apps/ai-dragon-arena' || location.pathname === '/pf-ai-dragon-arena') return <PublicToolShell><PF_GuestDragonArena /></PublicToolShell>
+  }
+
   if (loading || !user) return <LoginPage returnTo={requestedPath} />
 
   return (
