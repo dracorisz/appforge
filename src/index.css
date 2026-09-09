@@ -93,7 +93,6 @@
       0 12px 34px hsl(var(--glass-shadow) / 0.07);
   }
 
-  /* Media-heavy cards get a richer treatment without changing ordinary utility cards. */
   .surface-card.overflow-hidden:has(img) {
     position: relative;
     isolation: isolate;
@@ -128,6 +127,30 @@
     filter: saturate(1.03) contrast(1.02);
   }
 
+  /* Dragon Arena story art is a compact visual beat, not a second full-width gallery. */
+  figure:has(img[alt*="Dragon Arena scene"]) {
+    width: min(100%, 27rem) !important;
+    max-width: 27rem !important;
+    margin-inline: 0 auto !important;
+    border-radius: 0.85rem !important;
+  }
+
+  figure:has(img[alt*="Dragon Arena scene"]) > a {
+    height: 10.5rem !important;
+  }
+
+  figure:has(img[alt*="Dragon Arena scene"]) img {
+    width: 100% !important;
+    height: 10.5rem !important;
+    max-height: 10.5rem !important;
+    aspect-ratio: auto !important;
+    object-fit: cover !important;
+  }
+
+  figure:has(img[alt*="Dragon Arena scene"]) figcaption {
+    padding-block: 0.45rem !important;
+  }
+
   @media (hover: hover) and (pointer: fine) {
     .surface-card.overflow-hidden:has(img) {
       min-height: 15rem;
@@ -154,6 +177,19 @@
     .surface-card.overflow-hidden:has(img):hover > a:first-child::after,
     .surface-card.overflow-hidden:has(img):focus-within > a:first-child::after {
       opacity: 0.92;
+    }
+  }
+
+  @media (max-width: 640px) {
+    figure:has(img[alt*="Dragon Arena scene"]) {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    figure:has(img[alt*="Dragon Arena scene"]) > a,
+    figure:has(img[alt*="Dragon Arena scene"]) img {
+      height: 9rem !important;
+      max-height: 9rem !important;
     }
   }
 
