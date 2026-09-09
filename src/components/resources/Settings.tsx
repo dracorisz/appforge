@@ -10,6 +10,7 @@ import {
   KeyRound,
   Loader2,
   LockKeyhole,
+  Mail,
   MapPin,
   Monitor,
   Moon,
@@ -304,7 +305,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
             </div>
             <label className="mt-4 block"><input type="file" accept="image/*" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, 'avatar'); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 bg-background/45 px-3 py-2 text-xs font-medium text-foreground hover:bg-accent"><ImagePlus className="h-4 w-4" />{busy === 'avatar' ? 'Uploading…' : 'Change avatar'}</span></label>
             <label className="mt-2 block"><input type="file" accept="image/*" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, 'cover'); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 bg-background/45 px-3 py-2 text-xs font-medium text-foreground hover:bg-accent"><ImagePlus className="h-4 w-4" />{busy === 'cover' ? 'Uploading…' : 'Upload cover photo'}</span></label>
-            <p className="mt-3 text-xs leading-5 text-muted-foreground">Avatar, headline, GitHub handle, skills and bio can appear in People when your profile is public. Personal details below never appear there.</p>
+            <p className="mt-3 text-xs leading-5 text-muted-foreground">Choose exactly which collaboration fields appear in People. Account email remains private unless you explicitly enable and save a public email below.</p>
           </Card>
 
           <Card className="p-4">
@@ -313,6 +314,19 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
               <div className="grid gap-3 sm:grid-cols-2"><Input label="Display name" value={profile.display_name || ''} onChange={(e) => setProfile({ ...profile, display_name: e.target.value })} /><Input label="Username" value={profile.username || ''} onChange={(e) => setProfile({ ...profile, username: e.target.value })} placeholder="your-handle" /><Input label="Headline" value={profile.headline || ''} onChange={(e) => setProfile({ ...profile, headline: e.target.value })} placeholder="Frontend engineer · tool builder" /><Input label="GitHub username" value={profile.github_username || ''} onChange={(e) => setProfile({ ...profile, github_username: e.target.value })} placeholder="github-handle" /><Input label="Public location" value={profile.location || ''} onChange={(e) => setProfile({ ...profile, location: e.target.value })} placeholder="City / country only if you want" /><Input label="Website" value={profile.website || ''} onChange={(e) => setProfile({ ...profile, website: e.target.value })} placeholder="https://…" /></div>
               <Input label="Skills (comma separated)" value={skillsDraft} onChange={(e) => setSkillsDraft(e.target.value)} placeholder="React, TypeScript, Supabase" />
               <Textarea label="Bio" value={profile.bio || ''} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} rows={4} />
+
+              <div className="rounded-xl border border-border/70 bg-background/35 p-3">
+                <div className="text-xs font-semibold text-foreground">Visible profile fields</div>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">These switches affect People search and profile cards. Turning a field off keeps its saved value private from other users.</p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2 text-sm text-foreground">
+                  <label className="flex items-center gap-2"><input type="checkbox" checked={profile.show_skills !== false} onChange={(e) => setProfile({ ...profile, show_skills: e.target.checked })} /> Show skills</label>
+                  <label className="flex items-center gap-2"><input type="checkbox" checked={profile.show_website !== false} onChange={(e) => setProfile({ ...profile, show_website: e.target.checked })} /> Show website</label>
+                  <label className="flex items-center gap-2"><input type="checkbox" checked={profile.show_github !== false} onChange={(e) => setProfile({ ...profile, show_github: e.target.checked })} /> Show GitHub</label>
+                  <label className="flex items-center gap-2"><input type="checkbox" checked={Boolean(profile.show_email)} onChange={(e) => setProfile({ ...profile, show_email: e.target.checked, public_email: e.target.checked ? (profile.public_email || user?.email || '') : profile.public_email })} /> Show public email</label>
+                </div>
+                {profile.show_email && <div className="mt-3"><Input label="Public email" type="email" value={profile.public_email || ''} onChange={(e) => setProfile({ ...profile, public_email: e.target.value })} placeholder={user?.email || 'you@example.com'} /></div>}
+              </div>
+
               <div className="flex flex-col gap-2 text-sm text-foreground"><label className="flex items-center gap-2"><input type="checkbox" checked={profile.open_to_collaboration} onChange={(e) => setProfile({ ...profile, open_to_collaboration: e.target.checked })} /> Open to open-source collaboration</label><label className="flex items-center gap-2"><input type="checkbox" checked={profile.is_public} onChange={(e) => setProfile({ ...profile, is_public: e.target.checked })} /> Show my profile to other signed-in users</label></div>
               <Button onClick={() => void savePublicProfile()} disabled={busy === 'profile'}>{busy === 'profile' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Save public profile</Button>
             </div>}
@@ -320,8 +334,8 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
 
           <Card className="p-4 lg:col-span-2">
             <h2 className="text-sm font-semibold text-foreground">Public profile preview</h2>
-            <p className="mt-1 text-xs text-muted-foreground">This is exactly what other signed-in users see on the People page when your profile is public.</p>
-            {!profile?.is_public && <div className="mt-3 rounded-lg border border-border/70 bg-background/35 p-3 text-xs text-muted-foreground">Your profile is currently private. Turn on “Show my profile to other signed-in users” to preview it here.</div>}
+            <p className="mt-1 text-xs text-muted-foreground">This preview follows the same field-visibility rules used on People.</p>
+            {!profile?.is_public && <div className="mt-3 rounded-lg border border-border/70 bg-background/35 p-3 text-xs text-muted-foreground">Your profile is currently private. Turn on “Show my profile to other signed-in users” to make it visible in People.</div>}
             <div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-4">
               <div className="flex items-start gap-3">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-muted text-muted-foreground">
@@ -337,18 +351,19 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
                 </div>
               </div>
               {profile?.bio && <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">{profile.bio}</p>}
-              {(profile?.skills || []).length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{(profile?.skills || []).slice(0, 8).map((skill) => <span key={skill} className="rounded-full border border-border/70 bg-background/45 px-2 py-0.5 text-[11px] text-muted-foreground">{skill}</span>)}</div>}
+              {profile?.show_skills !== false && (profile?.skills || []).length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{(profile?.skills || []).slice(0, 8).map((skill) => <span key={skill} className="rounded-full border border-border/70 bg-background/45 px-2 py-0.5 text-[11px] text-muted-foreground">{skill}</span>)}</div>}
               <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
                 {profile?.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {profile.location}</span>}
-                {profile?.github_username && <span className="inline-flex items-center gap-1"><Github className="h-3.5 w-3.5" /> GitHub</span>}
-                {profile?.website && <span className="inline-flex items-center gap-1"><ExternalLink className="h-3.5 w-3.5" /> Website</span>}
+                {profile?.show_github !== false && profile?.github_username && <span className="inline-flex items-center gap-1"><Github className="h-3.5 w-3.5" /> GitHub</span>}
+                {profile?.show_website !== false && profile?.website && <span className="inline-flex items-center gap-1"><ExternalLink className="h-3.5 w-3.5" /> Website</span>}
+                {profile?.show_email && profile?.public_email && <span className="inline-flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> {profile.public_email}</span>}
               </div>
             </div>
             <div className="mt-3 grid gap-2 text-xs text-muted-foreground">
-              <div className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-green-500" /> Display name, username, headline, bio, skills, location, GitHub, website</div>
-              <div className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-green-500" /> Avatar and gallery images</div>
-              <div className="flex items-center gap-2"><LockKeyhole className="h-3.5 w-3.5 text-red-500" /> Private personal information (sex, birth date, phone, address, notes)</div>
-              <div className="flex items-center gap-2"><LockKeyhole className="h-3.5 w-3.5 text-red-500" /> Email address and account ID</div>
+              <div className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-green-500" /> Display name, username, headline, bio and location follow profile-level visibility.</div>
+              <div className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-green-500" /> Skills, GitHub, website and public email follow the switches above.</div>
+              <div className="flex items-center gap-2"><LockKeyhole className="h-3.5 w-3.5 text-red-500" /> Private personal information (sex, birth date, phone, address, notes) is never shown.</div>
+              <div className="flex items-center gap-2"><LockKeyhole className="h-3.5 w-3.5 text-red-500" /> Account email stays private unless you explicitly publish an email.</div>
             </div>
           </Card>
 
