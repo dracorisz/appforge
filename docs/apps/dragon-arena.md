@@ -4,12 +4,13 @@ A turn-based fantasy adventure with a Hugging Face-powered game master and scene
 
 ## Current app version
 
-**Dragon Arena 1.6.0** — Hugging Face-first GM rotation, provider-aware scene generation, atomic asset persistence, public showcase metadata, compact theme-aware story UI, and Media Vault linkage.
+**Dragon Arena 1.6.1** — Hugging Face-first GM rotation, provider-aware scene generation, atomic asset persistence, public showcase metadata, compact theme-aware story UI, Media Vault linkage, and request-level Generate Scene telemetry.
 
 ## Routes
 
 - Game: `/apps/ai-dragon-arena` (legacy `/pf-ai-dragon-arena` redirects here)
 - Public Hugging Face integration + generated showcase: `/huggingface`
+- Legacy `/workspace` now redirects to `/apps`; the duplicate app renderer was retired so Dragon Arena metadata/icon rendering has one canonical dashboard path.
 
 ## Gameplay loop
 
@@ -79,6 +80,20 @@ Provider-specific adapters currently cover:
 - Replicate prediction flow using `Prefer: wait`;
 - Together/Nscale OpenAI-style image-generation responses;
 - raw HF Inference image bytes as a compatibility route.
+
+Hugging Face's current Inference Providers guidance recommends provider `auto` for automatic provider selection/failover. AppForge currently performs its own provider-aware rotation using the live model mapping so it can preserve explicit provider/model telemetry and keep the existing no-extra-runtime-dependency deployment shape.
+
+### Generate Scene telemetry
+
+Dragon Arena 1.6.1 adds request-level diagnostics without exposing credentials:
+
+- every `/api/dragon-image` response gets an `x-appforge-request-id` header;
+- JSON responses include `requestId` and `durationMs`;
+- successful responses include the selected model and provider;
+- exhausted-provider failures include a sanitized `attempts` array with model, provider name and HTTP/status code only;
+- server logs attach the same request ID so a browser failure can be correlated with one server request.
+
+No Hugging Face token, bearer token, Supabase token, prompt credential, or provider secret is returned in telemetry.
 
 The retired `stabilityai/stable-diffusion-3-medium-diffusers` default remains removed after Hugging Face stopped supporting it on the old route.
 
@@ -183,7 +198,7 @@ Hugging Face tokens need permission to make calls to Inference Providers. Three 
 | File | Role |
 |---|---|
 | `api/ai-game.js` | Hugging Face-first GM endpoint with token/model rotation + continuity fallback |
-| `api/dragon-image.js` | Provider-aware Hugging Face scene endpoint with atomic storage + asset-ledger persistence |
+| `api/dragon-image.js` | Provider-aware Hugging Face scene endpoint with atomic storage, asset-ledger persistence and sanitized request telemetry |
 | `src/components/dashboard/PF_AIDragonArena.tsx` | Theme-aware signed-in story UI with compact inline latest scene |
 | `src/components/dashboard/PF_GuestDragonArena.tsx` | Guest one-turn UI |
 | `src/components/public/HuggingFaceGalleryPage.tsx` | Public HF integration/model/provider/metadata/gallery page |
