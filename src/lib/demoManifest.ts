@@ -28,5 +28,5 @@ export function getDemoCaptureManifest(): DemoCaptureTarget[] {
   return TARGETS.filter((target) => {
     const app = registry.get(target.appId)
     return Boolean(app && app.route === target.route && ['beta', 'launched'].includes(app.status))
-  })
+  }).map((target) => ({ ...target, viewports: [...target.viewports] }))
 }
