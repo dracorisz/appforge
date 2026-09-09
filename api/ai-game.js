@@ -13,8 +13,9 @@ const HF_TEXT_MODELS = [process.env.HF_TEXT_MODEL, ...DEFAULT_HF_TEXT_MODELS]
 const SERVER_HF_TOKENS = [process.env.HF_TOKEN_1, process.env.HF_TOKEN_2, process.env.HF_TOKEN_3].filter(Boolean)
 let hfTokenIndex = 0
 
-const orderedHfTokens = (personalToken = '') => {
-  if (personalToken) return [personalToken]
+const orderedHfTokens = (personalTokens = []) => {
+  const validPersonal = Array.isArray(personalTokens) ? personalTokens.filter((token) => typeof token === 'string' && token.startsWith('hf_')).slice(0, 3) : []
+  if (validPersonal.length) return [...new Set(validPersonal)]
   if (!SERVER_HF_TOKENS.length) return []
   const start = hfTokenIndex % SERVER_HF_TOKENS.length
   hfTokenIndex += 1
@@ -73,7 +74,7 @@ const callHfGameMaster = async ({ hfToken, model, instructions, input }) => {
       body: JSON.stringify({
         model,
         messages: [{ role: 'system', content: instructions }, { role: 'user', content: input }],
-        temperature: 0.9,
+        temperature: 0.88,
         max_tokens: 300,
       }),
     })
@@ -102,13 +103,13 @@ const callPersonalOpenRouter = async ({ apiKey, instructions, input }) => {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'HTTP-Referer': process.env.VITE_APP_URL || 'https://www.sstoken.space',
-        'X-OpenRouter-Title': process.env.VITE_APP_NAME || 'AppForge Dragon Arena',
+        'X-OpenRouter-Title': process.env.VITE_APP_NAME || 'AppForge Story Studio',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model: process.env.OPENROUTER_MODEL || 'openrouter/free',
         messages: [{ role: 'system', content: instructions }, { role: 'user', content: input }],
-        temperature: 0.9,
+        temperature: 0.88,
         max_tokens: 300,
       }),
     })
@@ -122,7 +123,7 @@ const callPersonalOpenRouter = async ({ apiKey, instructions, input }) => {
   }
 }
 
-const localFallback = ({ action, turn }) => {
+const localFallback = ({ action, turn, builderMode }) => {
   const clean = action.trim().replace(/\s+/g, ' ').slice(0, 140)
   const turnNo = Math.max(1, Number(turn) || 1)
   const motifs = [
@@ -139,13 +140,18 @@ const localFallback = ({ action, turn }) => {
   ]
   const motif = motifs[(turnNo + clean.length) % motifs.length]
   const consequence = consequences[(turnNo * 3 + clean.length) % consequences.length]
-  return {
-    parsed: {
-      narrative: `You ${clean.charAt(0).toLowerCase()}${clean.slice(1)}. ${motif}\n\n${consequence}`,
-      choices: ['Inspect rune', 'Push forward', 'Hold and listen'],
-    },
-    model: 'appforge/local-continuity-fallback',
+  const narrative = builderMode === 'comics'
+    ? `${motif} You ${clean.charAt(0).toLowerCase()}${clean.slice(1)}. ${consequence}`
+    : `You ${clean.charAt(0).toLowerCase()}${clean.slice(1)}. ${motif}\n\n${consequence}`
+  return { parsed: { narrative, choices: ['Inspect rune', 'Push forward', 'Hold and listen'] }, model: 'appforge/local-continuity-fallback' }
+}
+
+const promptForMode = (builderMode) => {
+  const common = `Preserve continuity. React directly to the latest player/director action. Each turn must create one concrete consequence, discovery, danger, reward, relationship shift, clue, or twist. Never decide the user's next action. Keep recurring characters, places, objects, costs, clues, injuries, promises, and visual motifs consistent. Give exactly three distinct action choices, each 2-6 words, starting with a strong verb. Return ONLY valid JSON: {"narrative":"...","choices":["...","...","..."]}. No markdown.`
+  if (builderMode === 'comics') {
+    return `You are the story director for AppForge Comics Builder, an interactive graphic-novel game. ${common} Write 30-60 words total in 1-2 short paragraphs. Favor visible action, expressions, poses, staging, lighting, camera-readable moments, and concise dialogue over exposition. The narrative must describe one panel-worthy beat that can be illustrated immediately.`
   }
+  return `You are the story director for AppForge Novel Builder, an interactive choice-driven fiction game. ${common} Write 45-85 words total in 2-3 short paragraphs. Favor character intention, sensory detail, tension, readable dialogue, and forward motion over lore dumps. Keep sentences compact and make every turn feel like a scene beat rather than a summary.`
 }
 
 export default async function handler(req, res) {
@@ -157,33 +163,35 @@ export default async function handler(req, res) {
   const token = getBearer(req)
   const user = await authenticate(token)
   const guestMode = !user?.id && String(req.headers?.['x-appforge-guest'] || '') === 'dragon-arena'
-  if (!user?.id && !guestMode) return res.status(401).json({ error: 'Sign in to use Dragon Arena.' })
+  if (!user?.id && !guestMode) return res.status(401).json({ error: 'Sign in to use Story Studio.' })
 
   const personalOpenRouterKey = String(req.headers?.['x-openrouter-key'] || '').trim()
   const usingPersonalOpenRouter = Boolean(personalOpenRouterKey.startsWith('sk-or-')) && !guestMode
-  const personalHfHeader = String(req.headers?.['x-hf-token'] || '').trim()
-  const personalHfToken = personalHfHeader.startsWith('hf_') ? personalHfHeader : ''
-  const hfTokens = orderedHfTokens(personalHfToken)
+  const personalHfHeader = String(req.headers?.['x-hf-tokens'] || req.headers?.['x-hf-token'] || '')
+  const personalHfTokens = personalHfHeader.split(',').map((value) => value.trim()).filter((value) => value.startsWith('hf_')).slice(0, 3)
+  const usingPersonalHf = personalHfTokens.length > 0
+  const hfTokens = orderedHfTokens(personalHfTokens)
 
-  const { action, history = [], turn = 1 } = req.body || {}
+  const { action, history = [], turn = 1, builderMode = 'novel' } = req.body || {}
+  const normalizedMode = builderMode === 'comics' ? 'comics' : 'novel'
   if (typeof action !== 'string' || action.trim().length < 2) return res.status(400).json({ error: 'Choose or enter a meaningful action first.' })
 
-  let sharedQuotaAvailable = guestMode || usingPersonalOpenRouter || Boolean(personalHfToken)
+  let sharedQuotaAvailable = guestMode || usingPersonalOpenRouter || usingPersonalHf
   if (!guestMode && !sharedQuotaAvailable) {
     try {
       sharedQuotaAvailable = await consumeDailyRequest(token)
     } catch (error) {
-      console.error('Dragon Arena quota check failed; continuing locally', error)
+      console.error('Story Studio quota check failed; continuing locally', error)
       sharedQuotaAvailable = false
     }
   }
 
   const recent = Array.isArray(history)
-    ? history.slice(-6).map((entry) => `${entry?.role === 'player' ? 'PLAYER' : 'GAME MASTER'}: ${String(entry?.text || '').slice(0, 700)}`).join('\n')
+    ? history.slice(-6).map((entry) => `${entry?.role === 'player' ? 'USER' : 'STORY DIRECTOR'}: ${String(entry?.text || '').slice(0, 700)}`).join('\n')
     : ''
 
-  const instructions = `You are the Game Master for WildDragons.ai Dragon Arena, a fast, choice-driven fantasy adventure. React directly to the player's latest action and preserve continuity. Each turn must create one clear consequence, discovery, danger, reward, or twist. Never decide the player's next action. Keep recurring runes, creatures, locations, costs, and clues consistent. Write 45-85 words total, split into 2 or 3 short paragraphs. Prefer vivid concrete sentences over lore exposition. Make something change every turn. Then give exactly three distinct action choices, each 2-6 words, starting with a strong verb. Return ONLY valid JSON: {"narrative":"...","choices":["...","...","..."]}. No markdown.`
-  const input = `TURN: ${Number(turn) || 1}\nRECENT HISTORY:\n${recent}\n\nLATEST PLAYER ACTION: ${action.trim().slice(0, 700)}`
+  const instructions = promptForMode(normalizedMode)
+  const input = `MODE: ${normalizedMode.toUpperCase()}\nTURN: ${Number(turn) || 1}\nRECENT STORY:\n${recent}\n\nLATEST USER ACTION/DIRECTION: ${action.trim().slice(0, 700)}`
 
   let result = null
   let provider = 'huggingface'
@@ -206,7 +214,7 @@ export default async function handler(req, res) {
       for (const model of HF_TEXT_MODELS) {
         try {
           result = await callHfGameMaster({ hfToken, model, instructions, input })
-          provider = personalHfToken ? 'huggingface-personal' : 'huggingface'
+          provider = usingPersonalHf ? 'huggingface-personal' : 'huggingface'
           attempts.push({ model, status: 'ok' })
           break
         } catch (error) {
@@ -218,21 +226,22 @@ export default async function handler(req, res) {
   }
 
   if (!result) {
-    if (sharedQuotaAvailable) console.error('Dragon Arena provider rotation exhausted; using local fallback', lastError, attempts)
-    result = localFallback({ action, turn })
+    if (sharedQuotaAvailable) console.error('Story Studio provider rotation exhausted; using local fallback', lastError, attempts)
+    result = localFallback({ action, turn, builderMode: normalizedMode })
     provider = 'local-fallback'
   }
 
   return res.status(200).json({
     narrative: result.parsed.narrative,
-    choices: result.parsed.choices.length === 3 ? result.parsed.choices : ['Trace the rune', 'Advance carefully', 'Hold and listen'],
+    choices: result.parsed.choices.length === 3 ? result.parsed.choices : ['Trace the clue', 'Advance carefully', 'Hold and listen'],
     model: result.model,
     provider,
     degraded: provider === 'local-fallback',
     dailyRequestUsed: false,
     sharedAiQuotaAvailable: Boolean(sharedQuotaAvailable),
-    personalKeyUsed: usingPersonalOpenRouter || Boolean(personalHfToken),
+    personalKeyUsed: usingPersonalOpenRouter || usingPersonalHf,
     guestMode,
+    builderMode: normalizedMode,
     resetAt: '00:00 UTC',
   })
 }
