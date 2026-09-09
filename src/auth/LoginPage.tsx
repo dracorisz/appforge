@@ -1,13 +1,13 @@
 import React from 'react'
-import { ArrowLeftRight, ArrowRight, Check, Cloud, Github, HeartHandshake, Lock, Search, ShieldCheck, Sparkles, Swords } from 'lucide-react'
+import { ArrowLeftRight, ArrowRight, Check, Cloud, Github, Lock, Search, ShieldCheck, Sparkles } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { BuildBadge, Button } from '@/components/ui'
 import { getAllApps } from '@/lib/registry'
 import { useAuth } from './AuthProvider'
 import { consumeReturnPath, normalizeReturnPath } from './returnPath'
 
-const guestApps = [
-  { label: 'Dragon Arena', path: '/apps/ai-dragon-arena', icon: Swords },
+const publicEntries = [
+  { label: 'Hugging Face Gallery', path: '/huggingface', logo: 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg' },
   { label: 'Weather Now', path: '/apps/weather-now', icon: Cloud },
   { label: 'Any Converter', path: '/apps/any-converter', icon: ArrowLeftRight },
   { label: 'Scrapper Pro', path: '/apps/scrapper-pro', icon: Search },
@@ -42,21 +42,17 @@ export function LoginPage({ returnTo = '/' }: { returnTo?: string }) {
           <section className="max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/55 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-xl"><Sparkles className="h-3.5 w-3.5" /> Public beta · open development</div>
             <h1 className="mt-5 text-4xl font-semibold tracking-[-0.035em] sm:text-5xl lg:mt-4 lg:text-5xl xl:text-6xl">Useful tools,<span className="block text-muted-foreground">kept calm and connected.</span></h1>
-            <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg lg:mt-3 lg:text-base lg:leading-6 xl:text-lg xl:leading-7">Try four AppForge tools without an account. Sign in when you want synced profile data, favorites, history, private storage and the full workspace.</p>
+            <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg lg:mt-3 lg:text-base lg:leading-6 xl:text-lg xl:leading-7">Explore the public Hugging Face showcase and three AppForge tools without an account. Sign in when you want synced profile data, story projects, favorites, history and private storage.</p>
 
-            <div className="mt-7 grid max-w-xl gap-3 sm:grid-cols-3 lg:mt-5">{[[String(apps.length), 'registered apps'], [String(liveCount), 'active or building'], ['4', 'guest tools']].map(([value, label]) => <div key={label} className="surface-card rounded-xl border p-3.5 lg:p-3"><div className="text-xl font-semibold tracking-tight">{value}</div><div className="mt-0.5 text-xs text-muted-foreground">{label}</div></div>)}</div>
+            <div className="mt-7 grid max-w-xl gap-3 sm:grid-cols-3 lg:mt-5">{[[String(apps.length), 'registered apps'], [String(liveCount), 'active or building'], ['4', 'public entries']].map(([value, label]) => <div key={label} className="surface-card rounded-xl border p-3.5 lg:p-3"><div className="text-xl font-semibold tracking-tight">{value}</div><div className="mt-0.5 text-xs text-muted-foreground">{label}</div></div>)}</div>
 
             <div className="mt-8 lg:mt-5">
-              <div className="mb-2 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Try now</div>
-              <div className="grid max-w-xl gap-2 sm:grid-cols-2">{guestApps.map(({ label, path, icon: Icon }) => <Link key={path} to={path} className="inline-flex items-center gap-2 rounded-lg border border-border/70 bg-background/70 px-3 py-2.5 text-sm font-medium shadow-sm hover:border-foreground/20 hover:bg-accent/65"><Icon className="h-4 w-4" /> {label}<ArrowRight className="ml-auto h-3.5 w-3.5 text-muted-foreground" /></Link>)}</div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <a href="https://github.com/dracorisz/appforge" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border/70 bg-background/50 px-4 py-2 text-sm font-medium text-muted-foreground hover:border-foreground/20 hover:text-foreground"><Github className="h-4 w-4" /> Follow development</a>
-                <Link to="/huggingface" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border/70 bg-background/50 px-4 py-2 text-sm font-medium text-muted-foreground hover:border-foreground/20 hover:text-foreground"><Sparkles className="h-4 w-4" /> Hugging Face Gallery</Link>
-                <a href="https://paypal.me/dracorisz" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border/70 bg-background/50 px-4 py-2 text-sm font-medium text-muted-foreground hover:border-foreground/20 hover:text-foreground"><HeartHandshake className="h-4 w-4" /> Support AppForge</a>
-              </div>
+              <div className="mb-2 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Explore</div>
+              <div className="grid max-w-xl gap-2 sm:grid-cols-2">{publicEntries.map(({ label, path, icon: Icon, logo }) => <Link key={path} to={path} className="inline-flex items-center gap-2 rounded-lg border border-border/70 bg-background/70 px-3 py-2.5 text-sm font-medium shadow-sm hover:border-foreground/20 hover:bg-accent/65">{logo ? <img src={logo} alt="Hugging Face" className="h-5 w-5 object-contain" /> : Icon ? <Icon className="h-4 w-4" /> : null} {label}<ArrowRight className="ml-auto h-3.5 w-3.5 text-muted-foreground" /></Link>)}</div>
+              <div className="mt-2 flex flex-wrap gap-2"><a href="https://github.com/dracorisz/appforge" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border/70 bg-background/50 px-4 py-2 text-sm font-medium text-muted-foreground hover:border-foreground/20 hover:text-foreground"><Github className="h-4 w-4" /> Follow development</a></div>
             </div>
 
-            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground lg:mt-4 lg:text-xs xl:text-sm"><span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5" /> Guest tools use local/browser state</span><span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5" /> Google + Supabase identity</span><span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5" /> Installable PWA shell</span></div>
+            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground lg:mt-4 lg:text-xs xl:text-sm"><span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5" /> Public tools use local/browser state</span><span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5" /> Google + Supabase identity</span><span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5" /> Installable PWA shell</span></div>
           </section>
 
           <section className="surface-card rounded-2xl border p-5 shadow-xl sm:p-6 lg:p-5">
