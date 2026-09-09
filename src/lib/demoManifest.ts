@@ -14,6 +14,7 @@ export interface DemoCaptureTarget {
 const TARGETS: DemoCaptureTarget[] = [
   { appId: 'scrapper-pro', route: '/apps/scrapper-pro', viewports: ['desktop', 'mobile'], requiresAuth: false, fixture: 'seeded-safe', note: 'Use public search content only; never capture private Media Vault rows.' },
   { appId: 'weather-now', route: '/apps/weather-now', viewports: ['desktop', 'mobile'], requiresAuth: false, fixture: 'seeded-safe', note: 'Use a generic city search with no personal location data.' },
+  { appId: 'any-converter', route: '/apps/any-converter', viewports: ['desktop', 'mobile'], requiresAuth: false, fixture: 'seeded-safe', note: 'Use synthetic conversion data only.' },
   { appId: 'ai-dragon-arena', route: '/apps/ai-dragon-arena', viewports: ['desktop', 'mobile'], requiresAuth: false, fixture: 'seeded-safe', note: 'Capture Story Studio with demo-safe fantasy content only.' },
   { appId: 'image-labeler', route: '/apps/image-labeler', viewports: ['desktop'], requiresAuth: true, fixture: 'empty-safe' },
   { appId: 'creator-svg', route: '/apps/creator-svg', viewports: ['desktop'], requiresAuth: true, fixture: 'seeded-safe' },
