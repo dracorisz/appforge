@@ -17,14 +17,15 @@ export type PublicDragonAsset = {
 }
 
 const GAME_MASTER_MODELS = [
-  { id: 'Qwen/Qwen2.5-7B-Instruct-1M:cheapest', role: 'Primary narrative model', note: 'Long-context conversational instruction following.' },
-  { id: 'google/gemma-2-2b-it:cheapest', role: 'Fast fallback', note: 'Compact instruction-tuned model for concise turns.' },
-  { id: 'openai/gpt-oss-120b:cheapest', role: 'Capability fallback', note: 'Large open-weight conversational model routed through Hugging Face providers.' },
+  { id: 'openai/gpt-oss-20b:fastest', role: 'Primary narrative model', note: 'Fast Hugging Face Inference Providers route for normal game turns.' },
+  { id: 'Qwen/Qwen2.5-7B-Instruct-1M:fastest', role: 'Long-context fallback', note: 'Strong instruction-following model for continuity-heavy turns.' },
+  { id: 'google/gemma-2-2b-it:fastest', role: 'Compact fallback', note: 'Small instruction-tuned fallback when larger providers are unavailable.' },
+  { id: 'openai/gpt-oss-120b:cheapest', role: 'Capability fallback', note: 'Larger open-weight model tried after the faster options.' },
 ]
 
 const IMAGE_MODELS = [
-  { id: 'stabilityai/stable-diffusion-3-medium-diffusers', role: 'Primary scene renderer', note: 'HF Inference-compatible cinematic text-to-image generation.' },
-  { id: 'stabilityai/stable-diffusion-xl-base-1.0', role: 'Compatibility fallback', note: 'Broad Stable Diffusion XL fallback for scene generation.' },
+  { id: 'black-forest-labs/FLUX.1-schnell', role: 'Primary scene renderer', note: 'Fast text-to-image model used for Dragon Arena fantasy scenes.' },
+  { id: 'stabilityai/stable-diffusion-xl-base-1.0', role: 'Compatibility fallback', note: 'Stable Diffusion XL fallback for the HF Inference image route.' },
 ]
 
 const publicAssetUrl = (asset: PublicDragonAsset) => {
@@ -74,7 +75,7 @@ export function HuggingFaceGalleryPage() {
         <section className="rounded-2xl border border-border/70 bg-card/70 p-5 shadow-sm">
           <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground"><Sparkles className="h-4 w-4" /> Hugging Face powered generation</div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Dragon Arena × Hugging Face</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Dragon Arena uses Hugging Face for both the AI game-master rotation and cinematic scene generation. Each adventurer’s first three generated scenes become public showcase assets automatically; later scenes remain owner-only unless publishing controls are added or explicitly used.</p>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Dragon Arena uses Hugging Face for both the primary game-master rotation and cinematic scene generation. Requests rotate across configured server tokens and model/provider policies. If every remote GM route is unavailable, the game keeps continuity with a clearly identified local fallback instead of ending on a provider-limit error.</p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Link to="/" className="inline-flex items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm font-medium hover:bg-accent"><ArrowLeft className="h-4 w-4" /> Back to AppForge</Link>
             <a href="https://huggingface.co/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm font-medium hover:bg-accent"><ExternalLink className="h-4 w-4" /> Hugging Face</a>
@@ -84,13 +85,13 @@ export function HuggingFaceGalleryPage() {
         <section className="grid gap-4 lg:grid-cols-2">
           <Card className="p-4">
             <div className="flex items-center gap-2 text-sm font-semibold"><MessageSquareText className="h-4 w-4" /> Game-master rotation</div>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">Requests rotate through server Hugging Face tokens, then through these models until one succeeds. `HF_TEXT_MODEL` can prepend an override.</p>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">Requests rotate through `HF_TOKEN_1/2/3`, then through these models until one succeeds. Policy suffixes deliberately vary provider routing. `HF_TEXT_MODEL` can prepend an override.</p>
             <div className="mt-3 space-y-2">{GAME_MASTER_MODELS.map((model, index) => <div key={model.id} className="rounded-xl border border-border/70 bg-background/35 p-3"><div className="flex items-start gap-2"><span className="rounded-md border border-border/70 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">{index + 1}</span><div className="min-w-0"><div className="break-all font-mono text-xs font-medium">{model.id}</div><div className="mt-1 text-xs font-medium text-foreground/80">{model.role}</div><div className="mt-0.5 text-xs leading-5 text-muted-foreground">{model.note}</div></div></div></div>)}</div>
           </Card>
 
           <Card className="p-4">
             <div className="flex items-center gap-2 text-sm font-semibold"><ImageIcon className="h-4 w-4" /> Scene-model rotation</div>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">Scene requests rotate through Hugging Face tokens and these HF Inference-compatible models. `HF_IMAGE_MODEL` can prepend an override.</p>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">Scene requests rotate through Hugging Face tokens and these HF Inference-compatible models. The deprecated SD3-medium default has been removed. `HF_IMAGE_MODEL` can prepend an override.</p>
             <div className="mt-3 space-y-2">{IMAGE_MODELS.map((model, index) => <div key={model.id} className="rounded-xl border border-border/70 bg-background/35 p-3"><div className="flex items-start gap-2"><span className="rounded-md border border-border/70 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">{index + 1}</span><div className="min-w-0"><div className="break-all font-mono text-xs font-medium">{model.id}</div><div className="mt-1 text-xs font-medium text-foreground/80">{model.role}</div><div className="mt-0.5 text-xs leading-5 text-muted-foreground">{model.note}</div></div></div></div>)}</div>
           </Card>
         </section>
