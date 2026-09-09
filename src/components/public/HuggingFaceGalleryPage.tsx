@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, ExternalLink, Image as ImageIcon, Loader2, MessageSquareText, Sparkles } from 'lucide-react'
 import { Badge, BuildBadge, Card } from '@/components/ui'
 import { supabase, SUPABASE_PROJECT_URL } from '@/lib/supabase'
+import { StoryStudioTeaserCard } from './StoryStudioTeaserCard'
 
 export type PublicDragonAsset = {
   id: string
@@ -53,6 +54,23 @@ const metaText = (asset: PublicDragonAsset) => {
   return [provider, mime, size, turn > 0 ? `turn ${turn}` : null].filter(Boolean).join(' · ')
 }
 
+const PublicAssetCard = ({ asset }: { asset: PublicDragonAsset }) => {
+  const src = publicAssetUrl(asset)
+  const modelLabel = asset.model === 'unknown-legacy' ? 'Legacy model not recorded' : asset.model || 'Hugging Face image model'
+  return (
+    <Card className="overflow-hidden p-0">
+      <div className="aspect-[4/3] bg-muted">{src ? <img src={src} alt={asset.title || 'Story Studio generated scene'} className="h-full w-full object-cover" loading="lazy" /> : <div className="flex h-full items-center justify-center text-muted-foreground"><ImageIcon className="h-8 w-8" /></div>}</div>
+      <div className="p-4">
+        <div className="flex items-center gap-2"><div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-muted text-[10px] font-semibold">{asset.avatar_url ? <img src={asset.avatar_url} alt="" className="h-full w-full object-cover" /> : (asset.display_name || 'A').slice(0, 1).toUpperCase()}</div><div className="min-w-0"><div className="truncate text-xs font-medium">{asset.display_name || 'AppForge creator'}</div><div className="truncate text-[10px] text-muted-foreground">{modelLabel}</div></div></div>
+        <h3 className="mt-3 text-sm font-semibold">{asset.title || 'Story Studio scene'}</h3>
+        <div className="mt-2 flex flex-wrap gap-1.5"><Badge color="purple">Hugging Face</Badge><Badge color="slate">{new Date(asset.generated_at).toLocaleString()}</Badge></div>
+        <p className="mt-2 text-[10px] leading-4 text-muted-foreground">{metaText(asset) || 'Generation metadata unavailable for this legacy asset.'}</p>
+        {asset.prompt && <p className="mt-2 line-clamp-3 text-xs leading-5 text-muted-foreground">{asset.prompt}</p>}
+      </div>
+    </Card>
+  )
+}
+
 export function HuggingFaceGalleryPage() {
   const [assets, setAssets] = React.useState<PublicDragonAsset[]>([])
   const [loading, setLoading] = React.useState(true)
@@ -72,6 +90,9 @@ export function HuggingFaceGalleryPage() {
     void load()
     return () => { active = false }
   }, [])
+
+  const firstFive = assets.slice(0, 5)
+  const remaining = assets.slice(5)
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -109,30 +130,15 @@ export function HuggingFaceGalleryPage() {
         </section>
 
         <section>
-          <div className="mb-3 flex items-end justify-between gap-3"><div><h2 className="text-xl font-semibold tracking-tight">Public generated assets</h2><p className="mt-1 text-sm text-muted-foreground">Only scenes their creators explicitly marked Public in Story Studio Assets.</p></div><span className="text-xs text-muted-foreground">{assets.length} assets</span></div>
+          <div className="mb-3 flex items-end justify-between gap-3"><div><h2 className="text-xl font-semibold tracking-tight">Public generated assets</h2><p className="mt-1 text-sm text-muted-foreground">Creator-selected scenes plus one curated Story Studio generation teaser.</p></div><span className="text-xs text-muted-foreground">{assets.length + 1} showcase items</span></div>
           {error && <Card className="mb-4 border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">Could not load the public gallery: {error}</Card>}
           {loading ? (
             <Card className="flex items-center justify-center gap-2 p-10 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading public Story Studio assets…</Card>
-          ) : assets.length === 0 ? (
-            <Card className="p-10 text-center"><ImageIcon className="mx-auto h-8 w-8 text-muted-foreground" /><h3 className="mt-3 text-sm font-semibold">No shared scenes yet</h3><p className="mt-1 text-sm text-muted-foreground">Create artwork in Story Studio, open Assets, and mark the scenes you want to share Public.</p></Card>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {assets.map((asset) => {
-                const src = publicAssetUrl(asset)
-                const modelLabel = asset.model === 'unknown-legacy' ? 'Legacy model not recorded' : asset.model || 'Hugging Face image model'
-                return (
-                  <Card key={asset.id} className="overflow-hidden p-0">
-                    <div className="aspect-[4/3] bg-muted">{src ? <img src={src} alt={asset.title || 'Story Studio generated scene'} className="h-full w-full object-cover" loading="lazy" /> : <div className="flex h-full items-center justify-center text-muted-foreground"><ImageIcon className="h-8 w-8" /></div>}</div>
-                    <div className="p-4">
-                      <div className="flex items-center gap-2"><div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-muted text-[10px] font-semibold">{asset.avatar_url ? <img src={asset.avatar_url} alt="" className="h-full w-full object-cover" /> : (asset.display_name || 'A').slice(0, 1).toUpperCase()}</div><div className="min-w-0"><div className="truncate text-xs font-medium">{asset.display_name || 'AppForge creator'}</div><div className="truncate text-[10px] text-muted-foreground">{modelLabel}</div></div></div>
-                      <h3 className="mt-3 text-sm font-semibold">{asset.title || 'Story Studio scene'}</h3>
-                      <div className="mt-2 flex flex-wrap gap-1.5"><Badge color="purple">Hugging Face</Badge><Badge color="slate">{new Date(asset.generated_at).toLocaleString()}</Badge></div>
-                      <p className="mt-2 text-[10px] leading-4 text-muted-foreground">{metaText(asset) || 'Generation metadata unavailable for this legacy asset.'}</p>
-                      {asset.prompt && <p className="mt-2 line-clamp-3 text-xs leading-5 text-muted-foreground">{asset.prompt}</p>}
-                    </div>
-                  </Card>
-                )
-              })}
+              {firstFive.map((asset) => <PublicAssetCard key={asset.id} asset={asset} />)}
+              <StoryStudioTeaserCard />
+              {remaining.map((asset) => <PublicAssetCard key={asset.id} asset={asset} />)}
             </div>
           )}
         </section>
