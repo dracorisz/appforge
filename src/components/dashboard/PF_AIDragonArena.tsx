@@ -118,6 +118,7 @@ export function PF_AIDragonArena() {
     () => assets.filter((asset) => asset.asset_type === 'scene').slice().sort((a, b) => a.created_at.localeCompare(b.created_at)),
     [assets],
   )
+  const latestStoryScene = storyScenes[storyScenes.length - 1] || null
 
   const refreshAssets = React.useCallback(async (sid: string | null, uid: string | null) => {
     if (!sid || !uid) return
@@ -461,36 +462,42 @@ export function PF_AIDragonArena() {
             <div className="flex items-center gap-3 text-xs text-muted-foreground"><span>Turn {turn}</span>{points && <span className="inline-flex items-center gap-1"><Sparkles className="h-3.5 w-3.5" />{points.points} pts</span>}</div>
           </div>
 
-          <div className="max-h-[650px] min-h-[420px] space-y-4 overflow-y-auto bg-gradient-to-b from-card via-background/80 to-background p-4">
+          <div className="max-h-[620px] min-h-[400px] space-y-4 overflow-y-auto bg-gradient-to-b from-card via-background/80 to-background p-4">
             {history.map((item, index) => (
               <div key={`${item.role}-${index}`} className={`flex ${item.role === 'player' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm ${item.role === 'player' ? 'bg-primary text-primary-foreground' : 'border border-border/70 bg-card/90 text-card-foreground'}`}>{item.text}</div>
               </div>
             ))}
 
-            {storyScenes.map((asset) => {
-              const src = assetUrl(asset.storage_path) || asset.external_url || ''
+            {latestStoryScene && (() => {
+              const src = assetUrl(latestStoryScene.storage_path) || latestStoryScene.external_url || ''
               return (
-                <figure key={asset.id} className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm">
-                  {src && <img src={src} alt={asset.title || 'Generated Dragon Arena scene'} className="max-h-[560px] w-full object-cover" />}
-                  <figcaption className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 px-3 py-2 text-[11px] text-muted-foreground">
-                    <span className="font-medium text-foreground/80">{asset.title || 'Generated scene'}</span>
-                    <span>{sceneModel(asset)} · {new Date(asset.created_at).toLocaleString()}</span>
-                    {asset.is_public && <Badge color="green">Public showcase</Badge>}
+                <figure className="mx-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm">
+                  {src && <a href={src} target="_blank" rel="noreferrer" className="block overflow-hidden bg-muted"><img src={src} alt={latestStoryScene.title || 'Generated Dragon Arena scene'} className="aspect-video max-h-[330px] w-full object-cover transition-transform duration-300 hover:scale-[1.01]" /></a>}
+                  <figcaption className="border-t border-border/60 px-3 py-2 text-[11px] text-muted-foreground">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-medium text-foreground/80">{latestStoryScene.title || 'Latest generated scene'}</span>
+                      {latestStoryScene.is_public && <Badge color="green">Public showcase</Badge>}
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                      <span>{sceneModel(latestStoryScene)}</span>
+                      <span>{new Date(latestStoryScene.created_at).toLocaleString()}</span>
+                      {storyScenes.length > 1 && <button type="button" onClick={() => setShowAssetGallery(true)} className="font-medium text-foreground/80 hover:underline">Latest of {storyScenes.length} scenes · view all in Assets</button>}
+                    </div>
                   </figcaption>
                 </figure>
               )
-            })}
+            })()}
 
             {loading && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> The Game Master is deciding what happens next…</div>}
             {sceneLoading && <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-card/80 px-3 py-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Creating the next visual story beat with Hugging Face…</div>}
           </div>
 
-          <div className="space-y-3 border-t border-border/70 bg-card/65 p-4">
+          <div className="relative z-10 space-y-3 border-t border-border/70 bg-card p-4 shadow-[0_-8px_24px_-24px_rgba(0,0,0,0.8)]">
             {error && <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
             {generationStatus && <div className="rounded-lg border border-border/70 bg-accent/40 px-3 py-2 text-xs text-muted-foreground">{generationStatus}</div>}
             {dailyUsed && !usingPersonalKey && <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2 text-sm text-muted-foreground">Today’s owner-funded GM turn has been used. Add a personal GM key or return after 00:00 UTC.</div>}
-            <div className="grid gap-2 sm:grid-cols-3">{choices.map((choice) => { const Icon = choiceIcon(choice); return <Button key={choice} variant="secondary" disabled={!canPlay} onClick={() => void play(choice)} className="h-auto min-h-10 whitespace-normal text-left"><Icon className="h-4 w-4" /> {choice}</Button> })}</div>
+            <div className="grid gap-2 sm:grid-cols-3">{choices.map((choice) => { const Icon = choiceIcon(choice); return <Button key={choice} variant="secondary" disabled={!canPlay} onClick={() => void play(choice)} className="h-auto min-h-11 whitespace-normal text-left leading-5"><Icon className="h-4 w-4 shrink-0" /> {choice}</Button> })}</div>
             <div className="flex gap-2"><input value={action} disabled={!canPlay} onChange={(event) => setAction(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') void play() }} placeholder={dailyUsed && !usingPersonalKey ? 'Add a personal GM key or wait for tomorrow…' : 'Or type your own action…'} className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring" /><Button disabled={!canPlay || !action.trim()} onClick={() => void play()}><Send className="h-4 w-4" /> Act</Button></div>
           </div>
         </Card>
@@ -522,7 +529,7 @@ export function PF_AIDragonArena() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card><div className="flex items-center gap-2 text-sm font-semibold"><Shield className="h-4 w-4" /> Account-scoped</div><p className="mt-2 text-xs leading-5 text-muted-foreground">Signed-in sessions, turns and assets are scoped by Supabase RLS. Shared provider tokens stay server-side.</p></Card>
-        <Card><div className="flex items-center gap-2 text-sm font-semibold"><Dices className="h-4 w-4" /> Story memory</div><p className="mt-2 text-xs leading-5 text-muted-foreground">Turns restore after refresh and generated scenes now restore inside the story surface from the asset ledger.</p></Card>
+        <Card><div className="flex items-center gap-2 text-sm font-semibold"><Dices className="h-4 w-4" /> Story memory</div><p className="mt-2 text-xs leading-5 text-muted-foreground">Turns restore after refresh and the latest generated scene restores as a compact visual story beat; older scenes remain in Assets.</p></Card>
         <Card><div className="flex items-center gap-2 text-sm font-semibold"><Trophy className="h-4 w-4" /> Showcase</div><p className="mt-2 text-xs leading-5 text-muted-foreground">The first three generated scenes per user are public showcase assets; later scenes remain owner-only by default.</p></Card>
       </div>
     </div>
