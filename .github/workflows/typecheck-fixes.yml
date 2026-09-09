@@ -26,7 +26,7 @@ jobs:
               p = Path(path)
               text = p.read_text()
               if old not in text:
-                  raise SystemExit(f'Expected source not found in {path}: {old[:90]!r}')
+                  raise SystemExit(f'Expected source not found in {path}: {old[:100]!r}')
               p.write_text(text.replace(old, new))
 
           replace(
@@ -34,19 +34,6 @@ jobs:
               "Promise.resolve({ ok: true, results: [] as ScrapperProResult[], nextPageToken: null })",
               "Promise.resolve({ ok: true, results: [] as ScrapperProResult[], nextPageToken: null, error: undefined } as YouTubeResponse)",
           )
-
-          favicon = 'src/components/public/FaviconStudio.tsx'
-          replace(favicon, ".replaceAll('&', '&amp;')", ".replace(/&/g, '&amp;')")
-          replace(favicon, ".replaceAll('<', '&lt;')", ".replace(/</g, '&lt;')")
-          replace(favicon, ".replaceAll('>', '&gt;')", ".replace(/>/g, '&gt;')")
-          replace(favicon, ".replaceAll('\\\"', '&quot;')", ".replace(/\\\"/g, '&quot;')")
-          replace(favicon, ".replaceAll(\"'\", '&apos;')", ".replace(/'/g, '&apos;')")
-
-          landing = 'src/components/public/LandingBuilder.tsx'
-          replace(landing, ".replaceAll('&', '&amp;')", ".replace(/&/g, '&amp;')")
-          replace(landing, ".replaceAll('<', '&lt;')", ".replace(/</g, '&lt;')")
-          replace(landing, ".replaceAll('>', '&gt;')", ".replace(/>/g, '&gt;')")
-          replace(landing, ".replaceAll('\\\"', '&quot;')", ".replace(/\\\"/g, '&quot;')")
 
           marketing = 'src/components/resources/MarketingStudio.tsx'
           replace(
@@ -60,6 +47,7 @@ jobs:
               "  const markPublished = (record: PublicationRecord) => {\n    const remoteUrl = (record.remoteUrl || '').trim()\n    if (!remoteUrl) {\n      setMessage('Add the published YouTube URL before marking the publication complete.')\n      return\n    }\n    const videoIdMatch = remoteUrl.match(/(?:v=|youtu\\.be\\/|shorts\\/)([A-Za-z0-9_-]{6,})/)\n    updatePublication(record.id, { status: 'published', remoteId: videoIdMatch?.[1] || record.remoteId, remoteUrl, publishedAt: new Date().toISOString(), attempts: Math.max(record.attempts, 1) })\n    if (selectedDemo) updateDemo(selectedDemo.id, { status: 'published', publishedUrl: remoteUrl })",
           )
 
+          replace('tsconfig.json', '"lib": ["ES2020", "DOM", "DOM.Iterable"]', '"lib": ["ES2021", "DOM", "DOM.Iterable"]')
           replace('.github/workflows/ci.yml', 'node-version: 20', 'node-version: 22')
           PY
 
@@ -71,6 +59,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/components/dashboard/PF_ScrapperProNext.tsx src/components/public/FaviconStudio.tsx src/components/public/LandingBuilder.tsx src/components/resources/MarketingStudio.tsx .github/workflows/ci.yml
+          git add src/components/dashboard/PF_ScrapperProNext.tsx src/components/resources/MarketingStudio.tsx tsconfig.json .github/workflows/ci.yml
           git commit -m "fix: resolve integration typecheck errors [typecheck-fixes]"
           git push origin HEAD:codex/backlog-public-apps
