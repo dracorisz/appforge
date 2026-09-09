@@ -56,6 +56,19 @@ export function resetCategoryOverride(id: string) {
   return next
 }
 
+export function restoreDefaultSidebarCategories() {
+  const current = loadCategoryOverrides()
+  const next = { ...current }
+  getAllCategories().forEach((category) => {
+    next[category.id] = {
+      ...(next[category.id] || {}),
+      visibleInSidebar: DEFAULT_SIDEBAR_CATEGORY_IDS.includes(category.id as typeof DEFAULT_SIDEBAR_CATEGORY_IDS[number]),
+    }
+  })
+  saveCategoryOverrides(next)
+  return next
+}
+
 export function resolveCategories(overrides = loadCategoryOverrides()): CategoryDefinition[] {
   return getAllCategories().map((category) => ({
     ...category,

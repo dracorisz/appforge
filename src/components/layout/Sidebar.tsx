@@ -1,7 +1,7 @@
 import React from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
-  ArrowLeftRight, Binary, Braces, Calendar, ChevronLeft, ChevronRight, Code, FileCode, FileText, Hash,
+  ArrowLeftRight, Binary, Braces, Calendar, ChevronLeft, ChevronRight, CloudSun, Code, FileCode, FileText, Hash,
   Home, Image as ImageIcon, LayoutDashboard, Lock, LogOut, Monitor, Palette, QrCode, Regex, Search,
   Settings, Sliders, Sparkles, Sun, Moon, Table2, Type, Users, Video, Wrench,
 } from 'lucide-react'
@@ -12,7 +12,7 @@ import { useAuth } from '@/auth/AuthProvider'
 import { ensureProfile } from '@/lib/account'
 import { DragonArenaIcon } from '@/components/dashboard/DragonArenaIcon'
 
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = { ArrowLeftRight, Binary, Braces, Calendar, Code, FileCode, FileText, Hash, Image: ImageIcon, Lock, Palette, QrCode, Regex, Search, Sparkles, Table2, Type, Video, Wrench, DragonArena: DragonArenaIcon }
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = { ArrowLeftRight, Binary, Braces, Calendar, CloudSun, Code, FileCode, FileText, Hash, Image: ImageIcon, Lock, Palette, QrCode, Regex, Search, Sparkles, Table2, Type, Video, Wrench, DragonArena: DragonArenaIcon }
 
 const coreItems = [
   { id: 'landing', label: 'Landing', icon: Home, path: '/landing' },
@@ -68,7 +68,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
       <nav className="scrollbar-hide flex-1 overflow-y-auto overflow-x-hidden px-3 py-2">
         {!isCollapsed && <h3 className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Workspace</h3>}
         <div className="space-y-0.5">{coreItems.map((item) => { const Icon = item.icon; const active = location.pathname === item.path; return <NavLink key={item.id} to={item.path} onClick={onClose} title={isCollapsed ? item.label : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'}`}><Icon className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">{item.label}</span>}</NavLink> })}</div>
-        {sidebarCategories.length > 0 && <div className="mt-5"><div className="mb-1 flex items-center justify-between px-3">{!isCollapsed && <h3 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Categories</h3>}{!isCollapsed && <NavLink to="/settings" onClick={onClose} className="text-[10px] text-muted-foreground hover:text-foreground">Customize</NavLink>}</div><div className="space-y-0.5">{sidebarCategories.map((category) => { const Icon = iconMap[category.icon] || Wrench; const path = `/category/${category.id}`; const active = location.pathname === path; return <NavLink key={category.id} to={path} onClick={onClose} title={isCollapsed ? category.name : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'}`}><Icon className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">{category.name}</span>}</NavLink> })}</div></div>}
+        {sidebarCategories.length > 0 && <div className="mt-5"><div className="mb-1 flex items-center justify-between px-3">{!isCollapsed && <h3 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Categories</h3>}{!isCollapsed && <NavLink to="/categories" onClick={onClose} className="text-[10px] text-muted-foreground hover:text-foreground">Customize</NavLink>}</div><div className="space-y-0.5">{sidebarCategories.map((category) => { const Icon = iconMap[category.icon] || Wrench; const path = `/category/${category.id}`; const active = location.pathname === path; return <NavLink key={category.id} to={path} onClick={onClose} title={isCollapsed ? category.name : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'}`}><Icon className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">{category.name}</span>}</NavLink> })}</div></div>}
       </nav>
 
       <div className="space-y-1 border-t border-border p-3">
