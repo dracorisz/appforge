@@ -121,6 +121,7 @@ function App() {
   if (location.pathname === '/privacy') return <PrivacyPolicyPage />
   if (location.pathname === '/terms') return <TermsOfServicePage />
   if (location.pathname === '/huggingface') return <HuggingFaceGalleryPage />
+  if (location.pathname === '/landing') return <LoginPage landingOnly />
   if (location.pathname === '/login') return <LoginPage />
 
   if (!user && !loading) {
