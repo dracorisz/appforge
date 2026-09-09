@@ -1,3 +1,4 @@
+import { GEMINI_KEY_STORAGE } from '@/lib/aiProviders'
 import React from 'react'
 import {
   Check,
@@ -84,6 +85,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
   const [error, setError] = React.useState('')
   const [liveUrl, setLiveUrl] = React.useState(() => localStorage.getItem(LIVE_URL_KEY) || 'https://www.sstoken.space')
   const [skillsDraft, setSkillsDraft] = React.useState('')
+  const [geminiKey, setGeminiKey] = React.useState(() => localStorage.getItem(GEMINI_KEY_STORAGE) || '')
   const [openRouterKey, setOpenRouterKey] = React.useState(() => localStorage.getItem('dragon-arena-openrouter-key') || '')
   const [hfToken, setHfToken] = React.useState(() => localStorage.getItem('dragon-arena-hf-key') || '')
   const [importPreview, setImportPreview] = React.useState<WorkspaceImportPreview | null>(null)
@@ -461,13 +463,23 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="grid gap-3 sm:grid-cols-2">{[['Supabase', 'Authentication, profiles, private personal data, preferences, roles, TOTP and profile media.', Cloud], ['Vercel', 'Vite frontend plus same-origin serverless APIs for network-backed tools.', RefreshCw], ['GitHub', 'Public source, contributors, issues, pull requests and CI.', Github], ['Google', 'OAuth identity provider; basic identity scopes only.', ShieldCheck]].map(([name, description, Icon]: any) => <Card key={name} className="p-4"><Icon className="h-5 w-5 text-muted-foreground" /><h2 className="mt-3 text-sm font-semibold text-foreground">{name}</h2><p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p></Card>)}</div>
           <Card className="p-4">
-            <h2 className="text-sm font-semibold text-foreground">Dragon Arena API Keys</h2>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">Personal keys stored in your browser only. When provided, Dragon Arena bypasses the daily owner-funded quota.</p>
+            <h2 className="text-sm font-semibold text-foreground">AI provider keys</h2>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">Personal keys are saved in this browser and sent through AppForge’s server to the selected provider when used. They are excluded from workspace backups. Provider limits still apply.</p>
             <div className="mt-4 space-y-4">
+              <div>
+                <label htmlFor="gemini-key" className="block text-xs font-medium text-foreground mb-1.5">Google Gemini API key</label>
+                <div className="flex gap-2">
+                  <Input id="gemini-key" type="password" autoComplete="off" value={geminiKey} onChange={(e) => setGeminiKey(e.target.value)} placeholder="Gemini API key" className="flex-1" />
+                  <Button aria-label="Save Gemini key" disabled={!geminiKey.trim()} onClick={() => { localStorage.setItem(GEMINI_KEY_STORAGE, geminiKey.trim()); flash('Gemini key saved.') }}><Check className="h-4 w-4" /></Button>
+                  <Button aria-label="Remove Gemini key" variant="destructive" onClick={() => { setGeminiKey(''); localStorage.removeItem(GEMINI_KEY_STORAGE); flash('Gemini key removed.') }}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">Text fallback for Story Studio (Dragon Arena), available for future apps. Uses Gemini 2.5 Flash-Lite by default. Free usage depends on your Google project’s tier and quotas; a paid-project key can incur charges. Free-tier content may be used by Google to improve its products.</p>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">The standard $300 Google Cloud welcome credit does not cover Gemini API in AI Studio costs. <a className="underline" href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">Create a key in AI Studio</a> and check its project is on the Free tier.</p>
+              </div>
               <div>
                 <label className="block text-xs font-medium text-foreground mb-1.5">OpenRouter personal key</label>
                 <div className="flex gap-2">
-                  <Input value={openRouterKey} onChange={(e) => setOpenRouterKey(e.target.value)} placeholder="sk-or-..." className="flex-1" />
+                  <Input type="password" value={openRouterKey} onChange={(e) => setOpenRouterKey(e.target.value)} placeholder="sk-or-..." className="flex-1" />
                   <Button onClick={saveOpenRouterKey} disabled={!openRouterKey.startsWith('sk-or-')}><Check className="h-4 w-4" /></Button>
                   {openRouterKey && <Button variant="destructive" onClick={() => { setOpenRouterKey(''); localStorage.removeItem('dragon-arena-openrouter-key') }}><Trash2 className="h-4 w-4" /></Button>}
                 </div>
@@ -475,7 +487,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
               <div>
                 <label className="block text-xs font-medium text-foreground mb-1.5">Hugging Face personal token</label>
                 <div className="flex gap-2">
-                  <Input value={hfToken} onChange={(e) => setHfToken(e.target.value)} placeholder="hf_..." className="flex-1" />
+                  <Input type="password" value={hfToken} onChange={(e) => setHfToken(e.target.value)} placeholder="hf_..." className="flex-1" />
                   <Button onClick={saveHfToken} disabled={!hfToken.startsWith('hf_')}><Check className="h-4 w-4" /></Button>
                   {hfToken && <Button variant="destructive" onClick={() => { setHfToken(''); localStorage.removeItem('dragon-arena-hf-key') }}><Trash2 className="h-4 w-4" /></Button>}
                 </div>

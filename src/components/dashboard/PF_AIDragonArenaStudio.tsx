@@ -1,3 +1,4 @@
+import { getGeminiHeaders } from '@/lib/aiProviders'
 import React from 'react'
 import { BookOpen, Download, GalleryThumbnails, Globe2, ImagePlus, KeyRound, Loader2, LockKeyhole, RefreshCcw, Send, Trophy, Users, X } from 'lucide-react'
 import { GiDragonHead, GiDungeonGate, GiRuneSword, GiScrollUnfurled, GiSparkles, GiSpikedShield } from 'react-icons/gi'
@@ -241,6 +242,7 @@ export function PF_AIDragonArenaStudio() {
       if (!token) throw new Error('Sign in again to continue.')
       const headers: Record<string, string> = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
       if (personalHfTokens.length) headers['x-hf-tokens'] = personalHfTokens.join(',')
+      Object.assign(headers, getGeminiHeaders())
       const response = await fetch('/api/ai-game', { method: 'POST', headers, body: JSON.stringify({ turn, action: playerAction, history: pendingHistory.slice(-6), builderMode: mode }) })
       const payload = await response.json().catch(() => ({})) as GameReply
       if (!response.ok) throw new Error(payload.error || 'The story engine is unavailable.')

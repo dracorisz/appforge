@@ -1,3 +1,4 @@
+import { getGeminiHeaders } from '@/lib/aiProviders'
 import React from 'react'
 import {
   Dices,
@@ -330,6 +331,7 @@ export function PF_AIDragonArena() {
       if (personalKey.startsWith('sk-or-')) headers['x-openrouter-key'] = personalKey
       if (hfToken.startsWith('hf_')) headers['x-hf-token'] = hfToken
 
+      Object.assign(headers, getGeminiHeaders())
       const response = await fetch('/api/ai-game', {
         method: 'POST',
         headers,
