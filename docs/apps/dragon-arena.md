@@ -4,7 +4,7 @@ A turn-based fantasy adventure with a Hugging Face-powered game master and scene
 
 ## Current app version
 
-**Dragon Arena 1.5.0** — Hugging Face provider-aware scene generation, atomic asset persistence, public showcase metadata, theme-aware story UI, Media Vault linkage, and provider/model rotation.
+**Dragon Arena 1.6.0** — Hugging Face-first GM rotation, provider-aware scene generation, atomic asset persistence, public showcase metadata, compact theme-aware story UI, and Media Vault linkage.
 
 ## Routes
 
@@ -20,7 +20,7 @@ A turn-based fantasy adventure with a Hugging Face-powered game master and scene
 5. The image endpoint uploads validated bytes and writes the authoritative `dragon_arena_assets` row before returning success.
 6. The latest generated scene restores after refresh and renders as a compact cinematic beat inside Story; older scenes remain in Assets/Media Vault.
 7. The first three generated scene assets for each user are automatically public showcase assets. Later assets remain owner-only unless explicitly published.
-8. Media Vault links Dragon Arena scenes and Scrapper Pro saved results from their source ledgers instead of duplicating files.
+8. Media Vault links Dragon Arena scenes from the same authoritative ledger instead of duplicating files.
 
 ## Hugging Face game-master rotation
 
@@ -95,15 +95,13 @@ Scene generation is server-authoritative:
 7. Only then return success to the browser.
 8. If the ledger insert fails, remove the just-uploaded object and refund an owner-funded image turn.
 
-`storage_path` has a unique index. Client-side `saveAsset()` is idempotent so older clients that try to save the same generated path do not create duplicates.
+`storage_path` has a unique index. Client-side `saveAsset()` remains idempotent for compatibility with older clients.
 
 Production schema fixes are tracked by:
 
 - `20260909083930_dragon_arena_asset_integrity_and_public_gallery.sql`
 - `20260909084011_dragon_arena_allow_scene_asset_type.sql`
-- `20260909084319_dragon_arena_allow_external_scrapper_assets.sql`
-
-The first fixes the old client/schema mismatch where the client inserted `external_url` although the production table did not yet contain that column. That mismatch caused valid Storage uploads to become orphaned after the DB insert failed.
+- `20260909084319_dragon_arena_allow_external_scrapper_assets.sql` — historical compatibility; new Scrapper saves have since moved out of the Dragon ledger.
 
 ## Theme-aware game UI
 
@@ -111,7 +109,7 @@ The signed-in game surface uses AppForge semantic theme tokens controlled by Set
 
 - `bg-background`, `bg-card`, `text-foreground`, `text-muted-foreground`
 - `border-border`
-- `bg-primary` / `text-primary-foreground` for the player bubble, so accent color follows the selected appearance
+- `bg-primary` / `text-primary-foreground` for player/action emphasis
 - shared themed `Button`, `Card`, `Input`, and `Badge` components
 
 The cinematic hero artwork remains an image treatment, but its overlay is theme-aware. Only the latest generated scene is shown in Story; the full scene history remains available from Assets and Media Vault.
@@ -121,19 +119,19 @@ The cinematic hero artwork remains an image treatment, but its overlay is theme-
 - Guest game: one turn per UTC day using browser localStorage; no account persistence, points, private gallery or scene generation.
 - Signed-in owner-funded game: one turn per UTC day.
 - Signed-in owner-funded scene: one image turn per UTC day.
-- Personal OpenRouter key: bypasses the signed-in shared GM allowance for that user.
+- Personal OpenRouter key: compatibility path that bypasses the signed-in shared GM allowance for that user.
 - Personal Hugging Face token: bypasses the owner-funded image allowance and can also be used for GM requests.
 - Failed owner-funded image generation or persistence refunds the image turn.
 
 ## Public Hugging Face gallery
 
-`/huggingface` is public and uses AppForge branding. It contains the exact GM/image model rotations, the currently supported image-provider set, and a live generated-scene gallery.
+`/huggingface` is public and uses AppForge branding. It contains the exact GM/image model rotations, currently supported image-provider set, and a live generated-scene gallery.
 
 The public RPC returns at most the first three public scenes per user and includes:
 
 - model
 - provider
-- provider model for new provider-aware generations
+- provider model for provider-aware generations
 - generation timestamp
 - MIME type
 - byte size
@@ -144,15 +142,14 @@ Two legacy orphaned scene files were recovered into the ledger. Their exact imag
 
 ## Media Vault integration
 
-Media Vault treats Dragon Arena and Scrapper Pro as linked source folders:
+Media Vault now uses source-specific ownership rather than treating every feature as a Dragon Arena asset:
 
-- `Dragon Arena` reads the signed-in user's `dragon_arena_assets` rows with `asset_type = 'scene'`.
-- `Scrapper Pro` reads `asset_type = 'scrapper-result'`.
-- General/manual uploads continue to use the private `user-media-vault` bucket/table.
-- Linked Dragon Arena/Scrapper assets are not double-counted against the private upload quota.
-- Preview/download resolves the correct source bucket or external URL.
+- **Dragon Arena** reads the signed-in user's `dragon_arena_assets` rows with `asset_type = 'scene'`; the game ledger remains authoritative.
+- **Scrapper Pro** signed-in saves now live directly in `user_media_vault` as external source references with `source_app = 'scrapper-pro'`.
+- **General** manual uploads use `user_media_vault` plus the private `user-media-vault` bucket.
+- Dragon Arena scenes are not copied into the private vault, and Scrapper references contain zero stored bytes, so neither is double-counted against General upload quota.
 
-Production drift repair restored the missing `user_media_vault` / `user_media_quotas` tables, quota/upload RPCs, private bucket and RLS/storage policies. The repair is committed as a follow-up migration so future environments cannot silently reproduce the drift.
+Migration `20260909174500_decouple_scrapper_pro_into_media_vault.sql` removes the new-save dependency between Scrapper Pro and Dragon Arena while preserving/backfilling historical `scrapper-result` rows when present.
 
 ## Points
 
@@ -164,8 +161,8 @@ Production drift repair restored the missing `user_media_vault` / `user_media_qu
 HF_TOKEN_1=hf_...
 HF_TOKEN_2=hf_...        # optional
 HF_TOKEN_3=hf_...        # optional
-HF_TEXT_MODEL=openai/gpt-oss-20b:fastest              # optional preferred override
-HF_IMAGE_MODEL=black-forest-labs/FLUX.1-schnell      # optional preferred override
+HF_TEXT_MODEL=openai/gpt-oss-20b:fastest             # optional preferred override
+HF_IMAGE_MODEL=black-forest-labs/FLUX.1-schnell     # optional preferred override
 ```
 
 Hugging Face tokens need permission to make calls to Inference Providers. Three tokens do not necessarily provide three independent quotas when they belong to the same HF account.
@@ -176,7 +173,7 @@ Hugging Face tokens need permission to make calls to Inference Providers. Three 
 |---|---|
 | `dragon_arena_sessions` | Persistent signed-in runs |
 | `dragon_arena_turns` | Player actions, GM narrative, choices and model |
-| `dragon_arena_assets` | Generated scenes and imported/saved source assets |
+| `dragon_arena_assets` | Dragon Arena generated scenes and historical compatibility assets |
 | `dragon_arena_points` | Points, turns played and scenes created |
 | `dragon_arena_daily_usage` | Signed-in daily GM allowance |
 | `dragon_arena_image_usage` | Signed-in daily scene allowance |
@@ -185,10 +182,11 @@ Hugging Face tokens need permission to make calls to Inference Providers. Three 
 
 | File | Role |
 |---|---|
-| `api/ai-game.js` | Hugging Face-first GM endpoint with token/model/provider rotation + continuity fallback |
+| `api/ai-game.js` | Hugging Face-first GM endpoint with token/model rotation + continuity fallback |
 | `api/dragon-image.js` | Provider-aware Hugging Face scene endpoint with atomic storage + asset-ledger persistence |
 | `src/components/dashboard/PF_AIDragonArena.tsx` | Theme-aware signed-in story UI with compact inline latest scene |
 | `src/components/dashboard/PF_GuestDragonArena.tsx` | Guest one-turn UI |
 | `src/components/public/HuggingFaceGalleryPage.tsx` | Public HF integration/model/provider/metadata/gallery page |
 | `src/lib/dragonArena.ts` | Sessions, turns, assets, points and leaderboard helpers |
-| `src/lib/mediaVault.ts` | Private uploads plus linked Dragon Arena/Scrapper source assets |
+| `src/lib/mediaVault.ts` | General uploads, linked Dragon scenes, and Scrapper external references |
+| `docs/STABILIZATION_TRACKER.md` | Current implementation/verification/open-task status |
