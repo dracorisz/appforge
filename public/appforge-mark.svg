@@ -1,12 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
   <title>AppForge triangular mark</title>
-  <style>
-    :root { color: #111827; }
-    @media (prefers-color-scheme: dark) { :root { color: #f8fafc; } }
-  </style>
-  <rect width="512" height="512" rx="112" fill="currentColor" fill-opacity="0.04"/>
-  <path d="M256 72 432 376H80L256 72Z" stroke="currentColor" stroke-width="28" stroke-linejoin="round"/>
-  <path d="M256 154 361 336H151L256 154Z" fill="currentColor" fill-opacity="0.16" stroke="currentColor" stroke-width="18" stroke-linejoin="round"/>
-  <path d="m256 224 56 96H200l56-96Z" fill="currentColor"/>
-  <circle cx="256" cy="388" r="16" fill="currentColor"/>
+  <rect x="12" y="12" width="488" height="488" rx="108" fill="#0F172A"/>
+  <rect x="12" y="12" width="488" height="488" rx="108" stroke="#334155" stroke-width="24"/>
+  <path d="M256 82 426 382H86L256 82Z" stroke="#F8FAFC" stroke-width="30" stroke-linejoin="round"/>
+  <path d="M256 166 354 338H158L256 166Z" fill="#F8FAFC" fill-opacity="0.12" stroke="#CBD5E1" stroke-width="18" stroke-linejoin="round"/>
+  <path d="m256 230 52 90H204l52-90Z" fill="#F8FAFC"/>
+  <circle cx="256" cy="390" r="16" fill="#F8FAFC"/>
 </svg>
