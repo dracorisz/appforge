@@ -13,6 +13,7 @@ import {
   PF_WeatherNow,
   PF_PariflowSmpl,
   PF_AIDragonArena,
+  PF_DnsTxtChecker,
   MiniAppShell,
   AnyToAnyConverter,
   UtilityWorkbench,
@@ -127,6 +128,7 @@ function App() {
         <Route path="/apps/weather-now" element={<PF_WeatherNow />} />
         <Route path="/apps/pariflow-smpl" element={<PF_PariflowSmpl />} />
         <Route path="/apps/ai-dragon-arena" element={<PF_AIDragonArena />} />
+        <Route path="/apps/dns-txt-checker" element={<PF_DnsTxtChecker />} />
         <Route path="/apps/any-converter" element={<AnyToAnyConverter />} />
         <Route path="/settings" element={<SettingsPage state={state} setState={setState} />} />
 
@@ -149,6 +151,7 @@ function App() {
         <Route path="/pf-weather-now" element={<Navigate to="/apps/weather-now" replace />} />
         <Route path="/pf-pariflow-smpl" element={<Navigate to="/apps/pariflow-smpl" replace />} />
         <Route path="/pf-ai-dragon-arena" element={<Navigate to="/apps/ai-dragon-arena" replace />} />
+        <Route path="/pf-dns-txt-checker" element={<Navigate to="/apps/dns-txt-checker" replace />} />
         <Route path="/pf-pitch-deck" element={<Navigate to="/apps/pitch-deck" replace />} />
         <Route path="/pf-invoice-studio" element={<Navigate to="/apps/invoice-studio" replace />} />
         <Route path="/pf-source-grade" element={<Navigate to="/apps/source-grade" replace />} />

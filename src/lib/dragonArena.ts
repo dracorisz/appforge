@@ -121,16 +121,16 @@ export async function listTurns(sessionId: string): Promise<DragonTurn[]> {
 
 export async function listAssets(
   userId: string,
-  opts: { sessionId?: string | null; publicOnly?: boolean } = {}
+  opts: { sessionId?: string | null; publicOnly?: boolean; assetType?: string } = {}
 ): Promise<DragonAsset[]> {
   let query = supabase.from('dragon_arena_assets').select('*')
-  if (opts.publicOnly) {
-    query = query.eq('is_public', true)
-  } else {
-    query = query.or(`is_public.eq.true,user_id.eq.${userId}`)
-  }
+  const orParts: string[] = [`is_public.eq.true`, `user_id.eq.${userId}`]
   if (opts.sessionId) {
-    query = query.eq('session_id', opts.sessionId)
+    orParts.push(`session_id.eq.${opts.sessionId}`)
+  }
+  query = query.or(orParts.join(','))
+  if (opts.assetType) {
+    query = query.eq('asset_type', opts.assetType)
   }
   const { data, error } = await query
     .order('created_at', { ascending: false })
@@ -184,6 +184,14 @@ export async function updateAsset(
   return data as DragonAsset
 }
 
+export async function deleteAsset(assetId: string): Promise<void> {
+  const { error } = await supabase
+    .from('dragon_arena_assets')
+    .delete()
+    .eq('id', assetId)
+  if (error) throw error
+}
+
 export async function getPoints(userId: string): Promise<DragonPoints | null> {
   const { data, error } = await supabase
     .from('dragon_arena_points')
@@ -224,3 +232,49 @@ export async function deleteSession(sessionId: string): Promise<void> {
 }
 
 export { assetUrl }
+
+// Scrapper Pro integration helpers
+export type ScrapperAssetMeta = {
+  source: string
+  type: 'image' | 'video' | 'article' | 'post'
+  title?: string
+  originalUrl: string
+  thumbnail?: string
+  snippet?: string
+}
+
+export async function saveScrapperResult(
+  userId: string,
+  sessionId: string | null,
+  result: ScrapperAssetMeta
+): Promise<DragonAsset> {
+  return saveAsset({
+    userId,
+    sessionId,
+    assetType: 'scrapper-result',
+    storagePath: null,
+    externalUrl: result.thumbnail || result.originalUrl,
+    prompt: `Saved from ${result.source}: ${result.title || ''}`,
+      title: result.title || null,
+    isPublic: false,
+    metadata: {
+      source: result.source,
+      type: result.type,
+      originalUrl: result.originalUrl,
+      thumbnail: result.thumbnail,
+      snippet: result.snippet,
+      savedAt: new Date().toISOString(),
+    },
+  })
+}
+
+export function getScrapperResultImageUrl(asset: DragonAsset): string | null {
+  const meta = asset.metadata as ScrapperAssetMeta | undefined
+  if (meta?.thumbnail) return meta.thumbnail
+  return asset.external_url
+}
+
+export function getScrapperResultLink(asset: DragonAsset): string | null {
+  const meta = asset.metadata as ScrapperAssetMeta | undefined
+  return meta?.originalUrl || asset.external_url
+}
