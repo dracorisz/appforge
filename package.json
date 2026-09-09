@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint . --max-warnings 50",
     "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.js",
     "version:set": "node scripts/set-version.mjs",
     "db:migrate": "echo 'Migrations run via CI/CD'",
     "deploy": "vercel --prod",

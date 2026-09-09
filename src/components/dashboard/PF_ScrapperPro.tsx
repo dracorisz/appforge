@@ -35,6 +35,7 @@ export interface ScrapperProResult {
   date?: string
   thumbnail?: string
   mediaUrl?: string
+  provenance?: Record<string, unknown>
 }
 
 type SourceType = ScrapperProResult['type']
@@ -45,6 +46,8 @@ interface SourceDefinition {
   id: string
   name: string
   type: SourceType
+  disabled?: boolean
+  status?: string
 }
 
 interface ScrapeResponse {
@@ -64,6 +67,7 @@ const SOURCES: SourceDefinition[] = [
   { id: 'wikimedia', name: 'Wikimedia Commons', type: 'image' },
   { id: 'reddit', name: 'Reddit', type: 'post' },
   { id: 'youtube', name: 'YouTube', type: 'video' },
+  { id: 'tiktok', name: 'TikTok', type: 'video', disabled: true, status: 'API approval required' },
   { id: 'duckduckgo-general', name: 'DuckDuckGo Web', type: 'article' },
   { id: 'medium', name: 'Medium', type: 'article' },
 ]
@@ -209,6 +213,7 @@ export function PF_ScrapperPro() {
   }
 
   const toggleSource = (sourceId: string) => {
+    if (SOURCES.find((source) => source.id === sourceId)?.disabled) return
     setSelectedSources((current) => {
       const next = new Set(current)
       if (next.has(sourceId)) next.delete(sourceId)
@@ -218,7 +223,7 @@ export function PF_ScrapperPro() {
   }
 
   const selectPreset = (preset: 'recommended' | 'media' | 'all') => {
-    if (preset === 'all') return setSelectedSources(new Set(SOURCES.map((source) => source.id)))
+    if (preset === 'all') return setSelectedSources(new Set(SOURCES.filter((source) => !source.disabled).map((source) => source.id)))
     if (preset === 'media') return setSelectedSources(new Set(['duckduckgo-images', 'bing-images', 'wikimedia', 'reddit', 'youtube']))
     setSelectedSources(new Set(DEFAULT_SOURCES))
   }
@@ -241,6 +246,7 @@ export function PF_ScrapperPro() {
         mediaUrl: result.mediaUrl,
         snippet: result.snippet,
         date: result.date,
+        provenance: result.provenance,
       })
       setVaultSavedIds((current) => new Set(current).add(result.id))
     } catch (e) {
@@ -337,13 +343,14 @@ export function PF_ScrapperPro() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div><div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-foreground">Scrapper Pro</h1><Badge color="green">Server-backed</Badge></div><p className="mt-1 max-w-2xl text-sm text-muted-foreground">Search public sources for real images, videos, posts, and articles. Saved results stay locally for guest use; signed-in users can also archive references into Media Vault.</p></div>
+        <div><div className="flex items-center gap-2"><h1 className="text-2xl font-bold text-foreground">Scrapper Pro</h1><Badge color="green">Server-backed</Badge></div><p className="mt-1 max-w-2xl text-sm text-muted-foreground">Search public sources for real images, videos, posts, and articles. YouTube uses its official Data API and accepts text, video/channel URLs, IDs, and @handles. Signed-in users can archive provenance-rich references into Media Vault.</p></div>
         <div className="flex items-center gap-1 rounded-lg border border-border/70 bg-background/45 p-1 backdrop-blur-md"><button type="button" onClick={() => setViewMode('grid')} aria-label="Grid view" className={`rounded-md p-1.5 ${viewMode === 'grid' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}><Grid3X3 className="h-4 w-4" /></button><button type="button" onClick={() => setViewMode('list')} aria-label="List view" className={`rounded-md p-1.5 ${viewMode === 'list' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}><List className="h-4 w-4" /></button></div>
       </div>
 
       <Card><div className="flex flex-col gap-3 lg:flex-row lg:items-end"><div className="flex-1"><label className="mb-1.5 block text-sm font-medium text-foreground">Search query</label><div className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && !running && runSearch()} placeholder="Name, handle, topic, product, event…" className="pl-9" /></div></div><div className="flex flex-wrap gap-2">{running ? <Button variant="secondary" onClick={stopSearch}><Square className="h-4 w-4" /> Stop</Button> : <Button onClick={runSearch} disabled={!query.trim() || selectedSources.size === 0}><Play className="h-4 w-4" /> Search {selectedSources.size} sources</Button>}<Button variant="secondary" onClick={exportResults} disabled={(filter === 'saved' ? saved : results).length === 0}><Download className="h-4 w-4" /> Export JSON</Button></div></div>
         <div className="mt-4 flex flex-wrap items-center gap-2"><span className="text-xs font-medium text-muted-foreground">Presets:</span><button onClick={() => selectPreset('recommended')} className="rounded-md border border-border px-2 py-1 text-xs hover:bg-accent">Recommended</button><button onClick={() => selectPreset('media')} className="rounded-md border border-border px-2 py-1 text-xs hover:bg-accent">Media</button><button onClick={() => selectPreset('all')} className="rounded-md border border-border px-2 py-1 text-xs hover:bg-accent">All sources</button><button onClick={() => setSelectedSources(new Set())} className="rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground">Clear</button></div>
-        <div className="mt-3 flex flex-wrap gap-1.5">{SOURCES.map((source) => { const Icon = typeIcon(source.type); const selected = selectedSources.has(source.id); return <button key={source.id} type="button" onClick={() => toggleSource(source.id)} className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-colors ${selected ? 'border-foreground/25 bg-accent/80 text-foreground' : 'border-border/70 bg-background/40 text-muted-foreground hover:text-foreground'}`}><Icon className="h-3.5 w-3.5" /> {source.name}</button> })}</div>
+        <div className="mt-3 flex flex-wrap gap-1.5">{SOURCES.map((source) => { const Icon = typeIcon(source.type); const selected = selectedSources.has(source.id); return <button key={source.id} type="button" onClick={() => toggleSource(source.id)} disabled={source.disabled} title={source.status} className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-colors ${source.disabled ? 'cursor-not-allowed border-border/50 bg-muted/30 text-muted-foreground/70' : selected ? 'border-foreground/25 bg-accent/80 text-foreground' : 'border-border/70 bg-background/40 text-muted-foreground hover:text-foreground'}`}><Icon className="h-3.5 w-3.5" /> {source.name}{source.status && <span className="rounded bg-background/60 px-1.5 py-0.5 text-[10px]">Coming soon</span>}</button> })}</div>
+        <p className="mt-2 text-[11px] text-muted-foreground">TikTok support is planned, but remains disabled until the AppForgePf developer app has an approved API product and scopes suitable for the requested data.</p>
         {running && <div className="mt-4 flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Searching selected sources in parallel <span className="ml-auto inline-flex items-center gap-1 font-mono text-xs"><Clock3 className="h-3.5 w-3.5" /> {elapsed}s</span></div>}
         {error && <div className="mt-4 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /><span>{error}</span></div>}
       </Card>
