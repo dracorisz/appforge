@@ -19,7 +19,7 @@ type AuthProviderName = 'google' | 'github'
 
 export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: string; landingOnly?: boolean }) {
   const navigate = useNavigate()
-  const { user, loading, signInWithGoogle, signInWithGitHub } = useAuth()
+  const { user, loading, signInWithGoogle } = useAuth()
   const [busyProvider, setBusyProvider] = React.useState<AuthProviderName | null>(null)
   const [error, setError] = React.useState('')
   const apps = React.useMemo(() => getAllApps(), [])
@@ -36,14 +36,15 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
       return
     }
 
+    if (provider === 'github') return
+
     setBusyProvider(provider)
     setError('')
     try {
       const normalized = normalizeReturnPath(returnTo)
-      if (provider === 'github') await signInWithGitHub(normalized)
-      else await signInWithGoogle(normalized)
+      await signInWithGoogle(normalized)
     } catch (loginError) {
-      setError(loginError instanceof Error ? loginError.message : `${provider === 'github' ? 'GitHub' : 'Google'} sign-in could not start.`)
+      setError(loginError instanceof Error ? loginError.message : 'Google sign-in could not start.')
       setBusyProvider(null)
     }
   }
@@ -102,9 +103,9 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
                       {loading ? 'Checking session…' : busyProvider === 'google' ? 'Opening Google…' : 'Continue with Google'}
                       {!loading && busyProvider !== 'google' && <ArrowRight className="h-4 w-4" />}
                     </Button>
-                    <Button variant="secondary" className="h-11 px-5" onClick={() => void login('github')} disabled={Boolean(busyProvider) || loading}>
+                    <Button variant="secondary" className="h-11 px-5 opacity-65" disabled title="GitHub sign-in is coming soon">
                       <Github className="h-4 w-4" />
-                      {busyProvider === 'github' ? 'Opening GitHub…' : 'Continue with GitHub'}
+                      Continue with GitHub · coming soon
                     </Button>
                   </>
                 )}
@@ -197,7 +198,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
             <Link to="/terms" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Terms</Link>
             <a href="https://paypal.me/dracorisz" target="_blank" rel="noopener noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Support</a>
             <a href="https://www.youtube.com/@AppForgeDragon" target="_blank" rel="noopener noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">YouTube</a>
-            <span>Google + GitHub OAuth · Supabase Auth · Vercel · PWA</span>
+            <span>Google OAuth · Supabase Auth · Vercel · PWA</span>
           </span>
         </footer>
       </div>
