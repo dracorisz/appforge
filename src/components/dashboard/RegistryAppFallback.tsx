@@ -6,12 +6,13 @@ import { getAllApps } from '@/lib/registry'
 import { DesktopBuddy } from './DesktopBuddy'
 import { DesktopBuddyAssetLab } from './DesktopBuddyAssetLab'
 import { DesktopBuddyKdeLibrary } from './DesktopBuddyKdeLibrary'
+import { DesktopBuddyProviderLab } from './DesktopBuddyProviderLab'
 import { WidgetPreferencePanel } from './WidgetPreferencePanel'
 
 export function RegistryAppFallback() {
   const { slug } = useParams()
 
-  if (slug === 'desktop-buddy') return <><WidgetPreferencePanel kind="desktop-buddy" /><DesktopBuddy /><DesktopBuddyKdeLibrary /><DesktopBuddyAssetLab /></>
+  if (slug === 'desktop-buddy') return <><WidgetPreferencePanel kind="desktop-buddy" /><DesktopBuddy /><DesktopBuddyKdeLibrary /><DesktopBuddyProviderLab /><DesktopBuddyAssetLab /></>
 
   const app = getAllApps().find((item) => item.route === `/apps/${slug}`)
 
