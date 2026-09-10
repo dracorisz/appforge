@@ -38,9 +38,11 @@ import { DragonArenaIcon } from './DragonArenaIcon'
 import {
   appSidebarPreferenceKey,
   isAppVisibleInSidebar,
+  isCategoryVisibleInSidebar,
   loadCategoryOverrides,
   resetCategoryOverride,
   restoreDefaultSidebarApps,
+  restoreDefaultSidebarCategories,
   resolveCategories,
   subscribeCategoryOverrides,
   updateCategoryOverride,
@@ -125,13 +127,24 @@ function WorkspaceEditor({ apps, categories, onOpenCategory }: { apps: AppDefini
   const startEdit = (category: CategoryDefinition) => { setEditing(category); setName(category.name); setDescription(category.description) }
   const save = () => { if (!editing || !name.trim()) return; updateCategoryOverride(editing.id, { name: name.trim(), description: description.trim() }); setEditing(null) }
   const visibleCount = apps.filter((app) => isAppVisibleInSidebar(app.id, overrides[appSidebarPreferenceKey(app.id)])).length
+  const visibleCategoryCount = categories.filter((category) => isCategoryVisibleInSidebar(category.id, overrides[category.id])).length
 
   return (
     <div className="space-y-6">
       <Card className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div><h2 className="text-sm font-semibold text-foreground">Workspace shortcuts</h2><p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">Choose individual apps that should appear in the sidebar. {visibleCount} app{visibleCount === 1 ? '' : 's'} currently selected. Your choices use the existing synced preference store.</p></div>
-        <Button variant="secondary" size="sm" onClick={restoreDefaultSidebarApps}><RotateCcw className="h-4 w-4" /> Restore app defaults</Button>
+        <div><h2 className="text-sm font-semibold text-foreground">Workspace shortcuts</h2><p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">Choose categories and individual apps that should appear in the sidebar. {visibleCategoryCount} categor{visibleCategoryCount === 1 ? 'y' : 'ies'} and {visibleCount} app{visibleCount === 1 ? '' : 's'} currently selected. Your choices use the existing synced preference store.</p></div>
+        <div className="flex flex-wrap gap-2"><Button variant="secondary" size="sm" onClick={restoreDefaultSidebarCategories}><RotateCcw className="h-4 w-4" /> Restore category defaults</Button><Button variant="secondary" size="sm" onClick={restoreDefaultSidebarApps}><RotateCcw className="h-4 w-4" /> Restore app defaults</Button></div>
       </Card>
+
+      <section>
+        <SectionTitle title="Category shortcuts" subtitle="Choose which category groups appear below Workspace in the sidebar." />
+        <div className="grid gap-3 md:grid-cols-2">{categories.map((category) => {
+          const count = getAppsByCategory(category.id).length
+          const customized = Boolean(overrides[category.id])
+          const visible = isCategoryVisibleInSidebar(category.id, overrides[category.id])
+          return <Card key={category.id} className="flex items-center gap-3 p-4"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-background/45 text-muted-foreground"><AppIcon name={category.icon} className="h-4 w-4" /></span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="truncate text-sm font-semibold text-foreground">{category.name}</h3>{customized && <Badge color="blue">Customized</Badge>}</div><p className="mt-0.5 truncate text-xs text-muted-foreground">{count} {count === 1 ? 'app' : 'apps'} · {category.description}</p></div><Switch checked={visible} onCheckedChange={(checked) => updateCategoryOverride(category.id, { visibleInSidebar: checked })} label={`${visible ? 'Hide' : 'Show'} ${category.name} in sidebar`} /></Card>
+        })}</div>
+      </section>
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {apps.filter((app) => app.status !== 'deprecated').map((app) => {

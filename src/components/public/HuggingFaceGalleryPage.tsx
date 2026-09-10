@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, ExternalLink, Image as ImageIcon, Loader2, MessageSquareText, Sparkles } from 'lucide-react'
 import { Badge, BuildBadge, Card } from '@/components/ui'
 import { supabase, SUPABASE_PROJECT_URL } from '@/lib/supabase'
-import { StoryStudioTeaserCard } from './StoryStudioTeaserCard'
 
 export type PublicDragonAsset = {
   id: string
@@ -130,8 +129,6 @@ export function HuggingFaceGalleryPage() {
         <section><div className="mb-2 flex items-end justify-between gap-3"><div><h2 className="text-xl font-semibold tracking-tight text-white">Public generated assets</h2><p className="mt-1 text-sm text-white/45">Infinite cinematic carousel; the active scene stays larger than its neighbors.</p></div><span className="text-xs text-white/40">{assets.length} scenes</span></div>{error && <Card className="mb-4 border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">Could not load the public gallery: {error}</Card>}{loading ? <Card className="flex items-center justify-center gap-2 border-white/10 bg-white/[0.035] p-10 text-sm text-white/45"><Loader2 className="h-4 w-4 animate-spin" /> Loading public Story Studio assets…</Card> : <InfiniteShowcase assets={assets} />}</section>
 
         <section className="grid gap-4 lg:grid-cols-2"><Card className="border-white/10 bg-white/[0.035] p-4 text-white"><div className="flex items-center gap-2 text-sm font-semibold"><MessageSquareText className="h-4 w-4" /> Story-model rotation</div><p className="mt-1 text-xs leading-5 text-white/50">Shared requests rotate through available Hugging Face credentials and these text models until one succeeds.</p><div className="mt-3 space-y-2">{GAME_MASTER_MODELS.map((model, i) => <div key={model.id} className="rounded-xl border border-white/10 bg-black/20 p-3"><div className="font-mono text-xs text-white/85">{i + 1}. {model.id}</div><div className="mt-1 text-xs font-medium text-white/70">{model.role}</div><div className="mt-0.5 text-xs leading-5 text-white/45">{model.note}</div></div>)}</div></Card><Card className="border-white/10 bg-white/[0.035] p-4 text-white"><div className="flex items-center gap-2 text-sm font-semibold"><ImageIcon className="h-4 w-4" /> Scene-model + provider rotation</div><p className="mt-1 text-xs leading-5 text-white/50">AppForge resolves each model’s current provider mapping and tries compatible providers within a bounded request.</p><div className="mt-3 space-y-2">{IMAGE_MODELS.map((model, i) => <div key={model.id} className="rounded-xl border border-white/10 bg-black/20 p-3"><div className="font-mono text-xs text-white/85">{i + 1}. {model.id}</div><div className="mt-1 text-xs font-medium text-white/70">{model.role}</div><div className="mt-0.5 text-xs leading-5 text-white/45">{model.note}</div></div>)}</div><div className="mt-3 flex flex-wrap gap-1.5">{IMAGE_PROVIDERS.map((provider) => <Badge key={provider} color="slate">{provider}</Badge>)}</div></Card></section>
-
-        <section><div className="mb-3"><h2 className="text-base font-semibold text-white">Generation teaser</h2><p className="mt-1 text-xs text-white/45">Curated Story Studio video reference.</p></div><div className="max-w-2xl"><StoryStudioTeaserCard /></div></section>
       </main>
     </div>
   )

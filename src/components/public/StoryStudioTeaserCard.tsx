@@ -23,7 +23,7 @@ export function StoryStudioTeaserCard() {
           <p className="mt-1 text-[11px] text-white/55">Visual storytelling showcase</p>
         </div>
         <div className="pointer-events-none absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/55 px-2.5 py-1 text-[10px] font-medium text-white backdrop-blur-sm">
-          <Sparkles className="h-3 w-3" /> Generation teaser
+          <Sparkles className="h-3 w-3" /> Teaser
         </div>
       </div>
       <div className="flex items-center justify-between gap-3 border-t border-white/10 px-4 py-3">

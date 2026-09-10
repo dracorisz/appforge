@@ -7,7 +7,7 @@ import { BUILD_INFO } from '@/lib/buildInfo'
 import { useAuth } from './AuthProvider'
 import { consumeReturnPath, normalizeReturnPath } from './returnPath'
 
-const YOUTUBE_EMBED_URL = 'https://www.youtube-nocookie.com/embed/tWnZNkPxlOo?rel=0&modestbranding=1'
+const YOUTUBE_EMBED_URL = 'https://www.youtube-nocookie.com/embed/5dAQXJXbvhI?rel=0&modestbranding=1'
 const APPFORGE_MARK = '/favicon.svg?v=2'
 const DOCS_URL = 'https://docs.sstoken.space/'
 const CHANGELOG_URL = 'https://github.com/dracorisz/appforge/blob/main/CHANGELOG.md'
@@ -157,7 +157,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
                 <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"><PlayCircle className="h-4 w-4" /> Product walkthrough</div>
                 <h2 id="walkthrough-title" className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">See AppForge in action</h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">A concise walkthrough of the current AppForge experience, including the public tools and authenticated workspace. The privacy-enhanced YouTube embed loads only when this section enters the browser viewport.</p>
-                <a href="https://www.youtube.com/watch?v=tWnZNkPxlOo" target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Open on YouTube <ArrowRight className="h-4 w-4" /></a>
+                <a href="https://www.youtube.com/watch?v=5dAQXJXbvhI" target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Open on YouTube <ArrowRight className="h-4 w-4" /></a>
               </div>
               <div className="overflow-hidden rounded-2xl border border-border/70 bg-black shadow-xl shadow-foreground/5">
                 <iframe src={YOUTUBE_EMBED_URL} title="AppForge product walkthrough" className="aspect-video w-full border-0" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
