@@ -5,10 +5,14 @@
 - **Repo**: `dracorisz/appforge`
 - **Branch**: `main`
 - **Production**: `https://www.sstoken.space/`
+- **Docs**: `https://dracorisz.github.io/appforge/`
+- **Integrated environment guide**: `docs/ENVIRONMENT.md`
 - **Dev**: `npm run dev`
 - **Typecheck**: `npm run typecheck`
 - **Build**: `npm run build`
 - **Stabilization source of truth**: `docs/STABILIZATION_TRACKER.md`
+
+Before acting on feature-specific notes below, read `docs/ENVIRONMENT.md`. It defines the current browser/server secret boundary, integrated services, validation contract, Pages/Vercel release split, and the source-of-truth files a new developer or agent should inspect.
 
 Use the tracker before relying on older chat/session notes. It distinguishes code-complete work from production verification that may still be hidden by deployment lag.
 
@@ -38,6 +42,7 @@ Use the tracker before relying on older chat/session notes. It distinguishes cod
 - New Scrapper saves no longer create `dragon_arena_assets` records.
 - Manual uploads go only to General; Dragon Arena and Scrapper Pro are source-backed folders.
 - Production schema/RPC/bucket drift that previously caused Media Vault 404s has been repaired and tracked in migrations.
+- Media Vault extended with external references + source identity for Scrapper Pro.
 
 ### Scrapper Pro
 
@@ -54,6 +59,8 @@ Use the tracker before relying on older chat/session notes. It distinguishes cod
 
 ## Current environment
 
+The canonical variable inventory is `.env.example`; the handling rules and service map are in `docs/ENVIRONMENT.md`.
+
 ```text
 VITE_SUPABASE_URL=
 VITE_SUPABASE_PUBLISHABLE_KEY=
@@ -68,7 +75,7 @@ OPENROUTER_API_KEY=      # compatibility / personal-owner GM path if retained
 OPENROUTER_MODEL=        # optional
 ```
 
-Do not expose server tokens in `VITE_*` variables.
+Do not expose server tokens in `VITE_*` variables. Do not copy real credentials into handoffs.
 
 ## Dragon Arena provider behavior
 
@@ -123,16 +130,17 @@ The root `package.json` is still **1.18.0**. This is intentionally tracked as an
 
 ## Files to inspect first
 
-1. `docs/STABILIZATION_TRACKER.md`
-2. `api/ai-game.js`
-3. `api/dragon-image.js`
-4. `src/components/dashboard/PF_AIDragonArena.tsx`
-5. `src/lib/mediaVault.ts`
-6. `src/components/dashboard/PF_UserMediaVault.tsx`
-7. `src/components/dashboard/PF_ScrapperPro.tsx`
-8. `src/components/resources/Settings.tsx`
-9. `src/components/resources/People.tsx`
-10. `src/lib/registry.ts`
+1. `docs/ENVIRONMENT.md`
+2. `docs/STABILIZATION_TRACKER.md`
+3. `api/ai-game.js`
+4. `api/dragon-image.js`
+5. `src/components/dashboard/PF_AIDragonArena.tsx`
+6. `src/lib/mediaVault.ts`
+7. `src/components/dashboard/PF_UserMediaVault.tsx`
+8. `src/components/dashboard/PF_ScrapperPro.tsx`
+9. `src/components/resources/Settings.tsx`
+10. `src/components/resources/People.tsx`
+11. `src/lib/registry.ts`
 
 ## Next practical work
 
