@@ -4,11 +4,12 @@ import { Link, useParams } from 'react-router-dom'
 import { Badge, Card } from '@/components/ui'
 import { getAllApps } from '@/lib/registry'
 import { DesktopBuddy } from './DesktopBuddy'
+import { DesktopBuddyAssetLab } from './DesktopBuddyAssetLab'
 
 export function RegistryAppFallback() {
   const { slug } = useParams()
 
-  if (slug === 'desktop-buddy') return <DesktopBuddy />
+  if (slug === 'desktop-buddy') return <><DesktopBuddy /><DesktopBuddyAssetLab /></>
 
   const app = getAllApps().find((item) => item.route === `/apps/${slug}`)
 
