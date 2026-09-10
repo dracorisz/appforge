@@ -7,15 +7,21 @@ const FALLBACK_DESCRIPTION = 'AppForge is an open-source toolbox of focused web 
 const SOCIAL_IMAGE = `${SITE_URL}/favicon/apple-touch-icon.png`
 
 const publicRoutes = new Set([
-  '/', '/privacy', '/terms', '/huggingface',
-  '/apps/scrapper-pro', '/pf-scrapper-pro',
+  '/', '/explore', '/privacy', '/terms', '/huggingface',
+  '/apps/getter-pro', '/apps/scrapper-pro', '/pf-scrapper-pro',
   '/apps/weather-now', '/pf-weather-now',
+  '/apps/crypto-track', '/pf-crypto-track',
   '/apps/any-converter',
+  '/apps/favicon-studio',
+  '/apps/svg-icons',
+  '/apps/landing-builder',
   '/apps/ai-dragon-arena', '/pf-ai-dragon-arena',
 ])
 const aliases: Record<string, string> = {
-  '/pf-scrapper-pro': '/apps/scrapper-pro',
+  '/apps/scrapper-pro': '/apps/getter-pro',
+  '/pf-scrapper-pro': '/apps/getter-pro',
   '/pf-weather-now': '/apps/weather-now',
+  '/pf-crypto-track': '/apps/crypto-track',
   '/pf-ai-dragon-arena': '/apps/ai-dragon-arena',
 }
 
@@ -43,11 +49,18 @@ export function updateSeo(pathname: string) {
   const canonicalPath = aliases[pathname] || pathname
   const app = getAllApps().find((item) => item.route === canonicalPath)
   const isHuggingFaceGallery = canonicalPath === '/huggingface'
+  const isAppsDirectory = canonicalPath === '/explore'
   const isPublic = publicRoutes.has(pathname)
-  const title = isHuggingFaceGallery ? `Dragon Arena × Hugging Face | ${SITE_NAME}` : app ? `${app.name} | ${SITE_NAME}` : FALLBACK_TITLE
-  const description = isHuggingFaceGallery
-    ? 'Explore AppForge Dragon Arena Hugging Face model rotation and public AI-generated fantasy scenes.'
-    : app?.description || FALLBACK_DESCRIPTION
+  const title = isAppsDirectory
+    ? `Apps | ${SITE_NAME}`
+    : isHuggingFaceGallery
+      ? `Dragon Arena × Hugging Face | ${SITE_NAME}`
+      : app ? `${app.name} | ${SITE_NAME}` : FALLBACK_TITLE
+  const description = isAppsDirectory
+    ? 'Browse AppForge web apps and utilities across AI, media, developer tools, converters, crypto, weather, productivity, and more.'
+    : isHuggingFaceGallery
+      ? 'Explore AppForge Dragon Arena Hugging Face model rotation and public AI-generated fantasy scenes.'
+      : app?.description || FALLBACK_DESCRIPTION
   const url = `${SITE_URL}${canonicalPath === '/' ? '/' : canonicalPath}`
   const robots = isPublic ? 'index, follow' : 'noindex, nofollow'
   const cover = app?.coverImage ? `${SITE_URL}${app.coverImage}` : SOCIAL_IMAGE
@@ -90,11 +103,11 @@ export function updateSeo(pathname: string) {
     isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL },
   } : {
     '@context': 'https://schema.org',
-    '@type': isHuggingFaceGallery ? 'CollectionPage' : 'WebSite',
-    name: isHuggingFaceGallery ? 'Dragon Arena × Hugging Face' : SITE_NAME,
+    '@type': isAppsDirectory || isHuggingFaceGallery ? 'CollectionPage' : 'WebSite',
+    name: isAppsDirectory ? 'AppForge Apps' : isHuggingFaceGallery ? 'Dragon Arena × Hugging Face' : SITE_NAME,
     description,
     url,
     image: cover,
-    isPartOf: isHuggingFaceGallery ? { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL } : undefined,
+    isPartOf: isAppsDirectory || isHuggingFaceGallery ? { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL } : undefined,
   })
 }
