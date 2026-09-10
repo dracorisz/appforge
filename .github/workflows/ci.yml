@@ -30,6 +30,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Audit app registry integrity
+        run: npm run audit:apps
+
       - name: Lint
         run: npm run lint
 
