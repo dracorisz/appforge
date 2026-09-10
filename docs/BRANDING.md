@@ -33,10 +33,10 @@ For documentation, Marketplace preparation, screenshots, and simple promotional 
 
 <div class="brand-assets">
   <div class="brand-asset brand-asset--dark">
-    <img src="/appforge/branding/appforge-mark-dark.svg" alt="AppForge dark branding mark" />
+    <img src="/branding/appforge-mark-dark.svg" alt="AppForge dark branding mark" />
   </div>
   <div class="brand-asset brand-asset--light">
-    <img src="/appforge/branding/appforge-mark-light.svg" alt="AppForge light branding mark" />
+    <img src="/branding/appforge-mark-light.svg" alt="AppForge light branding mark" />
   </div>
 </div>
 
@@ -64,7 +64,7 @@ Standalone apps may inherit AppForge branding while still using a distinct app i
 
 ## Product naming
 
-Use **AppForge** for the platform and the canonical registry name for individual apps. Current examples include **Story Studio**, **Getter Pro**, **Media Vault**, **Any to Any Converter**, and **Task List**.
+Use **AppForge** for the platform and the canonical registry name for individual apps. Current examples include **Desktop Buddy**, **Story Studio**, **Getter Pro**, **Media Vault**, **Any to Any Converter**, and **Task List**.
 
 Compatibility IDs/routes may intentionally preserve historical names (`ai-dragon-arena`, `scrapper-pro`) internally. Do not surface those legacy names as the primary product label unless a migration/debugging context requires it.
 
