@@ -5,12 +5,13 @@ import { Badge, Card } from '@/components/ui'
 import { getAllApps } from '@/lib/registry'
 import { DesktopBuddy } from './DesktopBuddy'
 import { DesktopBuddyAssetLab } from './DesktopBuddyAssetLab'
+import { DesktopBuddyKdeLibrary } from './DesktopBuddyKdeLibrary'
 import { WidgetPreferencePanel } from './WidgetPreferencePanel'
 
 export function RegistryAppFallback() {
   const { slug } = useParams()
 
-  if (slug === 'desktop-buddy') return <><WidgetPreferencePanel kind="desktop-buddy" /><DesktopBuddy /><DesktopBuddyAssetLab /></>
+  if (slug === 'desktop-buddy') return <><WidgetPreferencePanel kind="desktop-buddy" /><DesktopBuddy /><DesktopBuddyKdeLibrary /><DesktopBuddyAssetLab /></>
 
   const app = getAllApps().find((item) => item.route === `/apps/${slug}`)
 
@@ -37,7 +38,7 @@ export function RegistryAppFallback() {
         </div>
         <div className="mt-5 flex flex-wrap gap-3">
           <Link to="/apps" className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-accent"><ArrowLeft className="h-4 w-4" /> All apps</Link>
-          <a href="https://dracorisz.github.io/appforge/PROJECT-PULSE" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-accent">Project status <ExternalLink className="h-4 w-4" /></a>
+          <a href="https://docs.sstoken.space/PROJECT-PULSE" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-accent">Project status <ExternalLink className="h-4 w-4" /></a>
         </div>
       </Card>
     </div>
