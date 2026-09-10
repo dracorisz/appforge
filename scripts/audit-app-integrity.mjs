@@ -2,6 +2,7 @@ import fs from 'node:fs'
 
 const registrySource = fs.readFileSync(new URL('../src/lib/registry.ts', import.meta.url), 'utf8')
 const appSource = fs.readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8')
+const registryFallbackSource = fs.readFileSync(new URL('../src/components/dashboard/RegistryAppFallback.tsx', import.meta.url), 'utf8')
 
 const categoryMatches = [...registrySource.matchAll(/\{ id: '([^']+)', name: '[^']+', description: '[^']+', icon: '[^']+', apps: \[\] \}/g)]
 const categories = new Set(categoryMatches.map((match) => match[1]))
@@ -42,6 +43,9 @@ const explicitRoutes = new Set()
 for (const match of appSource.matchAll(/<Route\s+path="([^"]+)"/g)) explicitRoutes.add(match[1])
 for (const match of appSource.matchAll(/<Route\s+path=\{'([^']+)'\}/g)) explicitRoutes.add(match[1])
 
+const dedicatedFallbackSlugs = new Set()
+for (const match of registryFallbackSource.matchAll(/slug\s*===\s*'([^']+)'/g)) dedicatedFallbackSlugs.add(match[1])
+
 const hasPlannedFallback = explicitRoutes.has('/apps/:slug')
 
 for (const [id, values] of duplicateValues(apps, 'id')) {
@@ -59,7 +63,7 @@ for (const [route, values] of duplicateValues(apps, 'route')) {
   if (!matchesExpected) errors.push(`Unexpected duplicate route: ${route} (${values.map((item) => item.id).join(', ')})`)
 }
 
-const implementationCounts = { explicit: 0, shared: 0, planned: 0 }
+const implementationCounts = { explicit: 0, shared: 0, dedicatedFallback: 0, planned: 0 }
 
 for (const app of apps) {
   if (!categories.has(app.category)) errors.push(`${app.id}: unknown category ${app.category}`)
@@ -73,18 +77,20 @@ for (const app of apps) {
   const slug = app.route.startsWith('/apps/') ? app.route.slice('/apps/'.length) : null
   const explicitRoute = explicitRoutes.has(app.route)
   const sharedRoute = Boolean(slug && sharedRouteSlugs.has(slug))
+  const dedicatedFallbackRoute = Boolean(slug && hasPlannedFallback && dedicatedFallbackSlugs.has(slug))
   const plannedRoute = Boolean(slug && hasPlannedFallback && app.status === 'idea')
 
   if (explicitRoute) implementationCounts.explicit += 1
   else if (sharedRoute) implementationCounts.shared += 1
+  else if (dedicatedFallbackRoute) implementationCounts.dedicatedFallback += 1
   else if (plannedRoute) implementationCounts.planned += 1
   else errors.push(`${app.id}: ${app.status} app has no proven implementation route for ${app.route}`)
 
-  if (app.status === 'idea' && (explicitRoute || sharedRoute)) {
+  if (app.status === 'idea' && (explicitRoute || sharedRoute || dedicatedFallbackRoute)) {
     warnings.push(`${app.id}: idea status has an implementation route; confirm maturity is intentional`)
   }
 
-  if (app.status !== 'idea' && !explicitRoute && !sharedRoute) {
+  if (app.status !== 'idea' && !explicitRoute && !sharedRoute && !dedicatedFallbackRoute) {
     errors.push(`${app.id}: ${app.status} apps may not rely on the generic planned-app fallback`)
   }
 }
@@ -103,11 +109,16 @@ else {
   if (storyStudio.icon !== 'Gamepad2') errors.push(`ai-dragon-arena: expected joypad icon key Gamepad2 (found ${storyStudio.icon})`)
 }
 
+const desktopBuddy = apps.find((item) => item.id === 'desktop-buddy')
+if (!desktopBuddy) errors.push('Desktop Buddy canonical registry entry is missing')
+else if (desktopBuddy.route !== '/apps/desktop-buddy') errors.push(`desktop-buddy: canonical route must be /apps/desktop-buddy (found ${desktopBuddy.route})`)
+
+if (apps.some((item) => item.id === 'pariflow-smpl')) errors.push('Pariflow Smpl must remain retired from the canonical registry')
 if (!apps.length) errors.push('No apps parsed from src/lib/registry.ts')
 
 console.log(`AppForge app integrity audit: ${apps.length} registry entries across ${categories.size} categories.`)
 console.log(`Statuses: ${[...validStatuses].map((status) => `${status}=${apps.filter((app) => app.status === status).length}`).join(', ')}`)
-console.log(`Implementation surfaces: explicit=${implementationCounts.explicit}, shared=${implementationCounts.shared}, planned=${implementationCounts.planned}`)
+console.log(`Implementation surfaces: explicit=${implementationCounts.explicit}, shared=${implementationCounts.shared}, dedicated-fallback=${implementationCounts.dedicatedFallback}, planned=${implementationCounts.planned}`)
 
 if (warnings.length) {
   console.log('\nWarnings:')
