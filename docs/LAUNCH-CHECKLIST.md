@@ -14,17 +14,18 @@ acceptance lists for their features. Do not close them based on preparation alon
 - [x] Cloud budget/model/setup guide at `CLOUD-EXPERIMENTS.md`.
 - [x] Story Studio links directly to Settings → Integrations; provider token fields are masked.
 - [x] Inert Dragon Arena theme card removed from global Appearance; functioning Story appearance palette inside the app (Ember/Frost/Forest/Workspace).
+- [x] Vercel Git deployments disabled for every branch/environment with `git.deploymentEnabled: false`; production releases are manual-only via `vercel deploy --prod`.
+- [x] Project Pulse + GitHub Pages static/PWA fallback added; server-backed `/api` features remain on the full production host.
 
 ## Next actions, in order
 
 | Priority | Action | Gate / related work |
 |---|---|---|
-| P0 | Verify exact Cloud project, welcome-credit expiry and reported $5/day setting | Account access; native budget caps are not universally daily or account-wide |
 | P0 | Deploy worker privately; verify IAM, then enable and run one job of each kind | `CLOUD-EXPERIMENTS.md`; no live generation yet |
 | P0 | Verify duplicate ID, quota exhaustion, anonymous rejection and persisted output in real Cloud | Local unit tests are not cloud integration evidence |
 | P0 | Connect Vercel to private worker using workload identity federation | No long-lived downloaded service-account keys; per-user authorization before production traffic |
 | P0 | Verify live Story Studio Novel/Comics → scene → refresh → gallery | [#7](https://github.com/dracorisz/appforge/issues/7), [#8](https://github.com/dracorisz/appforge/issues/8) |
-| P0 | Verify production build freshness, OAuth return path and public beta smoke pass | [#1](https://github.com/dracorisz/appforge/issues/1); check deployment capacity before retrying |
+| P0 | Run an intentional production release with `vercel deploy --prod`, then verify build freshness, OAuth return path and public beta smoke pass | [#1](https://github.com/dracorisz/appforge/issues/1); no Git-triggered deploys |
 | P0 | Finish registry/header identity and actual desktop/mobile screenshots | [#35](https://github.com/dracorisz/appforge/issues/35) |
 | P1 | Disable Supabase automatic preview branching; switch CodeQL default setup to periodic workflow | External dashboard settings; not changed by repository files |
 | P1 | Finish reviewed marketing metadata/export; delegated uploads only after approved OAuth | [#34](https://github.com/dracorisz/appforge/issues/34), [#29](https://github.com/dracorisz/appforge/issues/29) |
@@ -34,9 +35,10 @@ acceptance lists for their features. Do not close them based on preparation alon
 
 ## Current blockers / limits
 
-- Available cloud browser starts with a blank tab; the user's existing tab group is not present.
-- Google Cloud navigation and tab refresh timed out. Billing cap and account setup remain unverified.
-- No authenticated Google Cloud CLI is present in the workspace. Setup scripts were syntax/plan checked, not executed against Cloud.
+- Google Cloud billing limits are treated as user-configured; repository code still keeps its separate $4/day application reservation ceiling below the stated $5/day target.
+- No authenticated Google Cloud CLI is present in this workspace. Setup scripts were syntax/plan checked, not executed against Cloud.
 - Browser visual/authenticated smoke tests are pending; no production success is inferred from a local build.
+- Vercel will not deploy from Git pushes now. Production freshness changes only when an explicit `vercel deploy --prod` is run.
+- GitHub Pages is a static fallback/publication target and cannot serve the Vercel `/api` backend.
 - No YouTube publishing, public asset sharing, billing upgrade or production database migration is performed by this work.
 - Story appearance is browser-local and changes UI accents/canvas, not the text or art-generation prompt.
