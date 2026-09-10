@@ -56,6 +56,7 @@ const TermsOfServicePage = React.lazy(() => import('./components/public/LegalPag
 const FaviconStudio = React.lazy(() => import('./components/public/FaviconStudio'))
 const SvgIconsBrowser = React.lazy(() => import('./components/public/SvgIconsBrowser'))
 const LandingBuilder = React.lazy(() => import('./components/public/LandingBuilder'))
+const PublicAppsPage = React.lazy(() => import('./components/public/PublicAppsPage').then((module) => ({ default: module.PublicAppsPage })))
 
 const defaultSettings = { theme: 'system' as const }
 const defaultState: AppState = {
@@ -171,6 +172,7 @@ function App() {
   if (location.pathname === '/huggingface') return lazyPage(<HuggingFaceGalleryPage />)
   if (location.pathname === '/landing') return <LoginPage landingOnly />
   if (location.pathname === '/login') return <LoginPage />
+  if (!user && !loading && location.pathname === '/apps') return lazyPage(<PublicAppsPage />)
 
   if (!user && !loading) {
     if (location.pathname === '/apps/getter-pro' || location.pathname === '/apps/scrapper-pro' || location.pathname === '/pf-scrapper-pro') return <PublicToolShell toolName="Getter Pro" toolIcon={<ScrapperProIcon />}><PF_ScrapperPro /></PublicToolShell>

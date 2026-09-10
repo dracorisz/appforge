@@ -9,7 +9,7 @@ import { consumeReturnPath, normalizeReturnPath } from './returnPath'
 
 const YOUTUBE_EMBED_URL = 'https://www.youtube-nocookie.com/embed/tWnZNkPxlOo?rel=0&modestbranding=1'
 const APPFORGE_MARK = '/favicon.svg?v=2'
-const DOCS_URL = 'https://dracorisz.github.io/appforge/'
+const DOCS_URL = 'https://docs.sstoken.space/'
 const CHANGELOG_URL = 'https://github.com/dracorisz/appforge/blob/main/CHANGELOG.md'
 
 const publicTools = [
@@ -72,6 +72,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
             <a href="https://paypal.me/dracorisz" target="_blank" rel="noopener noreferrer" aria-label="Support AppForge via PayPal" title="Support AppForge" className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border/70 bg-background/70 text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
               <Heart className="h-4 w-4" />
             </a>
+            <Link to="/apps" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/70 bg-background/70 px-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"><span>Apps</span></Link>
             <a href={CHANGELOG_URL} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/70 bg-background/70 px-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
               <History className="h-4 w-4" /> <span className="hidden sm:inline">Changelog</span>
             </a>
