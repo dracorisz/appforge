@@ -1,5 +1,5 @@
 import type { CategoryDefinition } from './registry'
-import { getAllCategories } from './registry'
+import { getAllApps, getAllCategories } from './registry'
 
 export interface CategoryOverride {
   name?: string
@@ -9,10 +9,20 @@ export interface CategoryOverride {
 }
 
 export const DEFAULT_SIDEBAR_CATEGORY_IDS = ['ai', 'utilities', 'image', 'converters'] as const
+export const DEFAULT_SIDEBAR_APP_IDS = ['weather-now', 'scrapper-pro', 'any-converter', 'desktop-buddy'] as const
 
 export function isCategoryVisibleInSidebar(id: string, override?: CategoryOverride) {
   if (typeof override?.visibleInSidebar === 'boolean') return override.visibleInSidebar
   return DEFAULT_SIDEBAR_CATEGORY_IDS.includes(id as typeof DEFAULT_SIDEBAR_CATEGORY_IDS[number])
+}
+
+export function appSidebarPreferenceKey(id: string) {
+  return `app:${id}`
+}
+
+export function isAppVisibleInSidebar(id: string, override?: CategoryOverride) {
+  if (typeof override?.visibleInSidebar === 'boolean') return override.visibleInSidebar
+  return DEFAULT_SIDEBAR_APP_IDS.includes(id as typeof DEFAULT_SIDEBAR_APP_IDS[number])
 }
 
 const STORAGE_KEY = 'appforge-category-overrides-v2'
@@ -63,6 +73,20 @@ export function restoreDefaultSidebarCategories() {
     next[category.id] = {
       ...(next[category.id] || {}),
       visibleInSidebar: DEFAULT_SIDEBAR_CATEGORY_IDS.includes(category.id as typeof DEFAULT_SIDEBAR_CATEGORY_IDS[number]),
+    }
+  })
+  saveCategoryOverrides(next)
+  return next
+}
+
+export function restoreDefaultSidebarApps() {
+  const current = loadCategoryOverrides()
+  const next = { ...current }
+  getAllApps().forEach((app) => {
+    const key = appSidebarPreferenceKey(app.id)
+    next[key] = {
+      ...(next[key] || {}),
+      visibleInSidebar: DEFAULT_SIDEBAR_APP_IDS.includes(app.id as typeof DEFAULT_SIDEBAR_APP_IDS[number]),
     }
   })
   saveCategoryOverrides(next)
