@@ -2,10 +2,9 @@ import React from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
   ArrowLeftRight, Binary, Braces, Calendar, ChevronLeft, ChevronRight, CloudSun, Code, FileCode, FileText, Hash,
-  Home, Image as ImageIcon, LayoutDashboard, Lock, LogOut, Monitor, Palette, QrCode, Regex, Search,
-  Settings, Sliders, Sparkles, Sun, Moon, Table2, Type, Users, Video, Wrench,
+  Home, Image as ImageIcon, LayoutDashboard, Lock, LogOut, Palette, QrCode, Regex, Search,
+  Settings, Sliders, Sparkles, Table2, Type, Users, Video, Wrench,
 } from 'lucide-react'
-import { useTheme } from '../../hooks/useTheme'
 import { getAppsByCategory, searchApps } from '@/lib/registry'
 import { isCategoryVisibleInSidebar, loadCategoryOverrides, resolveCategories, subscribeCategoryOverrides } from '@/lib/categories'
 import { useAuth } from '@/auth/AuthProvider'
@@ -24,7 +23,6 @@ const coreItems = [
 
 export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }: { onClose?: () => void; collapsed?: boolean; onToggleCollapse?: () => void }) {
   const location = useLocation()
-  const { mode, setMode } = useTheme()
   const { user, signOut } = useAuth()
   const [internalCollapsed, setInternalCollapsed] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState('')
@@ -54,9 +52,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
     isCategoryVisibleInSidebar(category.id, categoryOverrides[category.id]) && getAppsByCategory(category.id).length > 0,
   )
   const toggleCollapse = () => { if (onToggleCollapse) onToggleCollapse(); else setInternalCollapsed((value) => !value) }
-  const cycleTheme = () => { if (mode === 'light') setMode('dark'); else if (mode === 'dark') setMode('system'); else setMode('light') }
   const handleSignOut = async () => { setSigningOut(true); try { await signOut(); onClose?.() } finally { setSigningOut(false) } }
-  const ThemeIcon = mode === 'light' ? Sun : mode === 'dark' ? Moon : Monitor
   const avatar = profileAvatar || user?.user_metadata?.avatar_url || user?.user_metadata?.picture
   const displayName = profileName || user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || 'Account'
   const initial = String(displayName).trim().charAt(0).toUpperCase() || 'A'
@@ -76,7 +72,6 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
       <div className="px-3 pb-2"><SidebarWeather collapsed={isCollapsed} /></div>
       <div className="space-y-1 border-t border-border p-3">
         {user && <NavLink to="/settings" onClick={onClose} className={`mb-2 flex items-center gap-2 rounded-xl border border-border/60 bg-background/35 p-2 hover:border-foreground/15 ${isCollapsed ? 'justify-center' : ''}`} title={isCollapsed ? String(displayName) : undefined}><div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-accent text-xs font-semibold text-foreground">{avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : initial}</div>{!isCollapsed && <div className="min-w-0 flex-1"><div className="truncate text-xs font-medium text-foreground">{String(displayName)}</div>{user.email && <div className="truncate text-[10px] text-muted-foreground">{user.email}</div>}</div>}</NavLink>}
-        <button onClick={cycleTheme} title={isCollapsed ? 'Toggle theme' : undefined} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"><ThemeIcon className="h-4 w-4 shrink-0" />{!isCollapsed && <span>{mode === 'light' ? 'Light' : mode === 'dark' ? 'Dark' : 'System'}</span>}</button>
         <button onClick={() => void handleSignOut()} disabled={signingOut} title={isCollapsed ? 'Sign out' : undefined} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-60"><LogOut className="h-4 w-4 shrink-0" />{!isCollapsed && <span>{signingOut ? 'Signing out…' : 'Sign out'}</span>}</button>
       </div>
     </aside>
@@ -84,8 +79,5 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
 }
 
 export function MobileHeader({ onOpen, triggerRef }: { onOpen: () => void; triggerRef?: React.Ref<HTMLButtonElement> }) {
-  const { mode, setMode } = useTheme()
-  const cycleTheme = () => { if (mode === 'light') setMode('dark'); else if (mode === 'dark') setMode('system'); else setMode('light') }
-  const ThemeIcon = mode === 'light' ? Sun : mode === 'dark' ? Moon : Monitor
-  return <header className="flex h-14 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur-xl lg:hidden"><button ref={triggerRef} onClick={onOpen} className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Open navigation"><Sliders className="h-5 w-5" /></button><NavLink to="/" className="flex items-center gap-2"><img src="/favicon.svg" alt="AppForge" className="h-8 w-8" /><span className="text-sm font-semibold text-foreground">AppForge</span></NavLink><button onClick={cycleTheme} className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Change theme"><ThemeIcon className="h-5 w-5" /></button></header>
+  return <header className="flex h-14 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur-xl lg:hidden"><button ref={triggerRef} onClick={onOpen} className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Open navigation"><Sliders className="h-5 w-5" /></button><NavLink to="/" className="flex items-center gap-2"><img src="/favicon.svg" alt="AppForge" className="h-8 w-8" /><span className="text-sm font-semibold text-foreground">AppForge</span></NavLink><span className="h-9 w-9" aria-hidden="true" /></header>
 }
