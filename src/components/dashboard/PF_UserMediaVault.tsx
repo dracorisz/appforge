@@ -59,16 +59,35 @@ const sourceLabel = (item: VaultMedia) => {
 
 const displaySource = (item: VaultMedia) => item.source_app === 'scrapper-pro' ? 'Getter Pro' : item.source_app || item.source_bucket || 'Media Vault'
 
+const metadataUrl = (item: VaultMedia, key: 'media_url' | 'thumbnail' | 'original_url') => {
+  const value = item.metadata?.[key]
+  return typeof value === 'string' && value.trim() ? value.trim() : null
+}
+
+const uniqueUrls = (values: Array<string | null | undefined>) => [...new Set(values.filter((value): value is string => Boolean(value)))]
+
 const VaultThumb = ({ item }: { item: VaultMedia }) => {
-  const [url, setUrl] = React.useState<string | null>(null)
+  const [urls, setUrls] = React.useState<string[]>([])
+  const [urlIndex, setUrlIndex] = React.useState(0)
   React.useEffect(() => {
     let cancelled = false
-    void vaultItemUrl(item).then((value) => { if (!cancelled && value) setUrl(value) }).catch(() => undefined)
+    setUrls([])
+    setUrlIndex(0)
+    void vaultItemUrl(item).then((primary) => {
+      if (cancelled) return
+      const fallbacks = item.source_bucket === 'external'
+        ? uniqueUrls([primary, metadataUrl(item, 'media_url'), metadataUrl(item, 'thumbnail')])
+        : uniqueUrls([primary])
+      setUrls(fallbacks)
+    }).catch(() => {
+      if (!cancelled && item.source_bucket === 'external') setUrls(uniqueUrls([metadataUrl(item, 'media_url'), metadataUrl(item, 'thumbnail')]))
+    })
     return () => { cancelled = true }
   }, [item])
 
   const Icon = kindIcon(item.kind)
-  if (item.kind === 'image' && url) return <img src={url} alt={item.title || item.file_name || ''} loading="lazy" className="h-full w-full object-cover" />
+  const url = urls[urlIndex] || null
+  if (item.kind === 'image' && url) return <img src={url} alt={item.title || item.file_name || ''} loading="lazy" onError={() => setUrlIndex((index) => index + 1)} className="h-full w-full object-cover" />
   if (item.kind === 'video' && url) return (
     <>
       <video src={url} muted preload="metadata" className="h-full w-full object-cover" />
@@ -82,6 +101,10 @@ const VaultActions = ({ item, onPreview, onDelete, dark = false }: { item: Vault
   const [downloadUrl, setDownloadUrl] = React.useState('#')
   React.useEffect(() => {
     let cancelled = false
+    if (item.source_bucket === 'external') {
+      setDownloadUrl(metadataUrl(item, 'original_url') || item.external_url || '#')
+      return () => { cancelled = true }
+    }
     void vaultItemUrl(item).then((value) => { if (!cancelled && value) setDownloadUrl(value) }).catch(() => undefined)
     return () => { cancelled = true }
   }, [item])
@@ -93,7 +116,7 @@ const VaultActions = ({ item, onPreview, onDelete, dark = false }: { item: Vault
   return (
     <div className="flex items-center gap-1">
       <button onClick={onPreview} className={actionClass} aria-label="Preview"><Maximize2 className="h-4 w-4" /></button>
-      <a href={downloadUrl} download target={item.source_bucket === 'external' ? '_blank' : undefined} rel={item.source_bucket === 'external' ? 'noreferrer' : undefined} className={actionClass} aria-label={item.source_bucket === 'external' ? 'Open source asset' : 'Download'}><Download className="h-4 w-4" /></a>
+      <a href={downloadUrl} download={item.source_bucket !== 'external'} target={item.source_bucket === 'external' ? '_blank' : undefined} rel={item.source_bucket === 'external' ? 'noreferrer' : undefined} className={actionClass} aria-label={item.source_bucket === 'external' ? 'Open original source' : 'Download'}><Download className="h-4 w-4" /></a>
       <button onClick={onDelete} className={dark ? `${actionClass} hover:border-red-400/30 hover:text-red-300` : 'rounded p-1.5 text-destructive hover:bg-destructive/10'} aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
     </div>
   )
@@ -130,7 +153,7 @@ export function PF_UserMediaVault() {
   const [uploadProgress, setUploadProgress] = React.useState<Record<string, number>>({})
   const [error, setError] = React.useState('')
   const [quota, setQuota] = React.useState({ quota_bytes: 0, used_bytes: 0, remaining_bytes: 0 })
-  const [preview, setPreview] = React.useState<{ item: VaultMedia; url: string } | null>(null)
+  const [preview, setPreview] = React.useState<{ item: VaultMedia; url: string; fallbacks: string[] } | null>(null)
 
   const refresh = React.useCallback(async () => {
     setLoading(true)
@@ -200,12 +223,23 @@ export function PF_UserMediaVault() {
 
   const openPreview = async (item: VaultMedia) => {
     try {
-      const url = await vaultItemUrl(item)
-      if (url) setPreview({ item, url })
+      const primary = await vaultItemUrl(item)
+      const urls = item.source_bucket === 'external'
+        ? uniqueUrls([primary, metadataUrl(item, 'media_url'), metadataUrl(item, 'thumbnail')])
+        : uniqueUrls([primary])
+      if (urls.length) setPreview({ item, url: urls[0], fallbacks: urls.slice(1) })
       else setError('No preview URL is available for this item.')
     } catch {
-      setError('Could not open preview.')
+      const fallbacks = uniqueUrls([metadataUrl(item, 'media_url'), metadataUrl(item, 'thumbnail')])
+      if (fallbacks.length) setPreview({ item, url: fallbacks[0], fallbacks: fallbacks.slice(1) })
+      else setError('Could not open preview.')
     }
+  }
+
+  const advancePreviewFallback = () => {
+    setPreview((current) => current && current.fallbacks.length
+      ? { ...current, url: current.fallbacks[0], fallbacks: current.fallbacks.slice(1) }
+      : current)
   }
 
   const usedPct = quota.quota_bytes ? Math.min(100, Math.round((quota.used_bytes / quota.quota_bytes) * 100)) : 0
@@ -277,7 +311,7 @@ export function PF_UserMediaVault() {
         })}
       </div>
 
-      {preview && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={() => setPreview(null)}>{preview.item.kind === 'video' ? <video src={preview.url} controls autoPlay className="max-h-[90vh] max-w-[90vw] rounded-xl" onClick={(event) => event.stopPropagation()} /> : preview.item.kind === 'image' ? <img src={preview.url} alt={preview.item.title || ''} className="max-h-[90vh] max-w-[90vw] rounded-xl" onClick={(event) => event.stopPropagation()} /> : <div className="max-w-md rounded-xl border border-border/70 bg-background p-6 text-center text-muted-foreground">Preview is not available for this item type. Use the source/download action to open it.</div>}<button onClick={() => setPreview(null)} className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"><X className="h-5 w-5" /></button></div>}
+      {preview && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={() => setPreview(null)}>{preview.item.kind === 'video' ? <video src={preview.url} controls autoPlay className="max-h-[90vh] max-w-[90vw] rounded-xl" onClick={(event) => event.stopPropagation()} /> : preview.item.kind === 'image' ? <img src={preview.url} alt={preview.item.title || ''} onError={advancePreviewFallback} className="max-h-[90vh] max-w-[90vw] rounded-xl" onClick={(event) => event.stopPropagation()} /> : <div className="max-w-md rounded-xl border border-border/70 bg-background p-6 text-center text-muted-foreground">Preview is not available for this item type. Use the source/download action to open it.</div>}<button onClick={() => setPreview(null)} className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"><X className="h-5 w-5" /></button></div>}
     </div>
   )
 }
