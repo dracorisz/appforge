@@ -8,6 +8,7 @@ import { consumeReturnPath, normalizeReturnPath } from './returnPath'
 
 const YOUTUBE_EMBED_URL = 'https://www.youtube-nocookie.com/embed/tWnZNkPxlOo?rel=0&modestbranding=1'
 const APPFORGE_MARK = '/favicon.svg?v=2'
+const DOCS_URL = 'https://dracorisz.github.io/appforge/'
 
 const publicTools = [
   { label: 'Weather Now', description: 'Live weather lookup', path: '/apps/weather-now', icon: Cloud },
@@ -159,7 +160,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
                     />
                     <span className="hidden">🤗</span>
                   </span>
-                  <span className="min-w-0 flex-1"><span className="block text-sm font-medium">Hugging Face showcase</span><span className="block text-xs text-muted-foreground">Models, providers and creator-selected scenes</span></span>
+                  <span className="min-w-0 flex-1"><span className="block text-sm font-medium">Hugging Face</span><span className="block text-xs text-muted-foreground">Models, providers and creator-selected scenes</span></span>
                   <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                 </Link>
               </div>
@@ -198,7 +199,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
             <Link to="/terms" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Terms</Link>
             <a href="https://paypal.me/dracorisz" target="_blank" rel="noopener noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Support</a>
             <a href="https://www.youtube.com/@AppForgeDragon" target="_blank" rel="noopener noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">YouTube</a>
-            <span>Google OAuth · Supabase Auth · Vercel · PWA</span>
+            <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Docs</a>
           </span>
         </footer>
       </div>
