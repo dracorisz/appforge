@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   patch:
+    # One-shot maintenance patch; remove this workflow after the generated commit lands.
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
