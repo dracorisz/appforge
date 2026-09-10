@@ -1,6 +1,6 @@
 import React from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { ArrowLeftRight, Image as ImageIcon, Palette, PanelsTopLeft } from 'lucide-react'
+import { ArrowLeftRight, Bitcoin, Image as ImageIcon, Palette, PanelsTopLeft } from 'lucide-react'
 import { Layout } from './components/layout/Layout'
 import { PublicToolShell } from './components/public/PublicToolShell'
 import { PublicDashboard } from './components/dashboard/PublicDashboard'
@@ -175,6 +175,7 @@ function App() {
   if (!user && !loading) {
     if (location.pathname === '/apps/getter-pro' || location.pathname === '/apps/scrapper-pro' || location.pathname === '/pf-scrapper-pro') return <PublicToolShell toolName="Getter Pro" toolIcon={<ScrapperProIcon />}><PF_ScrapperPro /></PublicToolShell>
     if (location.pathname === '/apps/weather-now' || location.pathname === '/pf-weather-now') return <PublicToolShell toolName="Weather Now" toolIcon={<WeatherNowIcon />}><PF_WeatherNow /></PublicToolShell>
+    if (location.pathname === '/apps/crypto-track' || location.pathname === '/pf-crypto-track') return <PublicToolShell toolName="Crypto Track" toolIcon={<Bitcoin className="h-4 w-4" />}><PF_CryptoTrack /></PublicToolShell>
     if (location.pathname === '/apps/any-converter') return <PublicToolShell toolName="Any Converter" toolIcon={<ArrowLeftRight className="h-4 w-4" />}><AnyToAnyConverter /></PublicToolShell>
     if (location.pathname === '/apps/favicon-studio') return <PublicToolShell toolName="Favicon Studio" toolIcon={<ImageIcon className="h-4 w-4" />}>{lazyPage(<FaviconStudio />)}</PublicToolShell>
     if (location.pathname === '/apps/svg-icons') return <PublicToolShell toolName="SVG Icons" toolIcon={<Palette className="h-4 w-4" />}>{lazyPage(<SvgIconsBrowser />)}</PublicToolShell>
@@ -191,10 +192,10 @@ function App() {
         <Route path="/apps" element={dashboard} />
         <Route path="/favorites" element={dashboard} />
         <Route path="/recent" element={dashboard} />
-        <Route path="/categories" element={dashboard} />
+        <Route path="/workspace" element={dashboard} />
+        <Route path="/categories" element={<Navigate to="/workspace" replace />} />
         <Route path="/category/:id" element={dashboard} />
         <Route path="/people" element={lazyPage(<PeoplePage />)} />
-        <Route path="/workspace" element={<Navigate to="/apps" replace />} />
 
         <Route path="/apps/getter-pro" element={<PF_ScrapperPro />} />
         <Route path="/apps/scrapper-pro" element={<Navigate to="/apps/getter-pro" replace />} />
