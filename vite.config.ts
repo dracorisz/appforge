@@ -79,12 +79,6 @@ export default defineConfig({
             purpose: 'any'
           },
           {
-            src: 'favicon/android-chrome-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any'
-          },
-          {
             src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
