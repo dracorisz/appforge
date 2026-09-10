@@ -7,7 +7,7 @@ titleTemplate: Developer Portal
 hero:
   name: AppForge Docs
   text: Build, understand, and ship focused web tools.
-  tagline: Developer documentation for the current AppForge product: apps, architecture, releases, AI providers, cloud experiments, and standalone PWA work.
+  tagline: "Developer documentation for the current AppForge product: apps, architecture, releases, AI providers, cloud experiments, and standalone PWA work."
   image:
     src: /favicon.svg
     alt: AppForge triangle mark
