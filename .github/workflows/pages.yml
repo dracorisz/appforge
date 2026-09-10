@@ -42,6 +42,17 @@ jobs:
       - name: Build VitePress documentation
         run: npx vitepress build docs
 
+      - name: Verify custom-domain artifact paths
+        run: |
+          test -f docs/.vitepress/dist/index.html
+          test -f docs/.vitepress/dist/favicon.svg
+          test -d docs/.vitepress/dist/assets
+          if grep -R -nE '(src|href)="/appforge/' docs/.vitepress/dist --include='*.html'; then
+            echo 'Custom-domain build contains stale /appforge/ asset or navigation paths.' >&2
+            exit 1
+          fi
+          grep -q 'href="/favicon.svg"' docs/.vitepress/dist/index.html
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
