@@ -11,6 +11,25 @@ export default defineConfig({
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:title', content: 'AppForge Docs' }],
     ['meta', { property: 'og:description', content: 'Build, understand, contribute to, and deploy AppForge.' }],
+    ['script', {}, `
+      (() => {
+        const scopeFragment = '/appforge/'
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            registrations
+              .filter((registration) => registration.scope.includes(scopeFragment))
+              .forEach((registration) => registration.unregister())
+          })
+        }
+        if ('caches' in window) {
+          caches.keys().then((keys) => {
+            keys
+              .filter((key) => key.toLowerCase().includes('appforge'))
+              .forEach((key) => caches.delete(key))
+          })
+        }
+      })()
+    `],
   ],
   themeConfig: {
     siteTitle: 'AppForge Docs',
