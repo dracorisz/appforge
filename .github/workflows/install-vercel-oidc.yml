@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   install:
+    # One-shot dependency sync; remove this workflow after the generated commit lands.
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
