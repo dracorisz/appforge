@@ -54,6 +54,14 @@ const downloadJson = (value: unknown, filename: string) => {
   URL.revokeObjectURL(url)
 }
 
+const filenameFor = (result: ScrapperProResult, mime = '') => {
+  const stem = result.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 72) || 'getter-result'
+  const sourceUrl = result.mediaUrl || result.thumbnail || ''
+  const urlExt = sourceUrl.match(/\.([a-z0-9]{2,5})(?:[?#]|$)/i)?.[1]?.toLowerCase()
+  const mimeExt = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : mime.includes('gif') ? 'gif' : mime.includes('jpeg') ? 'jpg' : undefined
+  return `${stem}.${mimeExt || urlExt || (result.type === 'image' ? 'jpg' : 'bin')}`
+}
+
 const TypeIcon = ({ type }: { type: ScrapperProResult['type'] }) => {
   if (type === 'image') return <ImageIcon className="h-4 w-4" />
   if (type === 'video') return <FileVideo className="h-4 w-4" />
@@ -172,6 +180,44 @@ export function PF_ScrapperProNext() {
     return next
   })
 
+  const saveOneLocal = (result: ScrapperProResult) => {
+    setSaved((current) => dedupe([result, ...current]).slice(0, 300))
+    setMessage(`Saved “${result.title}” in this browser.`)
+  }
+
+  const downloadResult = async (result: ScrapperProResult) => {
+    const target = result.mediaUrl || result.thumbnail
+    if (!target) {
+      setMessage('This result does not expose a directly downloadable media URL.')
+      return
+    }
+    try {
+      const response = await fetch(target)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const blob = await response.blob()
+      if (!blob.size) throw new Error('Empty media response')
+      const objectUrl = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = objectUrl
+      link.download = filenameFor(result, blob.type)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(objectUrl)
+      setMessage(`Downloaded “${result.title}”.`)
+    } catch {
+      const link = document.createElement('a')
+      link.href = target
+      link.target = '_blank'
+      link.rel = 'noopener noreferrer'
+      link.download = filenameFor(result)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      setMessage('The source blocks direct browser download, so the original media was opened for saving.')
+    }
+  }
+
   const saveSelectedLocal = () => {
     if (!selectedResults.length) return
     setSaved((current) => dedupe([...selectedResults, ...current]).slice(0, 300))
@@ -241,7 +287,7 @@ export function PF_ScrapperProNext() {
     <div className="mx-auto w-full max-w-7xl space-y-5 p-4 sm:p-6">
       <section className="surface-card rounded-2xl border p-5 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div><div className="flex items-center gap-2"><h1 className="text-2xl font-semibold tracking-tight">Scrapper Pro</h1><span className="rounded-full border px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">official YouTube pagination</span></div><p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Search public sources, page through official YouTube Data API results, bulk-select references, refresh metadata, archive to Media Vault, and export optional collectible-candidate metadata without implying ownership rights.</p></div>
+          <div><div className="flex items-center gap-2"><h1 className="text-2xl font-semibold tracking-tight">Getter Pro</h1><span className="rounded-full border px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">official YouTube pagination</span></div><p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Search public sources, page through official YouTube Data API results, save or download individual media, bulk-select references, archive to Media Vault, and export optional collectible-candidate metadata without implying ownership rights.</p></div>
           <div className="flex flex-wrap gap-2 text-xs text-muted-foreground"><span>{results.length} results</span><span>{selectedIds.size} selected</span><span>{saved.length} local saves</span></div>
         </div>
 
@@ -269,9 +315,10 @@ export function PF_ScrapperProNext() {
         {visibleResults.map((result) => {
           const selected = selectedIds.has(result.id)
           const savedLocal = saved.some((item) => item.id === result.id || item.url === result.url)
+          const downloadable = Boolean(result.mediaUrl || result.thumbnail)
           return <article key={result.id} className={`surface-card overflow-hidden rounded-2xl border ${selected ? 'ring-2 ring-primary/40' : ''}`}>
             <button type="button" onClick={() => toggleSelected(result.id)} className="relative block aspect-video w-full overflow-hidden bg-muted/40 text-left" aria-pressed={selected}>{result.thumbnail ? <img src={result.thumbnail} alt="" loading="lazy" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-muted-foreground"><TypeIcon type={result.type} /></div>}<span className="absolute left-2 top-2 rounded-lg bg-background/90 p-1.5 shadow">{selected ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}</span>{result.source === 'YouTube' && <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-lg bg-red-600 px-2 py-1 text-[10px] font-semibold text-white"><Youtube className="h-3 w-3" /> API</span>}</button>
-            <div className="p-4"><div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"><TypeIcon type={result.type} /> {result.source}{savedLocal ? ' · saved' : ''}</div><h2 className="mt-2 line-clamp-2 text-sm font-semibold leading-5">{result.title}</h2><p className="mt-2 line-clamp-3 text-xs leading-5 text-muted-foreground">{result.snippet || 'No description.'}</p>{result.provenance && <p className="mt-2 line-clamp-2 text-[10px] leading-4 text-muted-foreground">{provenanceText(result)}</p>}<div className="mt-3 flex gap-2"><a href={result.url} target="_blank" rel="noreferrer" className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border text-xs font-semibold hover:bg-accent">Open <ExternalLink className="h-3.5 w-3.5" /></a><button type="button" onClick={() => void copyUrl(result.url)} className="grid min-h-9 w-9 place-items-center rounded-lg border hover:bg-accent" aria-label="Copy source URL"><Copy className="h-3.5 w-3.5" /></button></div></div>
+            <div className="p-4"><div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"><TypeIcon type={result.type} /> {result.source}{savedLocal ? ' · saved' : ''}</div><h2 className="mt-2 line-clamp-2 text-sm font-semibold leading-5">{result.title}</h2><p className="mt-2 line-clamp-3 text-xs leading-5 text-muted-foreground">{result.snippet || 'No description.'}</p>{result.provenance && <p className="mt-2 line-clamp-2 text-[10px] leading-4 text-muted-foreground">{provenanceText(result)}</p>}<div className="mt-3 grid grid-cols-[1fr_auto_auto_auto] gap-2"><a href={result.url} target="_blank" rel="noreferrer" className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border text-xs font-semibold hover:bg-accent">Open <ExternalLink className="h-3.5 w-3.5" /></a><button type="button" onClick={() => saveOneLocal(result)} className="grid min-h-9 w-9 place-items-center rounded-lg border hover:bg-accent" aria-label={savedLocal ? 'Save result again locally' : 'Save result locally'} title="Save result"><Archive className="h-3.5 w-3.5" /></button><button type="button" onClick={() => void downloadResult(result)} disabled={!downloadable} className="grid min-h-9 w-9 place-items-center rounded-lg border hover:bg-accent disabled:cursor-not-allowed disabled:opacity-35" aria-label="Download result media" title="Download media"><Download className="h-3.5 w-3.5" /></button><button type="button" onClick={() => void copyUrl(result.url)} className="grid min-h-9 w-9 place-items-center rounded-lg border hover:bg-accent" aria-label="Copy source URL" title="Copy source URL"><Copy className="h-3.5 w-3.5" /></button></div></div>
           </article>
         })}
       </section>
