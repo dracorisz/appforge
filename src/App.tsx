@@ -173,7 +173,7 @@ function App() {
   if (location.pathname === '/landing') return <LoginPage landingOnly />
   if (location.pathname === '/explore') return lazyPage(<PublicAppsPage />)
   if (location.pathname === '/login') return <LoginPage />
-  if (!user && !loading && location.pathname === '/apps') return lazyPage(<PublicAppsPage />)
+  if (!user && !loading && location.pathname === '/apps') return <Navigate to="/explore" replace />
 
   if (!user && !loading) {
     if (location.pathname === '/apps/getter-pro' || location.pathname === '/apps/scrapper-pro' || location.pathname === '/pf-scrapper-pro') return <PublicToolShell toolName="Getter Pro" toolIcon={<ScrapperProIcon />}><PF_ScrapperPro /></PublicToolShell>
