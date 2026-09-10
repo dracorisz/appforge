@@ -148,6 +148,7 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: {
   const isFavorites = location.pathname === '/favorites'
   const isAllApps = location.pathname === '/apps'
   const isDashboard = location.pathname === '/'
+  const hasQuery = Boolean(query.trim())
 
   let pageTitle = 'All apps'
   let pageSubtitle = `${apps.length} focused utilities in one workspace.`
@@ -156,7 +157,7 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: {
   else if (isFavorites) { pageTitle = 'Favorites'; pageSubtitle = 'Your pinned tools.'; visibleApps = favoriteApps }
   else if (selectedCategory) { pageTitle = selectedCategory.name; pageSubtitle = selectedCategory.description; visibleApps = getAppsByCategory(selectedCategory.id) }
 
-  if (query.trim() && !isCategories) {
+  if (hasQuery && !isCategories) {
     const ids = new Set(searchApps(query.trim()).map((app) => app.id))
     visibleApps = visibleApps.filter((app) => ids.has(app.id))
   }
@@ -170,7 +171,7 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: {
 
       <nav className="flex flex-wrap gap-1 rounded-xl border border-border/60 bg-background/35 p-1 backdrop-blur-md">{([['/', 'Dashboard'], ['/apps', 'All apps'], ['/recent', 'Recent'], ['/favorites', 'Favorites'], ['/categories', 'Categories']] as const).map(([path, label]) => <button key={path} onClick={() => navigate(path)} className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${location.pathname === path ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{label}</button>)}</nav>
 
-      {isCategories ? <CategoryEditor categories={categories} onOpen={(id) => navigate(`/category/${id}`)} /> : <>{isDashboard && recentApps.length > 0 && <section><SectionTitle title="Recent" subtitle="Your latest tools — always two columns max." action={<button onClick={() => navigate('/recent')} className="text-xs font-medium text-muted-foreground hover:text-foreground">View all</button>} />{renderCards(recentApps.slice(0, 4), true)}</section>}{isDashboard && <section><SectionTitle title="Categories" subtitle="Browse by the kind of work you need to do." /><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{categories.map((category) => <CategoryCard key={category.id} category={category} count={getAppsByCategory(category.id).length} onOpen={() => navigate(`/category/${category.id}`)} />)}</div></section>}<section><SectionTitle title={isDashboard ? (query.trim() ? 'Search results' : 'All apps') : pageTitle} subtitle={query.trim() ? `${visibleApps.length} result${visibleApps.length === 1 ? '' : 's'} for “${query.trim()}”` : undefined} action={!isDashboard && !isAllApps ? <button onClick={() => navigate('/apps')} className="text-xs font-medium text-muted-foreground hover:text-foreground">Browse all</button> : undefined} />{visibleApps.length ? renderCards(visibleApps, isRecent) : <Card className="p-8 text-center"><Search className="mx-auto h-5 w-5 text-muted-foreground" /><h3 className="mt-3 text-sm font-medium text-foreground">Nothing here yet</h3><p className="mt-1 text-sm text-muted-foreground">Try another search or browse a different category.</p></Card>}</section></>}
+      {isCategories ? <CategoryEditor categories={categories} onOpen={(id) => navigate(`/category/${id}`)} /> : <>{isDashboard && !hasQuery && recentApps.length > 0 && <section><SectionTitle title="Recent" subtitle="Your latest tools — always two columns max." action={<button onClick={() => navigate('/recent')} className="text-xs font-medium text-muted-foreground hover:text-foreground">View all</button>} />{renderCards(recentApps.slice(0, 4), true)}</section>}{isDashboard && !hasQuery && <section><SectionTitle title="Categories" subtitle="Browse by the kind of work you need to do." /><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{categories.map((category) => <CategoryCard key={category.id} category={category} count={getAppsByCategory(category.id).length} onOpen={() => navigate(`/category/${category.id}`)} />)}</div></section>}<section><SectionTitle title={isDashboard ? (hasQuery ? 'Search results' : 'All apps') : pageTitle} subtitle={hasQuery ? `${visibleApps.length} result${visibleApps.length === 1 ? '' : 's'} for “${query.trim()}”` : undefined} action={!isDashboard && !isAllApps ? <button onClick={() => navigate('/apps')} className="text-xs font-medium text-muted-foreground hover:text-foreground">Browse all</button> : undefined} />{visibleApps.length ? renderCards(visibleApps, isRecent) : <Card className="p-8 text-center"><Search className="mx-auto h-5 w-5 text-muted-foreground" /><h3 className="mt-3 text-sm font-medium text-foreground">Nothing here yet</h3><p className="mt-1 text-sm text-muted-foreground">Try another search or browse a different category.</p></Card>}</section></>}
     </div>
   )
 }
