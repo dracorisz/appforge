@@ -41,6 +41,12 @@ const formatBytes = (bytes?: number) => {
   return bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(0)} KB` : `${(bytes / 1024 / 1024).toFixed(2)} MB`
 }
 
+const extensionForMime = (mimeType?: string) => {
+  if (mimeType === 'image/webp') return 'webp'
+  if (mimeType === 'image/jpeg') return 'jpg'
+  return 'png'
+}
+
 const downloadDataUrl = (dataUrl: string, filename: string) => {
   const anchor = document.createElement('a')
   anchor.href = dataUrl
@@ -120,7 +126,7 @@ export function DesktopBuddyProviderLab() {
       window.dispatchEvent(new Event('appforge:desktop-buddy-updated'))
       setMessage('Generated character is now the active floating Desktop Buddy.')
     } catch {
-      setMessage('The generated image could not be stored in this browser. Download it instead.')
+      setMessage('The generated image could not be stored in this browser. Download it or run it through the local optimizer first.')
     }
   }
 
@@ -165,7 +171,7 @@ export function DesktopBuddyProviderLab() {
 
         <div className="overflow-hidden rounded-2xl border bg-muted/30">
           <div className="grid aspect-square place-items-center p-3">{result?.imageDataUrl ? <img src={result.imageDataUrl} alt="Generated Desktop Buddy character" className="max-h-full max-w-full object-contain" /> : <div className="px-6 text-center text-xs leading-5 text-muted-foreground">Generated character preview appears here. Nothing is generated until you press the button.</div>}</div>
-          {result?.imageDataUrl && <div className="grid grid-cols-2 gap-2 border-t p-3"><button type="button" onClick={useResult} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border text-xs font-semibold hover:bg-accent"><Check className="h-3.5 w-3.5" /> Use in Buddy</button><button type="button" onClick={() => downloadDataUrl(result.imageDataUrl!, 'desktop-buddy-generated.png')} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border text-xs font-semibold hover:bg-accent"><Download className="h-3.5 w-3.5" /> Download</button></div>}
+          {result?.imageDataUrl && <div className="grid grid-cols-2 gap-2 border-t p-3"><button type="button" onClick={useResult} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border text-xs font-semibold hover:bg-accent"><Check className="h-3.5 w-3.5" /> Use in Buddy</button><button type="button" onClick={() => downloadDataUrl(result.imageDataUrl!, `desktop-buddy-generated.${extensionForMime(result.mimeType)}`)} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border text-xs font-semibold hover:bg-accent"><Download className="h-3.5 w-3.5" /> Download</button></div>}
         </div>
       </div>
     </section>
