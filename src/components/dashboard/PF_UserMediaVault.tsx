@@ -7,6 +7,7 @@ import {
   Folder,
   Gamepad2,
   Maximize2,
+  PanelsTopLeft,
   Play,
   RefreshCw,
   Search,
@@ -75,28 +76,51 @@ const VaultThumb = ({ item }: { item: VaultMedia }) => {
   return <div className="flex h-full items-center justify-center text-5xl text-muted-foreground"><Icon /></div>
 }
 
-const VaultActions = ({ item, onPreview, onDelete }: { item: VaultMedia; onPreview: () => void; onDelete: () => void }) => {
+const VaultActions = ({ item, onPreview, onDelete, dark = false }: { item: VaultMedia; onPreview: () => void; onDelete: () => void; dark?: boolean }) => {
   const [downloadUrl, setDownloadUrl] = React.useState('#')
   React.useEffect(() => {
     let cancelled = false
     void vaultItemUrl(item).then((value) => { if (!cancelled && value) setDownloadUrl(value) }).catch(() => undefined)
     return () => { cancelled = true }
   }, [item])
+
+  const actionClass = dark
+    ? 'rounded-lg border border-white/10 bg-black/35 p-2 text-white/75 backdrop-blur hover:bg-white/10 hover:text-white'
+    : 'rounded p-1.5 hover:bg-accent'
+
   return (
     <div className="flex items-center gap-1">
-      <button onClick={onPreview} className="rounded p-1.5 hover:bg-accent" aria-label="Preview"><Maximize2 className="h-4 w-4" /></button>
-      <a href={downloadUrl} download target={item.source_bucket === 'external' ? '_blank' : undefined} rel={item.source_bucket === 'external' ? 'noreferrer' : undefined} className="rounded p-1.5 hover:bg-accent" aria-label={item.source_bucket === 'external' ? 'Open source asset' : 'Download'}><Download className="h-4 w-4" /></a>
-      <button onClick={onDelete} className="rounded p-1.5 text-destructive hover:bg-destructive/10" aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
+      <button onClick={onPreview} className={actionClass} aria-label="Preview"><Maximize2 className="h-4 w-4" /></button>
+      <a href={downloadUrl} download target={item.source_bucket === 'external' ? '_blank' : undefined} rel={item.source_bucket === 'external' ? 'noreferrer' : undefined} className={actionClass} aria-label={item.source_bucket === 'external' ? 'Open source asset' : 'Download'}><Download className="h-4 w-4" /></a>
+      <button onClick={onDelete} className={dark ? `${actionClass} hover:border-red-400/30 hover:text-red-300` : 'rounded p-1.5 text-destructive hover:bg-destructive/10'} aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
     </div>
   )
 }
+
+const ShowcaseCard = ({ item, onPreview, onDelete }: { item: VaultMedia; onPreview: () => void; onDelete: () => void }) => (
+  <article className="group overflow-hidden rounded-2xl border border-white/10 bg-[#080d16] shadow-[0_18px_70px_rgba(0,0,0,.28)] transition-transform duration-200 hover:-translate-y-0.5">
+    <button type="button" onClick={onPreview} className="relative block aspect-[16/10] w-full overflow-hidden bg-slate-950 text-left" aria-label={`Preview ${item.title || item.file_name || 'file'}`}>
+      <VaultThumb item={item} />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 sm:p-5">
+        <div className="mb-2 flex flex-wrap items-center gap-1.5">{kindBadge(item.kind)}<Badge color="slate">{vaultFolder(item)}</Badge>{item.is_public && <Badge color="green">public</Badge>}</div>
+        <h3 className="line-clamp-2 text-base font-semibold tracking-tight text-white sm:text-lg">{item.title || item.file_name || 'Untitled'}</h3>
+        <p className="mt-1 text-[11px] text-white/55">{sourceLabel(item)} · {new Date(item.created_at).toLocaleDateString()}</p>
+      </div>
+    </button>
+    <div className="flex items-center justify-between gap-3 border-t border-white/10 px-4 py-3">
+      <div className="min-w-0 text-[11px] text-white/50"><span className="block truncate">{item.source_app || item.source_bucket || 'media-vault'}</span></div>
+      <VaultActions item={item} onPreview={onPreview} onDelete={onDelete} dark />
+    </div>
+  </article>
+)
 
 export function PF_UserMediaVault() {
   const [media, setMedia] = React.useState<VaultMedia[]>([])
   const [loading, setLoading] = React.useState(false)
   const [filterKind, setFilterKind] = React.useState<VaultMedia['kind'] | 'all'>('all')
   const [folder, setFolder] = React.useState<VaultFolder | 'all'>('all')
-  const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid')
+  const [viewMode, setViewMode] = React.useState<'grid' | 'list' | 'showcase'>('grid')
   const [uploading, setUploading] = React.useState(false)
   const [uploadProgress, setUploadProgress] = React.useState<Record<string, number>>({})
   const [error, setError] = React.useState('')
@@ -225,15 +249,19 @@ export function PF_UserMediaVault() {
         <button onClick={() => setFilterKind('all')} className={`rounded-lg px-3 py-1.5 text-xs font-medium ${filterKind === 'all' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>All kinds</button>
         {(['image', 'video', 'document', 'audio', 'other'] as VaultMedia['kind'][]).map((kind) => <button key={kind} onClick={() => setFilterKind(kind)} className={`rounded-lg px-3 py-1.5 text-xs font-medium ${filterKind === kind ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{kind}</button>)}
         <div className="flex-1" />
-        <Button variant="ghost" size="sm" onClick={() => setViewMode('grid')}><FileImage className="h-4 w-4" /></Button>
-        <Button variant="ghost" size="sm" onClick={() => setViewMode('list')}><FileText className="h-4 w-4" /></Button>
+        <div className="flex items-center rounded-lg border border-border/60 bg-background/40 p-0.5" aria-label="Media view">
+          <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} title="Grid view"><FileImage className="h-4 w-4" /></Button>
+          <Button variant={viewMode === 'showcase' ? 'secondary' : 'ghost'} size="sm" onClick={() => setViewMode('showcase')} title="Showcase view"><PanelsTopLeft className="h-4 w-4" /></Button>
+          <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="sm" onClick={() => setViewMode('list')} title="List view"><FileText className="h-4 w-4" /></Button>
+        </div>
       </div>
 
-      <div className={viewMode === 'grid' ? 'grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'space-y-2'}>
+      <div className={viewMode === 'list' ? 'space-y-2' : viewMode === 'showcase' ? 'grid gap-5 md:grid-cols-2' : 'grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}>
         {loading ? Array.from({ length: 6 }).map((_, index) => <Card key={index} className="overflow-hidden p-0 animate-pulse"><div className="aspect-video bg-muted" /><div className="h-16 p-3" /></Card>) : !media.length ? (
           <div className="col-span-full rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground"><Upload className="mx-auto h-10 w-10 text-muted-foreground/50" /><p className="mt-2">No media in this folder/filter yet.</p></div>
         ) : media.map((item) => {
           const Icon = kindIcon(item.kind)
+          if (viewMode === 'showcase') return <ShowcaseCard key={`${item.metadata?.source_table || item.source_app || 'vault'}-${item.id}`} item={item} onPreview={() => void openPreview(item)} onDelete={() => void handleDelete(item)} />
           return <Card key={`${item.metadata?.source_table || item.source_app || 'vault'}-${item.id}`} className={viewMode === 'list' ? 'flex items-center gap-3 p-3' : 'overflow-hidden p-0'}>
             {viewMode === 'grid' && <button type="button" onClick={() => void openPreview(item)} className="relative block aspect-video w-full overflow-hidden bg-muted" aria-label={`Preview ${item.title || item.file_name || 'file'}`}><VaultThumb item={item} /></button>}
             <div className={viewMode === 'grid' ? 'p-3' : 'min-w-0 flex-1'}>
