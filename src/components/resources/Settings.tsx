@@ -29,6 +29,7 @@ import { useAuth } from '@/auth/AuthProvider'
 import { BUILD_INFO } from '@/lib/buildInfo'
 import { loadCategoryOverrides, saveCategoryOverrides } from '@/lib/categories'
 import { createWorkspaceBackup, parseWorkspaceBackup, type WorkspaceImportPreview } from '@/lib/workspaceBackup'
+import { VertexBridgeStatus } from './VertexBridgeStatus'
 import {
   adminDeleteUser,
   adminListUsers,
@@ -478,6 +479,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
               </div>
             </div>
           </Card>
+          <VertexBridgeStatus />
         </div>
       )}
 
