@@ -14,7 +14,7 @@ GitHub Pages is intentionally the documentation portal. It is not the production
 
 New developers and agents should read [Environment & agent pickup](./ENVIRONMENT.md) before changing integrated features. It explains the browser/server secret boundary, Supabase, Vercel, GitHub Pages, AI providers, Cloud experiments, validation expectations, and the source-of-truth files to inspect first.
 
-For current operational context and feature-specific handoff notes, continue with [Agent handoff](./AGENT_HANDOFF.md).
+Then read the [Development timeline](./DEVELOPMENT_TIMELINE.md), [Issue roadmap](./ISSUE_ROADMAP.md), and [Agent handoff](./AGENT_HANDOFF.md) to understand what is current, what remains, and what should not be inferred from older sessions.
 
 ## Local development
 
@@ -44,25 +44,35 @@ The `.env.example` file is the canonical environment-variable inventory. Never p
 
 ## Understand the project
 
-A useful reading order is:
+Recommended reading order:
 
 1. [Environment & agent pickup](./ENVIRONMENT.md)
-2. [App model](./APP_MODEL.md)
-3. [Database](./DATABASE.md)
-4. [AI providers](./AI-PROVIDERS.md)
-5. [Project Pulse](./PROJECT-PULSE.md)
-6. [Full-status standard](./FULL_STATUS.md)
-7. [Issue roadmap](./ISSUE_ROADMAP.md)
-8. [Launch checklist](./LAUNCH-CHECKLIST.md)
-9. [Branding](./BRANDING.md)
+2. [Development timeline](./DEVELOPMENT_TIMELINE.md)
+3. [Issue roadmap](./ISSUE_ROADMAP.md)
+4. [App model](./APP_MODEL.md)
+5. [Database](./DATABASE.md)
+6. [Security advisor triage](./SECURITY_ADVISORS.md)
+7. [AI providers](./AI-PROVIDERS.md)
+8. [Project Pulse](./PROJECT-PULSE.md)
+9. [Full-status standard](./FULL_STATUS.md)
+10. [Launch checklist](./LAUNCH-CHECKLIST.md)
+11. [Branding](./BRANDING.md)
+12. [Documentation maintenance](./DOC_MAINTENANCE.md)
 
 Then inspect `src/lib/registry.ts`, the files for the feature you are changing, and the matching open issue.
 
 ## Validate a change
 
-Before merging release-facing application work, run:
+For normal release-facing application work, prefer the combined validation path:
 
 ```bash
+npm run verify:release
+```
+
+The underlying checks include app-registry integrity plus lint, TypeScript, tests and production build. When debugging, run them separately:
+
+```bash
+npm run audit:apps
 npm run lint
 npm run typecheck
 npm test
@@ -91,6 +101,8 @@ Do not run a production deployment merely to verify that code merged. Run it onl
 
 Changes under `docs/` are published automatically by the GitHub Pages workflow after changes reach `main`. The docs build is independent of the Vercel production release path.
 
+The docs portal reuses AppForge's `favicon.svg` as both browser favicon and visible header logo so project branding stays aligned with the application.
+
 ### Cloud experiments
 
 Gemini/image/thumbnail worker experiments remain isolated in the private Cloud Run workflow with bounded application allowance. See [Cloud experiments](./CLOUD-EXPERIMENTS.md).
@@ -104,10 +116,16 @@ AppForge treats each focused tool as a candidate for an independently understand
 - [Apps](./apps/index.md) for per-app documentation;
 - [Issue roadmap](./ISSUE_ROADMAP.md) for remaining work.
 
+Task List is now an explicit local-first Beta/75% standalone-PWA candidate alongside Any Converter. The canonical registry currently contains 45 entries as a dated snapshot; always treat `src/lib/registry.ts` as authoritative if the count changes.
+
+## Keeping docs current
+
+When changing architecture, deployment, environment variables, provider behavior, app identity, auth, database schema, security posture, or readiness expectations, update the matching docs in the same pass. Use [Documentation maintenance](./DOC_MAINTENANCE.md) as the cross-reference matrix.
+
+Use precise state language: implemented, CI-verified, migration-applied, Pages-published, production-deployed, and production-verified are different states.
+
 ## Contributing
 
 Use the repository issue and pull-request templates, keep product identity aligned with the canonical registry, and avoid coupling a browser-local tool to server/auth dependencies without a real product requirement.
-
-When changing architecture, deployment, environment variables, provider behavior, app identity, or readiness expectations, update the matching docs in the same change.
 
 The root `CONTRIBUTING.md` and `SECURITY.md` remain authoritative for repository-level contribution and security policy.
