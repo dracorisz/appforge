@@ -6,10 +6,12 @@ Project Pulse is the release-tracking layer for AppForge. Its goal is to move ev
 
 - App inventory, route, version and release state: `src/lib/registry.ts`
 - Route implementation and planned-app fallback: `src/App.tsx`
+- Public browse surface: `/explore` via `src/components/public/PublicAppsPage.tsx`
 - Shared PWA configuration: `vite.config.ts`
 - Launch gates and external dependencies: `docs/LAUNCH-CHECKLIST.md`
 - Full/fork-ready standard: `docs/FULL_STATUS.md`
 - Cloud experiments and bounded media worker: `docs/CLOUD-EXPERIMENTS.md`
+- Desktop Buddy provider/security status: `docs/apps/desktop-buddy.md`
 - GitHub Pages documentation build: `.github/workflows/pages.yml`
 - Actionable work: GitHub Issues
 
@@ -38,9 +40,19 @@ An app can move to `launched` only when its applicable gates are complete:
 5. Public/private access behavior is intentional and documented.
 6. Shared production PWA manifest/icons/service worker behave correctly on `sstoken.space`.
 7. Server, storage and AI dependencies have bounded failure behavior and no browser-exposed secrets.
-8. Lint, TypeScript, tests and production build pass.
-9. Material changes carry registry/changelog notes.
-10. Production smoke testing succeeds after the deliberate Vercel deploy.
+8. Paid/provider calls are explicit and idempotent where retries could duplicate cost or side effects.
+9. Lint, TypeScript, tests and production build pass.
+10. Material changes carry registry/changelog notes.
+11. Production smoke testing succeeds after the deliberate Vercel deploy.
+
+## v1.27 release additions
+
+The v1.27 release candidate adds two cross-product surfaces that Project Pulse should account for:
+
+- **Public Apps directory** — `/explore` is the canonical signed-out/signed-in browse surface. It exposes registry search, category filters and public/workspace access labels. Signed-in `/apps` remains the workspace All Apps page; signed-out `/apps` redirects to `/explore`.
+- **Desktop Buddy Vertex bridge** — the product now has a keyless Vercel OIDC → Google Workload Identity Federation → short-lived bridge identity → private Cloud Run architecture, plus owner-scoped/idempotent Supabase recovery jobs. Repository implementation does not equal production activation: actual WIF/IAM and Vercel server values plus one deliberate cost-observed smoke call remain release gates.
+
+The public sitemap now contains canonical public pages only. Retired Pariflow, old Scrapper Pro and authenticated-only app routes are excluded.
 
 ## Standalone / Full candidates
 
@@ -54,13 +66,17 @@ Current priority candidates:
 
 ## GitHub Pages role
 
-GitHub Pages at `https://dracorisz.github.io/appforge/` is the **developer and project documentation portal**. It is not an AppForge application fallback and does not build or serve the product PWA.
+GitHub Pages is the developer/project documentation portal at **`https://docs.sstoken.space/`**. It is not an AppForge application fallback and does not build or serve the production product PWA.
 
-The production application and its `/api` routes remain on `https://www.sstoken.space/`. Pages publishes documentation from `docs/**` through `.github/workflows/pages.yml` and is intentionally independent from the manual Vercel production release.
+The production application and its `/api` routes remain on `https://www.sstoken.space/`. Pages publishes documentation from `docs/**` through `.github/workflows/pages.yml`, uses root-relative VitePress assets for the custom domain, and is intentionally independent from the deliberate Vercel production release.
+
+`docs/public/CNAME` records the custom domain, and the Pages workflow rejects a docs build that reintroduces stale `/appforge/` asset paths.
 
 ## Consistency rule
 
 Every canonical registry item must resolve intentionally. Implemented tools should route to their dedicated component or shared workbench. Planned apps should resolve to the planned-app surface rather than silently redirecting to the dashboard. Alias entries should be documented as aliases and must not create conflicting product identities.
+
+The public Apps directory, SEO public-route allowlist and `public/sitemap.xml` should be changed in the same pass when a tool becomes public or retires.
 
 ## Working rule
 
