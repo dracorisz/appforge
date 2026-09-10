@@ -173,7 +173,7 @@ function App() {
   if (location.pathname === '/login') return <LoginPage />
 
   if (!user && !loading) {
-    if (location.pathname === '/apps/scrapper-pro' || location.pathname === '/pf-scrapper-pro') return <PublicToolShell toolName="Scrapper Pro" toolIcon={<ScrapperProIcon />}><PF_ScrapperPro /></PublicToolShell>
+    if (location.pathname === '/apps/getter-pro' || location.pathname === '/apps/scrapper-pro' || location.pathname === '/pf-scrapper-pro') return <PublicToolShell toolName="Getter Pro" toolIcon={<ScrapperProIcon />}><PF_ScrapperPro /></PublicToolShell>
     if (location.pathname === '/apps/weather-now' || location.pathname === '/pf-weather-now') return <PublicToolShell toolName="Weather Now" toolIcon={<WeatherNowIcon />}><PF_WeatherNow /></PublicToolShell>
     if (location.pathname === '/apps/any-converter') return <PublicToolShell toolName="Any Converter" toolIcon={<ArrowLeftRight className="h-4 w-4" />}><AnyToAnyConverter /></PublicToolShell>
     if (location.pathname === '/apps/favicon-studio') return <PublicToolShell toolName="Favicon Studio" toolIcon={<ImageIcon className="h-4 w-4" />}>{lazyPage(<FaviconStudio />)}</PublicToolShell>
@@ -196,7 +196,8 @@ function App() {
         <Route path="/people" element={lazyPage(<PeoplePage />)} />
         <Route path="/workspace" element={<Navigate to="/apps" replace />} />
 
-        <Route path="/apps/scrapper-pro" element={<PF_ScrapperPro />} />
+        <Route path="/apps/getter-pro" element={<PF_ScrapperPro />} />
+        <Route path="/apps/scrapper-pro" element={<Navigate to="/apps/getter-pro" replace />} />
         <Route path="/apps/image-labeler" element={<PF_ImageLabeler />} />
         <Route path="/apps/creator-svg" element={<PF_CreatorSVG />} />
         <Route path="/apps/crypto-track" element={<PF_CryptoTrack />} />
@@ -225,7 +226,8 @@ function App() {
         <Route path="/apps/qr-generator" element={miniAppRoute('mini-13')} />
         <Route path="/apps/resume-forge" element={miniAppRoute('mini-1')} />
 
-        <Route path="/pf-scrapper-pro" element={<Navigate to="/apps/scrapper-pro" replace />} />
+        <Route path="/pf-scrapper-pro" element={<Navigate to="/apps/getter-pro" replace />} />
+        <Route path="/pf-getter-pro" element={<Navigate to="/apps/getter-pro" replace />} />
         <Route path="/pf-image-labeler" element={<Navigate to="/apps/image-labeler" replace />} />
         <Route path="/pf-creator-svg" element={<Navigate to="/apps/creator-svg" replace />} />
         <Route path="/pf-crypto-track" element={<Navigate to="/apps/crypto-track" replace />} />
