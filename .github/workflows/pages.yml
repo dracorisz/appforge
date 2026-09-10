@@ -36,8 +36,11 @@ jobs:
       - name: Install application dependencies
         run: npm ci
 
+      - name: Install VitePress for docs build
+        run: npm install --no-save --no-package-lock vitepress@1.6.4
+
       - name: Build VitePress documentation
-        run: npx --yes vitepress@1.6.4 build docs
+        run: npx vitepress build docs
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
