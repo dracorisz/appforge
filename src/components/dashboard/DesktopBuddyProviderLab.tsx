@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 const BUDDY_STORAGE_KEY = 'appforge-desktop-buddy-v1'
 const HF_KEYS_STORAGE = 'dragon-arena-hf-keys'
 const VERTEX_RECOVERY_KEY = 'appforge-desktop-buddy-vertex-job'
+const VERTEX_REQUEST_KEY = 'appforge-desktop-buddy-vertex-request'
 
 type ProviderName = 'huggingface' | 'vertex'
 type ProviderStatus = {
@@ -73,6 +74,7 @@ export function DesktopBuddyProviderLab() {
   const [generating, setGenerating] = React.useState(false)
   const [result, setResult] = React.useState<GenerationReply | null>(null)
   const [lastVertexJob, setLastVertexJob] = React.useState(() => localStorage.getItem(VERTEX_RECOVERY_KEY) || '')
+  const [pendingVertexRequest, setPendingVertexRequest] = React.useState(() => localStorage.getItem(VERTEX_REQUEST_KEY) || '')
   const [message, setMessage] = React.useState('Generation is always explicit. No image requests run in the background.')
 
   const refreshStatus = React.useCallback(async () => {
@@ -131,7 +133,11 @@ export function DesktopBuddyProviderLab() {
 
   const generateVertex = async () => {
     const token = await sessionToken()
-    const clientRequestId = crypto.randomUUID()
+    const clientRequestId = pendingVertexRequest || crypto.randomUUID()
+    if (!pendingVertexRequest) {
+      localStorage.setItem(VERTEX_REQUEST_KEY, clientRequestId)
+      setPendingVertexRequest(clientRequestId)
+    }
     const response = await fetch('/api/desktop-buddy-vertex', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -143,7 +149,14 @@ export function DesktopBuddyProviderLab() {
       setLastVertexJob(payload.bridgeJobId)
     }
     if (!response.ok) throw new Error(payload.error || 'Vertex AI character generation failed.')
+    if (payload.status === 'failed') {
+      localStorage.removeItem(VERTEX_REQUEST_KEY)
+      setPendingVertexRequest('')
+      throw new Error('Vertex job failed. The next Generate action may safely start a new request.')
+    }
     if (payload.status && payload.status !== 'complete') throw new Error(`Vertex job is ${payload.status}. Use Recover Vertex job instead of starting another paid request.`)
+    localStorage.removeItem(VERTEX_REQUEST_KEY)
+    setPendingVertexRequest('')
     acceptResult(payload, 'vertex')
   }
 
@@ -171,7 +184,14 @@ export function DesktopBuddyProviderLab() {
       const response = await fetch(`/api/desktop-buddy-vertex?id=${encodeURIComponent(lastVertexJob)}`, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' })
       const payload = await response.json().catch(() => ({})) as GenerationReply
       if (!response.ok) throw new Error(payload.error || 'Could not recover the Vertex job.')
+      if (payload.status === 'failed') {
+        localStorage.removeItem(VERTEX_REQUEST_KEY)
+        setPendingVertexRequest('')
+        throw new Error('The existing Vertex job failed. The next Generate action may safely start a new request.')
+      }
       if (payload.status !== 'complete') throw new Error(`Vertex job is ${payload.status || 'still running'}. Try recovery again later; do not start a duplicate request.`)
+      localStorage.removeItem(VERTEX_REQUEST_KEY)
+      setPendingVertexRequest('')
       acceptResult(payload, 'vertex')
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Could not recover the Vertex job.')
@@ -237,7 +257,7 @@ export function DesktopBuddyProviderLab() {
             <button type="button" onClick={() => void generate()} disabled={generating || prompt.trim().length < 8 || !selectedReady} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50">{generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />} {generating ? 'Working…' : provider === 'vertex' ? 'Generate with Vertex AI' : 'Generate with Hugging Face'}</button>
             {lastVertexJob && <button type="button" onClick={() => void recoverVertex()} disabled={generating} className="inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent disabled:opacity-50"><RefreshCw className="h-4 w-4" /> Recover Vertex job</button>}
           </div>
-          <p className="text-xs leading-5 text-muted-foreground">{provider === 'vertex' ? 'Vertex jobs are owner-scoped and idempotent. Recovery checks the existing Cloud Run job instead of starting another paid image.' : hfStatus?.sharedQuota || 'Explicit request only; no automatic retry.'}</p>
+          <p className="text-xs leading-5 text-muted-foreground">{provider === 'vertex' ? pendingVertexRequest ? 'A Vertex request key is pending. Generate will safely replay that same request until it resolves; recovery never starts a second paid image.' : 'Vertex jobs are owner-scoped and idempotent. Recovery checks the existing Cloud Run job instead of starting another paid image.' : hfStatus?.sharedQuota || 'Explicit request only; no automatic retry.'}</p>
           <p aria-live="polite" className="text-xs leading-5 text-muted-foreground">{message}</p>
         </div>
 
