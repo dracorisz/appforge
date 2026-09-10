@@ -10,6 +10,12 @@ AppForge is a Vite + React + TypeScript toolbox that combines focused browser ut
 
 GitHub Pages is intentionally the documentation portal. It is not the production host for API-backed AppForge features.
 
+## Before you code
+
+New developers and agents should read [Environment & agent pickup](./ENVIRONMENT.md) before changing integrated features. It explains the browser/server secret boundary, Supabase, Vercel, GitHub Pages, AI providers, Cloud experiments, validation expectations, and the source-of-truth files to inspect first.
+
+For current operational context and feature-specific handoff notes, continue with [Agent handoff](./AGENT_HANDOFF.md).
+
 ## Local development
 
 Requirements:
@@ -24,6 +30,7 @@ Typical setup:
 git clone https://github.com/dracorisz/appforge.git
 cd appforge
 npm ci
+cp .env.example .env
 npm run dev
 ```
 
@@ -33,9 +40,27 @@ For the Vite frontend without the local API wrapper:
 npm run dev:vite
 ```
 
+The `.env.example` file is the canonical environment-variable inventory. Never place private server credentials in a `VITE_*` variable because Vite exposes those values to browser code.
+
+## Understand the project
+
+A useful reading order is:
+
+1. [Environment & agent pickup](./ENVIRONMENT.md)
+2. [App model](./APP_MODEL.md)
+3. [Database](./DATABASE.md)
+4. [AI providers](./AI-PROVIDERS.md)
+5. [Project Pulse](./PROJECT-PULSE.md)
+6. [Full-status standard](./FULL_STATUS.md)
+7. [Issue roadmap](./ISSUE_ROADMAP.md)
+8. [Launch checklist](./LAUNCH-CHECKLIST.md)
+9. [Branding](./BRANDING.md)
+
+Then inspect `src/lib/registry.ts`, the files for the feature you are changing, and the matching open issue.
+
 ## Validate a change
 
-Before merging release-facing work, run:
+Before merging release-facing application work, run:
 
 ```bash
 npm run lint
@@ -45,6 +70,8 @@ npm run build
 ```
 
 Cloud-worker validation is documented separately in [Cloud experiments](./CLOUD-EXPERIMENTS.md).
+
+For documentation-only changes, GitHub Pages CI is the deployment validation.
 
 ## Deployment model
 
@@ -58,7 +85,7 @@ Deploy production deliberately from an authenticated local/controlled environmen
 vercel deploy --prod
 ```
 
-Then run the smoke checks in [Launch checklist](./LAUNCH-CHECKLIST.md) and the production-validation issue.
+Do not run a production deployment merely to verify that code merged. Run it only for an intentional release, then complete the smoke checks in [Launch checklist](./LAUNCH-CHECKLIST.md).
 
 ### Documentation
 
@@ -80,5 +107,7 @@ AppForge treats each focused tool as a candidate for an independently understand
 ## Contributing
 
 Use the repository issue and pull-request templates, keep product identity aligned with the canonical registry, and avoid coupling a browser-local tool to server/auth dependencies without a real product requirement.
+
+When changing architecture, deployment, environment variables, provider behavior, app identity, or readiness expectations, update the matching docs in the same change.
 
 The root `CONTRIBUTING.md` and `SECURITY.md` remain authoritative for repository-level contribution and security policy.
