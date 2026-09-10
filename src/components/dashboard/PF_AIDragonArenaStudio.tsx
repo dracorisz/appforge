@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { getGeminiHeaders } from '@/lib/aiProviders'
+import { emitAgentResponse } from '@/lib/agentEvents'
 import React from 'react'
 import { BookOpen, Download, GalleryThumbnails, Globe2, ImagePlus, KeyRound, Loader2, LockKeyhole, Palette, RefreshCcw, Send, Trophy, Users, X } from 'lucide-react'
 import { GiDragonHead, GiDungeonGate, GiRuneSword, GiScrollUnfurled, GiSparkles, GiSpikedShield } from 'react-icons/gi'
@@ -269,6 +270,7 @@ export function PF_AIDragonArenaStudio() {
       const narrative = payload.narrative?.trim() || 'Something shifts in the dark. Your move.'
       const nextChoices = Array.isArray(payload.choices) && payload.choices.length ? payload.choices.slice(0, 3) : [...opening.choices]
       setHistory((current) => [...current, { role: 'gm', text: narrative }])
+      emitAgentResponse(narrative, 'story-studio')
       setChoices(nextChoices)
       const nextCompleted = [...completedTurns, { turnNumber: turn, playerAction, narrative, choices: nextChoices, model: payload.model || MODEL }]
       setCompletedTurns(nextCompleted)
