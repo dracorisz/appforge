@@ -55,6 +55,10 @@ function Metric({ icon: Icon, label, value }: { icon: React.ComponentType<{ clas
   return <div className="group rounded-xl border border-border/70 bg-background/45 p-3 backdrop-blur-sm transition-colors hover:border-foreground/15 hover:bg-accent/35"><div className="flex items-center gap-2 text-muted-foreground"><Icon className="h-3.5 w-3.5" /><span className="text-[10px] font-semibold uppercase tracking-[0.12em]">{label}</span></div><p className="mt-2 text-sm font-semibold tabular-nums text-foreground">{value}</p></div>
 }
 
+function ListMetric({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string }) {
+  return <div className="min-w-0 px-3 py-2 lg:border-l lg:border-border/55"><div className="flex items-center gap-2 text-muted-foreground"><Icon className="h-3.5 w-3.5 shrink-0" /><span className="text-[10px] font-semibold uppercase tracking-[0.12em]">{label}</span></div><p className="mt-1 truncate text-sm font-medium tabular-nums text-foreground">{value}</p></div>
+}
+
 export function PF_WeatherNow() {
   const [query, setQuery] = React.useState('')
   const [cities, setCities] = React.useState<WeatherData[]>([])
@@ -201,13 +205,14 @@ export function PF_WeatherNow() {
     return next
   }, [cities, sortBy])
 
-  const weatherIcon = (condition: string) => {
+  const weatherIcon = (condition: string, compact = false) => {
+    const size = compact ? 'h-5 w-5' : 'h-8 w-8'
     const value = condition.toLowerCase()
-    if (value.includes('clear')) return <Sun className="h-8 w-8 text-amber-500" />
-    if (value.includes('rain') || value.includes('drizzle') || value.includes('thunder')) return <CloudRain className="h-8 w-8 text-blue-500" />
-    if (value.includes('snow')) return <Snowflake className="h-8 w-8 text-cyan-400" />
-    if (value.includes('cloud') || value.includes('overcast') || value.includes('fog')) return <Cloud className="h-8 w-8 text-muted-foreground" />
-    return <Wind className="h-8 w-8 text-muted-foreground" />
+    if (value.includes('clear')) return <Sun className={`${size} text-amber-500`} />
+    if (value.includes('rain') || value.includes('drizzle') || value.includes('thunder')) return <CloudRain className={`${size} text-blue-500`} />
+    if (value.includes('snow')) return <Snowflake className={`${size} text-cyan-400`} />
+    if (value.includes('cloud') || value.includes('overcast') || value.includes('fog')) return <Cloud className={`${size} text-muted-foreground`} />
+    return <Wind className={`${size} text-muted-foreground`} />
   }
 
   const displayTemp = (value: number) => {
@@ -290,21 +295,27 @@ export function PF_WeatherNow() {
       </Card>
 
       {sortedCities.length > 0 ? (
-        <div className={viewMode === 'grid' ? 'grid gap-3 md:grid-cols-2 xl:grid-cols-3' : 'space-y-2'}>
-          {sortedCities.map((weather) => (
-            <Card key={weather.location} className={`relative overflow-hidden ${viewMode === 'list' ? 'p-3' : 'p-0'}`}>
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/25" />
-              <div className={viewMode === 'list' ? 'relative' : 'relative p-4'}>
-              <div className={viewMode === 'list' ? 'flex flex-wrap items-center gap-4' : ''}>
-                <div className="flex min-w-0 items-start justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    <div className="min-w-0">
-                      <h3 className="truncate font-semibold text-foreground">{weather.location}</h3>
-                      {weather.local_time && <p className="mt-0.5 text-xs text-muted-foreground">Local: {weather.local_time.replace('T', ' ')}</p>}
-                    </div>
+        viewMode === 'list' ? (
+          <div className="space-y-2">
+            {sortedCities.map((weather) => (
+              <Card key={weather.location} className="relative overflow-hidden p-0">
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/8 via-transparent to-accent/12" />
+                <div className="relative grid items-center gap-1 px-3 py-2 sm:grid-cols-2 lg:grid-cols-[minmax(180px,1.45fr)_minmax(145px,.9fr)_repeat(3,minmax(105px,.7fr))_76px] lg:px-4">
+                  <div className="min-w-0 py-2 lg:pr-4">
+                    <h3 className="truncate text-lg font-semibold text-foreground">{weather.location}</h3>
+                    {weather.local_time && <p className="mt-0.5 truncate text-xs text-muted-foreground">Local: {weather.local_time.replace('T', ' ')}</p>}
                   </div>
-                  <div className="flex shrink-0 gap-1">
+
+                  <div className="flex min-w-0 items-center gap-3 px-1 py-2 lg:border-l lg:border-border/55 lg:px-4">
+                    <span className="shrink-0">{weatherIcon(weather.condition, true)}</span>
+                    <div className="min-w-0"><p className="truncate text-xl font-medium tabular-nums text-foreground">{displayTemp(weather.temp_c)}</p><p className="truncate text-xs text-muted-foreground">{weather.condition}</p></div>
+                  </div>
+
+                  <ListMetric icon={Thermometer} label="Feels like" value={displayTemp(weather.feelslike_c)} />
+                  <ListMetric icon={Droplets} label="Humidity" value={`${weather.humidity}%`} />
+                  <ListMetric icon={Wind} label="Wind" value={`${weather.wind_kph.toFixed(1)} km/h`} />
+
+                  <div className="flex items-center justify-end gap-1 py-2 lg:border-l lg:border-border/55 lg:pl-3">
                     <Button variant="ghost" size="sm" onClick={() => refreshCity(weather)} disabled={refreshing === weather.location} title="Refresh">
                       {refreshing === weather.location ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
                     </Button>
@@ -313,33 +324,59 @@ export function PF_WeatherNow() {
                     </Button>
                   </div>
                 </div>
-
-                <div className={viewMode === 'list' ? 'ml-auto flex flex-1 flex-wrap items-center justify-end gap-6' : 'mt-5'}>
-                  <div className="flex items-center justify-between gap-5">
-                    <div>
-                      <p className="text-4xl font-bold tracking-[-0.04em] text-foreground">{displayTemp(weather.temp_c)}</p>
-                      <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground"><Thermometer className="h-3.5 w-3.5" /> Feels like {displayTemp(weather.feelslike_c)}</p>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {sortedCities.map((weather) => (
+              <Card key={weather.location} className="relative overflow-hidden p-0">
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/25" />
+                <div className="relative p-4">
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <div className="min-w-0">
+                        <h3 className="truncate font-semibold text-foreground">{weather.location}</h3>
+                        {weather.local_time && <p className="mt-0.5 text-xs text-muted-foreground">Local: {weather.local_time.replace('T', ' ')}</p>}
+                      </div>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border/60 bg-background/55 shadow-sm backdrop-blur-md">{weatherIcon(weather.condition)}</span>
-                      <Badge color="slate">{weather.condition}</Badge>
+                    <div className="flex shrink-0 gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => refreshCity(weather)} disabled={refreshing === weather.location} title="Refresh">
+                        {refreshing === weather.location ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setCities((current) => current.filter((item) => item.location !== weather.location))} title="Remove">
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
                   </div>
 
-                  <div className={viewMode === 'list' ? 'grid min-w-[300px] grid-cols-2 gap-2 xl:grid-cols-4' : 'mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3'}>
-                    <Metric icon={Droplets} label="Humidity" value={`${weather.humidity}%`} />
-                    <Metric icon={Wind} label="Wind" value={`${weather.wind_kph.toFixed(1)} km/h`} />
-                    <Metric icon={Gauge} label="Pressure" value={typeof weather.pressure_hpa === 'number' ? `${Math.round(weather.pressure_hpa)} hPa` : '—'} />
-                    <Metric icon={CloudSun} label="Cloud cover" value={typeof weather.cloud_cover === 'number' ? `${Math.round(weather.cloud_cover)}%` : '—'} />
-                    <Metric icon={Eye} label="Visibility" value={typeof weather.visibility_km === 'number' ? `${weather.visibility_km.toFixed(1)} km` : '—'} />
-                    <div className="grid grid-cols-2 gap-2"><Metric icon={Sunrise} label="Sunrise" value={timeOnly(weather.sunrise)} /><Metric icon={Sunset} label="Sunset" value={timeOnly(weather.sunset)} /></div>
+                  <div className="mt-5">
+                    <div className="flex items-center justify-between gap-5">
+                      <div>
+                        <p className="text-4xl font-bold tracking-[-0.04em] text-foreground">{displayTemp(weather.temp_c)}</p>
+                        <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground"><Thermometer className="h-3.5 w-3.5" /> Feels like {displayTemp(weather.feelslike_c)}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border/60 bg-background/55 shadow-sm backdrop-blur-md">{weatherIcon(weather.condition)}</span>
+                        <Badge color="slate">{weather.condition}</Badge>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      <Metric icon={Droplets} label="Humidity" value={`${weather.humidity}%`} />
+                      <Metric icon={Wind} label="Wind" value={`${weather.wind_kph.toFixed(1)} km/h`} />
+                      <Metric icon={Gauge} label="Pressure" value={typeof weather.pressure_hpa === 'number' ? `${Math.round(weather.pressure_hpa)} hPa` : '—'} />
+                      <Metric icon={CloudSun} label="Cloud cover" value={typeof weather.cloud_cover === 'number' ? `${Math.round(weather.cloud_cover)}%` : '—'} />
+                      <Metric icon={Eye} label="Visibility" value={typeof weather.visibility_km === 'number' ? `${weather.visibility_km.toFixed(1)} km` : '—'} />
+                      <div className="grid grid-cols-2 gap-2"><Metric icon={Sunrise} label="Sunrise" value={timeOnly(weather.sunrise)} /><Metric icon={Sunset} label="Sunset" value={timeOnly(weather.sunset)} /></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+              </Card>
+            ))}
+          </div>
+        )
       ) : (
         <Card>
           <div className="py-12 text-center">
