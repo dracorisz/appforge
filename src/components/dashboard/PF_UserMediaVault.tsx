@@ -1,5 +1,6 @@
 import React from 'react'
 import {
+  Camera,
   Download,
   FileVideo,
   FileImage,
@@ -30,6 +31,7 @@ import {
 const FOLDERS: { id: VaultFolder | 'all'; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'all', label: 'All files', icon: Folder },
   { id: 'general', label: 'General', icon: Folder },
+  { id: 'Screenshots', label: 'Screenshots', icon: Camera },
   { id: 'dragon-arena', label: 'Dragon Arena', icon: Gamepad2 },
   { id: 'scrapper-pro', label: 'Getter Pro', icon: Search },
 ]
@@ -250,10 +252,10 @@ export function PF_UserMediaVault() {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge color="purple">Private vault</Badge>
-            <span className="text-xs text-muted-foreground">General uploads · Dragon Arena assets · Getter Pro references</span>
+            <span className="text-xs text-muted-foreground">General uploads · Screenshots · Dragon Arena assets · Getter Pro references</span>
           </div>
           <h1 className="mt-1 flex items-center gap-2 text-2xl font-semibold tracking-tight"><Upload className="h-6 w-6" /> Media Vault</h1>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">Media Vault is AppForge's shared asset surface. Manual files live in General, Dragon Arena scenes stay linked to the game ledger, and signed-in Getter Pro saves are archived here as deduplicated source references.</p>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">Media Vault is AppForge's shared asset surface. Manual files live in General, Desktop Buddy viewport captures live in Screenshots, Dragon Arena scenes stay linked to the game ledger, and signed-in Getter Pro saves are archived here as deduplicated source references.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="secondary" onClick={() => void refresh()} disabled={loading}><RefreshCw className="h-4 w-4" /> Refresh</Button>
@@ -262,7 +264,7 @@ export function PF_UserMediaVault() {
         </div>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
         {FOLDERS.map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setFolder(id)} className={`flex items-center gap-2 rounded-xl border px-3 py-3 text-left text-sm transition-colors ${folder === id ? 'border-foreground/25 bg-accent' : 'border-border/70 bg-background/35 hover:bg-accent/60'}`}>
             <Icon className="h-4 w-4" /><span>{label}</span>
