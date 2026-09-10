@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'AppForge Docs',
-  description: 'Developer documentation, architecture, environment, deployment, release readiness, and standalone PWA guidance for AppForge.',
+  description: 'Developer documentation, architecture, environment, deployment, release readiness, AI providers, and standalone PWA guidance for AppForge.',
   base: '/appforge/',
   cleanUrls: true,
   lastUpdated: true,
@@ -39,8 +39,8 @@ export default defineConfig({
     nav: [
       { text: 'Guide', link: '/GETTING_STARTED' },
       { text: 'Apps', link: '/apps/' },
+      { text: 'Desktop Buddy', link: '/apps/desktop-buddy' },
       { text: 'Architecture', link: '/APP_MODEL' },
-      { text: 'Branding', link: '/BRANDING' },
       { text: 'Open App ↗', link: 'https://www.sstoken.space/' },
     ],
     sidebar: [
@@ -81,6 +81,9 @@ export default defineConfig({
         text: 'Apps & standalone PWAs',
         items: [
           { text: 'Apps index', link: '/apps/' },
+          { text: 'Desktop Buddy', link: '/apps/desktop-buddy' },
+          { text: 'Getter Pro', link: '/apps/scrapper-pro/' },
+          { text: 'Story Studio', link: '/apps/dragon-arena/' },
           { text: 'Any Converter', link: '/apps/any-converter/' },
           { text: 'Task List', link: '/apps/task-list/' },
           { text: 'Standalone PWA template', link: '/STANDALONE_PWA_TEMPLATE' },
@@ -106,7 +109,7 @@ export default defineConfig({
     ],
     socialLinks: [
       { icon: 'github', link: 'https://github.com/dracorisz/appforge', ariaLabel: 'AppForge on GitHub' },
-      { icon: 'youtube', link: 'https://www.youtube.com/@AppForgeDrago', ariaLabel: 'AppForge on YouTube' },
+      { icon: 'youtube', link: 'https://www.youtube.com/@AppForgeDragon', ariaLabel: 'AppForge on YouTube' },
       {
         icon: {
           svg: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6.27 3h11.46l-.67 4H6.94L6.27 3Zm.9 5h9.66l-.46 2.75a5.37 5.37 0 0 1-4.37 8.17 5.37 5.37 0 0 1-4.37-8.17L7.17 8Zm2.03 4.83a3.16 3.16 0 1 0 5.6 0H9.2ZM5 20h14v1H5v-1Z"/></svg>'
