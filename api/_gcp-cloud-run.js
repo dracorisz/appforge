@@ -16,7 +16,7 @@ export const getGcpBridgeConfig = () => {
   const workerBucket = requiredEnv('GCP_WORKER_BUCKET')
   const configured = Boolean(projectNumber && serviceAccountEmail && poolId && providerId && workerUrl && workerBucket)
   const audience = configured
-    ? `https://iam.googleapis.com/projects/${projectNumber}/locations/global/workloadIdentityPools/${poolId}/providers/${providerId}`
+    ? `//iam.googleapis.com/projects/${projectNumber}/locations/global/workloadIdentityPools/${poolId}/providers/${providerId}`
     : ''
   return { configured, projectNumber, serviceAccountEmail, poolId, providerId, workerUrl, workerBucket, audience }
 }

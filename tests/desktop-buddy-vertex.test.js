@@ -64,7 +64,7 @@ test('bridge configuration exposes only readiness while composing the expected G
     const config = getGcpBridgeConfig()
     assert.equal(config.configured, true)
     assert.equal(config.workerUrl, 'https://worker.example.run.app')
-    assert.equal(config.audience, 'https://iam.googleapis.com/projects/123456789/locations/global/workloadIdentityPools/vercel-prod/providers/vercel')
+    assert.equal(config.audience, '//iam.googleapis.com/projects/123456789/locations/global/workloadIdentityPools/vercel-prod/providers/vercel')
   })
 })
 

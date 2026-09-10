@@ -178,7 +178,8 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     const mapped = publicError(error)
-    console.error('Desktop Buddy Vertex bridge request failed', { requestId, code: mapped.code, bridgeJobId, clientRequestId })
+    const identityStage = /^(gcp_sts_exchange_failed|gcp_service_account_access_token_failed|gcp_service_account_id_token_failed)_\d{3}$/.test(String(error?.message)) ? error.message : undefined
+    console.error('Desktop Buddy Vertex bridge request failed', { requestId, code: mapped.code, identityStage, bridgeJobId, clientRequestId })
     return res.status(mapped.status).json({ error: mapped.message, code: mapped.code, requestId, bridgeJobId, clientRequestId, workerJobId })
   }
 }
