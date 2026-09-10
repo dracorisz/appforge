@@ -1,21 +1,36 @@
 :root {
-  --vp-c-brand-1: #2563eb;
-  --vp-c-brand-2: #1d4ed8;
-  --vp-c-brand-3: #1e40af;
-  --vp-c-brand-soft: rgba(37, 99, 235, 0.14);
-  --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: linear-gradient(120deg, #60a5fa 12%, #2563eb 48%, #1e3a8a 88%);
-  --vp-home-hero-image-background-image: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.22), transparent 68%);
-  --vp-home-hero-image-filter: blur(48px);
+  --appforge-ink: #0f172a;
+  --appforge-paper: #ffffff;
+  --vp-c-brand-1: #0f172a;
+  --vp-c-brand-2: #111827;
+  --vp-c-brand-3: #020617;
+  --vp-c-brand-soft: rgba(15, 23, 42, 0.08);
+  --vp-home-hero-name-color: #0f172a;
+  --vp-home-hero-name-background: none;
+  --vp-home-hero-image-background-image: radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.12), transparent 68%);
+  --vp-home-hero-image-filter: blur(44px);
 }
 
 .dark {
-  --vp-c-brand-1: #60a5fa;
-  --vp-c-brand-2: #3b82f6;
-  --vp-c-brand-3: #2563eb;
-  --vp-c-brand-soft: rgba(59, 130, 246, 0.18);
+  --vp-c-bg: #020617;
+  --vp-c-bg-alt: #070b14;
+  --vp-c-bg-soft: #0b1120;
+  --vp-c-brand-1: #ffffff;
+  --vp-c-brand-2: #e2e8f0;
+  --vp-c-brand-3: #cbd5e1;
+  --vp-c-brand-soft: rgba(255, 255, 255, 0.09);
+  --vp-home-hero-name-color: #ffffff;
+  --vp-home-hero-image-background-image: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.09), transparent 68%);
 }
 
-.VPNavBarTitle .title { font-weight: 700; }
+.VPNavBarTitle .title { font-weight: 700; letter-spacing: -0.01em; }
+.VPNavBarTitle .logo { border-radius: 8px; }
 .VPHero .tagline { max-width: 760px; }
-.VPFeature { border-color: rgba(59, 130, 246, 0.18); }
+.VPFeature { border-color: rgba(15, 23, 42, 0.12); }
+.dark .VPFeature { border-color: rgba(255, 255, 255, 0.1); }
+.vp-doc a { text-underline-offset: 3px; }
+.brand-assets { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 20px 0; }
+.brand-asset { display: flex; min-height: 180px; align-items: center; justify-content: center; border: 1px solid var(--vp-c-divider); border-radius: 16px; padding: 24px; }
+.brand-asset--dark { background: #0f172a; }
+.brand-asset--light { background: #ffffff; }
+.brand-asset img { width: min(132px, 60%); height: auto; }
