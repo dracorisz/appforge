@@ -13,7 +13,7 @@ const DOCS_URL = 'https://dracorisz.github.io/appforge/'
 const publicTools = [
   { label: 'Weather Now', description: 'Live weather lookup', path: '/apps/weather-now', icon: Cloud },
   { label: 'Any Converter', description: 'Local format conversion', path: '/apps/any-converter', icon: ArrowLeftRight },
-  { label: 'Scrapper Pro', description: 'Public media discovery', path: '/apps/scrapper-pro', icon: Search },
+  { label: 'Getter Pro', description: 'Public media discovery', path: '/apps/getter-pro', icon: Search },
 ]
 
 type AuthProviderName = 'google' | 'github'
