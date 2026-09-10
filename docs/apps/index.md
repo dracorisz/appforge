@@ -22,11 +22,27 @@ Task List is the second explicit candidate. Its core create/complete/delete work
 
 [Read Task List documentation](./task-list/README.md)
 
+## Media and research surfaces
+
+### Getter Pro
+
+Getter Pro is the renamed Scrapper Pro surface. Its canonical route is `/apps/getter-pro`; legacy Scrapper Pro routes redirect for compatibility. It searches public image, video, post and article sources, supports local saves/downloads, and can archive provenance-rich references into Media Vault for signed-in users.
+
+Its current visual rule is media-first: image/video remains the dominant surface and actions live in a dedicated drawer below the media instead of covering the asset. Desktop drawers reveal on hover/focus; touch/mobile keeps actions reachable.
+
+### Media Vault
+
+Media Vault is the shared authenticated asset surface for General uploads, Story Studio-linked scenes and Getter Pro source references. It supports Grid, Showcase and List views. Showcase follows the same cinematic card language used by the Hugging Face × Story Studio gallery.
+
+## Story Studio identity
+
+Story Studio / Dragon Arena uses the joypad/gamepad icon consistently across app surfaces. Signed-out `/apps/ai-dragon-arena` is an AI integrations/promotional page; authenticated users receive the full creator workspace.
+
 ## Current catalog model
 
 The canonical registry currently contains 45 entries after Task List was added. These include dedicated apps, shared workbench tools, legacy mini-app shells, planned apps, and one intentional route alias (`Data Converter` → `Any to Any Converter`).
 
-Every canonical entry should now resolve intentionally: implemented routes reach their component/workbench, while unimplemented `/apps/*` entries reach the planned-app surface rather than silently returning to the dashboard.
+Every canonical entry should resolve intentionally: implemented routes reach their component/workbench, while unimplemented `/apps/*` entries reach the planned-app surface rather than silently returning to the dashboard.
 
 The repeatable integrity check is:
 
