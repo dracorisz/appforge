@@ -8,7 +8,7 @@ const YOUTUBE_URL = 'https://www.youtube.com/@AppForgeDragon'
 
 export function PublicToolShell({ children, toolName = 'Guest tool', toolIcon }: { children: React.ReactNode; toolName?: string; toolIcon?: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="dark min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/88 backdrop-blur-xl">
         <div className="mx-auto flex min-h-14 max-w-7xl items-center gap-3 px-4 py-2 sm:px-6 lg:px-8">
           <Link to="/" className="flex min-w-0 items-center gap-2.5">
@@ -25,7 +25,7 @@ export function PublicToolShell({ children, toolName = 'Guest tool', toolIcon }:
         </div>
       </header>
       <main className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 lg:px-8">{children}</main>
-      <footer className="border-t border-border/65 bg-background/75"><div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"><span>AppForge guest tools: Story Studio, Weather Now, Any Converter and Scrapper Pro.</span><span>Sign in for synced history, profile, favorites, private storage and protected features.</span></div></footer>
+      <footer className="border-t border-border/65 bg-background/75"><div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"><span>AppForge guest tools: AI Integrations, Weather Now, Any Converter and Getter Pro.</span><span>Sign in for synced history, profile, favorites, private storage and protected features.</span></div></footer>
     </div>
   )
 }
