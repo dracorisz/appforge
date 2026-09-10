@@ -1,14 +1,16 @@
 import React from 'react'
-import { ArrowLeftRight, ArrowRight, Cloud, Github, Heart, PlayCircle, Search, ShieldCheck, Sparkles } from 'lucide-react'
+import { ArrowLeftRight, ArrowRight, Cloud, Github, Heart, History, PlayCircle, Search, ShieldCheck } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
-import { BuildBadge, Button } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { getAllApps } from '@/lib/registry'
+import { BUILD_INFO } from '@/lib/buildInfo'
 import { useAuth } from './AuthProvider'
 import { consumeReturnPath, normalizeReturnPath } from './returnPath'
 
 const YOUTUBE_EMBED_URL = 'https://www.youtube-nocookie.com/embed/tWnZNkPxlOo?rel=0&modestbranding=1'
 const APPFORGE_MARK = '/favicon.svg?v=2'
 const DOCS_URL = 'https://dracorisz.github.io/appforge/'
+const CHANGELOG_URL = 'https://github.com/dracorisz/appforge/blob/main/CHANGELOG.md'
 
 const publicTools = [
   { label: 'Weather Now', description: 'Live weather lookup', path: '/apps/weather-now', icon: Cloud },
@@ -24,7 +26,6 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
   const [busyProvider, setBusyProvider] = React.useState<AuthProviderName | null>(null)
   const [error, setError] = React.useState('')
   const apps = React.useMemo(() => getAllApps(), [])
-  const liveCount = apps.filter((app) => app.status === 'launched' || app.status === 'beta' || app.status === 'building').length
 
   React.useEffect(() => {
     if (landingOnly || loading || !user) return
@@ -67,24 +68,24 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
               <div className="hidden text-xs text-muted-foreground sm:block">Open-source utility workshop</div>
             </div>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <a href="https://paypal.me/dracorisz" target="_blank" rel="noopener noreferrer" aria-label="Support AppForge via PayPal" title="Support AppForge" className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border/70 bg-background/70 text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
               <Heart className="h-4 w-4" />
             </a>
-            <a href="https://github.com/dracorisz/appforge" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-600 transition-colors hover:bg-red-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:text-red-400">
+            <a href={CHANGELOG_URL} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/70 bg-background/70 px-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+              <History className="h-4 w-4" /> <span className="hidden sm:inline">Changelog</span>
+            </a>
+            <a href="https://github.com/dracorisz/appforge" target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/70 bg-background/70 px-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
               <Github className="h-4 w-4" /> <span className="hidden sm:inline">GitHub</span>
             </a>
-            <BuildBadge compact />
+            <span className="inline-flex h-9 items-center rounded-lg border border-border/70 bg-background/70 px-3 text-xs font-semibold text-muted-foreground">v{BUILD_INFO.version}</span>
           </div>
         </header>
 
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-8 pt-3 sm:px-6 sm:pt-6 lg:px-8">
           <div className="grid items-center gap-8 lg:min-h-[calc(100dvh-8rem)] lg:grid-cols-[minmax(0,1.04fr)_minmax(320px,0.96fr)] lg:gap-12">
             <section className="max-w-3xl py-4 lg:py-8">
-              <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-sm">
-                <Sparkles className="h-3.5 w-3.5" /> Public beta · open development
-              </div>
-              <h1 className="mt-5 max-w-3xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-6xl lg:text-7xl xl:text-[5.25rem] xl:leading-[0.96]">
+              <h1 className="max-w-3xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-6xl lg:text-7xl xl:text-[5.25rem] xl:leading-[0.96]">
                 Build useful things.
                 <span className="block text-muted-foreground">Own the workflow.</span>
               </h1>
@@ -113,11 +114,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
 
               {error && <div role="alert" aria-live="polite" className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
 
-              <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 border-t border-border/60 pt-5 text-xs text-muted-foreground">
-                <span><strong className="font-semibold text-foreground">{apps.length}</strong> registered apps</span>
-                <span><strong className="font-semibold text-foreground">{liveCount}</strong> active builds</span>
-                <span><strong className="font-semibold text-foreground">Full</strong> fork-ready target</span>
-              </div>
+              <p className="mt-8 border-t border-border/60 pt-5 text-xs text-muted-foreground"><strong className="font-semibold text-foreground">{apps.length}</strong> registered apps · open source · documented for reuse and forking</p>
             </section>
 
             <section className="relative mx-auto w-full max-w-xl lg:max-w-none" aria-label="AppForge public tools and workspace access">
@@ -169,7 +166,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
         </main>
 
         <footer className="mx-auto flex w-full max-w-7xl shrink-0 flex-col gap-3 border-t border-border/60 px-4 py-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-          <span className="inline-flex items-center gap-2"><img src={APPFORGE_MARK} alt="" className="h-5 w-5 rounded-md" decoding="async" /> AppForge · public beta</span>
+          <span className="inline-flex items-center gap-2"><img src={APPFORGE_MARK} alt="" className="h-5 w-5 rounded-md" decoding="async" /> AppForge · v{BUILD_INFO.version}</span>
           <span className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <Link to="/privacy" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Privacy</Link>
             <Link to="/terms" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Terms</Link>
