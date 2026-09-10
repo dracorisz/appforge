@@ -3,7 +3,7 @@ import { callCloudWorker, createGcpBridgeCredentials, downloadPrivateWorkerObjec
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://ixqoosixhahrsgwoxyme.supabase.co'
 const SUPABASE_PUBLISHABLE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_b56EltHyMfwOQjVQcQFHwA_VUiSn9zN'
 const MODEL = 'gemini-3.1-flash-image'
-const PROMPT_SUFFIX = 'Create one original cute desktop assistant character, full body, centered, expressive and readable at small size, isolated on a simple uncluttered background suitable for later transparent PNG cleanup. No words, logos, captions, UI, watermark, or text.'
+const PROMPT_SUFFIX = 'MANDATORY OUTPUT REQUIREMENT: generate exactly one original cute desktop assistant character as a PNG image with a fully transparent alpha background. The background MUST be transparent, not white, not colored, not a checkerboard, and not a scene. Full body, centered, expressive and readable at small size, clean silhouette, generous transparent padding around the character, no words, logos, captions, UI, watermark, border, floor, scenery, or text. Output MUST be suitable for direct use as a transparent PNG sprite without background-removal cleanup.'
 
 const supabaseRequest = (path, token, init = {}) => fetch(`${SUPABASE_URL}${path}`, {
   ...init,
