@@ -2,13 +2,27 @@
 
 AppForge is organized around focused tools with a canonical registry identity and an explicit maturity path. This section collects app-specific documentation and standalone-PWA extraction notes.
 
+## Current product highlights
+
+### Desktop Buddy
+
+Desktop Buddy is now the canonical dragon companion at `/apps/desktop-buddy`, replacing retired Pariflow Smpl in the 45-entry registry. The current implementation includes KDE Community Konqi starter artwork with source/license metadata, custom image upload, local persistence, framing controls, versioned buddy packs, transparent 512 × 512 PNG export where the source permits it, browser speech controls, and an `appforge:agent-response` reaction bridge.
+
+Real Hugging Face / Vertex generation and the persistent cross-route companion are still active roadmap items rather than being presented as finished capabilities.
+
+[Read Desktop Buddy documentation](./desktop-buddy.md)
+
+### Getter Pro
+
+Getter Pro is the current product identity at `/apps/getter-pro`; the stable internal `scrapper-pro` ID remains for compatibility. Result cards now expose individual **Save**, **Download**, **Open**, and **Copy URL** actions, while bulk local-save, Media Vault, and provenance export workflows remain available.
+
+Source restrictions can still prevent a browser from fetching some remote media directly. In that case Getter opens the original media so the user can save it from its source rather than silently claiming a download succeeded.
+
 ## Standalone-PWA direction
 
 The target is not to claim every embedded tool is already independent. A **Full** app should have a clear capability boundary, install/build instructions, validation coverage, PWA metadata, offline behavior where appropriate, screenshots, and a repeatable extraction/fork procedure.
 
 Read the shared [Full-status standard](../FULL_STATUS.md), [Project Pulse](../PROJECT-PULSE.md), and [Standalone PWA template](../STANDALONE_PWA_TEMPLATE.md) before promoting an app.
-
-## Current documented candidates
 
 ### Any to Any Converter
 
@@ -22,27 +36,25 @@ Task List is the second explicit candidate. Its core create/complete/delete work
 
 [Read Task List documentation](./task-list/README.md)
 
-## Media and research surfaces
-
-### Getter Pro
-
-Getter Pro is the renamed Scrapper Pro surface. Its canonical route is `/apps/getter-pro`; legacy Scrapper Pro routes redirect for compatibility. It searches public image, video, post and article sources, supports local saves/downloads, and can archive provenance-rich references into Media Vault for signed-in users.
-
-Its current visual rule is media-first: image/video remains the dominant surface and actions live in a dedicated drawer below the media instead of covering the asset. Desktop drawers reveal on hover/focus; touch/mobile keeps actions reachable.
+## Media and creator surfaces
 
 ### Media Vault
 
 Media Vault is the shared authenticated asset surface for General uploads, Story Studio-linked scenes and Getter Pro source references. It supports Grid, Showcase and List views. Showcase follows the same cinematic card language used by the Hugging Face × Story Studio gallery.
 
-## Story Studio identity
+### Story Studio
 
 Story Studio / Dragon Arena uses the joypad/gamepad icon consistently across app surfaces. Signed-out `/apps/ai-dragon-arena` is an AI integrations/promotional page; authenticated users receive the full creator workspace.
 
+## Retired app
+
+**Pariflow Smpl is no longer a canonical AppForge app.** It was removed from the registry when Desktop Buddy became canonical. The old component is reduced to a redirect and its prior browser-side credential fallback has been removed from the active code path.
+
 ## Current catalog model
 
-The canonical registry currently contains 45 entries after Task List was added. These include dedicated apps, shared workbench tools, legacy mini-app shells, planned apps, and one intentional route alias (`Data Converter` → `Any to Any Converter`).
+The canonical registry contains 45 entries. Desktop Buddy now occupies the product slot previously held by Pariflow Smpl. The catalog includes dedicated apps, shared workbench tools, legacy mini-app shells, planned apps, and one intentional route alias (`Data Converter` → `Any to Any Converter`).
 
-Every canonical entry should resolve intentionally: implemented routes reach their component/workbench, while unimplemented `/apps/*` entries reach the planned-app surface rather than silently returning to the dashboard.
+Every canonical entry should resolve intentionally: implemented routes reach their component/workbench or a dedicated registry-fallback implementation, while unimplemented `/apps/*` entries reach the planned-app surface rather than silently returning to an unrelated app.
 
 The repeatable integrity check is:
 
@@ -50,7 +62,7 @@ The repeatable integrity check is:
 npm run audit:apps
 ```
 
-CI runs this before lint/typecheck/tests/build. It checks app IDs, categories, status/version/route shape, intentional route aliases, and router coverage.
+CI runs this before lint/typecheck/tests/build. It checks app IDs, categories, status/version/route shape, intentional route aliases, dedicated fallback implementations, and router coverage.
 
 ## Product families
 
@@ -58,7 +70,7 @@ The registry spans browser-local utilities, image/SVG tools, data/conversion uti
 
 ## Adding an app doc
 
-For a specialized app moving toward Full status, add `docs/apps/<slug>/README.md` covering:
+For a specialized app moving toward Full status, add `docs/apps/<slug>/README.md` or a dedicated `docs/apps/<slug>.md` page covering:
 
 1. purpose and user-facing boundary;
 2. primary source files and dependencies;
