@@ -52,7 +52,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
   const openWorkspace = () => navigate('/')
 
   return (
-    <div className="min-h-dvh overflow-x-hidden bg-background text-foreground">
+    <div className="dark min-h-dvh overflow-x-hidden bg-black text-foreground" style={{ colorScheme: 'dark', '--background': '0 0% 0%' } as React.CSSProperties}>
       <div className="relative isolate flex min-h-dvh flex-col overflow-hidden">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute left-1/2 top-[-28rem] h-[52rem] w-[52rem] -translate-x-1/2 rounded-full border border-border/35 bg-accent/20 blur-3xl" />

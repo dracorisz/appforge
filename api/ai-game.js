@@ -1,3 +1,5 @@
+import { generateGeminiText } from './_gemini.js'
+
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://ixqoosixhahrsgwoxyme.supabase.co'
 const SUPABASE_PUBLISHABLE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_b56EltHyMfwOQjVQcQFHwA_VUiSn9zN'
 
@@ -63,9 +65,9 @@ const consumeDailyRequest = async (token) => {
   return response.json().catch(() => false)
 }
 
-const callHfGameMaster = async ({ hfToken, model, instructions, input }) => {
+const callHfGameMaster = async ({ hfToken, model, instructions, input, timeoutMs = 18000 }) => {
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 18000)
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
   try {
     const response = await fetch('https://router.huggingface.co/v1/chat/completions', {
       method: 'POST',
@@ -93,9 +95,9 @@ const callHfGameMaster = async ({ hfToken, model, instructions, input }) => {
   }
 }
 
-const callPersonalOpenRouter = async ({ apiKey, instructions, input }) => {
+const callPersonalOpenRouter = async ({ apiKey, instructions, input, timeoutMs = 18000 }) => {
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 18000)
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
   try {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -165,6 +167,9 @@ export default async function handler(req, res) {
   const guestMode = !user?.id && String(req.headers?.['x-appforge-guest'] || '') === 'dragon-arena'
   if (!user?.id && !guestMode) return res.status(401).json({ error: 'Sign in to use Story Studio.' })
 
+  const personalGeminiKey = !guestMode ? String(req.headers?.['x-gemini-key'] || '').trim() : ''
+  const usingPersonalGemini = Boolean(personalGeminiKey)
+
   const personalOpenRouterKey = String(req.headers?.['x-openrouter-key'] || '').trim()
   const usingPersonalOpenRouter = Boolean(personalOpenRouterKey.startsWith('sk-or-')) && !guestMode
   const personalHfHeader = String(req.headers?.['x-hf-tokens'] || req.headers?.['x-hf-token'] || '')
@@ -197,10 +202,12 @@ export default async function handler(req, res) {
   let provider = 'huggingface'
   let lastError = null
   const attempts = []
+  // Reserve time for Gemini and serialization inside the 30-second function limit.
+  const providerDeadline = Date.now() + 10000
 
   if (usingPersonalOpenRouter) {
     try {
-      result = await callPersonalOpenRouter({ apiKey: personalOpenRouterKey, instructions, input })
+      result = await callPersonalOpenRouter({ apiKey: personalOpenRouterKey, instructions, input, timeoutMs: 5000 })
       provider = 'openrouter-personal'
     } catch (error) {
       lastError = error
@@ -209,11 +216,12 @@ export default async function handler(req, res) {
   }
 
   if (!result && sharedQuotaAvailable && hfTokens.length) {
-    for (let tokenIndex = 0; tokenIndex < hfTokens.length && !result; tokenIndex += 1) {
+    for (let tokenIndex = 0; tokenIndex < hfTokens.length && !result && Date.now() < providerDeadline; tokenIndex += 1) {
       const hfToken = hfTokens[tokenIndex]
       for (const model of HF_TEXT_MODELS) {
+        if (Date.now() >= providerDeadline) break
         try {
-          result = await callHfGameMaster({ hfToken, model, instructions, input })
+          result = await callHfGameMaster({ hfToken, model, instructions, input, timeoutMs: Math.max(1, Math.min(5000, providerDeadline - Date.now())) })
           provider = usingPersonalHf ? 'huggingface-personal' : 'huggingface'
           attempts.push({ model, status: 'ok' })
           break
@@ -221,6 +229,29 @@ export default async function handler(req, res) {
           lastError = error
           attempts.push({ model, status: 'failed', code: Number(error?.status) || undefined })
         }
+      }
+    }
+  }
+
+  if (!result && !guestMode && (usingPersonalGemini || process.env.GEMINI_API_KEY)) {
+    let geminiAllowed = usingPersonalGemini
+    if (!geminiAllowed) {
+      try {
+        geminiAllowed = usingPersonalOpenRouter || usingPersonalHf
+          ? Boolean(await consumeDailyRequest(token))
+          : Boolean(sharedQuotaAvailable)
+      } catch { geminiAllowed = false }
+    }
+    if (geminiAllowed) {
+      try {
+        const reply = await generateGeminiText({ apiKey: personalGeminiKey || process.env.GEMINI_API_KEY, instructions, input, json: true })
+        const parsed = parseReply(reply.text)
+        if (!parsed.narrative) throw new Error('Gemini empty narrative')
+        result = { parsed, model: reply.model }
+        provider = usingPersonalGemini ? 'gemini-personal' : 'gemini'
+        attempts.push({ provider, status: 'ok' })
+      } catch {
+        attempts.push({ provider: 'gemini', status: 'failed' })
       }
     }
   }
@@ -239,7 +270,7 @@ export default async function handler(req, res) {
     degraded: provider === 'local-fallback',
     dailyRequestUsed: false,
     sharedAiQuotaAvailable: Boolean(sharedQuotaAvailable),
-    personalKeyUsed: usingPersonalOpenRouter || usingPersonalHf,
+    personalKeyUsed: provider.endsWith('-personal'),
     guestMode,
     builderMode: normalizedMode,
     resetAt: '00:00 UTC',

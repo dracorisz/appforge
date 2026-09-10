@@ -1,5 +1,7 @@
+import { Link } from 'react-router-dom'
+import { getGeminiHeaders } from '@/lib/aiProviders'
 import React from 'react'
-import { BookOpen, Download, GalleryThumbnails, Globe2, ImagePlus, KeyRound, Loader2, LockKeyhole, RefreshCcw, Send, Trophy, Users, X } from 'lucide-react'
+import { BookOpen, Download, GalleryThumbnails, Globe2, ImagePlus, KeyRound, Loader2, LockKeyhole, Palette, RefreshCcw, Send, Trophy, Users, X } from 'lucide-react'
 import { GiDragonHead, GiDungeonGate, GiRuneSword, GiScrollUnfurled, GiSparkles, GiSpikedShield } from 'react-icons/gi'
 import { Button, Card, Input } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
@@ -27,6 +29,15 @@ type BuilderMode = 'novel' | 'comics'
 type Panel = 'assets' | 'sessions' | 'leaderboard' | null
 
 type SceneReply = { imageUrl?: string; model?: string; isPublic?: boolean; error?: string }
+
+const STORY_THEMES = {
+  workspace: { label: 'Workspace', primary: '', glow: 'transparent', swatch: 'bg-foreground' },
+  ember: { label: 'Ember Runes', primary: '18 82% 35%', glow: 'rgba(234, 88, 12, 0.13)', swatch: 'bg-orange-600' },
+  frost: { label: 'Frost Wyrms', primary: '224 65% 42%', glow: 'rgba(79, 70, 229, 0.13)', swatch: 'bg-indigo-600' },
+  forest: { label: 'Forest Dragons', primary: '153 64% 26%', glow: 'rgba(5, 150, 105, 0.13)', swatch: 'bg-emerald-600' },
+} as const
+type StoryTheme = keyof typeof STORY_THEMES
+const STORY_THEME_KEY = 'appforge-story-theme'
 
 const MODEL = 'huggingface-rotation'
 
@@ -88,6 +99,15 @@ export function PF_AIDragonArenaStudio() {
   const [completedTurns, setCompletedTurns] = React.useState<CompletedTurn[]>([])
   const [turn, setTurn] = React.useState(1)
   const [action, setAction] = React.useState('')
+  const [showAppearance, setShowAppearance] = React.useState(false)
+  const [storyTheme, setStoryTheme] = React.useState<StoryTheme>(() => {
+    try { const saved = localStorage.getItem(STORY_THEME_KEY); return saved && Object.prototype.hasOwnProperty.call(STORY_THEMES, saved) ? saved as StoryTheme : 'workspace' } catch { return 'workspace' }
+  })
+  const selectStoryTheme = (theme: StoryTheme) => {
+    setStoryTheme(theme)
+    try { localStorage.setItem(STORY_THEME_KEY, theme) } catch { /* applies for this session */ }
+  }
+  const themeStyle = storyTheme === 'workspace' ? undefined : { '--primary': STORY_THEMES[storyTheme].primary, '--primary-foreground': '0 0% 100%', '--ring': STORY_THEMES[storyTheme].primary } as React.CSSProperties
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState('')
   const [sessionId, setSessionId] = React.useState<string | null>(null)
@@ -241,6 +261,7 @@ export function PF_AIDragonArenaStudio() {
       if (!token) throw new Error('Sign in again to continue.')
       const headers: Record<string, string> = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
       if (personalHfTokens.length) headers['x-hf-tokens'] = personalHfTokens.join(',')
+      Object.assign(headers, getGeminiHeaders())
       const response = await fetch('/api/ai-game', { method: 'POST', headers, body: JSON.stringify({ turn, action: playerAction, history: pendingHistory.slice(-6), builderMode: mode }) })
       const payload = await response.json().catch(() => ({})) as GameReply
       if (!response.ok) throw new Error(payload.error || 'The story engine is unavailable.')
@@ -337,13 +358,13 @@ export function PF_AIDragonArenaStudio() {
   const canGenerate = Boolean(sessionId) && !sceneLoading && (!imageDailyUsed || personalHfTokens.length > 0)
 
   return (
-    <div className="mx-auto max-w-6xl space-y-3 pb-10 text-foreground">
+    <div className="mx-auto max-w-6xl space-y-3 pb-10 text-foreground" style={themeStyle} data-story-theme={storyTheme}>
       <div className="flex flex-wrap items-center justify-between gap-3 px-1">
         <div className="flex items-center gap-1 rounded-xl border border-border/70 bg-card p-1">
           <button onClick={() => setMode('novel')} className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${mode === 'novel' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}><BookOpen className="h-4 w-4" /> Novel</button>
           <button onClick={() => setMode('comics')} className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${mode === 'comics' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}><GalleryThumbnails className="h-4 w-4" /> Comics</button>
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground"><span>Turn {turn}</span>{points && <span>· {points.points} pts</span>}<span>· Appearance theme</span></div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground"><span>Turn {turn}</span>{points && <span>· {points.points} pts</span>}<span>· {STORY_THEMES[storyTheme].label}</span></div>
       </div>
 
       <Card className="overflow-hidden p-0">
@@ -355,11 +376,18 @@ export function PF_AIDragonArenaStudio() {
           <Button size="sm" variant="ghost" onClick={exportProduct} disabled={!completedTurns.length}><Download className="h-4 w-4" /> Export {mode === 'novel' ? 'Novel' : 'Comic'}</Button>
           <div className="ml-auto flex items-center gap-1">
             <Button size="sm" variant="ghost" onClick={reset}><RefreshCcw className="h-4 w-4" /> New</Button>
-            <Button size="sm" variant="ghost" onClick={() => setShowProviderSettings((value) => !value)} title="Hugging Face keys"><KeyRound className="h-4 w-4" /></Button>
+            <Button size="sm" variant={showAppearance ? 'secondary' : 'ghost'} onClick={() => setShowAppearance((value) => !value)} aria-expanded={showAppearance} aria-controls="story-appearance" title="Story appearance"><Palette className="h-4 w-4" /><span className="hidden sm:inline">Theme</span></Button>
+            <Button size="sm" variant="ghost" onClick={() => setShowProviderSettings((value) => !value)} title="AI provider settings" aria-label="AI provider settings"><KeyRound className="h-4 w-4" /></Button>
           </div>
         </div>
 
-        {showProviderSettings && <div className="border-b border-border/70 bg-background/55 p-3"><div className="mb-2"><div className="text-xs font-semibold">Personal Hugging Face tokens</div><div className="mt-1 text-[11px] leading-4 text-muted-foreground">Optional. Add up to three tokens with Inference Providers access. Story Studio rotates them before server-funded keys. OpenRouter remains an account/profile integration, not a game control.</div></div><div className="grid gap-2 md:grid-cols-3">{hfTokens.map((value, index) => <Input key={index} value={value} onChange={(event) => setHfTokens((current) => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={`HF token ${index + 1} · hf_…`} />)}</div></div>}
+        {showAppearance && <section id="story-appearance" className="border-b border-border/70 bg-background/55 p-3" aria-label="Story appearance">
+          <h2 className="text-sm font-semibold">Story appearance</h2>
+          <p className="mt-1 text-xs text-muted-foreground">Choose the color of story bubbles, actions, focus rings and the canvas glow. Saved in this browser for Novel and Comics.</p>
+          <div className="mt-3 flex flex-wrap gap-2">{(Object.keys(STORY_THEMES) as StoryTheme[]).map((theme) => <button key={theme} type="button" aria-pressed={storyTheme === theme} onClick={() => selectStoryTheme(theme)} className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${storyTheme === theme ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background hover:bg-accent'}`}><span aria-hidden="true" className={`h-3 w-3 rounded-full border border-current ${STORY_THEMES[theme].swatch}`} />{STORY_THEMES[theme].label}</button>)}</div>
+        </section>}
+
+        {showProviderSettings && <div className="border-b border-border/70 bg-background/55 p-3"><div className="mb-2"><div className="text-xs font-semibold">Personal Hugging Face tokens</div><div className="mt-1 text-[11px] leading-4 text-muted-foreground">Optional. Add up to three tokens with Inference Providers access. Story Studio rotates them before server-funded keys. Manage Gemini and OpenRouter keys in Settings → Integrations. Gemini is a text fallback; scene generation uses Hugging Face.</div></div><div className="grid gap-2 md:grid-cols-3">{hfTokens.map((value, index) => <Input type="password" autoComplete="off" aria-label={`Hugging Face token ${index + 1}`} key={index} value={value} onChange={(event) => setHfTokens((current) => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={`HF token ${index + 1} · hf_…`} />)}</div><Link to="/settings?tab=integrations" className="mt-3 inline-flex rounded-lg border border-border px-3 py-2 text-xs font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Manage AI provider keys</Link></div>}
 
         {panel && <div className="border-b border-border/70 bg-background/70 p-3">
           {panel === 'assets' && <div className="flex gap-2 overflow-x-auto pb-1">{assets.length === 0 ? <div className="text-xs text-muted-foreground">No generated scenes yet.</div> : assets.map((asset) => { const src = assetUrl(asset.storage_path) || asset.external_url || ''; return <div key={asset.id} className="w-28 shrink-0"><button type="button" onClick={() => src && setLightbox(src)} className="w-full text-left"><div className="h-16 overflow-hidden rounded-lg border border-border bg-muted">{src && <img src={src} alt="" className="h-full w-full object-cover" />}</div><div className="mt-1 truncate text-[10px] text-muted-foreground">{sceneModel(asset)}</div></button><button type="button" disabled={sharingAsset === asset.id} onClick={() => void togglePublic(asset)} className={`mt-1 inline-flex w-full items-center justify-center gap-1 rounded-md border px-1.5 py-1 text-[10px] ${asset.is_public ? 'border-primary/30 bg-accent text-foreground' : 'border-border text-muted-foreground hover:text-foreground'}`}>{asset.is_public ? <><Globe2 className="h-3 w-3" /> Public</> : <><LockKeyhole className="h-3 w-3" /> Private</>}</button></div> })}</div>}
@@ -367,7 +395,7 @@ export function PF_AIDragonArenaStudio() {
           {panel === 'leaderboard' && <div className="grid gap-1 sm:grid-cols-2 lg:grid-cols-4">{leaderboardRows.slice(0, 8).map((row, index) => <div key={row.user_id} className="flex items-center justify-between rounded-lg border border-border/70 px-3 py-2 text-xs"><span>#{index + 1} {row.display_name || 'Writer'}</span><span className="text-muted-foreground">{row.points}</span></div>)}</div>}
         </div>}
 
-        <div className="min-h-[430px] bg-gradient-to-b from-card via-background/90 to-background">
+        <div className="min-h-[430px] bg-background" style={{ backgroundImage: `radial-gradient(ellipse at top left, ${STORY_THEMES[storyTheme].glow}, transparent 70%)` }}>
           <div className="max-h-[570px] min-h-[430px] space-y-3 overflow-y-auto p-4 sm:p-5">
             {history.map((item, index) => {
               const attachedScene = item.role === 'gm' ? sceneForHistoryIndex(index) : null
@@ -394,7 +422,7 @@ export function PF_AIDragonArenaStudio() {
         </div>
       </Card>
 
-      <div className="grid gap-2 sm:grid-cols-3"><div className="rounded-lg border border-border/60 bg-card/50 px-3 py-2 text-[11px] text-muted-foreground"><span className="font-medium text-foreground">Novel:</span> writing-first story flow with Markdown export.</div><div className="rounded-lg border border-border/60 bg-card/50 px-3 py-2 text-[11px] text-muted-foreground"><span className="font-medium text-foreground">Comics:</span> larger beat-linked panels with standalone HTML export.</div><div className="rounded-lg border border-border/60 bg-card/50 px-3 py-2 text-[11px] text-muted-foreground"><span className="font-medium text-foreground">Appearance:</span> profile theme and accent style the complete studio surface.</div></div>
+      <div className="grid gap-2 sm:grid-cols-3"><div className="rounded-lg border border-border/60 bg-card/50 px-3 py-2 text-[11px] text-muted-foreground"><span className="font-medium text-foreground">Novel:</span> writing-first story flow with Markdown export.</div><div className="rounded-lg border border-border/60 bg-card/50 px-3 py-2 text-[11px] text-muted-foreground"><span className="font-medium text-foreground">Comics:</span> larger beat-linked panels with standalone HTML export.</div><div className="rounded-lg border border-border/60 bg-card/50 px-3 py-2 text-[11px] text-muted-foreground"><span className="font-medium text-foreground">Appearance:</span> choose an app theme from the palette button, or inherit your workspace appearance.</div></div>
 
       {lightbox && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4" role="dialog" aria-modal="true" onClick={() => setLightbox(null)}><button type="button" onClick={() => setLightbox(null)} className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white"><X className="h-5 w-5" /></button><img src={lightbox} alt="Generated story scene" className="max-h-[88vh] max-w-[92vw] rounded-xl object-contain shadow-2xl" onClick={(event) => event.stopPropagation()} /></div>}
     </div>

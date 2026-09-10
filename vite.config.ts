@@ -9,6 +9,8 @@ const runtimeEnv = ((globalThis as typeof globalThis & {
 const appVersion = runtimeEnv.npm_package_version || '1.18.0'
 const gitSha = runtimeEnv.VERCEL_GIT_COMMIT_SHA || runtimeEnv.GITHUB_SHA || 'local'
 const buildTime = new Date().toISOString()
+const requestedBasePath = runtimeEnv.VITE_BASE_PATH || '/'
+const basePath = requestedBasePath.endsWith('/') ? requestedBasePath : `${requestedBasePath}/`
 
 const manualChunks = (id: string) => {
   if (!id.includes('node_modules')) return undefined
@@ -21,6 +23,7 @@ const manualChunks = (id: string) => {
 }
 
 export default defineConfig({
+  base: basePath,
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),
     'import.meta.env.VITE_GIT_SHA': JSON.stringify(gitSha),
@@ -52,12 +55,12 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['favicon.svg', 'robots.txt', 'favicon/site.webmanifest', 'favicon/favicon.ico', 'favicon/favicon-16x16.png', 'favicon/favicon-32x32.png', 'favicon/apple-touch-icon.png', 'favicon/android-chrome-192x192.png', 'favicon/android-chrome-512x512.png'],
       manifest: {
-        id: '/',
+        id: basePath,
         name: 'AppForge — Simple, powerful tools',
         short_name: 'AppForge',
         description: 'An open-source toolbox of focused web utilities, media tools, and practical browser apps.',
-        start_url: '/',
-        scope: '/',
+        start_url: basePath,
+        scope: basePath,
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',
@@ -93,14 +96,14 @@ export default defineConfig({
             name: 'Scrapper Pro',
             short_name: 'Scrapper',
             description: 'Search public media sources in AppForge Scrapper Pro.',
-            url: '/apps/scrapper-pro',
+            url: `${basePath}apps/scrapper-pro`,
             icons: [{ src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml' }]
           },
           {
             name: 'Any → Any Converter',
             short_name: 'Converter',
             description: 'Open the AppForge data converter.',
-            url: '/apps/any-converter',
+            url: `${basePath}apps/any-converter`,
             icons: [{ src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml' }]
           }
         ]
@@ -109,7 +112,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         globIgnores: ['**/icons-pack-*.js'],
         cleanupOutdatedCaches: true,
-        navigateFallback: '/index.html',
+        navigateFallback: 'index.html',
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
