@@ -5,11 +5,12 @@ import { Badge, Card } from '@/components/ui'
 import { getAllApps } from '@/lib/registry'
 import { DesktopBuddy } from './DesktopBuddy'
 import { DesktopBuddyAssetLab } from './DesktopBuddyAssetLab'
+import { WidgetPreferencePanel } from './WidgetPreferencePanel'
 
 export function RegistryAppFallback() {
   const { slug } = useParams()
 
-  if (slug === 'desktop-buddy') return <><DesktopBuddy /><DesktopBuddyAssetLab /></>
+  if (slug === 'desktop-buddy') return <><WidgetPreferencePanel kind="desktop-buddy" /><DesktopBuddy /><DesktopBuddyAssetLab /></>
 
   const app = getAllApps().find((item) => item.route === `/apps/${slug}`)
 
