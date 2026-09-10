@@ -11,6 +11,7 @@ import { isCategoryVisibleInSidebar, loadCategoryOverrides, resolveCategories, s
 import { useAuth } from '@/auth/AuthProvider'
 import { ensureProfile } from '@/lib/account'
 import { DragonArenaIcon } from '@/components/dashboard/DragonArenaIcon'
+import { SidebarWeather } from './SidebarWeather'
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = { ArrowLeftRight, Binary, Braces, Calendar, CloudSun, Code, FileCode, FileText, Hash, Image: ImageIcon, Lock, Palette, QrCode, Regex, Search, Sparkles, Table2, Type, Video, Wrench, DragonArena: DragonArenaIcon }
 
@@ -71,6 +72,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
         {sidebarCategories.length > 0 && <div className="mt-5"><div className="mb-1 flex items-center justify-between px-3">{!isCollapsed && <h3 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Categories</h3>}{!isCollapsed && <NavLink to="/categories" onClick={onClose} className="text-[10px] text-muted-foreground hover:text-foreground">Customize</NavLink>}</div><div className="space-y-0.5">{sidebarCategories.map((category) => { const Icon = iconMap[category.icon] || Wrench; const path = `/category/${category.id}`; const active = location.pathname === path; return <NavLink key={category.id} to={path} onClick={onClose} title={isCollapsed ? category.name : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'}`}><Icon className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">{category.name}</span>}</NavLink> })}</div></div>}
       </nav>
 
+      <div className="px-3 pb-2"><SidebarWeather collapsed={isCollapsed} /></div>
       <div className="space-y-1 border-t border-border p-3">
         {user && <NavLink to="/settings" onClick={onClose} className={`mb-2 flex items-center gap-2 rounded-xl border border-border/60 bg-background/35 p-2 hover:border-foreground/15 ${isCollapsed ? 'justify-center' : ''}`} title={isCollapsed ? String(displayName) : undefined}><div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-accent text-xs font-semibold text-foreground">{avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : initial}</div>{!isCollapsed && <div className="min-w-0 flex-1"><div className="truncate text-xs font-medium text-foreground">{String(displayName)}</div>{user.email && <div className="truncate text-[10px] text-muted-foreground">{user.email}</div>}</div>}</NavLink>}
         <button onClick={cycleTheme} title={isCollapsed ? 'Toggle theme' : undefined} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"><ThemeIcon className="h-4 w-4 shrink-0" />{!isCollapsed && <span>{mode === 'light' ? 'Light' : mode === 'dark' ? 'Dark' : 'System'}</span>}</button>
