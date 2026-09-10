@@ -3,9 +3,13 @@ import { ArrowLeft, Construction, ExternalLink } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { Badge, Card } from '@/components/ui'
 import { getAllApps } from '@/lib/registry'
+import { DesktopBuddy } from './DesktopBuddy'
 
 export function RegistryAppFallback() {
   const { slug } = useParams()
+
+  if (slug === 'desktop-buddy') return <DesktopBuddy />
+
   const app = getAllApps().find((item) => item.route === `/apps/${slug}`)
 
   if (!app) {
