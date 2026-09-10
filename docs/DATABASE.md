@@ -1,41 +1,88 @@
-# AppForge Database Setup
+# AppForge database setup
 
-## Current State
-AppForge uses Supabase PostgreSQL for authentication and signed-in persistence. Public/browser-local tools can still work without signing in.
+Last updated: 2026-09-10
+
+## Current state
+
+AppForge uses Supabase PostgreSQL for authentication and signed-in persistence. Public/browser-local tools can still work without signing in when their product boundary allows it.
 
 ## Database stack
 
 - Supabase PostgreSQL
 - Supabase Auth
 - Supabase Storage
-- SQL migrations in `supabase/migrations/`
+- versioned SQL migrations in `supabase/migrations/`
+- Row Level Security for user-owned application data
 
-## Step 1 — Supabase Setup
-1. Open https://supabase.com/dashboard
-2. Create a project or use your existing one
-3. Copy these values into Vercel environment variables:
-   - `VITE_SUPABASE_URL` = your Project URL
-   - `VITE_SUPABASE_ANON_KEY` = your anon/public key
-   - `SUPABASE_SERVICE_ROLE_KEY` = your service_role key (server-only)
+## Environment
 
-## Step 2 — Schema
+Client-side configuration uses:
 
-Apply the versioned SQL files in `supabase/migrations/` through the Supabase CLI or the project's deployment workflow. Do not adapt the removed legacy MySQL schema: it did not represent the current application model.
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
 
-## Step 3 — Client integration
+Privileged server-side operations use `SUPABASE_SERVICE_ROLE_KEY` only where elevated access is actually required.
 
-`src/lib/supabase.ts` initializes the browser client with the public URL and publishable/anon key. Server routes use `SUPABASE_SERVICE_ROLE_KEY` only where elevated operations are required.
+Do not put service-role credentials, provider secrets, or other private keys in `VITE_*` variables.
 
-## Step 4 — Browser-local data
+## Schema workflow
 
-Some mini-apps intentionally retain local-only state. Keep their import/export paths as user-controlled backups and document when a feature syncs to Supabase.
+Repository migrations are the schema source of truth. Apply DDL through the migration workflow rather than editing production tables manually without recording the change.
 
-## Step 5 — Verify
-```bash
-bash scripts/verify-deployment.sh
+Important current migrations include:
+
+- account/preferences/profile and role setup;
+- Dragon Arena usage, sessions, assets, sharing and quota functions;
+- Media Vault tables/storage/RPC repairs;
+- `20260910011500_create_appforge_tasks.sql` — Task List table + per-user RLS;
+- `20260910013500_harden_dragon_arena_function_grants.sql` — removes anonymous/public execution from image quota mutations.
+
+The Task List and Dragon Arena grant-hardening migrations have been applied to the connected project.
+
+## Task List data model
+
+`public.appforge_tasks` stores authenticated sync state for `/apps/task-list` while the app keeps a local-first browser core.
+
+RLS allows users to select, insert, update and delete only rows whose `user_id` matches `auth.uid()`.
+
+This separation is intentional: standalone/local behavior should not depend on Supabase availability, while signed-in AppForge users get optional sync.
+
+## SECURITY DEFINER functions
+
+Some AppForge RPCs intentionally use `SECURITY DEFINER` to perform bounded operations that cannot be expressed as ordinary table access. Every exposed function must have deliberate grants and internal authorization rules.
+
+Current verified grant state for Dragon Arena image quota mutation RPCs:
+
+```text
+anon consume: false
+anon refund: false
+authenticated consume: true
+authenticated refund: true
 ```
 
-## Notes
-- Do NOT expose `SUPABASE_SERVICE_ROLE_KEY` to the browser
-- Use it only in Vercel serverless functions if you add backend endpoints
-- Never expose the service-role key in client code or a `VITE_` variable
+The public gallery RPC remains intentionally readable by anonymous users because it is the bounded public-gallery surface.
+
+See [Security advisor triage](./SECURITY_ADVISORS.md) before changing function grants solely to satisfy a linter warning.
+
+## Client integration
+
+`src/lib/supabase.ts` initializes the browser client with the public project URL and publishable key. Server routes should use elevated credentials only when the operation genuinely requires them.
+
+Authorization must rely on server-owned roles/policies/functions, not untrusted client metadata.
+
+## Browser-local data
+
+Some mini-apps intentionally retain local state. Keep import/export or synchronization behavior explicit in each app's documentation. A browser-local app should not gain an auth/database dependency merely for architectural uniformity.
+
+## Verification
+
+For schema changes:
+
+1. add/review the migration in `supabase/migrations/`;
+2. apply it to the intended environment;
+3. verify RLS/grants directly when security-sensitive;
+4. run Supabase security/performance advisors;
+5. update the app/database/security docs;
+6. run application CI before the next production deployment.
+
+Use `npm run verify:release` for the application pre-release validation path when available in the current package scripts.
