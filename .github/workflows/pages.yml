@@ -37,7 +37,7 @@ jobs:
         run: npm ci
 
       - name: Build VitePress documentation
-        run: npx --yes vitepress@1.6.4 docs build
+        run: npx --yes vitepress@1.6.4 build docs
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
