@@ -1,0 +1,45 @@
+name: Patch public Explore route
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/patch-explore-route.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Add permanent public Explore route
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          app = Path('src/App.tsx')
+          text = app.read_text()
+          anchor = "  if (location.pathname === '/landing') return <LoginPage landingOnly />\n"
+          line = "  if (location.pathname === '/explore') return lazyPage(<PublicAppsPage />)\n"
+          if line not in text:
+              if anchor not in text: raise SystemExit('App landing anchor missing')
+              text = text.replace(anchor, anchor + line, 1)
+          app.write_text(text)
+
+          login = Path('src/auth/LoginPage.tsx')
+          text = login.read_text()
+          text = text.replace('<Link to="/apps" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/70 bg-background/70 px-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"><span>Apps</span></Link>', '<Link to="/explore" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/70 bg-background/70 px-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"><span>Apps</span></Link>')
+          login.write_text(text)
+          PY
+      - name: Commit route patch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/App.tsx src/auth/LoginPage.tsx
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Add permanent public Apps directory route'
+          git push
