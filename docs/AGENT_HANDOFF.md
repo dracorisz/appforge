@@ -38,9 +38,9 @@ Use `npm run verify:release` for the combined pre-release validation path when a
 
 - `/apps/ai-dragon-arena` is promotional for signed-out users: it explains AppForge AI integrations such as Gemini, Hugging Face, OpenRouter and related provider architecture.
 - The authenticated route mounts the full Story Studio creator experience.
-- Do not restore the old public guest-play flow unless that is an explicit product decision.
 - Novel/Comics creation, sessions, scene assets, exports and provider fallbacks live behind authentication.
 - Scene sharing is creator opt-in. Do not reintroduce automatic first-three-public behavior.
+- Dragon Arena / Story Studio uses a joypad/gamepad icon consistently across registry, sidebar, public promo and related product surfaces.
 - The old global image-card hover drawer behavior was removed because it could overlay Story Studio content.
 
 ### AI providers
@@ -49,11 +49,16 @@ Use `npm run verify:release` for the combined pre-release validation path when a
 - Hugging Face and OpenRouter paths remain documented integration options; Gemini/private Cloud Run experiments are separate from normal production behavior.
 - Check `docs/AI-PROVIDERS.md` and `docs/CLOUD-EXPERIMENTS.md` before changing provider order, models, quotas or secrets.
 
-### Media Vault / Scrapper Pro
+### Media Vault / Getter Pro
 
 - Media Vault is the signed-in asset ledger for General uploads plus linked/source-backed product assets.
 - Story Studio scene rows remain authoritative rather than being duplicated into another asset table.
-- Scrapper Pro can archive deduplicated external references into Media Vault while guest/local saves remain browser-local.
+- Getter Pro is the public multi-source media/research tool formerly named Scrapper Pro.
+- Canonical route: `/apps/getter-pro`.
+- Legacy `/apps/scrapper-pro` and `/pf-scrapper-pro` routes redirect for compatibility; legacy storage/source IDs remain accepted so user data does not break.
+- Getter Pro can archive deduplicated external references into Media Vault while guest/local saves remain browser-local.
+- Media Vault exposes Grid, Showcase and List views. Showcase uses cinematic cards with an action drawer below the media rather than overlaying the asset.
+- Getter Pro uses the same drawer principle: image-first card, restrained metadata, actions below the image, hover/focus reveal on desktop and visible controls on touch/mobile.
 
 ### Task List
 
@@ -95,9 +100,9 @@ Planned apps should resolve to the deliberate planned-app surface rather than si
 
 Important current registry examples:
 
-- Story Studio: **1.6.1**
-- Scrapper Pro: **1.3.0**
-- Media Vault: **1.1.0**
+- Story Studio: **1.6.2**
+- Getter Pro: **1.4.0**
+- Media Vault: **1.2.0**
 - Task List: **0.1.0** Beta candidate
 
 The root package version may intentionally lag product-registry release notes during stabilization. Do not silently align versions without deciding the release boundary.
@@ -127,10 +132,10 @@ The root package version may intentionally lag product-registry release notes du
 
 ## Near-term direction before next production deploy
 
-1. let CI validate the app-integrity and current frontend changes;
-2. continue Story Studio creator/mobile/accessibility polish;
-3. qualify Any Converter as the first reproducibly extractable Full PWA candidate;
-4. harden Task List toward independent packaging;
-5. review remaining Supabase `SECURITY DEFINER` warnings function by function;
-6. keep docs aligned through `docs/DOC_MAINTENANCE.md`;
+1. let CI validate the Getter Pro rename, cinematic media drawers and Story Studio joypad identity;
+2. keep docs/registry/routes aligned with canonical `/apps/getter-pro` while preserving legacy redirects;
+3. continue Story Studio creator/mobile/accessibility polish;
+4. qualify Any Converter as the first reproducibly extractable Full PWA candidate;
+5. harden Task List toward independent packaging;
+6. review remaining Supabase `SECURITY DEFINER` warnings function by function;
 7. deploy production only at a deliberate checkpoint, then smoke-test GitHub OAuth and the changed app routes.
