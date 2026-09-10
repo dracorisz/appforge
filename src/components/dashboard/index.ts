@@ -11,7 +11,7 @@ export { PF_ScrapperProNext as PF_ScrapperPro, type ScrapperProResult } from './
 export { PF_ImageLabeler, type ImageLabel } from './PF_ImageLabeler'
 export { PF_CreatorSVG, type HeaderConfig } from './PF_CreatorSVG'
 export { PF_CryptoTrack, type CryptoCoin } from './PF_CryptoTrack'
-export { PF_WeatherNow, type WeatherData } from './PF_WeatherNow'
+export { WeatherNowPage as PF_WeatherNow, type WeatherData } from './WeatherNowPage'
 export { PF_PariflowSmpl, type PariflowDoc } from './PF_PariflowSmpl'
 export { PF_AIDragonArenaStudio as PF_AIDragonArena } from './PF_AIDragonArenaStudio'
 export { PF_DnsTxtChecker } from './PF_DnsTxtChecker'
