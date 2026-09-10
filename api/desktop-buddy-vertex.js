@@ -47,6 +47,14 @@ const getJob = async (token, id, userId) => {
   return Array.isArray(payload) ? payload[0] || null : null
 }
 
+const getJobByClientRequest = async (token, clientRequestId, userId) => {
+  const query = `?client_request_id=eq.${encodeURIComponent(clientRequestId)}&user_id=eq.${encodeURIComponent(userId)}&select=*&limit=1`
+  const response = await supabaseRequest(jobPath(query), token)
+  const payload = await response.json().catch(() => [])
+  if (!response.ok) throw new Error('vertex_job_ledger_unavailable')
+  return Array.isArray(payload) ? payload[0] || null : null
+}
+
 const patchJob = async (token, id, userId, patch) => {
   const query = `?id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(userId)}`
   const response = await supabaseRequest(jobPath(query), token, {
@@ -58,8 +66,8 @@ const patchJob = async (token, id, userId, patch) => {
 }
 
 const toDataUrl = ({ buffer, contentType }) => `data:${contentType};base64,${buffer.toString('base64')}`
-
 const makeWorkerJobId = () => `buddy-${crypto.randomUUID().replace(/-/g, '').slice(0, 28)}`
+const validUuid = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''))
 
 const publicError = (error) => {
   const code = String(error?.message || 'vertex_bridge_failed')
@@ -105,15 +113,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET' && !req.query?.id) {
     const config = getGcpBridgeConfig()
-    return res.status(200).json({
-      ok: true,
-      provider: 'vertex-ai-private-cloud-run',
-      configured: config.configured,
-      requiresSignIn: true,
-      recoverableJobs: true,
-      model: MODEL,
-      requestId,
-    })
+    return res.status(200).json({ ok: true, provider: 'vertex-ai-private-cloud-run', configured: config.configured, requiresSignIn: true, recoverableJobs: true, model: MODEL, requestId })
   }
 
   if (!['GET', 'POST'].includes(req.method)) {
@@ -125,44 +125,44 @@ export default async function handler(req, res) {
   const user = await authenticate(token)
   if (!user?.id) return res.status(401).json({ error: 'Sign in to use Vertex AI.', requestId })
 
+  let bridgeJobId = null
+  let workerJobId = null
+  let clientRequestId = null
   try {
     const credentials = await createGcpBridgeCredentials()
 
     if (req.method === 'GET') {
       const id = String(req.query?.id || '').trim()
-      if (!/^[0-9a-f-]{36}$/i.test(id)) return res.status(400).json({ error: 'A valid bridge job ID is required.', requestId })
+      if (!validUuid(id)) return res.status(400).json({ error: 'A valid bridge job ID is required.', requestId })
       const job = await getJob(token, id, user.id)
       if (!job) return res.status(404).json({ error: 'Vertex job not found.', requestId })
       const recovered = await recoverOrDownload({ token, user, job, credentials })
-      return res.status(200).json({ ok: true, bridgeJobId: job.id, workerJobId: job.worker_job_id, provider: 'vertex-ai', requestId, ...recovered })
+      return res.status(200).json({ ok: true, bridgeJobId: job.id, clientRequestId: job.client_request_id, workerJobId: job.worker_job_id, provider: 'vertex-ai', requestId, ...recovered })
     }
 
     const prompt = typeof req.body?.prompt === 'string' ? req.body.prompt.trim() : ''
+    clientRequestId = String(req.body?.clientRequestId || '').trim()
     if (prompt.length < 8) return res.status(400).json({ error: 'Describe the character you want Vertex AI to create.', requestId })
     if (prompt.length > 900) return res.status(400).json({ error: 'Keep the Vertex character prompt under 900 characters.', requestId })
+    if (!validUuid(clientRequestId)) return res.status(400).json({ error: 'A valid client request ID is required for safe Vertex retries.', requestId })
 
-    const bridgeJobId = crypto.randomUUID()
-    const workerJobId = makeWorkerJobId()
-    await insertJob(token, {
-      id: bridgeJobId,
-      user_id: user.id,
-      worker_job_id: workerJobId,
-      kind: 'image',
-      status: 'running',
-      model: MODEL,
-    })
+    const existing = await getJobByClientRequest(token, clientRequestId, user.id)
+    if (existing) {
+      bridgeJobId = existing.id
+      workerJobId = existing.worker_job_id
+      const recovered = await recoverOrDownload({ token, user, job: existing, credentials })
+      return res.status(200).json({ ok: true, idempotentReplay: true, bridgeJobId, clientRequestId, workerJobId, provider: 'vertex-ai', requestId, ...recovered })
+    }
+
+    bridgeJobId = crypto.randomUUID()
+    workerJobId = makeWorkerJobId()
+    await insertJob(token, { id: bridgeJobId, user_id: user.id, client_request_id: clientRequestId, worker_job_id: workerJobId, kind: 'image', status: 'running', model: MODEL })
 
     try {
-      const worker = await callCloudWorker({
-        config: credentials.config,
-        idToken: credentials.idToken,
-        path: '/v1/jobs',
-        method: 'POST',
-        body: { id: workerJobId, kind: 'image', prompt: `${prompt}\n\n${PROMPT_SUFFIX}` },
-      })
+      const worker = await callCloudWorker({ config: credentials.config, idToken: credentials.idToken, path: '/v1/jobs', method: 'POST', body: { id: workerJobId, kind: 'image', prompt: `${prompt}\n\n${PROMPT_SUFFIX}` } })
       await patchJob(token, bridgeJobId, user.id, { status: 'complete', output_uri: worker.output, model: worker.model || MODEL, error_code: null })
-      const recovered = await recoverOrDownload({ token, user, job: { id: bridgeJobId, user_id: user.id, worker_job_id: workerJobId, status: 'complete', output_uri: worker.output, model: worker.model || MODEL }, credentials })
-      return res.status(200).json({ ok: true, bridgeJobId, workerJobId, provider: 'vertex-ai', requestId, ...recovered })
+      const recovered = await recoverOrDownload({ token, user, job: { id: bridgeJobId, user_id: user.id, client_request_id: clientRequestId, worker_job_id: workerJobId, status: 'complete', output_uri: worker.output, model: worker.model || MODEL }, credentials })
+      return res.status(200).json({ ok: true, bridgeJobId, clientRequestId, workerJobId, provider: 'vertex-ai', requestId, ...recovered })
     } catch (workerError) {
       const mapped = publicError(workerError)
       await patchJob(token, bridgeJobId, user.id, { status: mapped.status >= 500 ? 'failed' : 'running', error_code: mapped.code }).catch(() => undefined)
@@ -170,7 +170,7 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     const mapped = publicError(error)
-    console.error('Desktop Buddy Vertex bridge request failed', { requestId, code: mapped.code })
-    return res.status(mapped.status).json({ error: mapped.message, code: mapped.code, requestId })
+    console.error('Desktop Buddy Vertex bridge request failed', { requestId, code: mapped.code, bridgeJobId, clientRequestId })
+    return res.status(mapped.status).json({ error: mapped.message, code: mapped.code, requestId, bridgeJobId, clientRequestId, workerJobId })
   }
 }
