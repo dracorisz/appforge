@@ -38,7 +38,7 @@ const refundImageRequest = async (token) => {
   await supabaseRequest('/rest/v1/rpc/refund_dragon_arena_image_request', token, { method: 'POST', body: '{}' }).catch(() => undefined)
 }
 
-const BUDDY_SUFFIX = 'Create one original cute desktop assistant character, full body, centered, clean silhouette, isolated on a simple uncluttered background suitable for later transparent PNG cleanup, no words, captions, logos, UI, watermark, or text. Keep generous empty space around the character.'
+const BUDDY_SUFFIX = 'MANDATORY OUTPUT REQUIREMENT: generate exactly one original cute desktop assistant character as a PNG image with a fully transparent alpha background. The background MUST be transparent, not white, not colored, not a checkerboard, and not a scene. Full body, centered, clean silhouette, generous transparent padding around the character, no words, captions, logos, UI, watermark, border, shadow box, floor, scenery, or text. Output MUST be suitable for direct use as a transparent PNG sprite without background-removal cleanup.'
 
 export default async function handler(req, res) {
   const startedAt = Date.now()
@@ -111,6 +111,7 @@ export default async function handler(req, res) {
         model: generated.model,
         providerModel: generated.providerModel,
         prompt: prompt.slice(0, 900),
+        outputRequirement: 'PNG with fully transparent alpha background',
         generatedAt: new Date().toISOString(),
       },
     })
