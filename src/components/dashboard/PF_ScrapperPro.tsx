@@ -33,6 +33,21 @@ type SourceDefinition = {
   status?: string
 }
 
+type SourceRuntimeStatus = {
+  sourceId: string
+  source: string
+  status: 'ok' | 'degraded'
+  count: number
+  code?: string
+}
+
+type SourceFailure = {
+  sourceId: string
+  source: string
+  error: string
+  code?: string
+}
+
 type ScrapeResponse = {
   ok: boolean
   query: string
@@ -40,7 +55,8 @@ type ScrapeResponse = {
   mediaCount?: number
   durationMs: number
   results: ScrapperProResult[]
-  failures: { sourceId: string; source: string; error: string }[]
+  failures: SourceFailure[]
+  sourceStatus?: SourceRuntimeStatus[]
   error?: string
 }
 
@@ -81,7 +97,8 @@ export function PF_ScrapperPro() {
   const [running, setRunning] = React.useState(false)
   const [elapsed, setElapsed] = React.useState(0)
   const [durationMs, setDurationMs] = React.useState<number | null>(null)
-  const [failures, setFailures] = React.useState<ScrapeResponse['failures']>([])
+  const [failures, setFailures] = React.useState<SourceFailure[]>([])
+  const [sourceStatus, setSourceStatus] = React.useState<SourceRuntimeStatus[]>([])
   const [error, setError] = React.useState('')
   const [copiedId, setCopiedId] = React.useState<string | null>(null)
   const [downloadingId, setDownloadingId] = React.useState<string | null>(null)
@@ -114,7 +131,7 @@ export function PF_ScrapperPro() {
     abortRef.current?.abort()
     const controller = new AbortController()
     abortRef.current = controller
-    setRunning(true); setError(''); setFailures([]); setDurationMs(null); startTimer()
+    setRunning(true); setError(''); setFailures([]); setSourceStatus([]); setDurationMs(null); startTimer()
     try {
       const response = await fetch('/api/scrape', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: controller.signal,
@@ -123,7 +140,7 @@ export function PF_ScrapperPro() {
       const data = await response.json() as ScrapeResponse
       if (!response.ok || !data.ok) throw new Error(data.error || `Search failed with HTTP ${response.status}`)
       const nextResults = data.results || []
-      setResults(nextResults); setFailures(data.failures || []); setDurationMs(data.durationMs ?? null)
+      setResults(nextResults); setFailures(data.failures || []); setSourceStatus(data.sourceStatus || []); setDurationMs(data.durationMs ?? null)
       setFilter(nextResults.some((item) => item.type === 'image' || item.type === 'video') ? 'media' : 'all')
     } catch (searchError) {
       if (!(searchError instanceof DOMException && searchError.name === 'AbortError')) setError(searchError instanceof Error ? searchError.message : 'Search failed')
@@ -238,15 +255,15 @@ export function PF_ScrapperPro() {
 
       <Card><div className="flex flex-col gap-3 lg:flex-row lg:items-end"><div className="flex-1"><label className="mb-1.5 block text-sm font-medium text-foreground">Search query</label><div className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && !running && runSearch()} placeholder="Name, handle, topic, product, event…" className="pl-9" /></div></div><div className="flex flex-wrap gap-2">{running ? <Button variant="secondary" onClick={stopSearch}><Square className="h-4 w-4" /> Stop</Button> : <Button onClick={runSearch} disabled={!query.trim() || selectedSources.size === 0}><Play className="h-4 w-4" /> Search {selectedSources.size} sources</Button>}<Button variant="secondary" onClick={exportResults} disabled={(filter === 'saved' ? saved : results).length === 0}><Download className="h-4 w-4" /> Export JSON</Button></div></div>
         <div className="mt-4 flex flex-wrap items-center gap-2"><span className="text-xs font-medium text-muted-foreground">Presets:</span><button onClick={() => selectPreset('recommended')} className="rounded-md border border-border px-2 py-1 text-xs hover:bg-accent">Recommended</button><button onClick={() => selectPreset('media')} className="rounded-md border border-border px-2 py-1 text-xs hover:bg-accent">Media</button><button onClick={() => selectPreset('all')} className="rounded-md border border-border px-2 py-1 text-xs hover:bg-accent">All sources</button><button onClick={() => setSelectedSources(new Set())} className="rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground">Clear</button></div>
-        <div className="mt-3 flex flex-wrap gap-1.5">{SOURCES.map((source) => { const Icon = typeIcon(source.type); const selected = selectedSources.has(source.id); return <button key={source.id} type="button" onClick={() => toggleSource(source.id)} disabled={source.disabled} title={source.status} className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-colors ${source.disabled ? 'cursor-not-allowed border-border/50 bg-muted/30 text-muted-foreground/70' : selected ? 'border-foreground/25 bg-accent/80 text-foreground' : 'border-border/70 bg-background/40 text-muted-foreground hover:text-foreground'}`}><Icon className="h-3.5 w-3.5" /> {source.name}{source.status && <span className="rounded bg-background/60 px-1.5 py-0.5 text-[10px]">Coming soon</span>}</button> })}</div>
-        <p className="mt-2 text-[11px] text-muted-foreground">TikTok remains disabled until the AppForge developer app has an approved product and suitable scopes.</p>
+        <div className="mt-3 flex flex-wrap gap-1.5">{SOURCES.map((source) => { const Icon = typeIcon(source.type); const selected = selectedSources.has(source.id); const runtime = sourceStatus.find((item) => item.sourceId === source.id); const degraded = runtime?.status === 'degraded'; return <button key={source.id} type="button" onClick={() => toggleSource(source.id)} disabled={source.disabled} title={source.status || failures.find((failure) => failure.sourceId === source.id)?.error} className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-colors ${source.disabled ? 'cursor-not-allowed border-border/50 bg-muted/30 text-muted-foreground/70' : degraded ? 'border-amber-500/45 bg-amber-500/10 text-foreground' : selected ? 'border-foreground/25 bg-accent/80 text-foreground' : 'border-border/70 bg-background/40 text-muted-foreground hover:text-foreground'}`}><Icon className="h-3.5 w-3.5" /> {source.name}{source.status ? <span className="rounded bg-background/60 px-1.5 py-0.5 text-[10px]">Coming soon</span> : runtime ? <span className={`rounded px-1.5 py-0.5 text-[10px] ${degraded ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300' : 'bg-background/70 text-muted-foreground'}`}>{degraded ? 'Degraded' : runtime.count}</span> : null}</button> })}</div>
+        <p className="mt-2 text-[11px] text-muted-foreground">TikTok remains disabled until the AppForge developer app has an approved product and suitable scopes. Source failures are isolated, so successful providers still return results.</p>
         {running && <div className="mt-4 flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Searching selected sources in parallel <span className="ml-auto inline-flex items-center gap-1 font-mono text-xs"><Clock3 className="h-3.5 w-3.5" /> {elapsed}s</span></div>}
         {error && <div className="mt-4 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /><span>{error}</span></div>}
       </Card>
 
-      {(results.length > 0 || saved.length > 0) && <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div className="flex flex-wrap gap-1.5">{([['media', `Media ${mediaResults.length}`], ['image', `Images ${counts.image}`], ['video', `Videos ${counts.video}`], ['article', `Articles ${counts.article}`], ['post', `Posts ${counts.post}`], ['all', `All ${results.length}`], ['saved', `Saved ${saved.length}`]] as [ResultFilter, string][]).map(([value, label]) => <button key={value} onClick={() => setFilter(value)} className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${filter === value ? 'border-foreground/25 bg-accent/85 text-foreground' : 'border-border/70 bg-background/35 text-muted-foreground hover:text-foreground'}`}>{label}</button>)}</div><div className="text-xs text-muted-foreground">{durationMs !== null && <span>{formatDuration(durationMs)} · </span>}{failures.length ? `${failures.length} source${failures.length === 1 ? '' : 's'} unavailable` : results.length ? 'All selected sources responded' : ''}</div></div>}
+      {(results.length > 0 || saved.length > 0) && <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div className="flex flex-wrap gap-1.5">{([['media', `Media ${mediaResults.length}`], ['image', `Images ${counts.image}`], ['video', `Videos ${counts.video}`], ['article', `Articles ${counts.article}`], ['post', `Posts ${counts.post}`], ['all', `All ${results.length}`], ['saved', `Saved ${saved.length}`]] as [ResultFilter, string][]).map(([value, label]) => <button key={value} onClick={() => setFilter(value)} className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${filter === value ? 'border-foreground/25 bg-accent/85 text-foreground' : 'border-border/70 bg-background/35 text-muted-foreground hover:text-foreground'}`}>{label}</button>)}</div><div className="text-xs text-muted-foreground">{durationMs !== null && <span>{formatDuration(durationMs)} · </span>}{failures.length ? `${failures.length} source${failures.length === 1 ? '' : 's'} degraded` : results.length ? 'All selected sources responded' : ''}</div></div>}
 
-      {failures.length > 0 && <Card className="border-amber-500/30 bg-amber-500/5"><div className="flex items-start gap-2 p-4"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" /><div><h2 className="text-sm font-medium text-foreground">Some sources were unavailable</h2><p className="mt-1 text-xs text-muted-foreground">Source pages can rate-limit, block serverless traffic, or change markup. Successful results are still shown.</p><div className="mt-2 flex flex-wrap gap-1.5">{failures.map((failure) => <span key={failure.sourceId} title={failure.error} className="rounded-md border border-border bg-background/50 px-2 py-1 text-xs text-muted-foreground">{failure.source}</span>)}</div></div></div></Card>}
+      {failures.length > 0 && <Card className="border-amber-500/30 bg-amber-500/5"><div className="flex items-start gap-2 p-4"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" /><div className="min-w-0 flex-1"><h2 className="text-sm font-medium text-foreground">Some sources were degraded</h2><p className="mt-1 text-xs text-muted-foreground">Successful results are still shown. These diagnostics distinguish configuration, upstream blocking, parser changes and timeouts without exposing credentials.</p><div className="mt-3 grid gap-2 sm:grid-cols-2">{failures.map((failure) => <div key={failure.sourceId} className="rounded-lg border border-border bg-background/50 px-3 py-2"><div className="flex items-center justify-between gap-2"><span className="text-xs font-medium text-foreground">{failure.source}</span>{failure.code && <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">{failure.code.replace(/_/g, ' ')}</span>}</div><p className="mt-1 text-[11px] leading-4 text-muted-foreground">{failure.error}</p></div>)}</div></div></div></Card>}
 
       {activeResults.length > 0 ? <div className={viewMode === 'grid' ? 'grid gap-4 sm:grid-cols-2' : 'space-y-2'}>{activeResults.map((result) => {
         const Icon = typeIcon(result.type)
