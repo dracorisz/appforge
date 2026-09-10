@@ -5,8 +5,8 @@ import {
   Home, Image as ImageIcon, LayoutDashboard, Lock, LogOut, Palette, QrCode, Regex, Search,
   Settings, Sliders, Sparkles, Table2, Type, Users, Video, Wrench,
 } from 'lucide-react'
-import { getAppsByCategory, searchApps } from '@/lib/registry'
-import { isCategoryVisibleInSidebar, loadCategoryOverrides, resolveCategories, subscribeCategoryOverrides } from '@/lib/categories'
+import { getAllApps, searchApps } from '@/lib/registry'
+import { appSidebarPreferenceKey, isAppVisibleInSidebar, loadCategoryOverrides, subscribeCategoryOverrides } from '@/lib/categories'
 import { useAuth } from '@/auth/AuthProvider'
 import { ensureProfile } from '@/lib/account'
 import { DragonArenaIcon } from '@/components/dashboard/DragonArenaIcon'
@@ -29,9 +29,9 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
   const [signingOut, setSigningOut] = React.useState(false)
   const [profileAvatar, setProfileAvatar] = React.useState<string | null>(null)
   const [profileName, setProfileName] = React.useState<string | null>(null)
-  const [, refreshCategories] = React.useReducer((value) => value + 1, 0)
+  const [, refreshWorkspace] = React.useReducer((value) => value + 1, 0)
 
-  React.useEffect(() => subscribeCategoryOverrides(refreshCategories), [])
+  React.useEffect(() => subscribeCategoryOverrides(refreshWorkspace), [])
 
   React.useEffect(() => {
     let cancelled = false
@@ -47,9 +47,9 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
   const isCollapsed = collapsedProp ?? internalCollapsed
   const canCollapse = !onClose
   const searchResults = searchQuery.trim().length > 1 ? searchApps(searchQuery) : []
-  const categoryOverrides = loadCategoryOverrides()
-  const sidebarCategories = resolveCategories(categoryOverrides).filter((category) =>
-    isCategoryVisibleInSidebar(category.id, categoryOverrides[category.id]) && getAppsByCategory(category.id).length > 0,
+  const workspaceOverrides = loadCategoryOverrides()
+  const sidebarApps = getAllApps().filter((app) =>
+    app.status !== 'deprecated' && isAppVisibleInSidebar(app.id, workspaceOverrides[appSidebarPreferenceKey(app.id)]),
   )
   const toggleCollapse = () => { if (onToggleCollapse) onToggleCollapse(); else setInternalCollapsed((value) => !value) }
   const handleSignOut = async () => { setSigningOut(true); try { await signOut(); onClose?.() } finally { setSigningOut(false) } }
@@ -66,12 +66,12 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
       <nav className="scrollbar-hide flex-1 overflow-y-auto overflow-x-hidden px-3 py-2">
         {!isCollapsed && <h3 className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Workspace</h3>}
         <div className="space-y-0.5">{coreItems.map((item) => { const Icon = item.icon; const active = location.pathname === item.path; return <NavLink key={item.id} to={item.path} onClick={onClose} title={isCollapsed ? item.label : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'}`}><Icon className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">{item.label}</span>}</NavLink> })}</div>
-        {sidebarCategories.length > 0 && <div className="mt-5"><div className="mb-1 flex items-center justify-between px-3">{!isCollapsed && <h3 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Categories</h3>}{!isCollapsed && <NavLink to="/categories" onClick={onClose} className="text-[10px] text-muted-foreground hover:text-foreground">Customize</NavLink>}</div><div className="space-y-0.5">{sidebarCategories.map((category) => { const Icon = iconMap[category.icon] || Wrench; const path = `/category/${category.id}`; const active = location.pathname === path; return <NavLink key={category.id} to={path} onClick={onClose} title={isCollapsed ? category.name : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'}`}><Icon className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">{category.name}</span>}</NavLink> })}</div></div>}
+        {sidebarApps.length > 0 && <div className="mt-5"><div className="mb-1 flex items-center justify-between px-3">{!isCollapsed && <h3 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Apps</h3>}{!isCollapsed && <NavLink to="/workspace" onClick={onClose} className="text-[10px] text-muted-foreground hover:text-foreground">Customize</NavLink>}</div><div className="space-y-0.5">{sidebarApps.map((app) => { const iconName = app.id === 'ai-dragon-arena' ? 'DragonArena' : app.icon; const Icon = iconMap[iconName] || Wrench; const active = location.pathname === app.route; return <NavLink key={app.id} to={app.route} onClick={onClose} title={isCollapsed ? app.name : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'}`}><Icon className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">{app.name}</span>}</NavLink> })}</div></div>}
       </nav>
 
       <div className="px-3 pb-2"><SidebarWeather collapsed={isCollapsed} /></div>
       <div className="space-y-1 border-t border-border p-3">
-        {user && <NavLink to="/settings" onClick={onClose} className={`mb-2 flex items-center gap-2 rounded-xl border border-border/60 bg-background/35 p-2 hover:border-foreground/15 ${isCollapsed ? 'justify-center' : ''}`} title={isCollapsed ? String(displayName) : undefined}><div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-accent text-xs font-semibold text-foreground">{avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : initial}</div>{!isCollapsed && <div className="min-w-0 flex-1"><div className="truncate text-xs font-medium text-foreground">{String(displayName)}</div>{user.email && <div className="truncate text-[10px] text-muted-foreground">{user.email}</div>}</div>}</NavLink>}
+        {user && <NavLink to="/settings" onClick={onClose} className={`mb-2 flex items-center gap-2 rounded-xl border border-border/60 bg-background/35 p-2 hover:border-foreground/15 ${isCollapsed ? 'justify-center' : ''}`} title={isCollapsed ? String(displayName) : undefined}><div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-accent text-xs font-semibold text-foreground">{avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : initial}</div>{!isCollapsed && <div className="min-w-0 flex-1"><div className="truncate text-xs font-medium text-foreground">{String(displayName)}</div>{user.email && <div className="truncate text-[10px] text-muted-foreground">{user.email}</div>}</NavLink>}
         <button onClick={() => void handleSignOut()} disabled={signingOut} title={isCollapsed ? 'Sign out' : undefined} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-60"><LogOut className="h-4 w-4 shrink-0" />{!isCollapsed && <span>{signingOut ? 'Signing out…' : 'Sign out'}</span>}</button>
       </div>
     </aside>
