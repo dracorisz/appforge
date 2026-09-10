@@ -1,40 +1,73 @@
 # Desktop Buddy
 
-Desktop Buddy is a local-first AppForge character companion workspace at `/apps/desktop-buddy`.
+Desktop Buddy is AppForge's local-first dragon character companion at `/apps/desktop-buddy`.
 
 ## Current beta
 
-The first beta focuses on a safe, portable character workflow before any provider-backed generation is enabled.
+The current beta is a usable character-pack and response-reaction workspace rather than only a placeholder surface.
 
-- Upload PNG, JPEG, WebP, or SVG character artwork.
+- Start from curated KDE Community Konqi dragon artwork or upload PNG, JPEG, WebP, or SVG artwork.
 - Keep the active character configuration in browser storage.
 - Adjust character scale and horizontal/vertical framing.
-- Export the complete configuration as a `.buddy.json` pack.
-- Import a previously exported buddy pack.
-- Select a future provider path: Hugging Face, Vertex AI, or local/browser.
-- Preview spoken responses using browser speech synthesis and a locally available voice.
-- Use the built-in dragon placeholder before adding custom artwork.
+- Export the complete configuration as a versioned `.buddy.json` pack, including starter-asset provenance and license metadata.
+- Import version 1 or version 2 buddy packs.
+- Export a transparent 512 × 512 PNG when the source image permits browser canvas access.
+- Select Hugging Face, Vertex AI, or local/browser as the provider path.
+- Preview speech using browser Speech Synthesis, select a local voice, and stop speech immediately.
+- React to the shared `appforge:agent-response` browser event and optionally auto-speak the event text.
+- Test the response bridge directly from the app before provider integration is complete.
+
+## KDE starter artwork
+
+Desktop Buddy now uses KDE dragon artwork as the default starting point, following the requested KDE Community direction instead of substituting an unrelated generated mascot.
+
+The starter gallery currently links to KDE Community Wiki assets rather than copying ambiguous media into the repository:
+
+- **Konqi** — default KDE dragon mascot; source: KDE Community `Promo/Material/Mascots`.
+- **Utilities Konqi** — Tyson Tan KDE utilities mascot from the KDE Community file page.
+- **Konqi + Katie** — KDE dragon pair with smartphones from the KDE mascot material page.
+
+The app records the source URL and license description in the active buddy configuration and exported pack. When a remote asset blocks canvas export because of cross-origin policy, the UI asks the user to download it from the KDE source or upload a local copy before exporting PNG.
 
 ## Data boundary
 
-The current beta does not upload character artwork to AppForge servers. Uploaded artwork is converted to a data URL and persisted with the Desktop Buddy configuration in browser storage. Exporting a buddy pack copies that data into the user-downloaded JSON file.
+User-uploaded artwork is converted to a data URL and stored with the Desktop Buddy configuration in browser storage. Uploaded artwork is not sent to AppForge servers merely by selecting it.
 
-Future Hugging Face or Vertex AI generation must remain an explicit user action and must use server-side credentials. Provider keys must never be embedded in browser code or buddy packs.
+KDE starter choices store their remote source URL and attribution/license metadata. Exporting a buddy pack copies the current configuration and provenance into the downloaded JSON file.
+
+Future Hugging Face or Vertex AI generation remains an explicit action and must use server-side credentials. Provider keys must never be embedded in browser code or buddy packs.
 
 ## Provider direction
 
-Desktop Buddy exposes provider selection now so the portable pack format does not need to change later. The first beta does not claim that provider-backed character generation is active.
+The provider selector establishes the intended execution path without pretending that all adapters are complete:
 
-Planned provider work should reuse the existing AppForge server-side provider policy, Hugging Face token handling, and Google Cloud / Cloud Run cost-control boundary.
+- **Hugging Face** — selected for server-side character generation/optimization work using the existing AppForge provider policy.
+- **Vertex AI** — intended for explicit experiments behind server-side credentials and the project's cost-control policy.
+- **Local/browser** — character, pack, PNG, framing, event reaction, and speech features that do not require a provider credential.
 
-## Voice
+Real Hugging Face and Vertex image-generation adapters remain roadmap work.
 
-Voice preview uses the browser Web Speech API when available. The chosen voice name is stored in the buddy configuration. Auto-speaking real agent responses is intentionally deferred until an explicit response-event bridge exists.
+## Agent response bridge
 
-## Starter artwork
+Desktop Buddy listens for:
 
-Do not copy mascot or dragon artwork into the repository unless its license and attribution requirements are verified. Curated KDE/open-source starter assets should include source, author/project, license, and modification notes alongside the asset.
+```js
+window.dispatchEvent(new CustomEvent('appforge:agent-response', {
+  detail: { text: 'Response text for the buddy' },
+}))
+```
+
+When such an event arrives, Desktop Buddy updates its visible response and reaction state. If auto-speech is enabled, it reads the response through the selected browser voice. AppForge agent-producing surfaces still need to emit this event consistently for complete cross-app integration.
+
+## Remaining milestones
+
+- Wire real server-side Hugging Face generation/optimization.
+- Wire explicit Vertex AI image experiments without exposing credentials.
+- Emit `appforge:agent-response` consistently from AppForge agent surfaces.
+- Add a persistent cross-route pinned buddy surface.
+- Add deterministic browser tests and post-deploy screenshots.
+- Continue starter-asset/license review before adding any copied/modified KDE media to the repository.
 
 ## Release policy
 
-Merging Desktop Buddy does not imply deployment. AppForge production remains manually deployed. After an intentional production deploy, smoke-test `/apps/desktop-buddy` for upload, framing, reset, export/import, provider selection, and voice preview.
+AppForge production remains manually released. After an intentional deployment, smoke-test `/apps/desktop-buddy` for KDE starter loading, upload, framing, reset, pack export/import, PNG export, provider selection, response reaction, and browser speech controls.
