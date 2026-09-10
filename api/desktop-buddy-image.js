@@ -5,6 +5,7 @@ const SUPABASE_PUBLISHABLE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 's
 // A base64 data URL expands binary data by roughly one third. Keep the raw image
 // small enough to remain comfortably inside browser/server JSON and localStorage limits.
 const MAX_RESPONSE_BYTES = 2_400_000
+const hasSharedHfToken = () => Boolean(process.env.HF_TOKEN_1 || process.env.HF_TOKEN_2 || process.env.HF_TOKEN_3)
 
 const supabaseRequest = (path, token, init = {}) => fetch(`${SUPABASE_URL}${path}`, {
   ...init,
@@ -49,7 +50,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       ok: true,
       provider: 'huggingface-inference-providers',
-      configured: orderedHfTokens([]).length > 0,
+      configured: hasSharedHfToken(),
       personalTokenSupported: true,
       sharedQuota: 'Uses the existing AppForge daily image-turn allowance.',
       requestId,
