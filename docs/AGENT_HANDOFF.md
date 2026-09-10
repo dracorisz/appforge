@@ -1,153 +1,136 @@
 # AppForge — Agent Handoff
 
+Last updated: 2026-09-10
+
 ## Quick start
 
-- **Repo**: `dracorisz/appforge`
-- **Branch**: `main`
-- **Production**: `https://www.sstoken.space/`
-- **Docs**: `https://dracorisz.github.io/appforge/`
-- **Integrated environment guide**: `docs/ENVIRONMENT.md`
-- **Dev**: `npm run dev`
-- **Typecheck**: `npm run typecheck`
-- **Build**: `npm run build`
-- **Stabilization source of truth**: `docs/STABILIZATION_TRACKER.md`
+- **Repo:** `dracorisz/appforge`
+- **Primary branch:** `main`
+- **Production:** `https://www.sstoken.space/`
+- **Docs:** `https://dracorisz.github.io/appforge/`
+- **Integrated environment:** `docs/ENVIRONMENT.md`
+- **Timeline:** `docs/DEVELOPMENT_TIMELINE.md`
+- **Actionable backlog:** GitHub Issues + `docs/ISSUE_ROADMAP.md`
+- **App inventory:** `src/lib/registry.ts`
 
-Before acting on feature-specific notes below, read `docs/ENVIRONMENT.md`. It defines the current browser/server secret boundary, integrated services, validation contract, Pages/Vercel release split, and the source-of-truth files a new developer or agent should inspect.
+Validation commands:
 
-Use the tracker before relying on older chat/session notes. It distinguishes code-complete work from production verification that may still be hidden by deployment lag.
-
-## Current architecture
-
-### Dragon Arena
-
-- Signed-in sessions, turns, assets and points persist in Supabase.
-- Guest mode allows one browser-local turn per UTC day and does not expose account persistence or scene generation.
-- The primary game master is Hugging Face through `api/ai-game.js` with server token/model rotation.
-- If all remote GM attempts fail, a clearly identified AppForge local-continuity response keeps the run playable rather than returning the old API-limit dead end.
-- Personal OpenRouter remains a compatibility option; a personal Hugging Face token is also accepted.
-- Scene generation is Hugging Face provider-aware through `api/dragon-image.js`.
-- Image generation resolves each model's current Hugging Face `inferenceProviderMapping` and can route through `fal-ai`, `replicate`, `together`, `nscale`, or `hf-inference` when available.
-- Current preferred image models are FLUX.1-schnell, Hyper-SD, then SDXL, with an optional `HF_IMAGE_MODEL` override prepended.
-- Scene persistence is server-authoritative: validate → generate → validate bytes → Storage upload → `dragon_arena_assets` insert → success response.
-- Failed persistence removes the new object and refunds an owner-funded image turn.
-- The latest scene renders compactly inside Story; older scenes remain in Assets and Media Vault.
-- The first three generated scenes per user are public showcase assets exposed through `/huggingface`.
-- Scene rows retain generation model/provider/timestamp/MIME/size/turn metadata.
-
-### Media Vault
-
-- `General` stores manual uploads in the private `user-media-vault` bucket with `user_media_vault` rows.
-- `Dragon Arena` links authoritative scene rows from `dragon_arena_assets`; scene bytes are not copied.
-- `Scrapper Pro` now stores signed-in saves directly in `user_media_vault` as deduplicated zero-byte external references.
-- New Scrapper saves no longer create `dragon_arena_assets` records.
-- Manual uploads go only to General; Dragon Arena and Scrapper Pro are source-backed folders.
-- Production schema/RPC/bucket drift that previously caused Media Vault 404s has been repaired and tracked in migrations.
-- Media Vault extended with external references + source identity for Scrapper Pro.
-
-### Scrapper Pro
-
-- Guest/local saves remain in browser `localStorage`.
-- Signed-in users can separately archive a result to Media Vault.
-- Media Vault archive deduplication uses the original result URL as the stable source reference.
-- Existing preview, search, partial-source failure, article PDF, post TXT and supported media-download behavior remains intact.
-
-### Profile / People
-
-- Profile data supports independent `show_skills`, `show_website`, `show_github`, `show_email`, and `public_email` fields.
-- People already respects those flags.
-- Settings still needs the corresponding field-visibility controls; keep this item OPEN until the controls and preview are updated.
-
-## Current environment
-
-The canonical variable inventory is `.env.example`; the handling rules and service map are in `docs/ENVIRONMENT.md`.
-
-```text
-VITE_SUPABASE_URL=
-VITE_SUPABASE_PUBLISHABLE_KEY=
-
-HF_TOKEN_1=hf_...
-HF_TOKEN_2=hf_...        # optional
-HF_TOKEN_3=hf_...        # optional
-HF_TEXT_MODEL=openai/gpt-oss-20b:fastest             # optional preferred override
-HF_IMAGE_MODEL=black-forest-labs/FLUX.1-schnell     # optional preferred override
-
-OPENROUTER_API_KEY=      # compatibility / personal-owner GM path if retained
-OPENROUTER_MODEL=        # optional
+```bash
+npm run audit:apps
+npm run lint
+npm run typecheck
+npm test
+npm run build
 ```
 
-Do not expose server tokens in `VITE_*` variables. Do not copy real credentials into handoffs.
+Use `npm run verify:release` for the combined pre-release validation path when available in the current package scripts.
 
-## Dragon Arena provider behavior
+## Product/access model
 
-### GM order
+### Landing and authentication
 
-Default text-model order:
+- Public landing is intentionally minimal and links to Docs, GitHub, Support and YouTube.
+- Google and GitHub sign-in both use Supabase Auth.
+- GitHub OAuth provider configuration is complete; frontend wiring is active on `main`.
+- Vercel Git deployments are disabled. `main` may be ahead of production until an explicit `vercel deploy --prod`.
 
-1. `openai/gpt-oss-20b:fastest`
-2. `Qwen/Qwen2.5-7B-Instruct-1M:fastest`
-3. `google/gemma-2-2b-it:fastest`
-4. `openai/gpt-oss-120b:cheapest`
+### Story Studio / AI Dragon Arena route
 
-Server tokens rotate through `HF_TOKEN_1/2/3`. Multiple tokens from the same Hugging Face account may still share provider/account quota.
+- `/apps/ai-dragon-arena` is promotional for signed-out users: it explains AppForge AI integrations such as Gemini, Hugging Face, OpenRouter and related provider architecture.
+- The authenticated route mounts the full Story Studio creator experience.
+- Do not restore the old public guest-play flow unless that is an explicit product decision.
+- Novel/Comics creation, sessions, scene assets, exports and provider fallbacks live behind authentication.
+- Scene sharing is creator opt-in. Do not reintroduce automatic first-three-public behavior.
+- The old global image-card hover drawer behavior was removed because it could overlay Story Studio content.
 
-### Scene order
+### AI providers
 
-Default model preference:
+- Story Studio uses bounded provider/fallback behavior; server credentials stay outside `VITE_*` variables.
+- Hugging Face and OpenRouter paths remain documented integration options; Gemini/private Cloud Run experiments are separate from normal production behavior.
+- Check `docs/AI-PROVIDERS.md` and `docs/CLOUD-EXPERIMENTS.md` before changing provider order, models, quotas or secrets.
 
-1. `black-forest-labs/FLUX.1-schnell`
-2. `ByteDance/Hyper-SD`
-3. `stabilityai/stable-diffusion-xl-base-1.0`
+### Media Vault / Scrapper Pro
 
-Supported provider adapters:
+- Media Vault is the signed-in asset ledger for General uploads plus linked/source-backed product assets.
+- Story Studio scene rows remain authoritative rather than being duplicated into another asset table.
+- Scrapper Pro can archive deduplicated external references into Media Vault while guest/local saves remain browser-local.
 
-- `fal-ai`
-- `replicate`
-- `together`
-- `nscale`
-- `hf-inference`
+### Task List
 
-The request has an overall bounded generation budget so provider/model failover cannot run indefinitely.
+- `/apps/task-list` is a local-first productivity app and explicit 75%/Beta standalone-PWA candidate.
+- Guest/local core state persists in `localStorage`.
+- Signed-in users can sync to `public.appforge_tasks` through Supabase.
+- Migration `20260910011500_create_appforge_tasks.sql` has been applied to the connected project with user-scoped RLS.
+- App-specific docs: `docs/apps/task-list/README.md`.
 
-## Production data repairs already performed
+### Weather gadget
 
-- Dragon Arena asset schema aligned with `scene` rows and `external_url`.
-- First-three public gallery policy/RPC added.
-- Legacy orphaned Dragon scene files recovered into the asset ledger where identifiable.
-- `award_dragon_arena_points` authenticated execution restored after an observed client 403.
-- Missing Media Vault tables/RPCs/private bucket/storage policies recreated in production and tracked in repo migrations.
-- Media Vault extended with external references + source identity for Scrapper Pro.
+- The authenticated sidebar includes a compact Weather Now gadget linking into the full Weather Now app.
+- Keep it lightweight; the full weather experience belongs on `/apps/weather-now`.
+
+## Database/security state
+
+- Supabase PostgreSQL/Auth/Storage backs authenticated persistence.
+- Task List table/RLS migration is applied.
+- Dragon Arena image quota mutation RPC grants were hardened so `anon` cannot execute consume/refund while authenticated users still can.
+- `dragon_arena_public_gallery(integer)` remains intentionally anonymous because it is a bounded public-read surface.
+- Remaining authenticated `SECURITY DEFINER` advisor warnings require function-by-function authorization review; do not blanket-revoke or blanket-convert them.
+- See `docs/SECURITY_ADVISORS.md`.
+
+## Registry and app integrity
+
+The canonical registry currently includes 45 entries, including Task List and one intentional route alias (`Data Converter` → Any Converter). Treat that number as a dated snapshot; `src/lib/registry.ts` is authoritative.
+
+Run:
+
+```bash
+npm run audit:apps
+```
+
+to verify IDs, categories, statuses, versions, routes, intentional aliases and router coverage.
+
+Planned apps should resolve to the deliberate planned-app surface rather than silently falling back to the dashboard.
 
 ## Version state
 
-Registry targets currently are:
+Important current registry examples:
 
-- Dragon Arena **1.6.0**
-- Scrapper Pro **1.2.0**
-- Media Vault **1.1.0**
-- AppForge changelog includes **1.21.0**
+- Story Studio: **1.6.1**
+- Scrapper Pro: **1.3.0**
+- Media Vault: **1.1.0**
+- Task List: **0.1.0** Beta candidate
 
-The root `package.json` is still **1.18.0**. This is intentionally tracked as an OPEN version-alignment task rather than silently changing the package/lockfile during feature stabilization.
+The root package version may intentionally lag product-registry release notes during stabilization. Do not silently align versions without deciding the release boundary.
 
 ## Files to inspect first
 
 1. `docs/ENVIRONMENT.md`
-2. `docs/STABILIZATION_TRACKER.md`
-3. `api/ai-game.js`
-4. `api/dragon-image.js`
-5. `src/components/dashboard/PF_AIDragonArena.tsx`
-6. `src/lib/mediaVault.ts`
-7. `src/components/dashboard/PF_UserMediaVault.tsx`
-8. `src/components/dashboard/PF_ScrapperPro.tsx`
-9. `src/components/resources/Settings.tsx`
-10. `src/components/resources/People.tsx`
-11. `src/lib/registry.ts`
+2. `docs/DEVELOPMENT_TIMELINE.md`
+3. `docs/ISSUE_ROADMAP.md`
+4. `docs/LAUNCH-CHECKLIST.md`
+5. `docs/DOC_MAINTENANCE.md`
+6. `docs/SECURITY_ADVISORS.md`
+7. `src/lib/registry.ts`
+8. `src/App.tsx`
+9. the app-specific component/API/migration files for the task
+10. the matching open GitHub issue
 
-## Next practical work
+## Operating rules for agents
 
-Follow `docs/STABILIZATION_TRACKER.md`. Highest-value remaining code items are:
+- Verify current code before trusting historical notes.
+- Keep registry, routes, migrations, issues and docs synchronized in the same pass when they describe one feature.
+- Never put server secrets in browser variables or documentation.
+- Distinguish implemented, CI-verified, migration-applied, Pages-published, production-deployed and production-verified states.
+- Do not run `vercel deploy --prod` unless explicitly requested.
+- Do not close an issue merely because code exists; satisfy its actual acceptance criteria.
+- Prefer current app-specific docs over stale broad umbrella notes.
 
-1. add Settings → Profile field visibility controls and make its preview honor them;
-2. finish canonical Dragon Arena icon wiring in any remaining legacy renderer such as `/workspace`;
-3. align package/global versioning after the stabilization release boundary is chosen;
-4. remove dead MySQL setup and add real linting as separate build-hygiene changes;
-5. production-smoke-test the current Hugging Face scene provider routing after the latest deployment is active.
+## Near-term direction before next production deploy
+
+1. let CI validate the app-integrity and current frontend changes;
+2. continue Story Studio creator/mobile/accessibility polish;
+3. qualify Any Converter as the first reproducibly extractable Full PWA candidate;
+4. harden Task List toward independent packaging;
+5. review remaining Supabase `SECURITY DEFINER` warnings function by function;
+6. keep docs aligned through `docs/DOC_MAINTENANCE.md`;
+7. deploy production only at a deliberate checkpoint, then smoke-test GitHub OAuth and the changed app routes.
