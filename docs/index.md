@@ -5,50 +5,53 @@ title: AppForge Docs
 titleTemplate: Developer Portal
 
 hero:
-  name: AppForge
+  name: AppForge Docs
   text: Build, understand, and ship focused web tools.
-  tagline: Developer documentation, integrated-environment guidance, architecture, release readiness, AI/cloud experiments, and standalone-PWA guidance for AppForge.
+  tagline: Developer documentation for the current AppForge product: apps, architecture, releases, AI providers, cloud experiments, and standalone PWA work.
+  image:
+    src: /favicon.svg
+    alt: AppForge triangle mark
   actions:
     - theme: brand
       text: Getting Started
       link: /GETTING_STARTED
     - theme: alt
-      text: Environment & Agent Pickup
-      link: /ENVIRONMENT
+      text: Browse Apps
+      link: /apps/
     - theme: alt
       text: Open App ↗
       link: https://www.sstoken.space/
 
 features:
-  - title: Developer onboarding
-    details: Clone, configure, validate, and understand the project with clear local-development and environment boundaries.
-    link: /GETTING_STARTED
-    linkText: Start developing
-  - title: Agent pickup
-    details: Give a coding agent the source-of-truth files, environment model, release rules, integrated services, and handoff contract it needs before editing.
-    link: /AGENT_HANDOFF
-    linkText: Open agent handoff
-  - title: App documentation
-    details: Browse per-app notes and extraction guidance for focused standalone-PWA candidates including Any Converter and Task List.
+  - title: Current app documentation
+    details: Browse the canonical AppForge app model, Desktop Buddy, Getter Pro, Story Studio, Task List, Any Converter, and standalone-PWA guidance.
     link: /apps/
     linkText: Browse apps
+  - title: Desktop Buddy
+    details: KDE Konqi starter artwork, local character packs, transparent PNG export, agent-response reactions, browser voice, and provider roadmap.
+    link: /apps/desktop-buddy
+    linkText: Open Desktop Buddy docs
   - title: Architecture
     details: Understand the canonical app model, database boundaries, authentication, AI providers, and deployment architecture.
     link: /APP_MODEL
     linkText: Read architecture docs
-  - title: Security & operations
-    details: Review Supabase advisor triage, database grant decisions, environment boundaries, and pre-release validation rules.
-    link: /SECURITY_ADVISORS
-    linkText: Review security state
   - title: Release readiness
     details: Project Pulse, timeline, Full-status criteria, roadmap, and launch checks separate code completion from production verification.
     link: /DEVELOPMENT_TIMELINE
     linkText: Review readiness
+  - title: Security & operations
+    details: Review Supabase advisor triage, provider credentials, environment boundaries, and pre-release validation rules.
+    link: /SECURITY_ADVISORS
+    linkText: Review security state
+  - title: Agent pickup
+    details: Give a coding agent the source-of-truth files, release rules, integrated services, and handoff contract it needs before editing.
+    link: /AGENT_HANDOFF
+    linkText: Open agent handoff
 ---
 
 ## What belongs here
 
-This site is the public technical and project portal for AppForge. It documents how the product is structured, how a developer or agent can pick up the integrated environment, how individual apps mature toward standalone PWAs, how releases are prepared, and how external services are integrated safely.
+This site is the public technical and project portal for AppForge. It documents the product as it exists now, how a developer or agent can pick up the integrated environment, how individual apps mature toward standalone PWAs, how releases are prepared, and how external services are integrated safely.
 
 For normal use, go to **[sstoken.space](https://www.sstoken.space/)**. For source code, issues, pull requests, releases, and the actionable backlog, use the **[GitHub repository](https://github.com/dracorisz/appforge)**.
 
@@ -60,23 +63,25 @@ Read **[Getting started](./GETTING_STARTED.md)** and **[Environment & agent pick
 
 As of 2026-09-10:
 
-- Google and GitHub authentication are implemented through Supabase Auth on `main`;
+- Google and GitHub authentication are implemented through Supabase Auth;
 - signed-out `/apps/ai-dragon-arena` is an AI integrations/promotional surface, while Story Studio creation remains authenticated;
-- Task List is a Beta/75% local-first standalone-PWA candidate with its Supabase table/RLS migration applied;
-- the canonical registry contains 45 entries as a dated snapshot and is checked with `npm run audit:apps`;
-- GitHub Pages is documentation-only and uses AppForge's canonical `favicon.svg` as browser favicon and header logo;
-- Vercel Git deployments remain disabled; production is released only with an intentional `vercel deploy --prod`;
-- Supabase image-quota mutation grants were hardened against anonymous execution; remaining `SECURITY DEFINER` advisories are being reviewed function by function.
+- **Desktop Buddy** is the canonical AI companion beta at `/apps/desktop-buddy`, with KDE Konqi starter artwork, portable local packs, framing, transparent PNG export where the source permits it, browser voice, and an AppForge response-event bridge;
+- **Getter Pro** is the current name at `/apps/getter-pro`, with per-result local save/download actions plus bulk Media Vault workflows;
+- **Pariflow Smpl is retired** from the canonical app registry and its old route redirects back to the app catalogue;
+- Dashboard search switches immediately into a focused results view instead of leaving Recent/Categories above the matches;
+- Task List remains a local-first standalone-PWA candidate with optional authenticated sync;
+- the canonical registry remains at 45 entries by replacing retired Pariflow with Desktop Buddy;
+- GitHub Pages is documentation-only and uses the canonical AppForge `favicon.svg` as its large homepage mark as well as its navigation identity;
+- production deployment remains an intentional release step after CI rather than an assumption based on local working state.
 
 ## Current priorities
 
-1. Let CI continuously validate registry/route integrity plus lint, TypeScript, tests and production build.
-2. Continue Story Studio creator setup, title/cover metadata, accessibility/mobile polish and provider-failure behavior.
-3. Complete Any Converter as the first reproducibly extractable Full standalone PWA.
-4. Harden Task List as a second standalone candidate without losing its local-first core.
+1. Complete provider-backed Desktop Buddy generation for Hugging Face and Vertex AI without exposing credentials.
+2. Finish Desktop Buddy cross-route pinning and ensure AppForge agent surfaces emit the shared response event consistently.
+3. Continue Getter Pro provider reliability and Media Vault workflows, including source-specific download fallbacks.
+4. Complete Any Converter and Task List standalone-PWA hardening.
 5. Review remaining Supabase `SECURITY DEFINER` functions according to their actual authorization requirements.
-6. Keep Project Pulse, timeline, issue roadmap, launch checklist, environment, database/security docs and canonical registry aligned.
-7. Hold the next Vercel production deploy until the current build-up pass reaches a deliberate release checkpoint.
+6. Keep Project Pulse, timeline, issue roadmap, launch checklist, environment, database/security docs, app docs, and canonical registry aligned.
 
 ## Documentation rule
 
