@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   patch:
+    # One-shot refactor; delete this workflow after the generated code commit lands.
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
