@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   sync:
+    # One-shot maintenance job; delete this workflow after the generated lock commit lands.
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
