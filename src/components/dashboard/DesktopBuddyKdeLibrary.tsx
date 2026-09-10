@@ -51,7 +51,7 @@ function readCurrentSource() {
 export function DesktopBuddyKdeLibrary() {
   const [currentSource, setCurrentSource] = React.useState(readCurrentSource)
 
-  const useStarter = (starter: KdeStarter) => {
+  const selectStarter = (starter: KdeStarter) => {
     const source = sourceUrl(starter.file)
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
@@ -95,7 +95,7 @@ export function DesktopBuddyKdeLibrary() {
                 <p className="min-h-8 text-[11px] leading-4 text-muted-foreground">{starter.note}</p>
                 <p className="text-[10px] leading-4 text-muted-foreground">{starter.author}<br />{starter.license}</p>
                 <div className="flex gap-2 pt-1">
-                  <button type="button" onClick={() => useStarter(starter)} className="flex-1 rounded-lg border px-2 py-1.5 text-xs font-semibold hover:bg-accent">{active ? 'Active' : 'Use character'}</button>
+                  <button type="button" onClick={() => selectStarter(starter)} className="flex-1 rounded-lg border px-2 py-1.5 text-xs font-semibold hover:bg-accent">{active ? 'Active' : 'Use character'}</button>
                   <a href={source} target="_blank" rel="noreferrer" className="grid h-8 w-8 place-items-center rounded-lg border text-muted-foreground hover:bg-accent hover:text-foreground" aria-label={`Open source page for ${starter.name}`}><ExternalLink className="h-3.5 w-3.5" /></a>
                 </div>
               </div>
