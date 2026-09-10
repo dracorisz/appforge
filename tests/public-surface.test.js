@@ -41,7 +41,7 @@ test('SEO allowlist and canonical aliases match the public release surface', asy
     '/apps/landing-builder',
     '/apps/ai-dragon-arena',
   ]) {
-    assert.match(seo, new RegExp(`['\"]${route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['\"]`))
+    assert.match(seo, new RegExp(`['"]${route.replace(/[.*+?^${}()|[\]\\]/g, '\\new RegExp(`['\"]${route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['\"]`)')}['"]`))
   }
   assert.match(seo, /'\/apps\/scrapper-pro': '\/apps\/getter-pro'/)
   assert.match(seo, /'\/pf-scrapper-pro': '\/apps\/getter-pro'/)
