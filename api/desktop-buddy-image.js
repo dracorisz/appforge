@@ -2,7 +2,9 @@ import { generateHfImage, orderedHfTokens, parsePersonalHfTokens, publicHfAttemp
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://ixqoosixhahrsgwoxyme.supabase.co'
 const SUPABASE_PUBLISHABLE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_b56EltHyMfwOQjVQcQFHwA_VUiSn9zN'
-const MAX_RESPONSE_BYTES = 3_200_000
+// A base64 data URL expands binary data by roughly one third. Keep the raw image
+// small enough to remain comfortably inside browser/server JSON and localStorage limits.
+const MAX_RESPONSE_BYTES = 2_400_000
 
 const supabaseRequest = (path, token, init = {}) => fetch(`${SUPABASE_URL}${path}`, {
   ...init,
