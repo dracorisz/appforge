@@ -142,7 +142,7 @@ export function DesktopBuddyAssetLab() {
     }
   }
 
-  const useAsBuddy = async () => {
+  const applyToBuddy = async () => {
     const variant = variants.find((item) => item.size === 512)
     if (!variant) return
     try {
@@ -200,7 +200,7 @@ export function DesktopBuddyAssetLab() {
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-background/45 p-3">
             <p className="max-w-2xl text-xs leading-5 text-muted-foreground">Use the optimized 512px PNG as the persistent companion image. This updates only browser-local Desktop Buddy storage and keeps your source file on this device.</p>
-            <button type="button" onClick={() => void useAsBuddy()} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground"><Check className="h-4 w-4" /> Use 512px in Buddy</button>
+            <button type="button" onClick={() => void applyToBuddy()} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground"><Check className="h-4 w-4" /> Use 512px in Buddy</button>
           </div>
         </>
       )}
