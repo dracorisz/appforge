@@ -1,3 +1,5 @@
+import '@/lib/desktopBuddyRegistry'
+
 export { MiniAppShell } from './MiniAppShell'
 export { PublicDashboard } from './PublicDashboard'
 export { UtilityWorkbench, IMPLEMENTED_UTILITY_ROUTES } from './UtilityWorkbench'
