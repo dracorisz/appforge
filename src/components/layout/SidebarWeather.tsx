@@ -8,17 +8,34 @@ type Weather = {
   temp_c: number
   condition: string
   feelslike_c?: number
+  latitude?: number
+  longitude?: number
 }
 
 const STORAGE_KEY = 'appforge-weather-cities-v2'
+export const SIDEBAR_WEATHER_LOCATION_KEY = 'appforge-weather-sidebar-location-v1'
+export const SIDEBAR_WEATHER_CHANGED_EVENT = 'appforge:sidebar-weather-location-changed'
 const FALLBACK_LOCATION = 'Belgrade'
 
 function preferredLocation() {
+  const explicit = localStorage.getItem(SIDEBAR_WEATHER_LOCATION_KEY)?.trim()
+  if (explicit) return explicit
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
     if (Array.isArray(saved) && typeof saved[0]?.location === 'string' && saved[0].location.trim()) return saved[0].location.trim()
   } catch { /* use fallback */ }
   return FALLBACK_LOCATION
+}
+
+const coordinatesFromSavedLocation = (location: string) => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    if (!Array.isArray(saved)) return null
+    const match = saved.find((item) => item?.location === location)
+    const latitude = Number(match?.latitude)
+    const longitude = Number(match?.longitude)
+    return Number.isFinite(latitude) && Number.isFinite(longitude) ? { latitude, longitude } : null
+  } catch { return null }
 }
 
 export function SidebarWeather({ collapsed }: { collapsed: boolean }) {
@@ -35,7 +52,31 @@ export function SidebarWeather({ collapsed }: { collapsed: boolean }) {
     setLoading(true)
     try {
       const location = preferredLocation()
-      const response = await fetch(`/api/weather?q=${encodeURIComponent(location)}`)
+      const savedCoordinates = coordinatesFromSavedLocation(location)
+      const isLocationPlaceholder = location.toLowerCase() === 'your location'
+
+      if (savedCoordinates) {
+        const response = await fetch(`/api/weather?lat=${encodeURIComponent(savedCoordinates.latitude)}&lon=${encodeURIComponent(savedCoordinates.longitude)}`)
+        const data = await response.json().catch(() => null)
+        if (response.ok && data?.location && Number.isFinite(Number(data.temp_c))) setWeather(data as Weather)
+        return
+      }
+
+      if (isLocationPlaceholder && navigator.geolocation) {
+        await new Promise<void>((resolve) => {
+          navigator.geolocation.getCurrentPosition(async (position) => {
+            try {
+              const response = await fetch(`/api/weather?lat=${encodeURIComponent(position.coords.latitude)}&lon=${encodeURIComponent(position.coords.longitude)}`)
+              const data = await response.json().catch(() => null)
+              if (response.ok && data?.location && Number.isFinite(Number(data.temp_c))) setWeather(data as Weather)
+            } finally { resolve() }
+          }, () => resolve(), { enableHighAccuracy: false, maximumAge: 300000, timeout: 8000 })
+        })
+        return
+      }
+
+      const safeLocation = isLocationPlaceholder ? FALLBACK_LOCATION : location
+      const response = await fetch(`/api/weather?q=${encodeURIComponent(safeLocation)}`)
       const data = await response.json().catch(() => null)
       if (response.ok && data?.location && Number.isFinite(Number(data.temp_c))) setWeather(data as Weather)
     } catch { /* weather is an optional sidebar enhancement */ }
@@ -43,6 +84,15 @@ export function SidebarWeather({ collapsed }: { collapsed: boolean }) {
   }, [enabled])
 
   React.useEffect(() => { void refresh() }, [refresh])
+  React.useEffect(() => {
+    const handlePreferenceChange = () => { void refresh() }
+    window.addEventListener(SIDEBAR_WEATHER_CHANGED_EVENT, handlePreferenceChange)
+    window.addEventListener('storage', handlePreferenceChange)
+    return () => {
+      window.removeEventListener(SIDEBAR_WEATHER_CHANGED_EVENT, handlePreferenceChange)
+      window.removeEventListener('storage', handlePreferenceChange)
+    }
+  }, [refresh])
 
   if (!enabled) return null
 
