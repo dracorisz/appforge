@@ -14,18 +14,22 @@ This directory holds the long-form documentation for AppForge. It is the canonic
 | `PWA.md` | Progressive Web App behavior and manifest |
 | `SESSION_SUMMARY.md` | Per-session change log for agents |
 | `AGENT_HANDOFF.md` | Handoff notes for the next agent (kept in repo root too) |
-| `apps/` | Per-app deep dives (Dragon Arena, Scrapper Pro, Media Vault, image tools) |
+| `apps/` | Per-app deep dives for current AppForge tools and product surfaces |
 
 ## Apps documented
 
-- **Dragon Arena** (`apps/dragon-arena/`) — AI game master, scene generation, asset gallery, points, leaderboard
-- **Media Vault** (`apps/media-vault/`) — private per-user storage with quota and direct-to-Supabase uploads
-- **Scrapper Pro** (`apps/scrapper-pro/`) — public source search with media preview and downloads
+- **Story Studio** (`apps/dragon-arena/`) — AI-assisted story creation, scene generation, asset continuity, points, and creator workflows
+- **Desktop Buddy** (`apps/desktop-buddy.md`) — local-first character companion, portable buddy packs, provider-ready AI hooks, and browser voice preview
+- **Media Vault** (`apps/media-vault/`) — private per-user storage with quota, linked Story Studio assets, and Getter Pro references
+- **Getter Pro** (`apps/scrapper-pro/`) — public-source search with media preview, downloads, and Media Vault archiving
 - **Image Tools** (`apps/image-tools/`) — resize, compress, convert, label, and color picking
 
 ## Quick links
 
 - **Dev**: `npm run dev` starts Vite on `5173` and the API server on `5174`
 - **Typecheck**: `npm run typecheck`
+- **Release verification**: `npm run verify:release`
 - **Build**: `npm run build`
 - **Production**: `sstoken.space`
+
+Production deployment remains intentional and manual; merging to `main` is not itself a production release.
