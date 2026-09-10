@@ -165,7 +165,10 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, bridgeJobId, clientRequestId, workerJobId, provider: 'vertex-ai', requestId, ...recovered })
     } catch (workerError) {
       const mapped = publicError(workerError)
-      await patchJob(token, bridgeJobId, user.id, { status: mapped.status >= 500 ? 'failed' : 'running', error_code: mapped.code }).catch(() => undefined)
+      const errorName = String(workerError?.name || '').toLowerCase()
+      const errorMessage = String(workerError?.message || '').toLowerCase()
+      const ambiguousTimeout = errorName.includes('abort') || errorName.includes('timeout') || errorMessage.includes('abort') || errorMessage.includes('timeout')
+      await patchJob(token, bridgeJobId, user.id, { status: ambiguousTimeout ? 'running' : 'failed', error_code: mapped.code }).catch(() => undefined)
       throw workerError
     }
   } catch (error) {
