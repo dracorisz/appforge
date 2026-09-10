@@ -100,7 +100,7 @@ const storyStudio = apps.find((item) => item.id === 'ai-dragon-arena')
 if (!storyStudio) errors.push('Story Studio registry entry is missing (expected stable id ai-dragon-arena)')
 else {
   if (storyStudio.name !== 'Story Studio') errors.push(`ai-dragon-arena: product-facing name must be Story Studio (found ${storyStudio.name})`)
-  if (storyStudio.icon !== 'DragonArena') errors.push(`ai-dragon-arena: expected shared joypad icon key DragonArena (found ${storyStudio.icon})`)
+  if (storyStudio.icon !== 'Gamepad2') errors.push(`ai-dragon-arena: expected joypad icon key Gamepad2 (found ${storyStudio.icon})`)
 }
 
 if (!apps.length) errors.push('No apps parsed from src/lib/registry.ts')
