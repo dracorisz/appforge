@@ -46,11 +46,10 @@ export default defineConfig({
         ],
       },
       {
-        text: 'Security & identity',
+        text: 'Identity & OAuth',
         items: [
           { text: 'GitHub auth', link: '/GITHUB_AUTH' },
           { text: 'OAuth verification', link: '/OAUTH_VERIFICATION' },
-          { text: 'Security operations', link: '/SECURITY_OPERATIONS' },
         ],
       },
       {
