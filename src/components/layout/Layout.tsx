@@ -9,9 +9,31 @@ import { AppMetaBar } from './AppMetaBar'
 export function Layout({ children, currentVersion }: { children: React.ReactNode; currentVersion?: string }) {
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)
+  const menuTriggerRef = React.useRef<HTMLButtonElement | null>(null)
   const location = useLocation()
   const showProjectPulse = location.pathname === '/' || location.pathname === '/recent'
   const showAppMeta = location.pathname.startsWith('/apps/')
+
+  const closeMobileSidebar = React.useCallback(() => {
+    setMobileOpen(false)
+    window.setTimeout(() => menuTriggerRef.current?.focus(), 0)
+  }, [])
+
+  React.useEffect(() => {
+    if (!mobileOpen) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeMobileSidebar()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [mobileOpen, closeMobileSidebar])
+
+  React.useEffect(() => { setMobileOpen(false) }, [location.pathname])
 
   return (
     <div data-route={location.pathname} className="flex h-screen overflow-hidden bg-background">
@@ -20,18 +42,18 @@ export function Layout({ children, currentVersion }: { children: React.ReactNode
       </div>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <div className="fixed inset-y-0 left-0 z-50 w-64 bg-background shadow-xl">
-            <Sidebar onClose={() => setMobileOpen(false)} />
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="AppForge navigation">
+          <div className="fixed inset-0 bg-black/55 backdrop-blur-sm" onClick={closeMobileSidebar} />
+          <div className="fixed inset-y-0 left-0 z-50 w-[min(18rem,calc(100vw-2rem))] bg-background shadow-2xl">
+            <Sidebar onClose={closeMobileSidebar} />
           </div>
         </div>
       )}
 
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <MobileHeader onOpen={() => setMobileOpen(true)} />
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <MobileHeader onOpen={() => setMobileOpen(true)} triggerRef={menuTriggerRef} />
         <main className="flex-1 overflow-y-auto p-4 lg:p-8">
-          <div className="mx-auto max-w-6xl">
+          <div className="mx-auto min-w-0 max-w-6xl">
             {showProjectPulse && <ProjectPulse />}
             {showAppMeta && <AppMetaBar />}
             {children}
