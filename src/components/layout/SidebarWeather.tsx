@@ -1,6 +1,7 @@
 import React from 'react'
 import { CloudSun, Loader2, MapPin, RefreshCw } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { isWidgetEnabled, subscribeWidgetPreferences } from '@/lib/widgetPreferences'
 
 type Weather = {
   location: string
@@ -23,8 +24,14 @@ function preferredLocation() {
 export function SidebarWeather({ collapsed }: { collapsed: boolean }) {
   const [weather, setWeather] = React.useState<Weather | null>(null)
   const [loading, setLoading] = React.useState(false)
+  const [enabled, setEnabled] = React.useState(() => isWidgetEnabled('weather-sidebar'))
+
+  React.useEffect(() => subscribeWidgetPreferences((changed) => {
+    if (!changed || changed === 'weather-sidebar') setEnabled(isWidgetEnabled('weather-sidebar'))
+  }), [])
 
   const refresh = React.useCallback(async () => {
+    if (!enabled) return
     setLoading(true)
     try {
       const location = preferredLocation()
@@ -33,9 +40,11 @@ export function SidebarWeather({ collapsed }: { collapsed: boolean }) {
       if (response.ok && data?.location && Number.isFinite(Number(data.temp_c))) setWeather(data as Weather)
     } catch { /* weather is an optional sidebar enhancement */ }
     finally { setLoading(false) }
-  }, [])
+  }, [enabled])
 
   React.useEffect(() => { void refresh() }, [refresh])
+
+  if (!enabled) return null
 
   if (collapsed) {
     return (
