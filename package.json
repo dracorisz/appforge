@@ -11,6 +11,8 @@
     "lint": "eslint . --max-warnings 50",
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/*.test.js",
+    "audit:apps": "node scripts/audit-app-integrity.mjs",
+    "verify:release": "npm run audit:apps && npm run lint && npm run typecheck && npm test && npm run build",
     "version:set": "node scripts/set-version.mjs",
     "db:migrate": "echo 'Migrations run via CI/CD'",
     "deploy": "vercel --prod",
