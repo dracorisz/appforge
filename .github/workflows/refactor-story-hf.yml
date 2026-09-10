@@ -1,0 +1,61 @@
+name: Refactor Story Studio HF adapter
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/refactor-story-hf.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Consolidate Story Studio onto shared HF image provider
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('api/dragon-image.js')
+          text = path.read_text()
+
+          shared_import = "import { generateHfImage, orderedHfTokens, parsePersonalHfTokens, publicHfAttempts } from './_hf-image-provider.js'\n\n"
+          if not text.startswith(shared_import):
+              text = shared_import + text
+
+          block_start = text.index('// Hugging Face Inference Providers can move models between backends over time.')
+          block_end = text.index('const saveImage =', block_start)
+          replacement = "const GENERATION_BUDGET_MS = 52_000\nconst STORY_IMAGE_SUFFIX = 'Cinematic dark-fantasy game scene set in WildDragons Keep, atmospheric depth, dramatic volumetric lighting, detailed environment, coherent medieval-fantasy architecture, dynamic story composition, no words, logos, UI, watermark, captions, or text.'\n\n"
+          text = text[:block_start] + replacement + text[block_end:]
+
+          public_start = text.find('const publicAttempts =')
+          if public_start != -1:
+              public_end = text.index('export default async function handler', public_start)
+              text = text[:public_start] + text[public_end:]
+
+          generate_start = text.index('    let lastError = null\n    let generated = null\n    const attempts = []')
+          generated_at = text.index('    const generatedAt = new Date().toISOString()', generate_start)
+          generation = '''    let generated\n    try {\n      generated = await generateHfImage({\n        prompt,\n        tokens: hfTokens,\n        promptSuffix: STORY_IMAGE_SUFFIX,\n        budgetMs: GENERATION_BUDGET_MS,\n      })\n    } catch (hfError) {\n      if (!usingPersonalKey) await refundImageRequest(token)\n      const attempts = publicHfAttempts(hfError?.attempts || [])\n      console.error('Dragon Arena Hugging Face provider rotation exhausted', { requestId, code: hfError?.message, attempts })\n      return res.status(502).json({\n        error: 'Hugging Face image providers could not render this scene right now. Your image turn was not consumed. Try again shortly or use a personal HF token with Inference Providers access.',\n        provider: 'huggingface-inference-providers',\n        requestId,\n        durationMs: Date.now() - startedAt,\n        attempts,\n      })\n    }\n\n'''
+          text = text[:generate_start] + generation + text[generated_at:]
+
+          export_anchor = "import { generateHfImage, orderedHfTokens, parsePersonalHfTokens, publicHfAttempts } from './_hf-image-provider.js'\n\n"
+          if 'export { parsePersonalHfTokens }\n' not in text:
+              text = text.replace(export_anchor, export_anchor + 'export { parsePersonalHfTokens }\n\n', 1)
+
+          path.write_text(text)
+          PY
+      - name: Syntax-check refactored endpoint
+        run: node --check api/dragon-image.js
+      - name: Commit refactor
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add api/dragon-image.js
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Share Hugging Face image provider across AI apps'
+          git push
