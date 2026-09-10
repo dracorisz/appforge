@@ -2,15 +2,16 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'AppForge Docs',
-  description: 'Developer documentation, architecture, deployment, release readiness, and standalone PWA guidance for AppForge.',
+  description: 'Developer documentation, architecture, environment, deployment, release readiness, and standalone PWA guidance for AppForge.',
   base: '/appforge/',
   cleanUrls: true,
   lastUpdated: true,
   head: [
-    ['meta', { name: 'theme-color', content: '#0b1020' }],
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/appforge/favicon.svg' }],
+    ['meta', { name: 'theme-color', content: '#0f172a' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:title', content: 'AppForge Docs' }],
-    ['meta', { property: 'og:description', content: 'Build, understand, contribute to, and deploy AppForge.' }],
+    ['meta', { property: 'og:description', content: 'Build, understand, operate, contribute to, and deploy AppForge.' }],
     ['script', {}, `
       (() => {
         const scopeFragment = '/appforge/'
@@ -37,8 +38,8 @@ export default defineConfig({
     nav: [
       { text: 'Guide', link: '/GETTING_STARTED' },
       { text: 'Apps', link: '/apps/' },
-      { text: 'Project Pulse', link: '/PROJECT-PULSE' },
       { text: 'Architecture', link: '/APP_MODEL' },
+      { text: 'Branding', link: '/BRANDING' },
       { text: 'Open App ↗', link: 'https://www.sstoken.space/' },
     ],
     sidebar: [
@@ -47,6 +48,7 @@ export default defineConfig({
         items: [
           { text: 'Overview', link: '/' },
           { text: 'Getting started', link: '/GETTING_STARTED' },
+          { text: 'Environment & agent pickup', link: '/ENVIRONMENT' },
           { text: 'Project Pulse', link: '/PROJECT-PULSE' },
           { text: 'Full-status standard', link: '/FULL_STATUS' },
           { text: 'Issue roadmap', link: '/ISSUE_ROADMAP' },
@@ -65,8 +67,9 @@ export default defineConfig({
         ],
       },
       {
-        text: 'Identity & OAuth',
+        text: 'Identity, brand & OAuth',
         items: [
+          { text: 'Branding', link: '/BRANDING' },
           { text: 'GitHub auth', link: '/GITHUB_AUTH' },
           { text: 'OAuth verification', link: '/OAUTH_VERIFICATION' },
         ],
@@ -88,9 +91,10 @@ export default defineConfig({
         ],
       },
       {
-        text: 'Maintainers',
-        collapsed: true,
+        text: 'Maintainers & agents',
+        collapsed: false,
         items: [
+          { text: 'Environment & agent pickup', link: '/ENVIRONMENT' },
           { text: 'Agent handoff', link: '/AGENT_HANDOFF' },
         ],
       },
