@@ -83,7 +83,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
   )
 }
 
-export function MobileHeader({ onOpen, triggerRef }: { onOpen: () => void; triggerRef?: React.RefObject<HTMLButtonElement | null> }) {
+export function MobileHeader({ onOpen, triggerRef }: { onOpen: () => void; triggerRef?: React.Ref<HTMLButtonElement> }) {
   const { mode, setMode } = useTheme()
   const cycleTheme = () => { if (mode === 'light') setMode('dark'); else if (mode === 'dark') setMode('system'); else setMode('light') }
   const ThemeIcon = mode === 'light' ? Sun : mode === 'dark' ? Moon : Monitor
