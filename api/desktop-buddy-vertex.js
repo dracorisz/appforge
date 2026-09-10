@@ -158,8 +158,10 @@ export default async function handler(req, res) {
     workerJobId = makeWorkerJobId()
     await insertJob(token, { id: bridgeJobId, user_id: user.id, client_request_id: clientRequestId, worker_job_id: workerJobId, kind: 'image', status: 'running', model: MODEL })
 
+    let workerCompleted = false
     try {
       const worker = await callCloudWorker({ config: credentials.config, idToken: credentials.idToken, path: '/v1/jobs', method: 'POST', body: { id: workerJobId, kind: 'image', prompt: `${prompt}\n\n${PROMPT_SUFFIX}` } })
+      workerCompleted = true
       await patchJob(token, bridgeJobId, user.id, { status: 'complete', output_uri: worker.output, model: worker.model || MODEL, error_code: null })
       const recovered = await recoverOrDownload({ token, user, job: { id: bridgeJobId, user_id: user.id, client_request_id: clientRequestId, worker_job_id: workerJobId, status: 'complete', output_uri: worker.output, model: worker.model || MODEL }, credentials })
       return res.status(200).json({ ok: true, bridgeJobId, clientRequestId, workerJobId, provider: 'vertex-ai', requestId, ...recovered })
@@ -168,7 +170,10 @@ export default async function handler(req, res) {
       const errorName = String(workerError?.name || '').toLowerCase()
       const errorMessage = String(workerError?.message || '').toLowerCase()
       const ambiguousTimeout = errorName.includes('abort') || errorName.includes('timeout') || errorMessage.includes('abort') || errorMessage.includes('timeout')
-      await patchJob(token, bridgeJobId, user.id, { status: ambiguousTimeout ? 'running' : 'failed', error_code: mapped.code }).catch(() => undefined)
+      // A completed generation remains recoverable even if ledger persistence or
+      // downloading its output fails. Transport/5xx failures may also hide success.
+      const uncertain = ambiguousTimeout || workerError instanceof TypeError || Number(workerError?.status) >= 500
+      await patchJob(token, bridgeJobId, user.id, { status: workerCompleted || uncertain ? 'running' : 'failed', error_code: mapped.code }).catch(() => undefined)
       throw workerError
     }
   } catch (error) {

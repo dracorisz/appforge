@@ -24,7 +24,7 @@ export const getGcpBridgeConfig = () => {
 const parseJson = async (response) => response.json().catch(() => ({}))
 
 const exchangeVercelOidc = async (config) => {
-  const subjectToken = await getVercelOidcToken({ audience: config.audience })
+  const subjectToken = await getVercelOidcToken()
   if (!subjectToken) throw new Error('vercel_oidc_unavailable')
 
   const body = new URLSearchParams({

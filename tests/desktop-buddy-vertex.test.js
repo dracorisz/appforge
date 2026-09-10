@@ -74,3 +74,73 @@ test('Vertex POST rejects unauthenticated callers before attempting Google ident
   assert.equal(res.statusCode, 401)
   assert.match(res.body.error, /sign in/i)
 })
+
+for (const failure of ['download', 'transport', 'upstream']) {
+  test(`Vertex recovers the original paid job after ${failure} failure`, async () => {
+    const originalFetch = globalThis.fetch
+    const originalOidc = process.env.VERCEL_OIDC_TOKEN
+    const jwtPart = (value) => Buffer.from(JSON.stringify(value)).toString('base64url')
+    process.env.VERCEL_OIDC_TOKEN = `${jwtPart({ alg: 'RS256' })}.${jwtPart({ exp: Math.floor(Date.now() / 1000) + 3600, aud: 'https://vercel.com/dracorisz-projects' })}.test`
+    const clientRequestId = crypto.randomUUID()
+    const userId = crypto.randomUUID()
+    let row
+    let generations = 0
+    let downloads = 0
+    const json = (value, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'Content-Type': 'application/json' } })
+    globalThis.fetch = async (url, init = {}) => {
+      url = String(url)
+      if (url.endsWith('/auth/v1/user')) return json({ id: userId })
+      if (url === 'https://sts.googleapis.com/v1/token') {
+        assert.equal(init.body.get('subject_token'), process.env.VERCEL_OIDC_TOKEN)
+        assert.match(init.body.get('audience'), /workloadIdentityPools\/vercel-production\/providers\/vercel$/)
+        return json({ access_token: 'federated' })
+      }
+      if (url.endsWith(':generateAccessToken')) return json({ accessToken: 'access' })
+      if (url.endsWith(':generateIdToken')) return json({ token: 'id' })
+      if (url.includes('/rest/v1/vertex_bridge_jobs')) {
+        if (init.method === 'POST') { row = JSON.parse(init.body); return json([row]) }
+        if (init.method === 'PATCH') { Object.assign(row, JSON.parse(init.body)); return new Response(null, { status: 204 }) }
+        return json(row ? [row] : [])
+      }
+      if (url === 'https://worker.example.run.app/v1/jobs') {
+        generations++
+        if (failure === 'transport') throw new TypeError('fetch failed')
+        if (failure === 'upstream') return json({ error: 'Temporarily unavailable' }, 503)
+        return json({ status: 'complete', output: 'gs://example-bucket/outputs/buddy.webp' })
+      }
+      if (url.startsWith('https://worker.example.run.app/v1/jobs/')) return json({ status: 'complete', output: 'gs://example-bucket/outputs/buddy.webp' })
+      if (url.startsWith('https://storage.googleapis.com/')) {
+        downloads++
+        if (failure === 'download' && downloads === 1) return json({}, 503)
+        return new Response(new Uint8Array([1, 2, 3]), { headers: { 'Content-Type': 'image/webp' } })
+      }
+      throw new Error(`Unexpected request: ${url}`)
+    }
+    try {
+      await withBridgeEnv({
+        GCP_PROJECT_NUMBER: '136413445697',
+        GCP_SERVICE_ACCOUNT_EMAIL: 'vercel-worker-invoker@wild-dragons.iam.gserviceaccount.com',
+        GCP_WORKLOAD_IDENTITY_POOL_ID: 'vercel-production',
+        GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID: 'vercel',
+        GCP_CLOUD_WORKER_URL: 'https://worker.example.run.app',
+        GCP_WORKER_BUCKET: 'example-bucket',
+      }, async () => {
+        const req = { method: 'POST', query: {}, headers: { authorization: 'Bearer user-token' }, body: { prompt: 'friendly dragon character', clientRequestId } }
+        const first = makeRes()
+        await handler(req, first)
+        assert.ok(first.statusCode >= 500)
+        assert.equal(row.status, 'running')
+        const recovered = makeRes()
+        await handler(req, recovered)
+        assert.equal(recovered.statusCode, 200)
+        assert.equal(recovered.body.status, 'complete')
+        assert.equal(recovered.body.idempotentReplay, true)
+        assert.equal(generations, 1, 'Recovery must never generate or charge again')
+      })
+    } finally {
+      globalThis.fetch = originalFetch
+      if (originalOidc === undefined) delete process.env.VERCEL_OIDC_TOKEN
+      else process.env.VERCEL_OIDC_TOKEN = originalOidc
+    }
+  })
+}

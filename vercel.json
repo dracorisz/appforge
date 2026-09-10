@@ -10,6 +10,9 @@
   "installCommand": "npm install",
   "regions": ["iad1"],
   "functions": {
+    "api/desktop-buddy-vertex.js": {
+      "maxDuration": 180
+    },
     "api/**/*.js": {
       "maxDuration": 30
     }
