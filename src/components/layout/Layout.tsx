@@ -5,6 +5,7 @@ import { Footer } from './Footer'
 import { BackToTop } from './BackToTop'
 import { ProjectPulse } from './ProjectPulse'
 import { AppMetaBar } from './AppMetaBar'
+import { DesktopBuddyOverlay } from '@/components/dashboard/DesktopBuddyOverlay'
 
 export function Layout({ children, currentVersion }: { children: React.ReactNode; currentVersion?: string }) {
   const [mobileOpen, setMobileOpen] = React.useState(false)
@@ -13,6 +14,7 @@ export function Layout({ children, currentVersion }: { children: React.ReactNode
   const location = useLocation()
   const showProjectPulse = location.pathname === '/' || location.pathname === '/recent'
   const showAppMeta = location.pathname.startsWith('/apps/')
+  const showDesktopBuddy = location.pathname !== '/apps/desktop-buddy'
 
   const closeMobileSidebar = React.useCallback(() => {
     setMobileOpen(false)
@@ -62,6 +64,7 @@ export function Layout({ children, currentVersion }: { children: React.ReactNode
         <Footer version={currentVersion} />
       </div>
 
+      {showDesktopBuddy && <DesktopBuddyOverlay />}
       <BackToTop />
     </div>
   )
