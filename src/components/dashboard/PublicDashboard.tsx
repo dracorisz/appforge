@@ -36,10 +36,11 @@ import { getAllApps, getAppsByCategory, searchApps } from '@/lib/registry'
 import { IMPLEMENTED_UTILITY_ROUTES } from './UtilityWorkbench'
 import { DragonArenaIcon } from './DragonArenaIcon'
 import {
+  appSidebarPreferenceKey,
+  isAppVisibleInSidebar,
   loadCategoryOverrides,
-  isCategoryVisibleInSidebar,
   resetCategoryOverride,
-  restoreDefaultSidebarCategories,
+  restoreDefaultSidebarApps,
   resolveCategories,
   subscribeCategoryOverrides,
   updateCategoryOverride,
@@ -116,22 +117,47 @@ function CategoryCard({ category, count, onOpen }: { category: CategoryDefinitio
   )
 }
 
-function CategoryEditor({ categories, onOpen }: { categories: CategoryDefinition[]; onOpen: (categoryId: string) => void }) {
+function WorkspaceEditor({ apps, categories, onOpenCategory }: { apps: AppDefinition[]; categories: CategoryDefinition[]; onOpenCategory: (categoryId: string) => void }) {
   const [editing, setEditing] = React.useState<CategoryDefinition | null>(null)
   const [name, setName] = React.useState('')
   const [description, setDescription] = React.useState('')
   const overrides = loadCategoryOverrides()
   const startEdit = (category: CategoryDefinition) => { setEditing(category); setName(category.name); setDescription(category.description) }
   const save = () => { if (!editing || !name.trim()) return; updateCategoryOverride(editing.id, { name: name.trim(), description: description.trim() }); setEditing(null) }
+  const visibleCount = apps.filter((app) => isAppVisibleInSidebar(app.id, overrides[appSidebarPreferenceKey(app.id)])).length
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Card className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div><h2 className="text-sm font-semibold text-foreground">Category navigation</h2><p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">Rename shared labels and choose which shortcuts appear in the sidebar. All category IDs and routes stay stable.</p></div>
-        <Button variant="secondary" size="sm" onClick={restoreDefaultSidebarCategories}><RotateCcw className="h-4 w-4" /> Restore sidebar defaults</Button>
+        <div><h2 className="text-sm font-semibold text-foreground">Workspace shortcuts</h2><p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">Choose individual apps that should appear in the sidebar. {visibleCount} app{visibleCount === 1 ? '' : 's'} currently selected. Your choices use the existing synced preference store.</p></div>
+        <Button variant="secondary" size="sm" onClick={restoreDefaultSidebarApps}><RotateCcw className="h-4 w-4" /> Restore app defaults</Button>
       </Card>
-      {editing && <Card className="p-4"><div className="flex items-start justify-between gap-3"><div><h3 className="text-sm font-semibold text-foreground">Edit category</h3><p className="mt-0.5 text-xs text-muted-foreground">The category ID remains stable so app assignments and routes cannot break.</p></div><button onClick={() => setEditing(null)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"><X className="h-4 w-4" /></button></div><div className="mt-4 grid gap-3 md:grid-cols-2"><Input label="Name" value={name} onChange={(event) => setName(event.target.value)} /><Input label="Category ID" value={editing.id} disabled /><div className="md:col-span-2"><Input label="Description" value={description} onChange={(event) => setDescription(event.target.value)} /></div></div><div className="mt-4 flex flex-wrap gap-2"><Button onClick={save}><Save className="h-4 w-4" /> Save category</Button>{overrides[editing.id] && <Button variant="secondary" onClick={() => { resetCategoryOverride(editing.id); setEditing(null) }}><RotateCcw className="h-4 w-4" /> Reset default</Button>}</div></Card>}
-      <div className="grid gap-3 md:grid-cols-2">{categories.map((category) => { const count = getAppsByCategory(category.id).length; const customized = Boolean(overrides[category.id]); const visible = isCategoryVisibleInSidebar(category.id, overrides[category.id]); return <Card key={category.id} className="group p-4 transition-colors hover:border-foreground/15"><div className="flex items-start gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-background/45 text-muted-foreground group-hover:text-foreground"><AppIcon name={category.icon} /></span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="font-semibold text-foreground">{category.name}</h3>{customized && <Badge color="blue">Customized</Badge>}</div><p className="mt-1 text-sm leading-5 text-muted-foreground">{category.description}</p><p className="mt-2 text-xs text-muted-foreground">{count} {count === 1 ? 'app' : 'apps'} · /category/{category.id}</p></div><button type="button" onClick={() => startEdit(category)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label={`Edit ${category.name}`}><Edit2 className="h-4 w-4" /></button></div><div className="mt-4 flex items-center justify-between gap-3 border-t border-border/60 pt-3"><div><p className="text-xs font-medium text-foreground">Sidebar shortcut</p><p className="mt-0.5 text-[11px] text-muted-foreground">{visible ? 'Shown below Workspace' : 'Hidden from sidebar'}</p></div><Switch checked={visible} onCheckedChange={(checked) => updateCategoryOverride(category.id, { visibleInSidebar: checked })} label={`${visible ? 'Hide' : 'Show'} ${category.name} in sidebar`} /></div><div className="mt-3 flex flex-wrap gap-2"><Button size="sm" variant="secondary" onClick={() => onOpen(category.id)}>Open category <ArrowRight className="h-3.5 w-3.5" /></Button>{customized && <Button size="sm" variant="ghost" onClick={() => resetCategoryOverride(category.id)}><RotateCcw className="h-3.5 w-3.5" /> Reset</Button>}</div></Card> })}</div>
+
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {apps.filter((app) => app.status !== 'deprecated').map((app) => {
+          const key = appSidebarPreferenceKey(app.id)
+          const visible = isAppVisibleInSidebar(app.id, overrides[key])
+          const iconName = app.id === 'ai-dragon-arena' ? 'DragonArena' : app.icon
+          return (
+            <Card key={app.id} className="p-4">
+              <div className="flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-background/45 text-muted-foreground"><AppIcon name={iconName} /></span>
+                <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="truncate font-semibold text-foreground">{app.name}</h3><Badge color={statusColor[app.status]}>{displayStatus(app)}</Badge></div><p className="mt-1 truncate text-xs text-muted-foreground">{app.category.replace('-', ' ')} · {app.route}</p></div>
+              </div>
+              <div className="mt-4 flex items-center justify-between gap-3 border-t border-border/60 pt-3">
+                <div><p className="text-xs font-medium text-foreground">Show in sidebar</p><p className="mt-0.5 text-[11px] text-muted-foreground">{visible ? 'Pinned to your workspace' : 'Available through All apps/search'}</p></div>
+                <Switch checked={visible} onCheckedChange={(checked) => updateCategoryOverride(key, { visibleInSidebar: checked })} label={`${visible ? 'Hide' : 'Show'} ${app.name} in sidebar`} />
+              </div>
+            </Card>
+          )
+        })}
+      </div>
+
+      <section>
+        <SectionTitle title="Category labels" subtitle="Category names and descriptions can still be customized without controlling sidebar visibility." />
+        {editing && <Card className="mb-3 p-4"><div className="flex items-start justify-between gap-3"><div><h3 className="text-sm font-semibold text-foreground">Edit category</h3><p className="mt-0.5 text-xs text-muted-foreground">The category ID and routes remain stable.</p></div><button onClick={() => setEditing(null)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"><X className="h-4 w-4" /></button></div><div className="mt-4 grid gap-3 md:grid-cols-2"><Input label="Name" value={name} onChange={(event) => setName(event.target.value)} /><Input label="Category ID" value={editing.id} disabled /><div className="md:col-span-2"><Input label="Description" value={description} onChange={(event) => setDescription(event.target.value)} /></div></div><div className="mt-4 flex flex-wrap gap-2"><Button onClick={save}><Save className="h-4 w-4" /> Save category</Button>{overrides[editing.id] && <Button variant="secondary" onClick={() => { resetCategoryOverride(editing.id); setEditing(null) }}><RotateCcw className="h-4 w-4" /> Reset default</Button>}</div></Card>}
+        <div className="grid gap-3 md:grid-cols-2">{categories.map((category) => <Card key={category.id} className="flex items-center gap-3 p-4"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-background/45 text-muted-foreground"><AppIcon name={category.icon} className="h-4 w-4" /></span><div className="min-w-0 flex-1"><h3 className="truncate text-sm font-semibold text-foreground">{category.name}</h3><p className="truncate text-xs text-muted-foreground">{category.description}</p></div><Button variant="ghost" size="sm" onClick={() => startEdit(category)}><Edit2 className="h-4 w-4" /></Button><Button variant="ghost" size="sm" onClick={() => onOpenCategory(category.id)}><ArrowRight className="h-4 w-4" /></Button></Card>)}</div>
+      </section>
     </div>
   )
 }
@@ -145,8 +171,8 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: {
   const location = useLocation()
   const routeSearch = typeof (location.state as { appSearch?: unknown } | null)?.appSearch === 'string' ? String((location.state as { appSearch: string }).appSearch) : ''
   const [query, setQuery] = React.useState(routeSearch)
-  const [, refreshCategories] = React.useReducer((value) => value + 1, 0)
-  React.useEffect(() => subscribeCategoryOverrides(refreshCategories), [])
+  const [, refreshWorkspace] = React.useReducer((value) => value + 1, 0)
+  React.useEffect(() => subscribeCategoryOverrides(refreshWorkspace), [])
 
   const apps = React.useMemo(() => getAllApps(), [])
   const categories = resolveCategories()
@@ -155,7 +181,7 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: {
   const favoriteApps = apps.filter((app) => favorites.includes(app.id))
   const categoryId = location.pathname.match(/^\/category\/(.+)$/)?.[1]
   const selectedCategory = categoryId ? categories.find((category) => category.id === categoryId) : undefined
-  const isCategories = location.pathname === '/categories'
+  const isWorkspace = location.pathname === '/workspace' || location.pathname === '/categories'
   const isRecent = location.pathname === '/recent'
   const isFavorites = location.pathname === '/favorites'
   const isAllApps = location.pathname === '/apps'
@@ -169,7 +195,7 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: {
   else if (isFavorites) { pageTitle = 'Favorites'; pageSubtitle = 'Your pinned tools.'; visibleApps = favoriteApps }
   else if (selectedCategory) { pageTitle = selectedCategory.name; pageSubtitle = selectedCategory.description; visibleApps = getAppsByCategory(selectedCategory.id) }
 
-  if (hasQuery && !isCategories) {
+  if (hasQuery && !isWorkspace) {
     const ids = new Set(searchApps(query.trim()).map((app) => app.id))
     visibleApps = (isAllApps || isDashboard ? apps : visibleApps).filter((app) => ids.has(app.id))
   }
@@ -183,11 +209,11 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: {
 
   return (
     <div className="space-y-8 pb-8">
-      <section className="surface-card rounded-2xl border p-5 sm:p-6"><div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div className="max-w-2xl"><div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/45 px-2.5 py-1 text-xs font-medium text-muted-foreground backdrop-blur-md"><LayoutGrid className="h-3.5 w-3.5" /> AppForge toolbox</div><h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{isDashboard ? 'Useful tools, one calm workspace.' : isCategories ? 'Categories' : pageTitle}</h1><p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">{isDashboard ? 'Search, convert, inspect, generate, track, and collect without bouncing between small utility sites.' : isCategories ? 'Manage category labels, routes, and sidebar shortcuts in one place.' : pageSubtitle}</p></div><BuildBadge /></div>{!isCategories && <div className="relative mt-5 max-w-3xl"><Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input value={query} onChange={(event) => updateSearch(event.target.value)} placeholder="Search apps, formats, tags…" className="h-11 w-full rounded-xl border border-input bg-background/55 pl-10 pr-20 text-sm text-foreground outline-none backdrop-blur-md transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/25" /><span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-md border border-border/70 bg-background/55 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">{apps.length} apps</span></div>}</section>
+      <section className="surface-card rounded-2xl border p-5 sm:p-6"><div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div className="max-w-2xl"><div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/45 px-2.5 py-1 text-xs font-medium text-muted-foreground backdrop-blur-md"><LayoutGrid className="h-3.5 w-3.5" /> AppForge toolbox</div><h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{isDashboard ? 'Useful tools, one calm workspace.' : isWorkspace ? 'Workspace' : pageTitle}</h1><p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">{isDashboard ? 'Search, convert, inspect, generate, track, and collect without bouncing between small utility sites.' : isWorkspace ? 'Choose the apps that appear in your sidebar and maintain shared category labels.' : pageSubtitle}</p></div><BuildBadge /></div>{!isWorkspace && <div className="relative mt-5 max-w-3xl"><Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input value={query} onChange={(event) => updateSearch(event.target.value)} placeholder="Search apps, formats, tags…" className="h-11 w-full rounded-xl border border-input bg-background/55 pl-10 pr-20 text-sm text-foreground outline-none backdrop-blur-md transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/25" /><span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-md border border-border/70 bg-background/55 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">{apps.length} apps</span></div>}</section>
 
-      <nav className="flex flex-wrap gap-1 rounded-xl border border-border/60 bg-background/35 p-1 backdrop-blur-md">{([['/', 'Dashboard'], ['/apps', 'All apps'], ['/recent', 'Recent'], ['/favorites', 'Favorites'], ['/categories', 'Categories']] as const).map(([path, label]) => <button key={path} onClick={() => navigate(path)} className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${location.pathname === path ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{label}</button>)}</nav>
+      <nav className="flex flex-wrap gap-1 rounded-xl border border-border/60 bg-background/35 p-1 backdrop-blur-md">{([['/', 'Dashboard'], ['/apps', 'All apps'], ['/recent', 'Recent'], ['/favorites', 'Favorites'], ['/workspace', 'Workspace']] as const).map(([path, label]) => <button key={path} onClick={() => navigate(path)} className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${(location.pathname === path || (path === '/workspace' && location.pathname === '/categories')) ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{label}</button>)}</nav>
 
-      {isCategories ? <CategoryEditor categories={categories} onOpen={(id) => navigate(`/category/${id}`)} /> : <>{isDashboard && !hasQuery && recentApps.length > 0 && <section><SectionTitle title="Recent" subtitle="Your last three tools." action={<button onClick={() => navigate('/recent')} className="text-xs font-medium text-muted-foreground hover:text-foreground">View all</button>} /><div className="grid gap-2 md:grid-cols-3">{recentApps.slice(0, 3).map((app) => <RecentCompactCard key={app.id} app={app} onOpen={() => openApp(app)} />)}</div></section>}{isDashboard && !hasQuery && <section><SectionTitle title="Categories" subtitle="Browse by the kind of work you need to do." /><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{categories.map((category) => <CategoryCard key={category.id} category={category} count={getAppsByCategory(category.id).length} onOpen={() => navigate(`/category/${category.id}`)} />)}</div></section>}<section><SectionTitle title={isDashboard ? (hasQuery ? 'Search results' : 'All apps') : pageTitle} subtitle={hasQuery ? `${visibleApps.length} result${visibleApps.length === 1 ? '' : 's'} for “${query.trim()}”` : undefined} action={!isDashboard && !isAllApps ? <button onClick={() => navigate('/apps')} className="text-xs font-medium text-muted-foreground hover:text-foreground">Browse all</button> : undefined} />{visibleApps.length ? renderCards(visibleApps, isRecent) : <Card className="p-8 text-center"><Search className="mx-auto h-5 w-5 text-muted-foreground" /><h3 className="mt-3 text-sm font-medium text-foreground">Nothing here yet</h3><p className="mt-1 text-sm text-muted-foreground">Try another search or browse a different category.</p></Card>}</section></>}
+      {isWorkspace ? <WorkspaceEditor apps={apps} categories={categories} onOpenCategory={(id) => navigate(`/category/${id}`)} /> : <>{isDashboard && !hasQuery && recentApps.length > 0 && <section><SectionTitle title="Recent" subtitle="Your last three tools." action={<button onClick={() => navigate('/recent')} className="text-xs font-medium text-muted-foreground hover:text-foreground">View all</button>} /><div className="grid gap-2 md:grid-cols-3">{recentApps.slice(0, 3).map((app) => <RecentCompactCard key={app.id} app={app} onOpen={() => openApp(app)} />)}</div></section>}{isDashboard && !hasQuery && <section><SectionTitle title="Categories" subtitle="Browse by the kind of work you need to do." /><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{categories.map((category) => <CategoryCard key={category.id} category={category} count={getAppsByCategory(category.id).length} onOpen={() => navigate(`/category/${category.id}`)} />)}</div></section>}<section><SectionTitle title={isDashboard ? (hasQuery ? 'Search results' : 'All apps') : pageTitle} subtitle={hasQuery ? `${visibleApps.length} result${visibleApps.length === 1 ? '' : 's'} for “${query.trim()}”` : undefined} action={!isDashboard && !isAllApps ? <button onClick={() => navigate('/apps')} className="text-xs font-medium text-muted-foreground hover:text-foreground">Browse all</button> : undefined} />{visibleApps.length ? renderCards(visibleApps, isRecent) : <Card className="p-8 text-center"><Search className="mx-auto h-5 w-5 text-muted-foreground" /><h3 className="mt-3 text-sm font-medium text-foreground">Nothing here yet</h3><p className="mt-1 text-sm text-muted-foreground">Try another search or browse a different category.</p></Card>}</section></>}
     </div>
   )
 }
