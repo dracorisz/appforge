@@ -1,0 +1,21 @@
+:root {
+  --vp-c-brand-1: #2563eb;
+  --vp-c-brand-2: #1d4ed8;
+  --vp-c-brand-3: #1e40af;
+  --vp-c-brand-soft: rgba(37, 99, 235, 0.14);
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #60a5fa 12%, #2563eb 48%, #1e3a8a 88%);
+  --vp-home-hero-image-background-image: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.22), transparent 68%);
+  --vp-home-hero-image-filter: blur(48px);
+}
+
+.dark {
+  --vp-c-brand-1: #60a5fa;
+  --vp-c-brand-2: #3b82f6;
+  --vp-c-brand-3: #2563eb;
+  --vp-c-brand-soft: rgba(59, 130, 246, 0.18);
+}
+
+.VPNavBarTitle .title { font-weight: 700; }
+.VPHero .tagline { max-width: 760px; }
+.VPFeature { border-color: rgba(59, 130, 246, 0.18); }
