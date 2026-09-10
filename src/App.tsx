@@ -21,6 +21,8 @@ import {
   ImageWorkbench,
   LocalToolsWorkbench,
   ColorPickerTool,
+  TaskList,
+  RegistryAppFallback,
   PF_UserMediaVault,
 } from './components/dashboard'
 import { PF_GuestDragonArena } from './components/dashboard/PF_GuestDragonArena'
@@ -177,7 +179,7 @@ function App() {
     if (location.pathname === '/apps/favicon-studio') return <PublicToolShell toolName="Favicon Studio" toolIcon={<ImageIcon className="h-4 w-4" />}>{lazyPage(<FaviconStudio />)}</PublicToolShell>
     if (location.pathname === '/apps/svg-icons') return <PublicToolShell toolName="SVG Icons" toolIcon={<Palette className="h-4 w-4" />}>{lazyPage(<SvgIconsBrowser />)}</PublicToolShell>
     if (location.pathname === '/apps/landing-builder') return <PublicToolShell toolName="Landing Builder" toolIcon={<PanelsTopLeft className="h-4 w-4" />}>{lazyPage(<LandingBuilder />)}</PublicToolShell>
-    if (location.pathname === '/apps/ai-dragon-arena' || location.pathname === '/pf-ai-dragon-arena') return <PublicToolShell toolName="Story Studio" toolIcon={<DragonArenaIcon className="h-4 w-4" />}><PF_GuestDragonArena /></PublicToolShell>
+    if (location.pathname === '/apps/ai-dragon-arena' || location.pathname === '/pf-ai-dragon-arena') return <PublicToolShell toolName="AI Integrations" toolIcon={<DragonArenaIcon className="h-4 w-4" />}><PF_GuestDragonArena /></PublicToolShell>
   }
 
   if (loading || !user) return <LoginPage returnTo={requestedPath} />
@@ -203,6 +205,7 @@ function App() {
         <Route path="/apps/ai-dragon-arena" element={<PF_AIDragonArena />} />
         <Route path="/apps/dns-txt-checker" element={<PF_DnsTxtChecker />} />
         <Route path="/apps/any-converter" element={<AnyToAnyConverter />} />
+        <Route path="/apps/task-list" element={<TaskList />} />
         <Route path="/apps/media-vault" element={<PF_UserMediaVault />} />
         <Route path="/apps/favicon-studio" element={lazyPage(<FaviconStudio />)} />
         <Route path="/apps/svg-icons" element={lazyPage(<SvgIconsBrowser />)} />
@@ -240,6 +243,7 @@ function App() {
         <Route path="/pf-color-picker" element={<Navigate to="/apps/color-picker" replace />} />
         <Route path="/pf-resume-forge" element={<Navigate to="/apps/resume-forge" replace />} />
         <Route path="/pf-media-vault" element={<Navigate to="/apps/media-vault" replace />} />
+        <Route path="/apps/:slug" element={<RegistryAppFallback />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>
