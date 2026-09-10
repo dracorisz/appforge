@@ -20,7 +20,7 @@ type AuthProviderName = 'google' | 'github'
 
 export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: string; landingOnly?: boolean }) {
   const navigate = useNavigate()
-  const { user, loading, signInWithGoogle } = useAuth()
+  const { user, loading, signInWithGoogle, signInWithGitHub } = useAuth()
   const [busyProvider, setBusyProvider] = React.useState<AuthProviderName | null>(null)
   const [error, setError] = React.useState('')
   const apps = React.useMemo(() => getAllApps(), [])
@@ -37,15 +37,14 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
       return
     }
 
-    if (provider === 'github') return
-
     setBusyProvider(provider)
     setError('')
     try {
       const normalized = normalizeReturnPath(returnTo)
-      await signInWithGoogle(normalized)
+      if (provider === 'github') await signInWithGitHub(normalized)
+      else await signInWithGoogle(normalized)
     } catch (loginError) {
-      setError(loginError instanceof Error ? loginError.message : 'Google sign-in could not start.')
+      setError(loginError instanceof Error ? loginError.message : `${provider === 'github' ? 'GitHub' : 'Google'} sign-in could not start.`)
       setBusyProvider(null)
     }
   }
@@ -104,15 +103,12 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
                       {loading ? 'Checking session…' : busyProvider === 'google' ? 'Opening Google…' : 'Continue with Google'}
                       {!loading && busyProvider !== 'google' && <ArrowRight className="h-4 w-4" />}
                     </Button>
-                    <Button variant="secondary" className="h-11 px-5 opacity-65" disabled title="GitHub sign-in is coming soon">
+                    <Button variant="secondary" className="h-11 px-5" onClick={() => void login('github')} disabled={Boolean(busyProvider) || loading}>
                       <Github className="h-4 w-4" />
-                      Continue with GitHub · coming soon
+                      {busyProvider === 'github' ? 'Opening GitHub…' : 'Continue with GitHub'}
                     </Button>
                   </>
                 )}
-                <Link to="/apps/weather-now" className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-border bg-background/70 px-5 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
-                  Try a public tool <ArrowRight className="h-4 w-4" />
-                </Link>
               </div>
 
               {error && <div role="alert" aria-live="polite" className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
@@ -147,17 +143,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
 
                 <Link to="/huggingface" className="group flex min-h-14 items-center gap-3 rounded-xl border border-border/70 bg-background/65 px-3 py-3 transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/50 bg-background text-base" aria-hidden="true">
-                    <img
-                      src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg"
-                      alt=""
-                      className="h-9 w-9 object-contain"
-                      loading="lazy"
-                      onError={(event) => {
-                        event.currentTarget.style.display = 'none'
-                        const fallback = event.currentTarget.nextElementSibling
-                        fallback?.classList.remove('hidden')
-                      }}
-                    />
+                    <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="" className="h-9 w-9 object-contain" loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; event.currentTarget.nextElementSibling?.classList.remove('hidden') }} />
                     <span className="hidden">🤗</span>
                   </span>
                   <span className="min-w-0 flex-1"><span className="block text-sm font-medium">Hugging Face</span><span className="block text-xs text-muted-foreground">Models, providers and creator-selected scenes</span></span>
@@ -173,20 +159,10 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
                 <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"><PlayCircle className="h-4 w-4" /> Product walkthrough</div>
                 <h2 id="walkthrough-title" className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">See AppForge in action</h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">A concise walkthrough of the current AppForge experience, including the public tools and authenticated workspace. The privacy-enhanced YouTube embed loads only when this section enters the browser viewport.</p>
-                <a href="https://www.youtube.com/watch?v=tWnZNkPxlOo" target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                  Open on YouTube <ArrowRight className="h-4 w-4" />
-                </a>
+                <a href="https://www.youtube.com/watch?v=tWnZNkPxlOo" target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Open on YouTube <ArrowRight className="h-4 w-4" /></a>
               </div>
               <div className="overflow-hidden rounded-2xl border border-border/70 bg-black shadow-xl shadow-foreground/5">
-                <iframe
-                  src={YOUTUBE_EMBED_URL}
-                  title="AppForge product walkthrough"
-                  className="aspect-video w-full border-0"
-                  loading="lazy"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                  referrerPolicy="strict-origin-when-cross-origin"
-                />
+                <iframe src={YOUTUBE_EMBED_URL} title="AppForge product walkthrough" className="aspect-video w-full border-0" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
               </div>
             </div>
           </section>
