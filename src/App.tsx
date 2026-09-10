@@ -171,6 +171,7 @@ function App() {
   if (location.pathname === '/terms') return lazyPage(<TermsOfServicePage />)
   if (location.pathname === '/huggingface') return lazyPage(<HuggingFaceGalleryPage />)
   if (location.pathname === '/landing') return <LoginPage landingOnly />
+  if (location.pathname === '/explore') return lazyPage(<PublicAppsPage />)
   if (location.pathname === '/login') return <LoginPage />
   if (!user && !loading && location.pathname === '/apps') return lazyPage(<PublicAppsPage />)
 
