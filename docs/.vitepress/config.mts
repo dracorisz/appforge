@@ -3,23 +3,21 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'AppForge Docs',
   description: 'Developer documentation, architecture, environment, deployment, release readiness, AI providers, and standalone PWA guidance for AppForge.',
-  base: '/appforge/',
+  base: '/',
   cleanUrls: true,
   lastUpdated: true,
   head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/appforge/favicon.svg' }],
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
     ['meta', { name: 'theme-color', content: '#0f172a' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:title', content: 'AppForge Docs' }],
     ['meta', { property: 'og:description', content: 'Build, understand, operate, contribute to, and deploy AppForge.' }],
+    ['meta', { property: 'og:url', content: 'https://docs.sstoken.space/' }],
     ['script', {}, `
       (() => {
-        const scopeFragment = '/appforge/'
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.getRegistrations().then((registrations) => {
-            registrations
-              .filter((registration) => registration.scope.includes(scopeFragment))
-              .forEach((registration) => registration.unregister())
+            registrations.forEach((registration) => registration.unregister())
           })
         }
         if ('caches' in window) {
