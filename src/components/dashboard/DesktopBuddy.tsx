@@ -15,6 +15,8 @@ type BuddyConfig = {
 }
 
 const STORAGE_KEY = 'appforge-desktop-buddy-v1'
+const MAX_IMAGE_BYTES = 2_500_000
+const MAX_PACK_IMAGE_CHARS = 4_000_000
 
 const defaultConfig: BuddyConfig = {
   name: 'Ember',
@@ -27,11 +29,25 @@ const defaultConfig: BuddyConfig = {
   offsetY: 0,
 }
 
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
+const isProvider = (value: unknown): value is Provider => value === 'huggingface' || value === 'vertex' || value === 'browser'
+
+const sanitizeConfig = (value: Partial<BuddyConfig>): BuddyConfig => ({
+  name: typeof value.name === 'string' ? value.name.slice(0, 64) : defaultConfig.name,
+  provider: isProvider(value.provider) ? value.provider : defaultConfig.provider,
+  voiceEnabled: typeof value.voiceEnabled === 'boolean' ? value.voiceEnabled : defaultConfig.voiceEnabled,
+  voiceName: typeof value.voiceName === 'string' ? value.voiceName.slice(0, 160) : '',
+  imageDataUrl: typeof value.imageDataUrl === 'string' && value.imageDataUrl.length <= MAX_PACK_IMAGE_CHARS ? value.imageDataUrl : '',
+  scale: clamp(Number.isFinite(value.scale) ? Number(value.scale) : defaultConfig.scale, 45, 145),
+  offsetX: clamp(Number.isFinite(value.offsetX) ? Number(value.offsetX) : defaultConfig.offsetX, -120, 120),
+  offsetY: clamp(Number.isFinite(value.offsetY) ? Number(value.offsetY) : defaultConfig.offsetY, -120, 120),
+})
+
 const loadConfig = (): BuddyConfig => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return defaultConfig
-    return { ...defaultConfig, ...(JSON.parse(raw) as Partial<BuddyConfig>) }
+    return sanitizeConfig(JSON.parse(raw) as Partial<BuddyConfig>)
   } catch {
     return defaultConfig
   }
@@ -54,7 +70,11 @@ export function DesktopBuddy() {
   const [voices, setVoices] = React.useState<SpeechSynthesisVoice[]>([])
 
   React.useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
+    } catch {
+      setMessage('This character is too large for browser storage. Export the pack or choose a smaller image.')
+    }
   }, [config])
 
   React.useEffect(() => {
@@ -71,8 +91,21 @@ export function DesktopBuddy() {
       setMessage('Choose a PNG, WebP, JPEG, or SVG image.')
       return
     }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setMessage('Choose an image under 2.5 MB for this local-first beta.')
+      event.target.value = ''
+      return
+    }
     const reader = new FileReader()
-    reader.onload = () => setConfig((current) => ({ ...current, imageDataUrl: String(reader.result || '') }))
+    reader.onload = () => {
+      const imageDataUrl = String(reader.result || '')
+      if (imageDataUrl.length > MAX_PACK_IMAGE_CHARS) {
+        setMessage('That image expands too much for a portable local buddy pack. Choose a smaller asset.')
+        return
+      }
+      setConfig((current) => ({ ...current, imageDataUrl }))
+      setMessage('Character loaded locally.')
+    }
     reader.readAsDataURL(file)
   }
 
@@ -101,12 +134,17 @@ export function DesktopBuddy() {
   const importPack = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
+    if (file.size > 5_000_000) {
+      setMessage('That buddy pack is too large to import safely.')
+      event.target.value = ''
+      return
+    }
     const reader = new FileReader()
     reader.onload = () => {
       try {
-        const parsed = JSON.parse(String(reader.result || '{}')) as { config?: Partial<BuddyConfig> }
-        if (!parsed.config) throw new Error('Missing config')
-        setConfig({ ...defaultConfig, ...parsed.config })
+        const parsed = JSON.parse(String(reader.result || '{}')) as { app?: unknown; version?: unknown; config?: Partial<BuddyConfig> }
+        if (parsed.app !== 'desktop-buddy' || parsed.version !== 1 || !parsed.config) throw new Error('Invalid buddy pack')
+        setConfig(sanitizeConfig(parsed.config))
         setMessage('Buddy pack imported.')
       } catch {
         setMessage('That file is not a valid Desktop Buddy pack.')
@@ -115,7 +153,7 @@ export function DesktopBuddy() {
     reader.readAsText(file)
   }
 
-  const image = config.imageDataUrl || dragonPlaceholder
+  const image = config.imageDataUrl || dragonPlaceholder.trim()
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 p-4 md:p-6">
@@ -135,7 +173,7 @@ export function DesktopBuddy() {
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="rounded-2xl border p-4">
                 <span className="text-xs font-medium text-muted-foreground">Name</span>
-                <input className="mt-2 w-full bg-transparent text-sm outline-none" value={config.name} onChange={(e) => setConfig((c) => ({ ...c, name: e.target.value }))} />
+                <input className="mt-2 w-full bg-transparent text-sm outline-none" value={config.name} maxLength={64} onChange={(e) => setConfig((c) => ({ ...c, name: e.target.value }))} />
               </label>
               <label className="rounded-2xl border p-4">
                 <span className="text-xs font-medium text-muted-foreground">Provider</span>
@@ -161,7 +199,7 @@ export function DesktopBuddy() {
                 <PackageOpen className="h-4 w-4" /> Import pack
                 <input type="file" accept="application/json,.json" className="hidden" onChange={importPack} />
               </label>
-              <button type="button" onClick={() => setConfig(defaultConfig)} className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium hover:bg-muted"><RotateCcw className="h-4 w-4" /> Reset</button>
+              <button type="button" onClick={() => { setConfig(defaultConfig); setMessage('Desktop Buddy reset.') }} className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium hover:bg-muted"><RotateCcw className="h-4 w-4" /> Reset</button>
             </div>
           </div>
 
@@ -187,7 +225,7 @@ export function DesktopBuddy() {
           <label className="block space-y-2 text-sm"><span>Scale · {config.scale}%</span><input className="w-full" type="range" min="45" max="145" value={config.scale} onChange={(e) => setConfig((c) => ({ ...c, scale: Number(e.target.value) }))} /></label>
           <label className="block space-y-2 text-sm"><span>Horizontal · {config.offsetX}px</span><input className="w-full" type="range" min="-120" max="120" value={config.offsetX} onChange={(e) => setConfig((c) => ({ ...c, offsetX: Number(e.target.value) }))} /></label>
           <label className="block space-y-2 text-sm"><span>Vertical · {config.offsetY}px</span><input className="w-full" type="range" min="-120" max="120" value={config.offsetY} onChange={(e) => setConfig((c) => ({ ...c, offsetY: Number(e.target.value) }))} /></label>
-          <p className="text-xs leading-5 text-muted-foreground">The uploaded asset remains browser-local. Server-side image generation/optimization can be added behind the selected Hugging Face or Vertex provider without changing the pack format.</p>
+          <p className="text-xs leading-5 text-muted-foreground">Uploaded assets stay browser-local in this beta and are limited to 2.5 MB. Server-side generation can be added behind the selected Hugging Face or Vertex provider without changing the pack format.</p>
         </section>
 
         <section className="space-y-4 rounded-3xl border bg-card p-5 md:p-6">
