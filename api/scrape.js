@@ -53,7 +53,7 @@ const fetchText = async (url, options = {}, timeoutMs = 9000) => {
       signal: controller.signal,
       headers: {
         Accept: 'text/html,application/json,text/plain;q=0.9,*/*;q=0.8',
-        'User-Agent': 'Mozilla/5.0 (compatible; SSToken-ScrapperPro/2.0; +https://sstoken.space)',
+        'User-Agent': 'Mozilla/5.0 (compatible; AppForge-GetterPro/2.1; +https://sstoken.space)',
         ...(options.headers || {}),
       },
     })
@@ -172,7 +172,7 @@ const redditImage = (post) => {
 
 const scrapeReddit = async (query) => {
   const data = await fetchJson(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=25&sort=relevance&type=link`, {
-    headers: { 'User-Agent': 'SSToken-ScrapperPro/2.0' },
+    headers: { 'User-Agent': 'AppForge-GetterPro/2.1' },
   })
 
   return (data?.data?.children || []).map(({ data: post }) => {
@@ -239,6 +239,27 @@ const SCRAPERS = {
   medium: (query) => scrapeWebLinks('medium', query),
 }
 
+const classifyFailure = (sourceId, reason) => {
+  const raw = reason instanceof Error ? reason.message : String(reason || 'Source failed')
+  const lower = raw.toLowerCase()
+  if (sourceId === 'duckduckgo-images' && lower.includes('token unavailable')) {
+    return { code: 'parser_or_upstream_change', error: 'DuckDuckGo Images is temporarily degraded: its upstream image token could not be extracted. Other selected sources continue normally.' }
+  }
+  if (sourceId === 'reddit' && /http 40[13]/.test(lower)) {
+    return { code: 'upstream_blocked', error: 'Reddit blocked this server-side request. Other selected sources continue normally.' }
+  }
+  if (sourceId === 'youtube' && (lower.includes('api key') || lower.includes('not configured') || lower.includes('missing'))) {
+    return { code: 'missing_configuration', error: 'YouTube is not configured on this deployment. The server-side YOUTUBE_API_KEY must be available in the production environment.' }
+  }
+  if (lower.includes('abort') || lower.includes('timeout')) {
+    return { code: 'timeout', error: `${SOURCES[sourceId].name} timed out. Other selected sources continue normally.` }
+  }
+  if (lower.startsWith('http ')) {
+    return { code: 'upstream_http_error', error: `${SOURCES[sourceId].name} returned ${raw}. Other selected sources continue normally.` }
+  }
+  return { code: 'provider_error', error: `${SOURCES[sourceId].name} is temporarily unavailable: ${raw}` }
+}
+
 const runSearch = async (query, sources) => {
   const startedAt = Date.now()
   const settled = await Promise.allSettled(sources.map(async (sourceId) => ({
@@ -248,17 +269,17 @@ const runSearch = async (query, sources) => {
 
   const results = []
   const failures = []
+  const sourceStatus = []
 
   settled.forEach((entry, index) => {
     const sourceId = sources[index]
     if (entry.status === 'fulfilled') {
       results.push(...entry.value.results)
+      sourceStatus.push({ sourceId, source: SOURCES[sourceId].name, status: 'ok', count: entry.value.results.length })
     } else {
-      failures.push({
-        sourceId,
-        source: SOURCES[sourceId].name,
-        error: entry.reason instanceof Error ? entry.reason.message : 'Source failed',
-      })
+      const classified = classifyFailure(sourceId, entry.reason)
+      failures.push({ sourceId, source: SOURCES[sourceId].name, ...classified })
+      sourceStatus.push({ sourceId, source: SOURCES[sourceId].name, status: 'degraded', count: 0, code: classified.code })
     }
   })
 
@@ -273,12 +294,14 @@ const runSearch = async (query, sources) => {
 
   return {
     ok: true,
+    service: 'appforge-getter-pro',
     query,
     count: unique.length,
     mediaCount: unique.filter((item) => item.type === 'image' || item.type === 'video').length,
     durationMs: Date.now() - startedAt,
     results: unique.slice(0, 160),
     failures,
+    sourceStatus,
   }
 }
 
@@ -288,7 +311,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET' && !req.query?.q) {
     return res.status(200).json({
       ok: true,
-      service: 'sstoken-scrapper-pro',
+      service: 'appforge-getter-pro',
       sources: Object.entries(SOURCES).map(([id, source]) => ({ id, name: source.name, kind: source.kind })),
     })
   }
