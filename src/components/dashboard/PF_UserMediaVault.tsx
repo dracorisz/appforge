@@ -31,7 +31,7 @@ const FOLDERS: { id: VaultFolder | 'all'; label: string; icon: React.ComponentTy
   { id: 'all', label: 'All files', icon: Folder },
   { id: 'general', label: 'General', icon: Folder },
   { id: 'dragon-arena', label: 'Dragon Arena', icon: Gamepad2 },
-  { id: 'scrapper-pro', label: 'Scrapper Pro', icon: Search },
+  { id: 'scrapper-pro', label: 'Getter Pro', icon: Search },
 ]
 
 const kindIcon = (kind: VaultMedia['kind']) => {
@@ -56,6 +56,8 @@ const sourceLabel = (item: VaultMedia) => {
   if (item.source_bucket === 'dragon-arena-assets') return 'game asset'
   return item.size_bytes ? formatBytes(item.size_bytes) : 'stored'
 }
+
+const displaySource = (item: VaultMedia) => item.source_app === 'scrapper-pro' ? 'Getter Pro' : item.source_app || item.source_bucket || 'Media Vault'
 
 const VaultThumb = ({ item }: { item: VaultMedia }) => {
   const [url, setUrl] = React.useState<string | null>(null)
@@ -108,9 +110,12 @@ const ShowcaseCard = ({ item, onPreview, onDelete }: { item: VaultMedia; onPrevi
         <p className="mt-1 text-[11px] text-white/55">{sourceLabel(item)} · {new Date(item.created_at).toLocaleDateString()}</p>
       </div>
     </button>
-    <div className="flex items-center justify-between gap-3 border-t border-white/10 px-4 py-3">
-      <div className="min-w-0 text-[11px] text-white/50"><span className="block truncate">{item.source_app || item.source_bucket || 'media-vault'}</span></div>
-      <VaultActions item={item} onPreview={onPreview} onDelete={onDelete} dark />
+    <div className="flex items-center justify-between gap-3 border-t border-white/10 px-4 py-2.5">
+      <div className="min-w-0 text-[11px] text-white/50"><span className="block truncate">{displaySource(item)}</span></div>
+      <span className="text-[10px] uppercase tracking-[0.12em] text-white/35">Actions</span>
+    </div>
+    <div className="max-h-20 overflow-hidden border-t border-white/10 px-4 py-3 transition-[max-height,opacity,padding] duration-200 sm:max-h-0 sm:border-t-0 sm:py-0 sm:opacity-0 sm:group-hover:max-h-20 sm:group-hover:border-t sm:group-hover:py-3 sm:group-hover:opacity-100 sm:group-focus-within:max-h-20 sm:group-focus-within:border-t sm:group-focus-within:py-3 sm:group-focus-within:opacity-100">
+      <div className="flex justify-end"><VaultActions item={item} onPreview={onPreview} onDelete={onDelete} dark /></div>
     </div>
   </article>
 )
@@ -181,7 +186,7 @@ export function PF_UserMediaVault() {
     const warning = item.source_bucket === 'dragon-arena-assets'
       ? `Delete "${label}" from Dragon Arena and remove its stored image?`
       : item.source_app === 'scrapper-pro'
-        ? `Remove "${label}" from the Scrapper Pro folder? The original source is not deleted.`
+        ? `Remove "${label}" from the Getter Pro folder? The original source is not deleted.`
         : `Delete "${label}" from Media Vault?`
     if (!confirm(warning)) return
     try {
@@ -211,10 +216,10 @@ export function PF_UserMediaVault() {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge color="purple">Private vault</Badge>
-            <span className="text-xs text-muted-foreground">General uploads · Dragon Arena assets · Scrapper Pro references</span>
+            <span className="text-xs text-muted-foreground">General uploads · Dragon Arena assets · Getter Pro references</span>
           </div>
           <h1 className="mt-1 flex items-center gap-2 text-2xl font-semibold tracking-tight"><Upload className="h-6 w-6" /> Media Vault</h1>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">Media Vault is AppForge's shared asset surface. Manual files live in General, Dragon Arena scenes stay linked to the game ledger, and signed-in Scrapper Pro saves are archived here as deduplicated source references.</p>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">Media Vault is AppForge's shared asset surface. Manual files live in General, Dragon Arena scenes stay linked to the game ledger, and signed-in Getter Pro saves are archived here as deduplicated source references.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="secondary" onClick={() => void refresh()} disabled={loading}><RefreshCw className="h-4 w-4" /> Refresh</Button>
@@ -240,7 +245,7 @@ export function PF_UserMediaVault() {
       <Card className="p-3">
         <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Private upload quota used</span><span>{formatBytes(quota.used_bytes)} / {formatBytes(quota.quota_bytes)} ({usedPct}%)</span></div>
         <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-accent transition-all" style={{ width: `${usedPct}%` }} /></div>
-        <p className="mt-2 text-xs text-muted-foreground">{formatBytes(quota.remaining_bytes)} remaining. Dragon Arena scenes and Scrapper Pro references are not double-counted against the General upload quota.</p>
+        <p className="mt-2 text-xs text-muted-foreground">{formatBytes(quota.remaining_bytes)} remaining. Dragon Arena scenes and Getter Pro references are not double-counted against the General upload quota.</p>
       </Card>
 
       {error && <Card className="border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</Card>}
