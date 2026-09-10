@@ -7,27 +7,27 @@ titleTemplate: Developer Portal
 hero:
   name: AppForge
   text: Build, understand, and ship focused web tools.
-  tagline: Developer documentation, architecture, release readiness, AI/cloud experiments, and standalone-PWA guidance for the AppForge toolbox.
+  tagline: Developer documentation, integrated-environment guidance, architecture, release readiness, AI/cloud experiments, and standalone-PWA guidance for AppForge.
   actions:
     - theme: brand
       text: Getting Started
       link: /GETTING_STARTED
     - theme: alt
-      text: Project Pulse
-      link: /PROJECT-PULSE
+      text: Environment & Agent Pickup
+      link: /ENVIRONMENT
     - theme: alt
       text: Open App ↗
       link: https://www.sstoken.space/
 
 features:
-  - title: Use AppForge
-    details: The production application lives at sstoken.space. GitHub Pages is the developer and project documentation surface.
-    link: https://www.sstoken.space/
-    linkText: Open production app
-  - title: Project Pulse
-    details: Follow app maturity, release gates, PWA readiness, and the path from beta to Full status.
-    link: /PROJECT-PULSE
-    linkText: View project status
+  - title: Developer onboarding
+    details: Clone, configure, validate, and understand the project with clear local-development and environment boundaries.
+    link: /GETTING_STARTED
+    linkText: Start developing
+  - title: Agent pickup
+    details: Give a coding agent the source-of-truth files, environment model, release rules, integrated services, and handoff contract it needs before editing.
+    link: /ENVIRONMENT
+    linkText: Open environment guide
   - title: App documentation
     details: Browse per-app notes and extraction guidance for focused standalone-PWA candidates.
     link: /apps/
@@ -36,26 +36,30 @@ features:
     details: Understand the canonical app model, database boundaries, authentication, AI providers, and deployment architecture.
     link: /APP_MODEL
     linkText: Read architecture docs
-  - title: Deployment
-    details: Vercel production releases are manual-only. GitHub Pages publishes docs automatically and Cloud Run remains isolated for bounded AI experiments.
-    link: /LAUNCH-CHECKLIST
-    linkText: Review release gates
-  - title: Contribute
-    details: Work from the public repository, issues, and documentation. Docs remain Markdown-first so they can later sync to GitBook without migration lock-in.
-    link: https://github.com/dracorisz/appforge
-    linkText: Open GitHub repository
+  - title: Branding
+    details: Use the canonical AppForge name, manifest metadata, dark-slate surfaces, blue accent system, favicon, and public-surface roles consistently.
+    link: /BRANDING
+    linkText: View branding system
+  - title: Release readiness
+    details: Project Pulse, Full-status criteria, roadmap, and launch checks separate code completion from production verification.
+    link: /PROJECT-PULSE
+    linkText: Review readiness
 ---
 
 ## What belongs here
 
-This site is the public technical and project portal for AppForge. It documents how the product is structured, how individual apps mature toward standalone PWAs, how releases are prepared, and how external services are integrated safely.
+This site is the public technical and project portal for AppForge. It documents how the product is structured, how a developer or agent can pick up the integrated environment, how individual apps mature toward standalone PWAs, how releases are prepared, and how external services are integrated safely.
 
 For normal use, go to **[sstoken.space](https://www.sstoken.space/)**. For source code, issues, pull requests, and releases, use the **[GitHub repository](https://github.com/dracorisz/appforge)**.
+
+## First-time project pickup
+
+If you are new to the repository, read **[Getting started](./GETTING_STARTED.md)** and **[Environment & agent pickup](./ENVIRONMENT.md)** first. Agents should then read **[Agent handoff](./AGENT_HANDOFF.md)** and inspect the current issue plus the source-of-truth files named there before making changes.
 
 ## Current priorities
 
 1. Finish production-readiness and smoke-test gates deliberately rather than deploying on every push.
 2. Complete Story Studio and its creator-facing Novel/Comics flow.
 3. Move focused browser-local apps toward documented **Full** standalone-PWA status.
-4. Keep Project Pulse, the issue roadmap, and launch checklist aligned with the canonical app registry.
-5. Use GitHub Pages as documentation infrastructure while keeping the production application independent.
+4. Keep Project Pulse, the issue roadmap, launch checklist, environment guide, and canonical registry aligned.
+5. Keep GitHub Pages focused on documentation while `sstoken.space` remains the production application.
