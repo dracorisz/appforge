@@ -49,6 +49,7 @@ export default defineConfig({
           { text: 'Overview', link: '/' },
           { text: 'Getting started', link: '/GETTING_STARTED' },
           { text: 'Environment & agent pickup', link: '/ENVIRONMENT' },
+          { text: 'Development timeline', link: '/DEVELOPMENT_TIMELINE' },
           { text: 'Project Pulse', link: '/PROJECT-PULSE' },
           { text: 'Full-status standard', link: '/FULL_STATUS' },
           { text: 'Issue roadmap', link: '/ISSUE_ROADMAP' },
@@ -79,6 +80,7 @@ export default defineConfig({
         items: [
           { text: 'Apps index', link: '/apps/' },
           { text: 'Any Converter', link: '/apps/any-converter/' },
+          { text: 'Task List', link: '/apps/task-list/' },
           { text: 'Standalone PWA template', link: '/STANDALONE_PWA_TEMPLATE' },
         ],
       },
