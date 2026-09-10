@@ -91,6 +91,17 @@ function ToolCard({ app, favorite, onFavorite, onOpen }: {
   )
 }
 
+function RecentCompactCard({ app, onOpen }: { app: AppDefinition; onOpen: () => void }) {
+  const iconName = app.id === 'ai-dragon-arena' ? 'DragonArena' : app.icon
+  return (
+    <button type="button" onClick={onOpen} disabled={!isOpenable(app)} className="group flex min-h-16 w-full items-center gap-3 rounded-xl border border-border/70 bg-background/40 px-3 py-2 text-left transition-colors hover:border-foreground/15 hover:bg-accent/45 disabled:cursor-not-allowed disabled:opacity-60">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-background/65 text-foreground"><AppIcon name={iconName} className="h-4 w-4" /></span>
+      <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold text-foreground">{app.name}</span><span className="mt-0.5 block truncate text-[11px] text-muted-foreground">{app.description}</span></span>
+      <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+    </button>
+  )
+}
+
 function SectionTitle({ title, subtitle, action }: { title: string; subtitle?: string; action?: React.ReactNode }) {
   return <div className="mb-3 flex items-end justify-between gap-4"><div><h2 className="text-base font-semibold tracking-tight text-foreground">{title}</h2>{subtitle && <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>}</div>{action}</div>
 }
@@ -132,7 +143,8 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: {
 }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const [query, setQuery] = React.useState('')
+  const routeSearch = typeof (location.state as { appSearch?: unknown } | null)?.appSearch === 'string' ? String((location.state as { appSearch: string }).appSearch) : ''
+  const [query, setQuery] = React.useState(routeSearch)
   const [, refreshCategories] = React.useReducer((value) => value + 1, 0)
   React.useEffect(() => subscribeCategoryOverrides(refreshCategories), [])
 
@@ -159,19 +171,23 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: {
 
   if (hasQuery && !isCategories) {
     const ids = new Set(searchApps(query.trim()).map((app) => app.id))
-    visibleApps = visibleApps.filter((app) => ids.has(app.id))
+    visibleApps = (isAllApps || isDashboard ? apps : visibleApps).filter((app) => ids.has(app.id))
   }
 
+  const updateSearch = (value: string) => {
+    setQuery(value)
+    if (isDashboard && value.trim()) navigate('/apps', { replace: true, state: { appSearch: value } })
+  }
   const openApp = (app: AppDefinition) => { if (!isOpenable(app)) return; onOpenApp?.(app.id); navigate(app.route) }
   const renderCards = (items: AppDefinition[], maxTwoColumns = false) => <div className={`grid gap-3 sm:grid-cols-2 ${maxTwoColumns ? '' : 'xl:grid-cols-3'}`}>{items.map((app) => <ToolCard key={app.id} app={app} favorite={favorites.includes(app.id)} onFavorite={() => onToggleFavorite?.(app.id)} onOpen={() => openApp(app)} />)}</div>
 
   return (
     <div className="space-y-8 pb-8">
-      <section className="surface-card rounded-2xl border p-5 sm:p-6"><div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div className="max-w-2xl"><div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/45 px-2.5 py-1 text-xs font-medium text-muted-foreground backdrop-blur-md"><LayoutGrid className="h-3.5 w-3.5" /> AppForge toolbox</div><h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{isDashboard ? 'Useful tools, one calm workspace.' : isCategories ? 'Categories' : pageTitle}</h1><p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">{isDashboard ? 'Search, convert, inspect, generate, track, and collect without bouncing between small utility sites.' : isCategories ? 'Manage category labels, routes, and sidebar shortcuts in one place.' : pageSubtitle}</p></div><BuildBadge /></div>{!isCategories && <div className="relative mt-5 max-w-3xl"><Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search apps, formats, tags…" className="h-11 w-full rounded-xl border border-input bg-background/55 pl-10 pr-20 text-sm text-foreground outline-none backdrop-blur-md transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/25" /><span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-md border border-border/70 bg-background/55 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">{apps.length} apps</span></div>}</section>
+      <section className="surface-card rounded-2xl border p-5 sm:p-6"><div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div className="max-w-2xl"><div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/45 px-2.5 py-1 text-xs font-medium text-muted-foreground backdrop-blur-md"><LayoutGrid className="h-3.5 w-3.5" /> AppForge toolbox</div><h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{isDashboard ? 'Useful tools, one calm workspace.' : isCategories ? 'Categories' : pageTitle}</h1><p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">{isDashboard ? 'Search, convert, inspect, generate, track, and collect without bouncing between small utility sites.' : isCategories ? 'Manage category labels, routes, and sidebar shortcuts in one place.' : pageSubtitle}</p></div><BuildBadge /></div>{!isCategories && <div className="relative mt-5 max-w-3xl"><Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input value={query} onChange={(event) => updateSearch(event.target.value)} placeholder="Search apps, formats, tags…" className="h-11 w-full rounded-xl border border-input bg-background/55 pl-10 pr-20 text-sm text-foreground outline-none backdrop-blur-md transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/25" /><span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-md border border-border/70 bg-background/55 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">{apps.length} apps</span></div>}</section>
 
       <nav className="flex flex-wrap gap-1 rounded-xl border border-border/60 bg-background/35 p-1 backdrop-blur-md">{([['/', 'Dashboard'], ['/apps', 'All apps'], ['/recent', 'Recent'], ['/favorites', 'Favorites'], ['/categories', 'Categories']] as const).map(([path, label]) => <button key={path} onClick={() => navigate(path)} className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${location.pathname === path ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{label}</button>)}</nav>
 
-      {isCategories ? <CategoryEditor categories={categories} onOpen={(id) => navigate(`/category/${id}`)} /> : <>{isDashboard && !hasQuery && recentApps.length > 0 && <section><SectionTitle title="Recent" subtitle="Your latest tools — always two columns max." action={<button onClick={() => navigate('/recent')} className="text-xs font-medium text-muted-foreground hover:text-foreground">View all</button>} />{renderCards(recentApps.slice(0, 4), true)}</section>}{isDashboard && !hasQuery && <section><SectionTitle title="Categories" subtitle="Browse by the kind of work you need to do." /><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{categories.map((category) => <CategoryCard key={category.id} category={category} count={getAppsByCategory(category.id).length} onOpen={() => navigate(`/category/${category.id}`)} />)}</div></section>}<section><SectionTitle title={isDashboard ? (hasQuery ? 'Search results' : 'All apps') : pageTitle} subtitle={hasQuery ? `${visibleApps.length} result${visibleApps.length === 1 ? '' : 's'} for “${query.trim()}”` : undefined} action={!isDashboard && !isAllApps ? <button onClick={() => navigate('/apps')} className="text-xs font-medium text-muted-foreground hover:text-foreground">Browse all</button> : undefined} />{visibleApps.length ? renderCards(visibleApps, isRecent) : <Card className="p-8 text-center"><Search className="mx-auto h-5 w-5 text-muted-foreground" /><h3 className="mt-3 text-sm font-medium text-foreground">Nothing here yet</h3><p className="mt-1 text-sm text-muted-foreground">Try another search or browse a different category.</p></Card>}</section></>}
+      {isCategories ? <CategoryEditor categories={categories} onOpen={(id) => navigate(`/category/${id}`)} /> : <>{isDashboard && !hasQuery && recentApps.length > 0 && <section><SectionTitle title="Recent" subtitle="Your last three tools." action={<button onClick={() => navigate('/recent')} className="text-xs font-medium text-muted-foreground hover:text-foreground">View all</button>} /><div className="grid gap-2 md:grid-cols-3">{recentApps.slice(0, 3).map((app) => <RecentCompactCard key={app.id} app={app} onOpen={() => openApp(app)} />)}</div></section>}{isDashboard && !hasQuery && <section><SectionTitle title="Categories" subtitle="Browse by the kind of work you need to do." /><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{categories.map((category) => <CategoryCard key={category.id} category={category} count={getAppsByCategory(category.id).length} onOpen={() => navigate(`/category/${category.id}`)} />)}</div></section>}<section><SectionTitle title={isDashboard ? (hasQuery ? 'Search results' : 'All apps') : pageTitle} subtitle={hasQuery ? `${visibleApps.length} result${visibleApps.length === 1 ? '' : 's'} for “${query.trim()}”` : undefined} action={!isDashboard && !isAllApps ? <button onClick={() => navigate('/apps')} className="text-xs font-medium text-muted-foreground hover:text-foreground">Browse all</button> : undefined} />{visibleApps.length ? renderCards(visibleApps, isRecent) : <Card className="p-8 text-center"><Search className="mx-auto h-5 w-5 text-muted-foreground" /><h3 className="mt-3 text-sm font-medium text-foreground">Nothing here yet</h3><p className="mt-1 text-sm text-muted-foreground">Try another search or browse a different category.</p></Card>}</section></>}
     </div>
   )
 }
