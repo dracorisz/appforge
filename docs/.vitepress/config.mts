@@ -34,6 +34,7 @@ export default defineConfig({
   ],
   themeConfig: {
     siteTitle: 'AppForge Docs',
+    logo: '/favicon.svg',
     search: { provider: 'local' },
     nav: [
       { text: 'Guide', link: '/GETTING_STARTED' },
@@ -61,6 +62,7 @@ export default defineConfig({
         items: [
           { text: 'App model', link: '/APP_MODEL' },
           { text: 'Database', link: '/DATABASE' },
+          { text: 'Security advisories', link: '/SECURITY_ADVISORS' },
           { text: 'AI providers', link: '/AI-PROVIDERS' },
           { text: 'Cloud experiments', link: '/CLOUD-EXPERIMENTS' },
           { text: 'Branching', link: '/BRANCHING' },
@@ -98,6 +100,7 @@ export default defineConfig({
         items: [
           { text: 'Environment & agent pickup', link: '/ENVIRONMENT' },
           { text: 'Agent handoff', link: '/AGENT_HANDOFF' },
+          { text: 'Docs maintenance', link: '/DOC_MAINTENANCE' },
         ],
       },
     ],
