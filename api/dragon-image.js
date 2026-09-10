@@ -4,9 +4,46 @@ export { parsePersonalHfTokens }
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://ixqoosixhahrsgwoxyme.supabase.co'
 const SUPABASE_PUBLISHABLE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_b56EltHyMfwOQjVQcQFHwA_VUiSn9zN'
-
 const GENERATION_BUDGET_MS = 52_000
 const STORY_IMAGE_SUFFIX = 'Cinematic dark-fantasy game scene set in WildDragons Keep, atmospheric depth, dramatic volumetric lighting, detailed environment, coherent medieval-fantasy architecture, dynamic story composition, no words, logos, UI, watermark, captions, or text.'
+
+const supabaseRequest = (path, token, init = {}) => fetch(`${SUPABASE_URL}${path}`, {
+  ...init,
+  headers: {
+    apikey: SUPABASE_PUBLISHABLE_KEY,
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    ...(init.headers || {}),
+  },
+})
+
+const getBearer = (req) => {
+  const value = req.headers?.authorization || ''
+  return value.startsWith('Bearer ') ? value.slice(7).trim() : ''
+}
+
+const authenticate = async (token) => {
+  if (!token) return null
+  const response = await supabaseRequest('/auth/v1/user', token)
+  return response.ok ? response.json().catch(() => null) : null
+}
+
+const verifySession = async (token, userId, sessionId) => {
+  const response = await supabaseRequest(`/rest/v1/dragon_arena_sessions?id=eq.${encodeURIComponent(sessionId)}&user_id=eq.${encodeURIComponent(userId)}&select=id`, token)
+  if (!response.ok) return false
+  const rows = await response.json().catch(() => [])
+  return Array.isArray(rows) && rows.length === 1
+}
+
+const consumeImageRequest = async (token) => {
+  const response = await supabaseRequest('/rest/v1/rpc/consume_dragon_arena_image_request', token, { method: 'POST', body: '{}' })
+  if (!response.ok) throw new Error('image_quota_check_failed')
+  return response.json().catch(() => false)
+}
+
+const refundImageRequest = async (token) => {
+  await supabaseRequest('/rest/v1/rpc/refund_dragon_arena_image_request', token, { method: 'POST', body: '{}' }).catch(() => undefined)
+}
 
 const saveImage = async (token, userId, bytes, mimeType) => {
   const ext = mimeType === 'image/jpeg' ? 'jpg' : mimeType === 'image/webp' ? 'webp' : 'png'
@@ -92,7 +129,6 @@ export default async function handler(req, res) {
 
   let reserved = false
   let saved = null
-  const deadline = Date.now() + GENERATION_BUDGET_MS
   try {
     reserved = usingPersonalKey || await consumeImageRequest(token)
     if (!reserved) return res.status(429).json({ error: 'Your Dragon Arena image turn for today has already been used. Come back after 00:00 UTC or add a personal Hugging Face token.', requestId })
