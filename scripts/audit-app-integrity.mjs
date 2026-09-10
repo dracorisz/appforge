@@ -56,7 +56,7 @@ for (const app of apps) {
   if (!app.name.trim()) errors.push(`${app.id}: missing name`)
   if (!app.description.trim()) errors.push(`${app.id}: missing description`)
 
-  const explicitRoute = appSource.includes(`path=\"${app.route}\"`) || appSource.includes(`path={'${app.route}'}`)
+  const explicitRoute = appSource.includes(`path="${app.route}"`) || appSource.includes(`path={'${app.route}'}`)
   const sharedSlugRoute = app.route.startsWith('/apps/') && appSource.includes(`path={\`/apps/\${slug}\`}`)
   const plannedFallback = app.route.startsWith('/apps/') && appSource.includes('path="/apps/:slug"')
   const dashboardRoute = ['/marketing'].includes(app.route) && explicitRoute
