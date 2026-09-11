@@ -43,6 +43,26 @@ function toDraft(item: FrontendContentRecord): FrontendContentDraft {
   }
 }
 
+function generateSummary(body: string | null | undefined, title: string) {
+  const source = (body || title)
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/[#>*_`~|-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!source) return ''
+
+  const sentenceMatch = source.match(/^(.{1,220}?[.!?])(?:\s|$)/)
+  if (sentenceMatch && sentenceMatch[1].length >= 80) return sentenceMatch[1]
+  if (source.length <= 200) return source
+
+  const clipped = source.slice(0, 200)
+  const boundary = clipped.lastIndexOf(' ')
+  return `${clipped.slice(0, boundary > 140 ? boundary : 200).trim()}…`
+}
+
 export function AdminContentManager() {
   const { user, loading: authLoading } = useAuth()
   const [checking, setChecking] = React.useState(true)
@@ -239,7 +259,11 @@ export function AdminContentManager() {
               <label className="text-xs font-semibold text-muted-foreground">Slug<input value={draft.slug} onChange={(event) => setDraft((current) => ({ ...current, slug: event.target.value }))} className="mt-1 h-11 w-full rounded-xl border border-border/70 bg-black/30 px-3 text-sm text-foreground" placeholder="weather-now-guide" /></label>
             </div>
             <label className="block text-xs font-semibold text-muted-foreground">Title<input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} className="mt-1 h-11 w-full rounded-xl border border-border/70 bg-black/30 px-3 text-sm text-foreground" /></label>
-            <label className="block text-xs font-semibold text-muted-foreground">Summary<textarea value={draft.summary || ''} onChange={(event) => setDraft((current) => ({ ...current, summary: event.target.value }))} rows={3} className="mt-1 w-full rounded-xl border border-border/70 bg-black/30 p-3 text-sm text-foreground" /></label>
+            <label className="block text-xs font-semibold text-muted-foreground">
+              <span className="flex items-center justify-between gap-3"><span>Summary</span><button type="button" onClick={() => setDraft((current) => ({ ...current, summary: generateSummary(current.body, current.title) }))} className="rounded-lg border border-border/70 px-2.5 py-1.5 text-[11px] font-semibold text-foreground hover:bg-accent">Generate from body</button></span>
+              <textarea value={draft.summary || ''} onChange={(event) => setDraft((current) => ({ ...current, summary: event.target.value }))} rows={3} className="mt-1 w-full rounded-xl border border-border/70 bg-black/30 p-3 text-sm text-foreground" />
+              <span className="mt-1 block text-[11px] font-normal text-muted-foreground">Local helper only — no API request or AI usage charge.</span>
+            </label>
             <label className="block text-xs font-semibold text-muted-foreground">Body<textarea value={draft.body || ''} onChange={(event) => setDraft((current) => ({ ...current, body: event.target.value }))} rows={10} className="mt-1 w-full rounded-xl border border-border/70 bg-black/30 p-3 text-sm leading-6 text-foreground" placeholder="Article body or reusable frontend copy…" /></label>
             <div className="grid gap-4 md:grid-cols-2">
               <label className="text-xs font-semibold text-muted-foreground">Image URL<input value={draft.image_url || ''} onChange={(event) => setDraft((current) => ({ ...current, image_url: event.target.value }))} className="mt-1 h-11 w-full rounded-xl border border-border/70 bg-black/30 px-3 text-sm text-foreground" placeholder="https://…" /></label>
