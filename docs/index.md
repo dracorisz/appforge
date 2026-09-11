@@ -16,12 +16,6 @@ hero:
       text: Getting Started
       link: /GETTING_STARTED
     - theme: alt
-      text: Browse Apps
-      link: /apps/
-    - theme: alt
-      text: Architecture
-      link: /APP_MODEL
-    - theme: alt
       text: Open App ↗
       link: https://www.sstoken.space/
 
