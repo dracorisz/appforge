@@ -44,11 +44,8 @@ export function Layout({ children, currentVersion }: { children: React.ReactNode
       </div>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="AppForge navigation">
-          <div className="fixed inset-0 bg-black/55 backdrop-blur-sm" onClick={closeMobileSidebar} />
-          <div className="fixed inset-y-0 left-0 z-50 w-[min(18rem,calc(100vw-2rem))] bg-background shadow-2xl">
-            <Sidebar onClose={closeMobileSidebar} />
-          </div>
+        <div className="fixed inset-0 z-50 bg-background lg:hidden" role="dialog" aria-modal="true" aria-label="AppForge navigation">
+          <Sidebar onClose={closeMobileSidebar} />
         </div>
       )}
 
