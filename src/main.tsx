@@ -12,6 +12,33 @@ import { updateSeo } from './lib/seo'
 import './index.css'
 import './media.css'
 
+type ThemeMode = 'light' | 'dark' | 'system'
+
+const readSavedTheme = (): ThemeMode | null => {
+  try {
+    const raw = localStorage.getItem('appforge-theme')
+    if (raw) {
+      const mode = JSON.parse(raw)?.mode
+      if (mode === 'light' || mode === 'dark' || mode === 'system') return mode
+    }
+  } catch { /* ignore malformed local preference */ }
+
+  try {
+    const raw = localStorage.getItem('appforge-workplan-v1')
+    if (raw) {
+      const mode = JSON.parse(raw)?.settings?.theme
+      if (mode === 'light' || mode === 'dark' || mode === 'system') return mode
+    }
+  } catch { /* ignore malformed legacy state */ }
+
+  return null
+}
+
+const initialTheme = readSavedTheme() || 'dark'
+const initialDark = initialTheme === 'dark' || (initialTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+document.documentElement.classList.toggle('dark', initialDark)
+if (!localStorage.getItem('appforge-theme')) localStorage.setItem('appforge-theme', JSON.stringify({ mode: initialTheme }))
+
 function RootApp() {
   const location = useLocation()
 
