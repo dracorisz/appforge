@@ -1,182 +1,70 @@
-# AppForge Marketing Handoff
+# AppForge marketing handoff
 
-Prepared: 2026-09-11
+AppForge should be presented as a coherent web-tool product rather than as a collection of future standalone apps.
 
-This document is the starting point for a dedicated marketing-materials session. It separates what can be advertised today from future positioning so launch copy does not overpromise unfinished functionality.
+## Core positioning
 
-## Core product positioning
-
-**AppForge is an open-source workspace of focused web apps that can grow from shared utilities into independently forkable PWAs.**
-
-The long-term differentiator is not only having many mini-apps. Each app moves through a maturity path toward **Full**, where it is complete, documented and intentionally extractable into its own ready-made PWA.
+**AppForge is an integrated workspace for practical utilities, media workflows, creator tools, AI-assisted experiences, and personal productivity.**
 
 Suggested short positioning:
 
-> Useful web apps today. Forkable standalone PWAs tomorrow.
+> Practical web tools, one focused workspace.
 
 Alternative:
 
-> One workspace for practical tools — each built to become a product of its own.
+> One platform for useful tools and creator workflows.
 
-## What is safe to advertise today
+The commercial/product story is the quality and breadth of the integrated AppForge experience: consistent design, shared account/data services, public tools, protected workspace features, and a common operational platform.
 
-### AppForge platform
+AppForge itself is installable as a Progressive Web App. Do not market individual internal tools as future standalone PWAs. If a category later becomes its own product, it should be developed and positioned separately.
 
-- Public/open-source AppForge repository.
-- Installable PWA shell.
-- Google + Supabase authenticated workspace.
-- Favorites, recent apps, profile/settings and shared appearance theme.
-- Per-app semantic versions and changelogs.
-- Central app registry and route structure.
-- Public Hugging Face integration/gallery surface.
+## Safe current claims
 
-### Strong demo candidates
+- Open-source AppForge repository and public documentation.
+- Installable AppForge PWA shell.
+- Public Apps directory and selected signed-out tools.
+- Google/GitHub authentication through Supabase.
+- Authenticated workspace, profile/preferences, favorites/recent state, and private storage workflows.
+- Getter Pro media discovery and Media Vault handoff.
+- Story Studio creator workflows and Hugging Face integration/gallery surfaces.
+- Desktop Buddy character/voice/provider experiments.
+- Weather, crypto, conversion, SVG/icon, landing, productivity, and developer utilities.
+- Central registry, consistent routing, shared design system, and deliberate release process.
 
-**Story Studio / Dragon Arena evolution**
+Use the live product and `src/lib/registry.ts` for the current catalog rather than hard-coding app counts into marketing copy.
 
-- Persistent choice-driven AI story sessions.
-- Novel and Comics modes are being established as the forward product direction.
-- Hugging Face-powered story/image provider path with local continuity fallback.
-- Generated scene persistence and assets/gallery architecture.
-- Profile Appearance theme carries into the story workspace.
+## Do not overclaim
 
-Marketing language should call this an **active beta / evolving Story Studio**, not a finished Novel/Comics creation platform yet.
+Avoid claims such as:
 
-**Getter Pro**
+- every app is production-ready;
+- every tool works offline;
+- provider generation is unlimited;
+- Story Studio is a finished long-form publishing suite;
+- all planned registry entries are implemented;
+- a green repository commit has already been deployed to production.
 
-- Public media/article search experience.
-- Local saved results.
-- Signed-in Media Vault archiving.
-- Preview/download/article export workflows.
+Prefer precise maturity language from the registry: Idea, Building, Beta, Launched, Deprecated.
 
-**Media Vault**
+## Corporate/product framing
 
-- Signed-in shared personal asset surface.
-- General uploads.
-- Linked Story/Dragon generated scenes.
-- Scrapper Pro archived source references.
+For acquisition, sponsorship, client, or portfolio conversations, emphasize:
 
-**Any to Any Converter**
+- one recognizable AppForge brand and navigation system;
+- one product shell across many useful workflows;
+- reusable platform infrastructure for auth, storage, providers, routing, PWA lifecycle, and releases;
+- a growing app catalog without forcing users into unrelated websites;
+- clear public-versus-private data boundaries;
+- a codebase that can support future spin-off products without presenting those hypothetical products as current AppForge promises.
 
-- Browser-first structured/text conversion utility.
-- Good candidate for first standalone Full-status packaging because it has relatively few server dependencies.
+## Strong demo surfaces
 
-**Weather Now**
+Good current demonstrations include the landing page, public Apps directory, Getter Pro, Media Vault, Story Studio, Hugging Face gallery, Desktop Buddy, Weather Now, Any Converter, Task List, and the authenticated workspace shell.
 
-- Public keyless weather lookup through AppForge server API.
-
-## Do not claim yet
-
-Avoid these claims until explicitly verified/completed:
-
-- "Every mini-app is production-ready."
-- "Every app can already be forked as a standalone PWA."
-- "Story Studio is a complete Novel Builder/Comics Builder."
-- "Unlimited Hugging Face generation."
-- "All apps work offline."
-- "All apps are Full."
-- "No provider limits."
-
-Instead say the project is **building toward Full-status forkable PWAs** and show the standard publicly.
-
-## Full status story
-
-The marketing-friendly explanation:
-
-> AppForge uses a maturity ladder: Idea → Building → Beta → Launched → Full. Full means the mini-app is complete inside AppForge and packaged/documented so a developer can fork it into an independent PWA.
-
-Reference: `docs/FULL_STATUS.md`.
-
-This can become a major open-source/dev-community hook because contributors can take ownership of moving individual apps toward Full rather than working on one monolithic product.
-
-## Story Studio direction
-
-Dragon Arena should increasingly be described internally as the prototype/story engine for a broader **Story Studio**.
-
-Target shape:
-
-- **Novel Builder** — prose-first interactive story creation, persistent characters/world/story memory, chapters/scenes, editing and export.
-- **Comics Builder** — visual story flow using the same project/story state, generated panels/scenes, captions/dialogue and eventual page/panel composition.
-
-Both should share:
-
-- project/session memory;
-- profile Appearance/theme settings;
-- character/world lore;
-- generated assets;
-- model/provider settings;
-- export/version history.
-
-Reference experiences such as AI storyplay products can inform interaction density and pacing, but AppForge marketing should emphasize its own identity: open-source, creator-owned projects and an eventual forkable PWA architecture.
-
-## Patreon preparation
-
-A Patreon launch can be framed around supporting open development rather than selling features that do not yet exist.
-
-Suggested page headline:
-
-> Help build AppForge — an open-source workshop of useful, forkable web apps.
-
-Suggested description:
-
-> AppForge is a growing collection of focused web tools, AI creative experiments and personal-workspace features. The goal is to take each mini-app from working beta to Full: polished, documented and ready for developers to fork into independent PWAs. Support helps cover hosting, AI/provider usage, testing and the time needed to package each app properly.
-
-Possible simple tiers for discussion in the marketing session:
-
-- **Supporter** — development updates, roadmap notes, supporter credit where appropriate.
-- **Builder** — deeper build logs, early feature previews, voting/feedback on which mini-app should reach Full next.
-- **Sponsor** — prominent supporter credit and periodic project-direction feedback, without promising private ownership of open-source features.
-
-Final Patreon pricing/benefits should be decided deliberately in the marketing session rather than committed in code/docs now.
-
-## Screenshot list for the marketing session
-
-Capture current production after the latest stable deployment:
-
-1. Public landing page with Hugging Face foregrounded.
-2. Authenticated AppForge dashboard / All Apps.
-3. Story Studio Novel mode with short narrative + choices.
-4. Story Studio Comics mode with small scene thumbnail and lightbox.
-5. Generated Assets toolbar/panel.
-6. Media Vault showing General / Story or Dragon / Getter sources.
-7. Getter Pro search + preview.
-8. Any Converter working example.
-9. Settings → Appearance/Profile privacy.
-10. `/huggingface` gallery with model/provider metadata.
-11. GitHub README/repository for the open-source angle.
-12. Full-status standard page/document excerpt for developer marketing.
+Choose screenshots from a verified production build and prefer a small number of polished cross-product views over documenting every internal tool separately.
 
 ## Marketing asset checklist
 
-Next dedicated session should produce:
+A dedicated marketing pass should produce a one-line tagline, short/long product descriptions, a concise demo video, representative screenshots, privacy/provider FAQ, open-source/contributor CTA, and clear support/contact paths.
 
-- one-line tagline;
-- 50-word description;
-- 150-word description;
-- Patreon About copy + tier names/pricing;
-- GitHub social preview copy;
-- X/Twitter launch post + thread;
-- Reddit/Hacker News/Product Hunt-style posts where appropriate;
-- LinkedIn post;
-- 5–10 screenshot captions;
-- 30–45 second demo-video shot list;
-- launch-day CTA hierarchy;
-- contributor CTA explaining Full status;
-- FAQ covering open source, privacy, AI providers, quotas and forkability.
-
-## Today's launch gate
-
-Before actively buying traffic or making strong public claims, verify:
-
-- latest Vercel production deployment is READY;
-- landing page has no visible broken assets;
-- public Hugging Face page loads;
-- Getter Pro public route works;
-- Any Converter public route works;
-- Weather public route works;
-- signed-in Story Studio can play a turn;
-- generated-art failure is graceful even if providers are unavailable;
-- Media Vault does not show schema/RPC 404s;
-- footer/build fingerprint is visible for bug reports.
-
-If these pass, AppForge is reasonable to advertise as a **public beta/open-development project today**, while Full remains the quality/fork-readiness target.
+All external claims should be checked against the live production build and current registry before publication.

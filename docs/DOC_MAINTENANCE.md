@@ -1,8 +1,6 @@
 # Documentation maintenance
 
-Last updated: 2026-09-11
-
-This page defines how AppForge documentation stays aligned with `main`. The goal is to prevent architecture, release, security, and app-status drift as the project changes quickly.
+AppForge documentation should stay concise and aligned with `main`. Prefer a small set of durable product/platform documents over a page for every app or temporary implementation milestone.
 
 ## Source-of-truth order
 
@@ -10,35 +8,28 @@ When documentation conflicts, resolve it in this order:
 
 1. current code and migrations on `main`;
 2. `src/lib/registry.ts` for app identity, route, version, category and maturity;
-3. GitHub Issues for actionable acceptance state;
-4. environment/deployment config (`.env.example`, `vercel.json`, workflows);
-5. current database state for applied schema/grants;
-6. docs and historical handoff notes.
+3. GitHub Issues for actionable work and acceptance state;
+4. environment/deployment configuration;
+5. current database/security state;
+6. documentation and historical notes.
 
-Never preserve a stale doc statement merely because it appeared in an older release note or chat.
+## What to update
 
-## Update matrix
-
-| Change | Docs that should be reviewed in the same pass |
+| Change | Review in the same pass |
 | --- | --- |
-| Add/rename/remove app | `apps/index.md`, app-specific README, `PROJECT-PULSE.md`, `ISSUE_ROADMAP.md` if tracked |
-| Route/access change | `APP_MODEL.md`, app README, `AGENT_HANDOFF.md`, `LAUNCH-CHECKLIST.md` if release-facing |
-| Auth/provider change | `GITHUB_AUTH.md` or OAuth docs, `ENVIRONMENT.md`, `AGENT_HANDOFF.md` |
-| Database/migration/RLS change | `DATABASE.md`, app README, `SECURITY_ADVISORS.md` when security-facing |
+| Add/rename/remove app | `apps/index.md`, `APP_MODEL.md` if semantics changed, registry/changelog |
+| Route/access change | `APP_MODEL.md`, `GETTING_STARTED.md` or launch docs when user-facing |
+| Auth/provider change | provider/auth docs, `ENVIRONMENT.md`, `AGENT_HANDOFF.md` |
+| Database/RLS/storage change | `DATABASE.md`, `SECURITY_ADVISORS.md` when security-facing |
 | Deployment/workflow change | `GETTING_STARTED.md`, `ENVIRONMENT.md`, `LAUNCH-CHECKLIST.md` |
-| PWA/readiness change | `PROJECT-PULSE.md`, `FULL_STATUS.md`, app README |
-| AI/provider behavior | `AI-PROVIDERS.md`, `CLOUD-EXPERIMENTS.md`, `AGENT_HANDOFF.md` |
-| Branding/manifest change | `BRANDING.md`, VitePress config and public assets |
+| AppForge PWA behavior | `PWA.md`, launch checks, relevant source comments/tests |
+| Branding/global navigation | `BRANDING.md`, shared public/layout components, docs theme if needed |
 
-## App inventory rule
+## App documentation rule
 
-Do not hard-code a catalog count in multiple places unless it is explicitly marked as a snapshot date. The canonical inventory is `src/lib/registry.ts`. Run:
+Do not create a separate docs page for every internal tool by default. The public/developer catalog belongs in `docs/apps/index.md`; implementation details should live close to source, APIs, migrations, or a focused platform document when they create an operational contract.
 
-```bash
-npm run audit:apps
-```
-
-before publishing a claim about route/inventory integrity.
+AppForge does not maintain per-app standalone-PWA, extraction, or fork-readiness documentation. The PWA guide describes AppForge as one installable product.
 
 ## Release-state language
 
@@ -51,23 +42,23 @@ Use these terms precisely:
 - **production-deployed** — an intentional Vercel production release ran;
 - **production-verified** — live smoke checks passed after that deploy.
 
-Do not collapse these into a single “done” state.
+Do not collapse these into one “done” state.
 
-## Docs build behavior
+## Docs build
 
-Changes under `docs/**` trigger the GitHub Pages workflow. The public portal lives at `https://docs.sstoken.space/` and is independent from the production app deployment. GitHub Pages is its publishing platform, not the user-facing canonical URL.
+Changes under `docs/**` are published through the GitHub Pages workflow to `docs.sstoken.space`. The docs deployment is separate from the Vercel production application.
 
-The docs site uses the canonical AppForge `favicon.svg` as both browser favicon and header logo.
+Before a substantial docs change is considered complete, build VitePress and confirm navigation, internal links, responsive home layout, and the consolidated Apps page.
 
-## Agent pickup rule
+## Agent pickup
 
-An agent starting work should read:
+A new maintainer or coding agent should normally start with:
 
-1. `docs/ENVIRONMENT.md`
-2. `docs/DEVELOPMENT_TIMELINE.md`
-3. `docs/ISSUE_ROADMAP.md`
-4. `docs/AGENT_HANDOFF.md`
-5. the relevant app README and issue
-6. the current implementation files
+1. `docs/GETTING_STARTED.md`
+2. `docs/APP_MODEL.md`
+3. `docs/PROJECT-PULSE.md`
+4. `docs/ENVIRONMENT.md`
+5. `docs/AGENT_HANDOFF.md`
+6. `src/lib/registry.ts`, `src/App.tsx`, and the source/API/migration files relevant to the task.
 
-Then verify assumptions against `main` before editing.
+Historical planning notes should never override current code, registry state, or active GitHub issues.

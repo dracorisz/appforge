@@ -1,65 +1,54 @@
 # Getting started
 
-AppForge is a Vite + React + TypeScript toolbox that combines focused browser utilities, authenticated product surfaces, and selected server-backed integrations.
+AppForge is an integrated React + TypeScript web-tool platform with public utilities, authenticated workspace features, selected server-backed integrations, and one shared installable PWA shell.
 
-## Choose the right path
+## Choose your path
 
-- **Use AppForge:** go to [sstoken.space](https://www.sstoken.space/) and browse the [app documentation](./apps/index.md) when you need details about a specific tool.
-- **Contribute code:** use the local-development steps below, then read [App model](./APP_MODEL.md) and [Project Pulse](./PROJECT-PULSE.md).
-- **Maintain or hand off the project:** continue with [Environment & agent pickup](./ENVIRONMENT.md) and [Agent handoff](./AGENT_HANDOFF.md).
+- **Use AppForge:** open [sstoken.space](https://www.sstoken.space/) and use the live Apps directory to discover tools.
+- **Understand the product:** read [Apps](./apps/index.md), [App model](./APP_MODEL.md), and [Project Pulse](./PROJECT-PULSE.md).
+- **Contribute code:** follow the local setup below, then read the root `CONTRIBUTING.md`.
+- **Maintain the platform:** continue with [Environment](./ENVIRONMENT.md), [Launch checklist](./LAUNCH-CHECKLIST.md), and [Agent handoff](./AGENT_HANDOFF.md).
 
-The documentation site is intentionally hosted separately on GitHub Pages. It is not the production host for API-backed AppForge features.
-
-New to GitHub repository participation? Read the [GitHub starter guide](./GITHUB_STARTER.md) for star, watch, fork, discussion, and contribution orientation.
+The documentation site runs separately on GitHub Pages. Production application features and `/api` routes remain on `sstoken.space`.
 
 ## Local development
 
-Requirements:
-
-- Node.js 22 or a compatible current LTS/runtime
-- npm
-- environment variables only for integrations you intend to exercise
-
-Typical setup:
+Requirements: a current Node.js LTS/runtime and npm.
 
 ```bash
 git clone https://github.com/dracorisz/appforge.git
 cd appforge
 npm ci
-cp .env.example .env
+cp .env.example .env.local
 npm run dev
 ```
 
-For the Vite frontend without the local API wrapper:
+Only configure environment variables for integrations you actually need. Never place private server credentials in a `VITE_*` variable because Vite exposes those values to browser code.
 
-```bash
-npm run dev:vite
-```
+## Know the main source files
 
-The `.env.example` file is the canonical environment-variable inventory. Never place private server credentials in a `VITE_*` variable because Vite exposes those values to browser code.
+Most product work starts in a small set of places:
 
-## Understand the project
+- `src/lib/registry.ts` — canonical app identity, category, route, version, and maturity;
+- `src/App.tsx` — application routes and public/authenticated access boundary;
+- `src/components/layout/` — authenticated shell and navigation;
+- `src/components/public/` — shared public-facing surfaces;
+- `src/components/dashboard/` — app implementations and shared workbenches;
+- `api/` — narrow server endpoints;
+- `supabase/migrations/` — database, storage, RLS, and RPC history;
+- `vite.config.ts` and `src/components/pwa/` — AppForge-wide PWA lifecycle.
 
-Most contributors only need four primary references:
-
-1. **[App model](./APP_MODEL.md)** — how AppForge apps are registered, routed, and structured.
-2. **[Project Pulse](./PROJECT-PULSE.md)** — the current readiness and project-status surface.
-3. **[Apps](./apps/index.md)** — per-app behavior, maturity, and standalone-PWA guidance.
-4. **[Launch checklist](./LAUNCH-CHECKLIST.md)** — what must be checked before and after an intentional release.
-
-Advanced operational, historical, branching, performance, and handoff material remains available under **Maintainers & agents** in the sidebar. This keeps first-time onboarding short without removing deeper source-of-truth documentation.
-
-When changing an app, also inspect `src/lib/registry.ts`, the implementation files for that app, and its matching open GitHub issue. The registry is authoritative for current app identity and maturity metadata.
+AppForge is the installable PWA. Individual internal tools do not have a standalone-PWA maturity or extraction requirement in this repository.
 
 ## Validate a change
 
-For normal release-facing application work, prefer the combined validation path:
+For release-facing application work, run:
 
 ```bash
 npm run verify:release
 ```
 
-The underlying checks include app-registry integrity plus lint, TypeScript, tests, and production build. When debugging, run them separately:
+When debugging checks independently:
 
 ```bash
 npm run audit:apps
@@ -69,44 +58,16 @@ npm test
 npm run build
 ```
 
-Cloud-worker validation is documented separately in [Cloud experiments](./CLOUD-EXPERIMENTS.md). For documentation-only changes, GitHub Pages CI is the deployment validation.
+For PWA-shell changes, also run the production build locally and verify the manifest, service worker, update flow, direct-route reloads, and offline shell behavior described in [AppForge PWA](./PWA.md).
 
 ## Deployment model
 
-### Production application
+Pushing to `main` does not itself constitute a production release. Vercel Git-triggered deployments are intentionally disabled; production is deployed deliberately from a verified `main` state and then smoke-tested.
 
-Vercel Git-triggered deployments are disabled. Pushing or merging code is not a production release.
+Documentation under `docs/` is published separately through the GitHub Pages workflow after it reaches `main`.
 
-Deploy production deliberately from an authenticated local or controlled environment:
+## Documentation scope
 
-```bash
-vercel deploy --prod
-```
+The docs are intentionally compact. App-specific user and developer information is consolidated in **[Apps](./apps/index.md)** rather than maintained as dozens of separate pages. Deep implementation details should live close to source, APIs, migrations, or focused operational docs.
 
-Do not run a production deployment merely to verify that code merged. Run it only for an intentional release, then complete the smoke checks in [Launch checklist](./LAUNCH-CHECKLIST.md).
-
-### Documentation
-
-Changes under `docs/` are published automatically by the GitHub Pages workflow after changes reach `main`. The docs build is independent of the Vercel production release path.
-
-The docs portal reuses AppForge's `favicon.svg` as the browser favicon, visible header logo, and home-page hero mark so project branding stays aligned with the application.
-
-### Cloud experiments
-
-Gemini/image/thumbnail worker experiments remain isolated in the private Cloud Run workflow with bounded application allowance. See [Cloud experiments](./CLOUD-EXPERIMENTS.md).
-
-## Read status correctly
-
-Use [Project Pulse](./PROJECT-PULSE.md) as the normal entry point for current readiness. The deeper [Full-status standard](./FULL_STATUS.md), [Development timeline](./DEVELOPMENT_TIMELINE.md), and [Issue roadmap](./ISSUE_ROADMAP.md) remain maintainer references rather than required first-time reading.
-
-Keep state language precise: **implemented**, **CI-verified**, **migration-applied**, **Pages-published**, **production-deployed**, and **production-verified** are different states.
-
-## Keeping docs current
-
-When changing architecture, deployment, environment variables, provider behavior, app identity, authentication, database schema, security posture, or readiness expectations, update the matching docs in the same pass. Use [Documentation maintenance](./DOC_MAINTENANCE.md) as the cross-reference matrix.
-
-## Contributing
-
-Use the repository issue and pull-request templates, keep product identity aligned with the canonical registry, and avoid coupling a browser-local tool to server/auth dependencies without a real product requirement.
-
-The root `CONTRIBUTING.md` and `SECURITY.md` remain authoritative for repository-level contribution and security policy.
+When architecture, routes, app identity, authentication, database schema, providers, PWA behavior, security posture, or release expectations change, update the relevant documentation in the same pass.

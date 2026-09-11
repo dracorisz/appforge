@@ -1,44 +1,34 @@
 # Contributing to AppForge
 
-Thanks for helping improve AppForge. The project is a collection of focused mini-apps sharing one React/Vite shell, UI system, registry, Supabase account layer, PWA lifecycle, and Vercel `/api` layer.
+Thanks for helping improve AppForge. The project is one integrated product containing focused tools that share the React/Vite shell, design system, registry, Supabase account/data layer, AppForge PWA lifecycle, and Vercel `/api` layer.
 
 ## Contribution model
 
-AppForge uses `main` as the production branch.
+`main` is the production source branch. External contributors should use a short-lived branch or fork and open a focused pull request rather than pushing directly to `main`.
 
-External contributors should not push directly to `main`. Use a short-lived branch or fork and open a focused pull request.
+Recommended prefixes:
 
-Recommended branch prefixes:
-
-- `feat/<app-or-area>-<short-description>`
-- `fix/<app-or-area>-<short-description>`
+- `feat/<area>-<short-description>`
+- `fix/<area>-<short-description>`
 - `docs/<short-description>`
 - `refactor/<area>-<short-description>`
 - `chore/<short-description>`
 - `security/<short-description>` for non-sensitive hardening work only
 
-Examples:
-
-```text
-feat/scrapper-source-filter
-fix/image-labeler-object-url-cleanup
-docs/pwa-install-guide
-refactor/shared-media-card
-```
-
-See `docs/BRANCHING.md` for the complete branch and access policy.
+See `docs/BRANCHING.md` for branch and access guidance.
 
 ## Before you start
 
-- Keep changes focused: one app or one shared concern per change.
-- Reuse `src/components/ui` before creating a one-off visual component.
+- Keep changes focused around one user problem or shared concern.
+- Reuse `src/components/ui`, shared layout, and public navigation components before creating one-off UI.
 - Reuse `public/favicon.svg` as the canonical AppForge brand mark.
-- Do not introduce fake data as if it were live data.
+- Do not introduce fake live data.
 - Do not commit secrets, `.env`, generated `dist/`, or `node_modules/`.
 - Preserve hard-refresh support for client routes.
-- Preserve the auth/public boundary: only explicitly designated routes are public.
-- Prefer same-origin `/api` functions for browser-CORS-sensitive integrations.
+- Preserve explicit public/authenticated access boundaries.
+- Prefer narrow same-origin `/api` functions for CORS-sensitive or credentialed integrations.
 - Do not weaken Supabase Row Level Security to make a feature easier to ship.
+- Keep AppForge's shared PWA lifecycle healthy; do not create per-app service workers or per-app PWA-readiness tracks.
 
 ## Local setup
 
@@ -50,14 +40,13 @@ npm install
 npm run dev
 ```
 
-Run checks before submitting changes:
+Run release-facing checks before submitting substantial changes:
 
 ```bash
-npm run typecheck
-npm run build
+npm run verify:release
 ```
 
-For PWA-specific changes, also test the production build with `npm run preview` and inspect Manifest + Service Worker under browser DevTools → Application.
+For AppForge PWA changes, also test a production build with `npm run build && npm run preview` and inspect the manifest, service worker, update flow, direct-route reloads, and offline shell behavior.
 
 ## Project structure
 
@@ -66,120 +55,82 @@ src/
   App.tsx                       routes and auth/public access boundary
   auth/                         Supabase session/login flow
   components/
-    dashboard/                  mini-app implementations
+    dashboard/                  app implementations/workbenches
     layout/                     authenticated shell
-    public/                     public tool shell
-    pwa/                        install/update/offline lifecycle
+    public/                     public pages, shared header and guest shell
+    pwa/                        AppForge install/update/offline lifecycle
     resources/                  account/profile/admin surfaces
-    ui/                         shared controls, cards, media showbox, badges
+    ui/                         shared controls, cards and media UI
   lib/
-    registry.ts                 app registry and per-app metadata
+    registry.ts                 canonical app registry and metadata
     buildInfo.ts                runtime build fingerprint
-    account.ts                  profile/image/role/MFA adapter
-api/                            Vercel serverless endpoints
+    account.ts                  profile/image/role/MFA adapters
+api/                            Vercel server endpoints
 supabase/migrations/             reproducible database schema
-scripts/                        repository/version tooling
-docs/apps/<app>/README.md       individual app documentation
+scripts/                        validation/version tooling
+docs/                            concise product/developer/operations docs
 ```
 
-## Adding or completing a mini-app
+## Adding or changing an app
 
-1. Add or update its record in `src/lib/registry.ts`.
-2. Create the implementation under `src/components/dashboard/`.
-3. Export it from `src/components/dashboard/index.ts`.
-4. Add the route in `src/App.tsx`.
-5. Reuse shared UI primitives.
-6. If it needs server access, add a narrow endpoint under `api/` rather than a general proxy.
-7. Create `docs/apps/<app-id>/README.md` when the app becomes substantial.
-8. Test direct navigation and a hard reload.
-9. If the route is public, test it in a signed-out browser session.
-10. If the route is install/PWA-sensitive, test the update prompt and standalone mode.
+1. Add or update its canonical record in `src/lib/registry.ts`.
+2. Implement the work surface under the appropriate shared component area.
+3. Add one intentional route in `src/App.tsx`.
+4. Reuse shared UI and navigation patterns.
+5. If server access is required, prefer a narrow endpoint under `api/` rather than a generic proxy.
+6. Keep user/private storage and RLS boundaries explicit.
+7. Test direct navigation and hard reload.
+8. Test mobile/responsive and keyboard/focus behavior.
+9. If the route is public, verify it while signed out.
+10. Update `docs/apps/index.md` only when catalog-wide guidance, access, category, or maturity semantics materially change; do not create a separate docs page for routine app implementation detail.
+
+AppForge does not require internal tools to become standalone PWAs. If a product family is ever split into a separate product, that work should happen in a dedicated repository/project rather than through an AppForge app-maturity gate.
 
 ## Shared UI direction
 
-AppForge is intentionally subtle and technical:
+AppForge is intentionally restrained and product-focused:
 
-- restrained frosted-glass surfaces,
-- readable typography,
-- modest rounding,
-- low-noise borders and shadows,
-- no vertical card jump on hover,
-- media cards may reveal concise overlays on hover,
-- touch/mobile behavior must not depend on hover,
-- respect reduced-motion preferences,
-- keep Recent grids at two columns maximum.
+- readable typography and consistent spacing;
+- modest rounding, borders, and shadows;
+- no vertical card jump on hover;
+- media overlays only where they improve the task;
+- touch/mobile behavior must not depend on hover;
+- respect reduced-motion preferences;
+- use shared global navigation instead of page-specific variants;
+- keep slogans/subtitles out of global product navigation.
 
-Avoid heavy neon gradients, excessive glass layers, oversized marketing cards, or decorative animation that competes with the tool itself.
+Avoid heavy decorative animation, unnecessary glass layers, duplicated headers, or app-specific chrome that makes the suite feel unrelated.
 
-## Public beta testing
+## Versioning and release tracking
 
-The easiest way to help without writing code is to test the latest production build.
-
-When filing a bug:
-
-1. Copy the Footer build fingerprint.
-2. Include the exact route.
-3. Include browser/device.
-4. Describe expected vs actual behavior.
-5. Include screenshots for visual issues when possible.
-
-Scrapper Pro is the designated public live tool and should be tested both signed out and signed in.
-
-## Versioning and build tracking
-
-The human release version is in `package.json`.
-
-For a named release:
+The human release version is in `package.json`. Normal commits do not require a semantic version bump. Named releases can use:
 
 ```bash
 npm run version:set -- 1.19.0
 ```
 
-Normal commits do not require a semantic version bump. Every Vercel deployment receives a unique fingerprint from the semantic version, Git SHA, and UTC build time.
+Each deployment also receives a Git/build-time fingerprint so bug reports can identify the exact running build.
 
 ## Pull request requirements
 
-A pull request should explain:
+A pull request should explain the user problem, affected route/app, API/database/auth impact, and how the change was tested.
 
-- the user problem,
-- the route/app affected,
-- API/database/auth changes,
-- how it was tested,
-- the production or preview build fingerprint if available,
-- known browser/source limitations.
+Before review:
 
-Before requesting review:
-
-- [ ] `npm run typecheck` passes
-- [ ] `npm run build` passes
+- [ ] `npm run verify:release` passes
 - [ ] no secrets or private URLs are included
-- [ ] direct route/hard reload was tested
-- [ ] public/auth behavior was tested if relevant
-- [ ] substantial apps/docs were updated
+- [ ] direct route/hard reload was tested when relevant
+- [ ] public/auth behavior was tested when relevant
+- [ ] responsive and keyboard/focus behavior was considered
+- [ ] docs/registry/changelog were updated when the product contract changed
 - [ ] screenshots are attached for material visual changes
 
 ## Security
 
-Do not include API keys, session tokens, private URLs, cookies, OAuth secrets, personal credentials, or sensitive user content in issues, commits, examples, screenshots, or logs.
-
-Report sensitive vulnerabilities privately rather than opening a public issue. See `SECURITY.md`.
+Do not include API keys, session tokens, private URLs, cookies, OAuth secrets, personal credentials, or sensitive user content in issues, commits, examples, screenshots, or logs. Report sensitive vulnerabilities privately. See `SECURITY.md`.
 
 ## Community
 
-Outside contributions are welcome. A useful contribution can be a focused bug fix, a new mini-app, or work that moves one existing app closer to Full status: better failure handling, standalone documentation, dependency isolation, accessibility, tests, PWA packaging, or fork instructions.
+Useful contributions include focused bug fixes, shared UI cleanup, accessibility, responsive behavior, new or improved tools, provider/data hardening, tests, performance, AppForge-level PWA improvements, and concise documentation.
 
-We also welcome community discussion through GitHub Discussions — ideas, questions, showcases, and long-form project talk. Discussions are the right place for topics that are not yet issues or pull requests.
-
-Recommended flow:
-
-```bash
-git checkout main
-git pull
-git checkout -b feat/image-tool-example
-# make one focused change
-npm run typecheck
-npm run build
-git push -u origin feat/image-tool-example
-```
-
-Then open a pull request against `main`.
+GitHub Discussions are appropriate for ideas, questions, showcases, and product discussion that are not yet actionable issues or pull requests.

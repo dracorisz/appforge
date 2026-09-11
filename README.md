@@ -4,18 +4,18 @@
 
 <h1 align="center">AppForge</h1>
 
-<p align="center">Useful web apps today. Forkable standalone PWAs tomorrow.</p>
+<p align="center">A focused web-tool platform for utility, media, creator, and workspace workflows.</p>
 
 <p align="center">
   <a href="https://github.com/dracorisz/appforge/stargazers"><img src="https://img.shields.io/github/stars/dracorisz/appforge?style=social&label=Star" alt="GitHub Stars"></a>
   <a href="https://github.com/dracorisz/appforge/fork"><img src="https://img.shields.io/github/forks/dracorisz/appforge?style=social&label=Fork" alt="GitHub Forks"></a>
-  <a href="https://github.com/dracorisz/appforge/watch"><img src="https://img.shields.io/github/watching/dracorisz/appforge?style=social&label=Watch" alt="GitHub Watch"></a>
+  <img src="https://img.shields.io/github/watching/dracorisz/appforge?style=social&label=Watch" alt="GitHub Watch">
   <a href="https://www.sstoken.space/"><img src="https://img.shields.io/badge/live-sstoken.space-brightgreen" alt="Live site"></a>
   <a href="https://docs.sstoken.space/"><img src="https://img.shields.io/badge/docs-docs.sstoken.space-blue" alt="Docs"></a>
 </p>
 
 <p align="center">
-  <a href="https://www.sstoken.space/">Try the public beta</a> ·
+  <a href="https://www.sstoken.space/">Try AppForge</a> ·
   <a href="https://github.com/dracorisz/appforge/issues/new?template=bug_report.yml">Report a bug</a> ·
   <a href="https://github.com/dracorisz/appforge/issues/new?template=feature_request.yml">Request a tool</a> ·
   <a href="./CONTRIBUTING.md">Contribute</a>
@@ -23,126 +23,51 @@
 
 ## What AppForge is
 
-AppForge is an open-source workshop of focused web utilities, media tools, creative AI experiments, and authenticated personal-workspace apps. They share one React/Vite/PWA platform while they are developed, tested, versioned, and gradually prepared to stand on their own.
+AppForge is an open-source, integrated web-tool product built around focused utilities, media workflows, creator tools, AI-assisted experiences, and an authenticated personal workspace.
 
-The long-term goal is that each mini-app can mature into a complete independent product rather than remain permanently coupled to one monolithic toolbox.
+The tools share one React/Vite application, one design system, one registry, one account/data layer, one deployment model, and one installable Progressive Web App shell. AppForge is developed and presented as a coherent product rather than a collection of future standalone apps.
 
-The project is intentionally practical:
+If an app category later becomes an independent product, that work belongs in a separate project with its own architecture, brand, deployment, and product lifecycle.
 
-- focused tools instead of a generic admin dashboard,
-- subtle frosted-glass UI rather than heavy glassmorphism,
-- media-first cards for image/video workflows,
-- no fake live data,
-- direct routes must survive hard reloads,
-- public beta surfaces for testing,
-- authenticated personal workspace for synced state,
-- shared PWA/version/build infrastructure,
-- open-source contribution workflow,
-- a documented path from mini-app to independently forkable PWA.
+Core principles:
 
-## App maturity: Idea → Full
+- focused tools instead of a generic admin dashboard;
+- consistent navigation and shared UI primitives;
+- truthful live-data and provider states;
+- explicit public versus authenticated boundaries;
+- responsive desktop/mobile behavior;
+- no browser-exposed server secrets;
+- direct routes that survive hard reloads;
+- shared AppForge PWA install/update/offline behavior;
+- deliberate production releases from verified `main` state.
 
-AppForge uses a product maturity ladder:
+## App maturity
 
-- **Idea** — planned concept or early preview.
-- **Building** — active implementation.
-- **Beta** — useful end-to-end, but still has verification, polish, portability, or documentation gaps.
-- **Launched** — production-ready inside AppForge with stable primary workflows.
-- **Full** — production-ready inside AppForge **and** intentionally packaged/documented so developers can fork it into an independent ready-made PWA.
-- **Deprecated** — compatibility/history only.
+The canonical registry uses five product states:
 
-`Full` is deliberately a strong promise, not a cosmetic badge. A Full app must have a stable primary workflow, PWA-ready metadata, documented APIs/environment/migrations, a fork guide, build/type/lint quality gates, production smoke tests, and no known P0/P1 blocker.
+- **Idea** — planned concept or deliberate preview surface.
+- **Building** — active implementation; primary workflows may still change.
+- **Beta** — useful end-to-end with remaining product, reliability, or verification work.
+- **Launched** — stable production AppForge capability with verified primary workflows.
+- **Deprecated** — retained only for compatibility or migration history.
 
-See [`docs/FULL_STATUS.md`](./docs/FULL_STATUS.md) for the complete standard.
+There is no per-app `Full`, fork-ready, extraction-ready, or standalone-PWA maturity level. See [`docs/APP_MODEL.md`](./docs/APP_MODEL.md) and [`docs/PROJECT-PULSE.md`](./docs/PROJECT-PULSE.md).
 
-## Public beta access model
+## Access model
 
-**Public without an account**
+**Public without an account** includes the landing page, searchable Apps directory, Blog, Changelog, Hugging Face gallery/integration surface, and explicitly public tools such as Getter Pro, Weather Now, Crypto Track, Any Converter, Favicon Studio, SVG Icons, Landing Builder, and the signed-out Story Studio integrations surface.
 
-- landing / sign-in page,
-- searchable Apps directory,
-- Blog and Changelog,
-- Hugging Face integration + public generated-scene gallery,
-- Getter Pro,
-- Weather Now,
-- Crypto Track,
-- Any → Any Converter,
-- Favicon Studio, SVG Icons, and Landing Builder,
-- installable PWA shell,
-- public repository and docs.
+**Authenticated workspace** includes the dashboard/catalog, favorites and recent tools, profile/preferences, protected tools, Story Studio creation, Media Vault, and user-owned synced data.
 
-**Authenticated workspace**
+**Admin** capabilities are role-based, with sensitive frontend-content mutations intended to require an AAL2/TOTP session.
 
-- dashboard and app catalog,
-- favorites and recent tools,
-- profile and image relationships,
-- settings/category overrides,
-- shared Appearance theme,
-- synced per-user preferences,
-- protected mini-apps,
-- Story Studio projects and personal Media Vault.
+Supabase Row Level Security remains the data boundary. Public source code does not make private user data public.
 
-**Admin**
+## Product areas
 
-- role-based administration,
-- sensitive mutations intended to require a TOTP/AAL2 session.
+AppForge currently includes browser-local developer and conversion tools, image/SVG workflows, Getter Pro media discovery, Media Vault storage/reference workflows, Weather Now, Crypto Track, Task List, Story Studio, Desktop Buddy, Favicon Studio, SVG Icons, Landing Builder, and additional registry-backed utilities and experiments.
 
-Public source code does not make private user data public. Supabase Row Level Security remains the data boundary.
-
-## Branding
-
-`public/favicon.svg` is the canonical AppForge brand mark. Reuse it for application chrome, public marketing surfaces, PWA metadata, docs, and future social assets rather than creating per-page logos.
-
-The current mark is deliberately simple so it scales from browser favicon to app icon and developer documentation.
-
-## Featured working apps
-
-### Story Studio / Dragon Arena evolution
-
-The Dragon Arena story engine is evolving into a broader Story Studio with **Novel** and **Comics** builder modes sharing the same persistent story/session data.
-
-Current beta direction includes short choice-driven story beats, persistent sessions, Hugging Face-backed generation paths, generated-scene assets, compact tap-to-expand artwork, profile Appearance theming, and local continuity when shared AI quota is unavailable.
-
-This is an active beta, not yet a Full Novel/Comics authoring product.
-
-### Scrapper Pro
-
-Public media search with real image/video cards, in-page showbox navigation, saved results, same-origin downloads, article-to-PDF export, partial-source failure handling, and signed-in Media Vault archiving.
-
-- Live: `https://www.sstoken.space/apps/scrapper-pro`
-- Docs: `docs/apps/scrapper-pro/README.md`
-
-### Media Vault
-
-Shared signed-in asset surface for General uploads, linked Story/Dragon generated scenes, and deduplicated Scrapper Pro source references.
-
-### Any → Any Converter
-
-Registry-based conversion with validation, local file loading, safe format-pair selection, copy/download output, and hardened CSV/JSON/YAML/XML handling.
-
-This is a strong candidate for one of the first Full-status standalone packages because it is browser-first and has relatively few server dependencies.
-
-### Image Labeler
-
-Local folder/file image labeling with removable tags, persistence, approval workflow, and JSON import/export.
-
-### Image Workbench
-
-Browser-local resize, format conversion, compression, and metadata inspection across the related image routes.
-
-### Crypto Track
-
-Live server-backed market data with provider failover, watchlist, search/sort, pagination, and no fake fallback prices.
-
-### Weather Now
-
-Live keyless weather lookup through the AppForge same-origin API layer.
-
-### Local developer tools
-
-JSON formatting, Base64, URL encode/decode, HTML entities, UUIDs, passwords, secure tokens, hashing, hex/binary, JWT inspection, CSV conversion, timestamps, regex testing, and color utilities.
-
-Markdown Previewer and SVG Tool now have dedicated browser-local implementations routed from their registry entries. They remain marked `Idea` until their product-level verification and maturity metadata are completed; PDF Tool, Excel Tool, and Audio Converter still use the intentional planned-app surface.
+Use the live **Apps** directory for the current full catalog; `src/lib/registry.ts` is authoritative for app names, routes, categories, versions, and maturity.
 
 ## Quick start
 
@@ -154,7 +79,7 @@ npm install
 npm run dev
 ```
 
-Checks:
+Release-facing checks:
 
 ```bash
 npm run verify:release
@@ -167,59 +92,46 @@ npx vitepress build docs
 - Vite 6
 - React Router 6
 - Tailwind CSS 3.4
-- Lucide icons
-- PWA via `vite-plugin-pwa`
+- Lucide / react-icons
+- AppForge PWA via `vite-plugin-pwa`
 - Vercel static deployment + same-project serverless `/api` functions
-- Supabase Auth, PostgreSQL, Storage and Row Level Security
+- Supabase Auth, PostgreSQL, Storage, RPCs, and Row Level Security
 
 ## Architecture
 
 ```text
 src/
   App.tsx                         routing + auth/public access boundary
-  auth/                           Supabase session and login flow
+  auth/                           session and login flow
   components/
-    dashboard/                    mini-app implementations
-    layout/                       authenticated shell, sidebar, footer
-    public/                       public tool shell
-    pwa/                          install/update/offline lifecycle UI
+    dashboard/                    app implementations and workbenches
+    layout/                       authenticated shell and sidebar
+    public/                       shared public navigation/pages/tool shell
+    pwa/                          AppForge install/update/offline lifecycle
     resources/                    Settings, People, account/admin surfaces
-    ui/                           shared cards, controls, media showbox, badges
+    ui/                           shared controls, cards and media UI
   lib/
-    registry.ts                   tool registry + per-app metadata
-    buildInfo.ts                  shared deployment/build fingerprint
-    account.ts                    profile, image, role and MFA adapters
+    registry.ts                   canonical app catalog + metadata
+    buildInfo.ts                  deployment/build fingerprint
+    account.ts                    profile/image/role/MFA adapters
     preferences.ts                per-user preference sync
-api/
-  scrape.js                       Scrapper Pro source aggregation
-  media.js                        guarded media download proxy
-  article.js                      readable article content for PDF export
-  crypto.js                       server-backed crypto market data
-  weather.js                      keyless weather/geocoding layer
-  ai-game.js                      Story/Dragon narrative provider rotation + continuity
-  dragon-image.js                generated-scene provider routing + persistence
-supabase/migrations/               reproducible auth/profile/admin/app schema
-scripts/                           release/version tooling
-docs/apps/<app-id>/                app-specific implementation docs
-docs/FULL_STATUS.md                fork-readiness quality standard
-docs/MARKETING_HANDOFF.md          launch/Patreon/marketing-session starting point
+api/                              narrow Vercel server endpoints
+supabase/migrations/               reproducible auth/data/storage schema
+scripts/                           validation/release tooling
+docs/                              concise product, developer and operations docs
 ```
 
-## PWA direction
+## AppForge PWA
 
-AppForge is designed to install as a standalone web app today, while individual mini-apps are progressively prepared for independent PWA extraction.
+AppForge itself is an installable Progressive Web App. `vite.config.ts` defines the manifest and Workbox behavior, while `src/components/pwa/` owns the user-facing install/update/offline lifecycle.
 
-The service worker uses a prompt-based update flow so a reviewer can explicitly move from an old build to the newest deployment. The app shell and local tools can remain useful after they have been cached, while live APIs, OAuth, and server-backed tools still require connectivity.
+The PWA shell is shared platform infrastructure. Individual internal apps do not receive separate manifests, service workers, or standalone-PWA readiness targets inside this repository.
 
-A Full app must additionally document its own standalone manifest-ready identity, offline behavior, dependencies, APIs, migrations, environment variables and extraction steps.
+See [`docs/PWA.md`](./docs/PWA.md) for install, update, caching, offline, and verification guidance.
 
-See `docs/PWA.md` for install/update/offline/cache guidance and `docs/FULL_STATUS.md` for standalone readiness.
+## Versioning and deployment
 
-## Versioning and deployment tracking
-
-The human product version lives in `package.json`.
-
-Normal pushes do **not** require a semantic version bump. Vite injects a deployment fingerprint using the Vercel/Git SHA and UTC build time. Shared components render the same identity in the Footer, Project Pulse and app metadata.
+The human product version lives in `package.json`. Normal commits do not require a semantic version bump; builds also receive a Git/build-time fingerprint.
 
 For a named release:
 
@@ -227,62 +139,40 @@ For a named release:
 npm run version:set -- 1.19.0
 ```
 
-When reporting a bug, include the exact Footer build fingerprint so maintainers can reproduce the deployment you tested.
+The canonical production deployment is the Vercel `appforge` project connected to `main`. Git-triggered Vercel deployments are disabled in `vercel.json`, so pushing or merging is not itself a production release.
+
+Production is deployed deliberately from a verified `main` state, then checked against the launch/smoke-test guidance.
+
+## Documentation
+
+The public documentation is intentionally compact. Start with:
+
+- [`docs/GETTING_STARTED.md`](./docs/GETTING_STARTED.md)
+- [`docs/apps/index.md`](./docs/apps/index.md)
+- [`docs/APP_MODEL.md`](./docs/APP_MODEL.md)
+- [`docs/PROJECT-PULSE.md`](./docs/PROJECT-PULSE.md)
+- [`docs/PWA.md`](./docs/PWA.md)
+
+App-specific implementation detail should generally live close to source, API code, or migrations rather than in a separate page for every tool.
 
 ## Contributing
 
-Outside contributions are welcome.
-
-A useful contribution can be a focused bug fix, a new mini-app, or work that moves one existing app closer to Full status: better failure handling, standalone documentation, dependency isolation, accessibility, tests, PWA packaging, or fork instructions.
-
-Recommended flow:
+Outside contributions are welcome. Useful work includes focused bug fixes, accessibility and responsive improvements, shared UI cleanup, app functionality, reliability, provider/data hardening, tests, documentation, and platform performance/PWA work.
 
 ```bash
 git checkout main
 git pull
-git checkout -b feat/image-tool-example
+git checkout -b feat/example
 # make one focused change
-npm run typecheck
-npm run build
-git push -u origin feat/image-tool-example
+npm run verify:release
+git push -u origin feat/example
 ```
 
-Then open a pull request against `main`.
-
-Read:
-
-- `CONTRIBUTING.md` — coding and PR expectations
-- `docs/FULL_STATUS.md` — Full/fork-ready app standard
-- `docs/BRANCHING.md` — branch naming and access rules
-- `SECURITY.md` — secrets and vulnerability handling
-- `docs/PWA.md` — install/update/offline behavior
-
-## Deployment
-
-The canonical production deployment is the Vercel `appforge` project connected to `main`.
-
-`main` is the production source branch, but Git-triggered Vercel deployments are disabled in `vercel.json`. A production release is a deliberate `vercel deploy --prod` from a verified `main` commit; pushing or merging does not deploy by itself.
-
-Production review paths:
-
-- `https://www.sstoken.space/`
-- `https://www.sstoken.space/huggingface`
-- `https://www.sstoken.space/apps/scrapper-pro`
-- `https://www.sstoken.space/apps/any-converter`
-
-## Launch and support
-
-AppForge can be promoted today as a **public beta / open-development project**. Marketing should distinguish current working beta functionality from the future Full-status promise.
-
-The prepared marketing handoff includes positioning, safe claims, Patreon framing, screenshot targets and launch-material checklists:
-
-- [`docs/MARKETING_HANDOFF.md`](./docs/MARKETING_HANDOFF.md)
+Then open a pull request against `main`. Read `CONTRIBUTING.md` and `SECURITY.md` before submitting substantial changes.
 
 ## Environment and secrets
 
-Never commit real `.env` files. Variables prefixed with `VITE_` are browser-visible and must never contain server-only credentials.
-
-Use Vercel and Supabase environment/project settings for deployed secrets.
+Never commit real `.env` files. Variables prefixed with `VITE_` are browser-visible and must never contain server-only credentials. Use Vercel, Supabase, and provider-side configuration for deployed secrets.
 
 ## License
 

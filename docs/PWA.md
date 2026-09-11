@@ -1,112 +1,53 @@
-# AppForge PWA guide
+# AppForge PWA
 
-AppForge is built as an installable Progressive Web App using `vite-plugin-pwa` and a generated Workbox service worker.
+AppForge is delivered as one installable Progressive Web App using `vite-plugin-pwa` and a generated Workbox service worker.
 
-## Goals
+> The PWA boundary is **AppForge as a whole**. Individual tools inside AppForge do not have a standalone-PWA readiness, extraction, or forkability track in this repository.
 
-The PWA layer should make AppForge feel like a dependable installed toolbox without hiding deployment state from testers.
+If an app category later becomes an independent commercial or open-source product, that work should start in a separate project with its own architecture, branding, deployment, and lifecycle.
 
-AppForge therefore uses a **prompt-based update flow** instead of silently replacing a running build. When a newer service worker is available, the UI shows:
+## Install and update behavior
 
-> New AppForge build ready
+AppForge uses a prompt-based service-worker update flow. When a newer build is available, the application can tell the user that an update is ready and reload after the user accepts it. This keeps the visible build fingerprint aligned with the code actually running in the browser.
 
-Choosing **Update now** activates the new worker and reloads the app so the Footer/build fingerprint matches the deployed source.
-
-## Canonical branding 
-
-`public/favicon.svg` is the canonical AppForge brand mark and is included in the PWA manifest as the scalable SVG application icon.
-
-Raster 192×192 and 512×512 icons remain in the manifest for platform compatibility and maskable-install requirements.
-
-## Install behavior
-
-On supported Chromium browsers, AppForge captures the `beforeinstallprompt` event and offers a subtle **Install AppForge** prompt.
-
-Other platforms use their normal browser installation flow:
-
-- Chrome/Edge desktop: Install App / icon in the address bar
-- Android: Add to Home screen / Install app
-- iOS/iPadOS Safari: Share → Add to Home Screen
-
-The installed app starts at `/` and uses standalone display mode.
+Supported browsers may offer AppForge through their normal install or Add to Home Screen flow. The installed application starts at `/` and uses standalone display mode.
 
 ## Offline expectations
 
-AppForge is not fully offline by design.
+AppForge is not fully offline by design. Once the shell is cached, static UI and browser-local utilities can continue to work where their own dependencies permit it.
 
-After the shell has been cached:
+Network-dependent capabilities still require connectivity, including authentication, Supabase synchronization/storage, Getter Pro aggregation, Weather Now, Crypto Track, AI/provider endpoints, and other server-backed workflows.
 
-- local-only utilities can continue to work,
-- static UI/assets can load,
-- cached routes can render,
-- the app reports offline state.
+Never present stale provider or API data as current live data.
 
-These features still require a network connection:
+## Navigation and API boundaries
 
-- Google/Supabase authentication,
-- Supabase profile sync and storage,
-- Scrapper Pro source aggregation,
-- media/article proxy endpoints,
-- Weather Now,
-- Crypto Track,
-- any future AI/provider endpoint.
-
-Never display stale network data as if it were live.
-
-## SPA navigation
-
-The generated service worker uses `/index.html` as the navigation fallback so direct app routes continue to work after installation.
-
-`/api/*` is explicitly excluded from navigation fallback so API failures remain API failures rather than returning HTML.
+The generated service worker uses the application entry point as the navigation fallback for client-side routes. `/api/*` is excluded from SPA navigation fallback so API failures remain API failures instead of returning HTML.
 
 ## Local PWA testing
 
-Development mode does not behave exactly like a production service worker. Test a production build:
+For PWA-specific changes, test a production build rather than relying on the development server:
 
 ```bash
 npm run build
 npm run preview
 ```
 
-Then inspect:
+Then inspect the browser's Manifest and Service Worker panels and verify:
 
-1. Browser DevTools → Application → Manifest
-2. Browser DevTools → Application → Service Workers
-3. installability
-4. standalone launch
-5. offline shell behavior
-6. update prompt behavior after a second build
+1. AppForge is installable where the browser supports installation.
+2. A nested client route survives direct navigation and refresh.
+3. `/api/*` requests are not replaced by the SPA shell.
+4. Static shell behavior is sensible offline.
+5. A newer production build produces the expected update flow.
+6. The visible build/version fingerprint matches the running deployment.
 
-## Production review checklist
+## Production responsibility
 
-For each meaningful deployment:
+PWA configuration is shared platform infrastructure. Changes to `vite.config.ts`, `src/components/pwa/`, manifest assets, service-worker caching, or update behavior affect the whole AppForge product and should be tested accordingly.
 
-1. Confirm the Footer/build badge shows the expected Git SHA.
-2. Open a protected route and verify auth behavior.
-3. Open `/apps/scrapper-pro` in a signed-out window and verify public access.
-4. Hard reload a nested route.
-5. Confirm API routes do not return the SPA shell.
-6. Install once on a test browser.
-7. Deploy a new build and confirm the **Update now** prompt appears.
+The canonical brand mark is `public/favicon.svg`; raster variants remain available for platform compatibility.
 
-## If the browser appears stuck on an old build
+## Troubleshooting a stale browser build
 
-Normally use the in-app **Update now** prompt first.
-
-If a browser is genuinely stuck during development/testing:
-
-1. DevTools → Application → Service Workers → **Unregister**
-2. DevTools → Application → Storage → **Clear site data**
-3. close all AppForge tabs/windows
-4. reopen `https://www.sstoken.space/`
-
-This should be a debugging fallback, not the normal release process.
-
-## Cache policy
-
-- App shell/static assets: precached by Workbox
-- outdated precaches: cleaned automatically
-- Google font CSS: cache-first with bounded expiration
-- live `/api` calls: not treated as offline truth
-
-If a new network integration needs caching, document its freshness semantics before adding a runtime cache rule.
+Use the in-app update flow first. During development or recovery from a genuinely stuck service worker, browser DevTools can unregister the worker and clear site data before reopening the production site. This is a debugging fallback, not the normal release process.

@@ -1,87 +1,61 @@
 # Project Pulse
 
-Project Pulse is the release-tracking layer for AppForge. Its goal is to move every canonical registry entry toward a polished, installable product without maintaining a second disconnected status system.
+Project Pulse is the compact readiness view for AppForge. It summarizes the integrated product without creating a second app-status system beside the canonical registry and GitHub Issues.
 
-## Source of truth
+## Sources of truth
 
-- App inventory, route, version and release state: `src/lib/registry.ts`
-- Route implementation and planned-app fallback: `src/App.tsx`
-- Public browse surface: `/explore` via `src/components/public/PublicAppsPage.tsx`
-- Shared PWA configuration: `vite.config.ts`
-- Launch gates and external dependencies: `docs/LAUNCH-CHECKLIST.md`
-- Full/fork-ready standard: `docs/FULL_STATUS.md`
-- Cloud experiments and bounded media worker: `docs/CLOUD-EXPERIMENTS.md`
-- Desktop Buddy provider/security status: `docs/apps/desktop-buddy.md`
-- GitHub Pages documentation build: `.github/workflows/pages.yml`
-- Actionable work: GitHub Issues
+- App identity, route, version and maturity: `src/lib/registry.ts`
+- Routing and access behavior: `src/App.tsx`
+- Public catalog: `/explore`
+- AppForge PWA configuration: `vite.config.ts` and `src/components/pwa/`
+- Database/security state: `supabase/migrations/` and security documentation
+- Release checks: `docs/LAUNCH-CHECKLIST.md`
+- Actionable backlog: GitHub Issues
 
-## Readiness scale
+## Maturity scale
 
-Project Pulse converts the registry status into a portfolio indicator:
-
-| Registry status | Readiness | Meaning |
+| Registry status | Readiness signal | Meaning |
 | --- | ---: | --- |
-| `idea` | 20% | Product shape exists; route resolves to an intentional planned surface. |
-| `building` | 45% | Main workflow exists but major product/release gates remain. |
-| `beta` | 75% | Usable app with stable route; polish, portability or production verification may remain. |
-| `launched` | 100% | Production-ready inside AppForge and verified against the release checklist. |
-| `deprecated` | 0% | Not part of the active release portfolio. |
+| `idea` | 20% | Product shape exists; implementation may be minimal or planned. |
+| `building` | 45% | Main workflow is under active implementation. |
+| `beta` | 75% | Useful end-to-end with remaining product, reliability, or verification work. |
+| `launched` | 100% | Stable production AppForge capability with primary workflows verified. |
+| `deprecated` | 0% | Not part of the active product portfolio. |
 
-The percentage is a release/readiness signal, not test coverage. `Full` is a stronger standalone/fork-ready qualification defined separately in `FULL_STATUS.md`; it is not currently a registry status value.
+These percentages are directional product-readiness signals, not test coverage. There is no additional per-app standalone-PWA or fork-readiness qualification.
 
-## Definition of a launched AppForge app
+## Definition of launched
 
-An app can move to `launched` only when its applicable gates are complete:
+An app can move to `launched` when its applicable gates are complete:
 
-1. Stable canonical registry identity and route.
-2. Intentional route implementation: dedicated component, shared workbench, legacy mini-app shell, or planned-app surface.
-3. Correct desktop and mobile layout.
-4. Clear empty, loading, success, retry and recoverable error states.
-5. Public/private access behavior is intentional and documented.
-6. Shared production PWA manifest/icons/service worker behave correctly on `sstoken.space`.
-7. Server, storage and AI dependencies have bounded failure behavior and no browser-exposed secrets.
-8. Paid/provider calls are explicit and idempotent where retries could duplicate cost or side effects.
-9. Lint, TypeScript, tests and production build pass.
-10. Material changes carry registry/changelog notes.
-11. Production smoke testing succeeds after the deliberate Vercel deploy.
+1. Stable registry identity and canonical route.
+2. Intentional public/authenticated access behavior.
+3. Core workflow works on desktop and mobile.
+4. Loading, empty, success, retry, and recoverable failure states are clear.
+5. Server, storage, and provider dependencies fail safely and expose no browser-side secrets.
+6. Accessibility basics and direct-route reload behavior are verified.
+7. AppForge-wide PWA shell behavior remains healthy.
+8. `npm run verify:release` passes.
+9. Material changes have appropriate registry/changelog notes.
+10. Production smoke testing succeeds after the deliberate deploy.
 
-## v1.27 release additions
+## Platform state
 
-The v1.27 release candidate adds two cross-product surfaces that Project Pulse should account for:
+AppForge currently combines a public landing experience and app directory with an authenticated workspace, shared profile/preferences, Media Vault, public tools, AI-assisted creator surfaces, and server-backed integrations. `src/lib/registry.ts` remains the authoritative app inventory rather than this document duplicating every entry.
 
-- **Public Apps directory** — `/explore` is the canonical signed-out/signed-in browse surface. It exposes registry search, category filters and public/workspace access labels. Signed-in `/apps` remains the workspace All Apps page; signed-out `/apps` redirects to `/explore`.
-- **Desktop Buddy Vertex bridge** — the product now has a keyless Vercel OIDC → Google Workload Identity Federation → short-lived bridge identity → private Cloud Run architecture, plus owner-scoped/idempotent Supabase recovery jobs. Repository implementation does not equal production activation: actual WIF/IAM and Vercel server values plus one deliberate cost-observed smoke call remain release gates.
+AppForge itself remains an installable PWA. The service worker, manifest, update flow, and offline shell are platform responsibilities. Internal apps are product modules inside that platform, not separate PWA candidates.
 
-Recent consolidation also adds dedicated browser-local implementations for **Markdown Previewer** and **SVG Tool**. Their routes are implemented, but their registry status remains `idea` until focused product verification supports a maturity change. The other planned entries—PDF Tool, Excel Tool, and Audio Converter—continue to render the deliberate planned-app surface.
+GitHub Pages serves only this documentation at `docs.sstoken.space`; it is not an application fallback. The production product and `/api` routes remain at `sstoken.space`.
 
-The public sitemap now contains canonical public pages only. Retired Pariflow, old Scrapper Pro and authenticated-only app routes are excluded.
+## Current priorities
 
-## Standalone / Full candidates
-
-A `beta` app may already be a strong standalone candidate. Promotion to Full additionally requires the portability and extraction requirements in `FULL_STATUS.md`.
-
-Current priority candidates:
-
-- **Any to Any Converter** — browser-local core and existing extraction documentation.
-- **Task List** — local-first core with optional authenticated Supabase sync; target qualification is at least 75% before standalone packaging.
-- Selected local image/security/encoding tools after route and extraction validation.
-
-## GitHub Pages role
-
-GitHub Pages is the developer/project documentation portal at **`https://docs.sstoken.space/`**. It is not an AppForge application fallback and does not build or serve the production product PWA.
-
-The production application and its `/api` routes remain on `https://www.sstoken.space/`. Pages publishes documentation from `docs/**` through `.github/workflows/pages.yml`, uses root-relative VitePress assets for the custom domain, and is intentionally independent from the deliberate Vercel production release.
-
-`docs/public/CNAME` records the custom domain, and the Pages workflow rejects a docs build that reintroduces stale `/appforge/` asset paths.
-
-## Consistency rule
-
-Every canonical registry item must resolve intentionally. Implemented tools should route to their dedicated component or shared workbench. Planned apps should resolve to the planned-app surface rather than silently redirecting to the dashboard. Alias entries should be documented as aliases and must not create conflicting product identities.
-
-The public Apps directory, SEO public-route allowlist and `public/sitemap.xml` should be changed in the same pass when a tool becomes public or retires.
+- Keep public and authenticated navigation/design consistent across the platform.
+- Verify critical cross-app workflows such as Getter Pro → Media Vault in production.
+- Continue Story Studio and Desktop Buddy product polish with secure provider boundaries.
+- Keep app registry status aligned with actual behavior and production verification.
+- Maintain AppForge PWA install/update behavior as shared infrastructure.
+- Reduce duplicated documentation and keep operational/security guidance current.
 
 ## Working rule
 
-Do not create parallel progress spreadsheets for app status. Update the canonical registry status/version, the relevant GitHub issue/checklist, and app documentation. Project Pulse should derive from those sources.
-
-When architecture or deployment roles change, update this document in the same pass so Pages never describes a historical topology as current.
+Do not create parallel maturity systems or per-app PWA-readiness scores. Update the registry, the relevant GitHub issue, release checklist, and concise platform documentation when state changes.

@@ -1,11 +1,12 @@
 import React from 'react'
-import { ArrowLeftRight, ArrowRight, Cloud, Heart, History, PlayCircle, Search, ShieldCheck } from 'lucide-react'
+import { ArrowLeftRight, ArrowRight, Cloud, PlayCircle, Search, ShieldCheck } from 'lucide-react'
 import { SiGithub as Github } from 'react-icons/si'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui'
 import { getAllApps } from '@/lib/registry'
 import { BUILD_INFO } from '@/lib/buildInfo'
 import { loadPublishedFrontendContent } from '@/lib/frontendContent'
+import { PublicHeader } from '@/components/public/PublicHeader'
 import { useAuth } from './AuthProvider'
 import { consumeReturnPath, normalizeReturnPath } from './returnPath'
 
@@ -90,31 +91,18 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/20 to-transparent" />
         </div>
 
-        <header className="mx-auto flex w-full max-w-7xl shrink-0 items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-          <Link to="/" className="group inline-flex items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
-            <img src={APPFORGE_MARK} alt="AppForge" className="h-10 w-10 shrink-0 rounded-xl shadow-sm transition-transform duration-200 group-hover:scale-[1.04]" decoding="async" />
-            <div><div className="text-sm font-semibold tracking-tight">AppForge</div><div className="hidden text-xs text-muted-foreground sm:block">Open-source utility workshop</div></div>
-          </Link>
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <a href="https://paypal.me/dracorisz" target="_blank" rel="noopener noreferrer" aria-label="Support AppForge via PayPal" title="Support AppForge" className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border/70 bg-background/70 text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"><Heart className="h-4 w-4" /></a>
-            <Link to="/explore" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/70 bg-background/70 px-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"><span>Apps</span></Link>
-            <Link to="/blog" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/70 bg-background/70 px-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"><span>Blog</span></Link>
-            <Link to="/changelog" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/70 bg-background/70 px-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"><History className="h-4 w-4" /> <span className="hidden sm:inline">Changelog</span></Link>
-            <a href="https://github.com/dracorisz/appforge" target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/70 bg-background/70 px-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"><Github className="h-4 w-4" /> <span className="hidden sm:inline">GitHub</span></a>
-            <span className="inline-flex h-9 items-center rounded-lg border border-border/70 bg-background/70 px-3 text-xs font-semibold text-muted-foreground">v{BUILD_INFO.version}</span>
-          </div>
-        </header>
+        <PublicHeader className="shrink-0" />
 
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-8 pt-3 sm:px-6 sm:pt-6 lg:px-8">
-          <div className="grid items-center gap-8 lg:min-h-[calc(100dvh-8rem)] lg:grid-cols-[minmax(0,1.04fr)_minmax(320px,0.96fr)] lg:gap-12">
-            <section className="max-w-3xl py-4 lg:py-8">
-              <h1 className="max-w-3xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-6xl lg:text-7xl xl:text-[5.25rem] xl:leading-[0.96]">Build useful things.<span className="block text-muted-foreground">Own the workflow.</span></h1>
-              <p className="mt-5 max-w-2xl text-pretty text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">AppForge brings practical web tools, creator workflows and experiments into one workspace — with a path for every mini-app to become a documented, forkable PWA.</p>
+          <div className="grid items-center gap-8 lg:min-h-[calc(100dvh-8rem)] lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] lg:gap-10 xl:gap-12">
+            <section className="max-w-4xl py-4 lg:py-8">
+              <h1 className="max-w-4xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-6xl lg:text-[4.15rem] lg:leading-[1.02] xl:text-[4.55rem]">Build useful things.<span className="block text-muted-foreground">Own the workflow.</span></h1>
+              <p className="mt-5 max-w-2xl text-pretty text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">AppForge brings practical web tools, creator workflows and experiments into one coherent workspace with clear public and signed-in surfaces.</p>
               <div className="mt-7 flex flex-wrap gap-3" aria-busy={Boolean(busyProvider) || loading}>
                 {user ? <Button className="h-11 px-5" onClick={openWorkspace} disabled={loading}>Open workspace <ArrowRight className="h-4 w-4" /></Button> : <><Button className="h-11 px-5" onClick={() => void login('google')} disabled={Boolean(busyProvider) || loading}>{loading ? 'Checking session…' : busyProvider === 'google' ? 'Opening Google…' : 'Continue with Google'}{!loading && busyProvider !== 'google' && <ArrowRight className="h-4 w-4" />}</Button><Button variant="secondary" className="h-11 px-5" onClick={() => void login('github')} disabled={Boolean(busyProvider) || loading}><Github className="h-4 w-4" />{busyProvider === 'github' ? 'Opening GitHub…' : 'Continue with GitHub'}</Button></>}
               </div>
               {error && <div role="alert" aria-live="polite" className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
-              <p className="mt-8 border-t border-border/60 pt-5 text-xs text-muted-foreground"><strong className="font-semibold text-foreground">{apps.length}</strong> registered apps · open source · documented for reuse and forking</p>
+              <p className="mt-8 border-t border-border/60 pt-5 text-xs text-muted-foreground"><strong className="font-semibold text-foreground">{apps.length}</strong> registered apps · open source · documented for reuse</p>
             </section>
 
             <section className="relative mx-auto w-full max-w-xl lg:max-w-none" aria-label="AppForge public tools and workspace access">

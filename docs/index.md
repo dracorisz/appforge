@@ -2,12 +2,12 @@
 layout: home
 
 title: AppForge Docs
-titleTemplate: Developer Portal
+titleTemplate: Product & Developer Guide
 
 hero:
   name: AppForge Docs
-  text: Build, understand, and ship focused web tools.
-  tagline: "Developer documentation for the current AppForge product: apps, architecture, releases, AI providers, cloud experiments, and standalone PWA work."
+  text: Use, understand, and ship AppForge.
+  tagline: "Concise product and developer documentation for the integrated AppForge platform."
   image:
     src: /favicon.svg
     alt: AppForge logo
@@ -19,84 +19,63 @@ hero:
       text: Browse Apps
       link: /apps/
     - theme: alt
-      text: Project Pulse
-      link: /PROJECT-PULSE
+      text: Architecture
+      link: /APP_MODEL
     - theme: alt
       text: Open App ↗
       link: https://www.sstoken.space/
 
 features:
-  - title: Current app documentation
-    details: Browse the canonical AppForge app model, Desktop Buddy, Getter Pro, Story Studio, Task List, Any Converter, and standalone-PWA guidance.
+  - title: Start quickly
+    details: The shortest path for users, contributors, and maintainers.
+    link: /GETTING_STARTED
+    linkText: Get started
+  - title: Apps
+    details: One consolidated view of the AppForge catalog, access model, categories, and maturity states.
     link: /apps/
-    linkText: Browse apps
-  - title: Desktop Buddy
-    details: KDE Konqi starter artwork, local character packs, transparent PNG export, agent-response reactions, browser voice, and provider roadmap.
-    link: /apps/desktop-buddy
-    linkText: Open Desktop Buddy docs
+    linkText: Browse the catalog
   - title: Architecture
-    details: Understand the canonical app model, database boundaries, authentication, AI providers, and deployment architecture.
+    details: Understand registry identity, routing, data boundaries, providers, and shared UI contracts.
     link: /APP_MODEL
-    linkText: Read architecture docs
-  - title: Release readiness
-    details: Project Pulse, timeline, Full-status criteria, roadmap, and launch checks separate code completion from production verification.
-    link: /PROJECT-PULSE
-    linkText: Review readiness
+    linkText: Read architecture
+  - title: AppForge PWA
+    details: AppForge itself is an installable PWA with managed updates, offline shell behavior, and a shared service worker.
+    link: /PWA
+    linkText: Read PWA guide
   - title: Security & operations
-    details: Review Supabase advisor triage, provider credentials, environment boundaries, and pre-release validation rules.
+    details: Environment, database, provider, release, and security guidance for operating the platform safely.
     link: /SECURITY_ADVISORS
-    linkText: Review security state
-  - title: Agent pickup
-    details: Give a coding agent the source-of-truth files, release rules, integrated services, and handoff contract it needs before editing.
-    link: /AGENT_HANDOFF
-    linkText: Open agent handoff
+    linkText: Review operations
+  - title: Current readiness
+    details: Project Pulse summarizes product maturity and release state without duplicating the registry or issue tracker.
+    link: /PROJECT-PULSE
+    linkText: Open Project Pulse
 ---
 
-## What belongs here
+## One product, many focused tools
 
-This site is the public technical and project portal for AppForge. It documents the product as it exists now, how a developer or agent can pick up the integrated environment, how individual apps mature toward standalone PWAs, how releases are prepared, and how external services are integrated safely.
+AppForge is an integrated web-tool platform combining public utilities, creator workflows, media tools, and an authenticated personal workspace. The application is maintained, released, and presented as one coherent product.
 
-For normal use, go to **[sstoken.space](https://www.sstoken.space/)**. For source code, issues, pull requests, releases, and the actionable backlog, use the **[GitHub repository](https://github.com/dracorisz/appforge)**.
+AppForge itself remains a fully functional installable Progressive Web App. Individual tools inside AppForge do **not** have a standalone-PWA or fork-readiness track in this repository. If a tool family later becomes a separate product, that work belongs in its own project with its own product architecture and release lifecycle.
 
-## First-time project pickup
+For normal use, open **[sstoken.space](https://www.sstoken.space/)**. For source code, issues, pull requests, and releases, use the **[GitHub repository](https://github.com/dracorisz/appforge)**.
 
-Start with **[Getting started](./GETTING_STARTED.md)**. It gives the shortest path for product users, contributors, and maintainers without requiring every specialist document up front. Use **[Project Pulse](./PROJECT-PULSE.md)** for current readiness and **[Apps](./apps/index.md)** for per-app documentation.
+## Recommended reading
 
-Maintainers and coding agents can then continue to **[Environment & agent pickup](./ENVIRONMENT.md)** and **[Agent handoff](./AGENT_HANDOFF.md)**. Historical planning, issue-roadmap, branching, performance, and full-status references remain available in the collapsed maintainer section of the sidebar.
+Start with **[Getting started](./GETTING_STARTED.md)**. Then use **[Apps](./apps/index.md)** for the catalog, **[App model](./APP_MODEL.md)** for architecture, and **[Project Pulse](./PROJECT-PULSE.md)** for current readiness.
 
-New to the GitHub repository? Read **[GitHub starter guide](./GITHUB_STARTER.md)** for star, watch, fork, discussion, and contribution orientation.
+Developers working on installation, service-worker behavior, caching, or update prompts should read **[AppForge PWA](./PWA.md)**. Maintainers can continue to Environment, Launch checklist, Database, Security advisories, and Agent handoff as needed.
 
-## Current state snapshot
+## Product principles
 
-As of 2026-09-11:
+- Keep AppForge visually and behaviorally consistent across public and authenticated surfaces.
+- Treat `src/lib/registry.ts` as the canonical app identity and maturity source.
+- Prefer shared components and platform services over app-specific duplicates.
+- Keep public/private access boundaries explicit.
+- Keep live-data and provider claims truthful and observable.
+- Preserve AppForge's installable PWA experience without turning each internal app into a separate PWA project.
+- Keep documentation concise; implementation detail belongs close to code unless it is needed to operate or contribute to the platform.
 
-- Google and GitHub authentication are implemented through Supabase Auth;
-- public Blog and Changelog routes are live in the frontend, with admin+AAL2/TOTP-protected frontend content CRUD at `/admin/content`;
-- the canonical changelog remains `CHANGELOG.md`, with validation/release-note automation in `.github/workflows/changelog.yml` and `scripts/changelog.mjs`;
-- signed-out `/apps/ai-dragon-arena` is an AI integrations/promotional surface, while Story Studio creation remains authenticated;
-- **Desktop Buddy** is the canonical AI companion beta at `/apps/desktop-buddy`, with KDE Konqi starter artwork, portable local packs, framing, generated-character archiving, browser voice, and an AppForge response-event bridge;
-- **Getter Pro** is the current name at `/apps/getter-pro`, with per-result local save/download actions and authenticated Media Vault reference storage;
-- Weather Now supports grouped EU/US city presets, device coordinates, and an explicit sidebar-weather location preference;
-- Task List is aligned with the shared app shell and supports local-first tracking, authenticated sync, filters, progress, complete-all, clear-completed, and inline task editing;
-- `src/lib/registry.ts` remains authoritative for the current app inventory and maturity metadata;
-- Markdown Previewer and SVG Tool now have dedicated browser-local implementations behind their canonical routes, while their registry maturity remains Idea pending product verification; PDF Tool, Excel Tool, and Audio Converter remain deliberate planned surfaces;
-- shared mini-app headers, utility controls, and app metadata were tightened for clearer actions, keyboard focus, app/version/status visibility, and latest-change context;
-- mobile/tablet navigation now uses a full-screen app-style drawer with an explicit close control;
-- AppForge defaults to dark appearance for new visitors while preserving saved Light/Dark/System preferences;
-- Supabase Preview, CI validation and cloud-worker checks are green after migration-history cleanup;
-- GitHub Pages remains documentation-only at `docs.sstoken.space`, aligned to the same 1152px content width used by the main AppForge shell;
-- production deployment remains an intentional release step after CI rather than an assumption based on repository state.
+## Release model
 
-## Current priorities
-
-1. Run production smoke checks for authentication, public routes, responsive shell behavior, and PWA update behavior after each deliberate release.
-2. Runtime-verify Getter Pro → Media Vault external-reference save/reload behavior and protected-video reference handling.
-3. Finish the highest-value Story Studio creator setup, title/cover, mobile, and accessibility work.
-4. Complete Any Converter and Task List standalone-PWA hardening.
-5. Verify Markdown Previewer and SVG Tool product behavior before promoting their registry maturity; keep PDF, Excel, and Audio entries on the planned surface until implemented.
-6. Review remaining Supabase `SECURITY DEFINER` functions according to their actual authorization requirements.
-7. Keep Project Pulse, launch checklist, environment, database/security docs, app docs, changelog, maintainer references, and canonical registry aligned.
-
-## Documentation rule
-
-Use **[Documentation maintenance](./DOC_MAINTENANCE.md)** whenever a feature changes architecture, routes, app metadata, migrations, authentication, providers, release behavior, or readiness. Current code and migrations outrank stale historical documentation.
+`main` is the production source branch, but pushing code does not itself constitute a production release. CI verifies the repository, GitHub Pages publishes these docs, and a Vercel production deployment remains a deliberate release action followed by smoke testing.

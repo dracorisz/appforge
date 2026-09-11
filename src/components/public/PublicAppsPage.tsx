@@ -1,10 +1,9 @@
 import React from 'react'
-import { ArrowLeft, ArrowRight, Boxes, LockKeyhole, Search, Sparkles } from 'lucide-react'
+import { ArrowRight, Boxes, LockKeyhole, Search, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { getAllApps, CATEGORIES } from '@/lib/registry'
-import { BUILD_INFO } from '@/lib/buildInfo'
+import { PublicHeader } from './PublicHeader'
 
-const APPFORGE_MARK = '/favicon.svg?v=2'
 const PUBLIC_ROUTES = new Set([
   '/apps/getter-pro',
   '/apps/weather-now',
@@ -34,26 +33,18 @@ export function PublicAppsPage() {
 
   return (
     <div className="dark min-h-dvh bg-black text-foreground" style={{ colorScheme: 'dark', '--background': '0 0% 0%' } as React.CSSProperties}>
-      <header className="sticky top-0 z-20 border-b border-border/60 bg-black/90 backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8">
-          <Link to="/landing" className="inline-flex items-center gap-3">
-            <img src={APPFORGE_MARK} alt="AppForge" className="h-9 w-9 rounded-xl" />
-            <div><div className="text-sm font-semibold">AppForge Apps</div><div className="text-xs text-muted-foreground">{apps.length} registered tools · v{BUILD_INFO.version}</div></div>
-          </Link>
-          <Link to="/landing" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/70 px-3 text-xs font-semibold text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Front</Link>
-        </div>
-      </header>
+      <PublicHeader />
 
       <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <section className="grid gap-6 border-b border-border/60 pb-8 lg:grid-cols-[minmax(0,0.75fr)_minmax(300px,0.25fr)] lg:items-end">
+        <section className="grid gap-6 border-b border-border/60 pb-8 lg:grid-cols-[minmax(0,0.72fr)_minmax(300px,0.28fr)] lg:items-end">
           <div>
             <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground"><Boxes className="h-4 w-4" /> App directory</div>
-            <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">Browse the whole AppForge workshop.</h1>
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">Public tools open immediately. Workspace-only tools take you through sign-in and return you to the selected app. Building and idea entries stay visible so the registry also acts as a transparent product roadmap.</p>
+            <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">Browse the AppForge workshop.</h1>
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">Find public tools, signed-in workspace apps and active experiments from one searchable catalog. Availability and maturity are shown directly on each card.</p>
           </div>
           <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
-            <div className="flex items-center gap-2 text-sm font-semibold"><Sparkles className="h-4 w-4" /> Access model</div>
-            <div className="mt-3 space-y-2 text-xs leading-5 text-muted-foreground"><p>Public = usable signed out.</p><p>Workspace = sign-in required.</p><p>Building / idea = route or roadmap surface may still be incomplete.</p></div>
+            <div className="flex items-center gap-2 text-sm font-semibold"><Sparkles className="h-4 w-4" /> Access</div>
+            <div className="mt-3 space-y-2 text-xs leading-5 text-muted-foreground"><p>Public tools open immediately.</p><p>Workspace tools require sign-in.</p><p>Building and idea entries remain visible as roadmap context.</p></div>
           </div>
         </section>
 
@@ -69,7 +60,7 @@ export function PublicAppsPage() {
           {visible.map((app) => {
             const isPublic = PUBLIC_ROUTES.has(app.route)
             return (
-              <Link key={app.id} to={app.route} className="group flex min-h-52 flex-col rounded-2xl border border-border/70 bg-background/55 p-4 transition hover:-translate-y-0.5 hover:border-foreground/20 hover:bg-accent/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <Link key={app.id} to={app.route} className="group flex min-h-52 flex-col rounded-2xl border border-border/70 bg-background/55 p-4 transition-colors hover:border-foreground/20 hover:bg-accent/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0"><div className="truncate text-base font-semibold">{app.name}</div><div className="mt-1 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">{categoryName(app.category)} · v{app.version}</div></div>
                   <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${isPublic ? 'border-emerald-500/30 text-emerald-400' : 'border-border/70 text-muted-foreground'}`}>{isPublic ? 'Public' : 'Workspace'}</span>
