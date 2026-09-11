@@ -6,7 +6,13 @@ This file tracks user-visible AppForge product changes. The canonical source is 
 
 ### Added
 - Dedicated public **Apps** directory at `/explore`, with registry search, category filtering, public/workspace access labels and direct app routing.
-- Front-header Apps link and canonical docs link to `docs.sstoken.space`.
+- Public **Blog** at `/blog` with five app-focused launch articles and individual article routes.
+- Public **Changelog** at `/changelog`, rendered directly from this canonical `CHANGELOG.md` file.
+- TOTP/AAL2-protected admin frontend content manager at `/admin/content` for Blog copy, article images/videos, landing video teaser content and curated Hugging Face gallery images.
+- Supabase `frontend_content` model with published-only public reads and AAL2-admin-only mutations enforced by RLS.
+- Admin-curated image slider on the Hugging Face page, separate from automatically generated Story Studio scenes.
+- Changelog validation and manual GitHub Release synchronization workflow; release notes can be extracted from this file without generated changelog commits.
+- Front-header Apps, Blog and Changelog links plus canonical docs link to `docs.sstoken.space`.
 - Desktop Buddy **Vertex AI secure bridge** using Vercel OIDC → Google Workload Identity Federation → short-lived service-account credentials → IAM-protected Cloud Run.
 - Owner-scoped, idempotent Vertex bridge job ledger in Supabase. Browser/network retries reuse the same request/job rather than silently starting another paid image.
 - Desktop Buddy Vertex provider selector, readiness state, explicit generation flow and Recover Vertex job action.
@@ -14,6 +20,10 @@ This file tracks user-visible AppForge product changes. The canonical source is 
 - Google bridge setup script with an explicit production `WIF_PRINCIPAL_SET` requirement and no downloadable service-account key.
 
 ### Improved
+- Blog content is CMS-backed with bundled fallbacks so public articles continue to render if the content API is temporarily unavailable.
+- Blog articles support optional hero images and privacy-enhanced YouTube video embeds, while other video URLs remain explicit external links.
+- Landing-page walkthrough title, summary and video can now be overridden by a published `video_teaser` content record while retaining the current bundled walkthrough as a fallback.
+- Sitemap and SEO metadata now include Blog, article and Changelog routes with canonical/indexable public metadata; admin content routes remain non-public.
 - Story Studio and Desktop Buddy now share one Hugging Face image-provider implementation.
 - Desktop Buddy preserves a Vertex idempotency key across browser timeouts and keeps ambiguous worker timeouts recoverable.
 - Desktop Buddy provider documentation now describes real HF/Vertex boundaries, keyless identity and recovery behavior.
