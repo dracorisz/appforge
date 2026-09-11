@@ -7,7 +7,7 @@ const FALLBACK_DESCRIPTION = 'AppForge is an open-source toolbox of focused web 
 const SOCIAL_IMAGE = `${SITE_URL}/favicon/apple-touch-icon.png`
 
 const publicRoutes = new Set([
-  '/', '/explore', '/privacy', '/terms', '/huggingface',
+  '/', '/landing', '/explore', '/privacy', '/terms', '/huggingface', '/blog', '/changelog',
   '/apps/getter-pro', '/apps/scrapper-pro', '/pf-scrapper-pro',
   '/apps/weather-now', '/pf-weather-now',
   '/apps/crypto-track', '/pf-crypto-track',
@@ -18,6 +18,7 @@ const publicRoutes = new Set([
   '/apps/ai-dragon-arena', '/pf-ai-dragon-arena',
 ])
 const aliases: Record<string, string> = {
+  '/landing': '/',
   '/apps/scrapper-pro': '/apps/getter-pro',
   '/pf-scrapper-pro': '/apps/getter-pro',
   '/pf-weather-now': '/apps/weather-now',
@@ -50,20 +51,34 @@ export function updateSeo(pathname: string) {
   const app = getAllApps().find((item) => item.route === canonicalPath)
   const isHuggingFaceGallery = canonicalPath === '/huggingface'
   const isAppsDirectory = canonicalPath === '/explore'
-  const isPublic = publicRoutes.has(pathname)
+  const isBlog = canonicalPath === '/blog'
+  const isBlogArticle = canonicalPath.startsWith('/blog/')
+  const isChangelog = canonicalPath === '/changelog'
+  const isPublic = publicRoutes.has(pathname) || isBlogArticle
   const title = isAppsDirectory
     ? `Apps | ${SITE_NAME}`
     : isHuggingFaceGallery
-      ? `Dragon Arena × Hugging Face | ${SITE_NAME}`
-      : app ? `${app.name} | ${SITE_NAME}` : FALLBACK_TITLE
+      ? `Story Studio × Hugging Face | ${SITE_NAME}`
+      : isBlog
+        ? `Blog | ${SITE_NAME}`
+        : isBlogArticle
+          ? `App story | ${SITE_NAME}`
+          : isChangelog
+            ? `Changelog | ${SITE_NAME}`
+            : app ? `${app.name} | ${SITE_NAME}` : FALLBACK_TITLE
   const description = isAppsDirectory
     ? 'Browse AppForge web apps and utilities across AI, media, developer tools, converters, crypto, weather, productivity, and more.'
     : isHuggingFaceGallery
-      ? 'Explore AppForge Dragon Arena Hugging Face model rotation and public AI-generated fantasy scenes.'
-      : app?.description || FALLBACK_DESCRIPTION
+      ? 'Explore AppForge Story Studio Hugging Face model rotation, public generated scenes, and admin-curated gallery images.'
+      : isBlog || isBlogArticle
+        ? 'Read AppForge product stories, practical app guides, implementation notes, and creator workflow updates.'
+        : isChangelog
+          ? 'Follow AppForge release history and user-visible changes, generated from the canonical changelog on main.'
+          : app?.description || FALLBACK_DESCRIPTION
   const url = `${SITE_URL}${canonicalPath === '/' ? '/' : canonicalPath}`
   const robots = isPublic ? 'index, follow' : 'noindex, nofollow'
   const cover = app?.coverImage ? `${SITE_URL}${app.coverImage}` : SOCIAL_IMAGE
+  const isArticle = Boolean(app) || isBlogArticle
 
   document.title = title
   setCanonical(url)
@@ -72,7 +87,7 @@ export function updateSeo(pathname: string) {
   setMeta('property', 'og:site_name', SITE_NAME)
   setMeta('property', 'og:title', title)
   setMeta('property', 'og:description', description)
-  setMeta('property', 'og:type', app ? 'article' : 'website')
+  setMeta('property', 'og:type', isArticle ? 'article' : 'website')
   setMeta('property', 'og:url', url)
   setMeta('property', 'og:image', cover)
   setMeta('property', 'og:image:alt', app ? `${app.name} cover image` : `${SITE_NAME} logo`)
@@ -91,6 +106,17 @@ export function updateSeo(pathname: string) {
     structuredData.dataset.appforgeSeo = 'true'
     document.head.appendChild(structuredData)
   }
+
+  const collectionName = isAppsDirectory
+    ? 'AppForge Apps'
+    : isHuggingFaceGallery
+      ? 'Story Studio × Hugging Face'
+      : isBlog
+        ? 'AppForge Blog'
+        : isChangelog
+          ? 'AppForge Changelog'
+          : SITE_NAME
+
   structuredData.textContent = JSON.stringify(app ? {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
@@ -101,13 +127,21 @@ export function updateSeo(pathname: string) {
     applicationCategory: app.category === 'ai' ? 'GameApplication' : 'UtilitiesApplication',
     operatingSystem: 'Web browser',
     isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL },
-  } : {
+  } : isBlogArticle ? {
     '@context': 'https://schema.org',
-    '@type': isAppsDirectory || isHuggingFaceGallery ? 'CollectionPage' : 'WebSite',
-    name: isAppsDirectory ? 'AppForge Apps' : isHuggingFaceGallery ? 'Dragon Arena × Hugging Face' : SITE_NAME,
+    '@type': 'Article',
+    name: title,
     description,
     url,
     image: cover,
-    isPartOf: isAppsDirectory || isHuggingFaceGallery ? { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL } : undefined,
+    isPartOf: { '@type': 'Blog', name: 'AppForge Blog', url: `${SITE_URL}/blog` },
+  } : {
+    '@context': 'https://schema.org',
+    '@type': isAppsDirectory || isHuggingFaceGallery || isBlog || isChangelog ? 'CollectionPage' : 'WebSite',
+    name: collectionName,
+    description,
+    url,
+    image: cover,
+    isPartOf: isAppsDirectory || isHuggingFaceGallery || isBlog || isChangelog ? { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL } : undefined,
   })
 }
