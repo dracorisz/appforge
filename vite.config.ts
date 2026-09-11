@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
@@ -11,6 +11,23 @@ const gitSha = runtimeEnv.VERCEL_GIT_COMMIT_SHA || runtimeEnv.GITHUB_SHA || 'loc
 const buildTime = new Date().toISOString()
 const requestedBasePath = runtimeEnv.VITE_BASE_PATH || '/'
 const basePath = requestedBasePath.endsWith('/') ? requestedBasePath : `${requestedBasePath}/`
+
+const buildFingerprintPlugin: Plugin = {
+  name: 'appforge-build-fingerprint',
+  generateBundle() {
+    this.emitFile({
+      type: 'asset',
+      fileName: 'build-info.json',
+      source: `${JSON.stringify({
+        app: 'AppForge',
+        version: appVersion,
+        gitSha,
+        buildTime,
+        basePath,
+      }, null, 2)}\n`,
+    })
+  },
+}
 
 const manualChunks = (id: string) => {
   if (!id.includes('node_modules')) return undefined
@@ -50,6 +67,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    buildFingerprintPlugin,
     react(),
     VitePWA({
       registerType: 'prompt',
