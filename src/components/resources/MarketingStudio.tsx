@@ -4,13 +4,20 @@ import { getAllApps } from '@/lib/registry'
 import { BUILD_INFO } from '@/lib/buildInfo'
 import { APPFORGE_CHANNEL_URL, DemoPackage, DemoStatus, makeDemoPackage, makePublication, MarketingFormat, PLAYLISTS, PublicationRecord, PublicationStatus } from '@/lib/marketing'
 
-const DEMOS_KEY = 'faviconeting-demos-v1'
-const PUBLICATIONS_KEY = 'faviconeting-publications-v1'
+const DEMOS_KEY = 'appforge-marketing-demos-v1'
+const PUBLICATIONS_KEY = 'appforge-marketing-publications-v1'
+const LEGACY_DEMOS_KEY = 'faviconeting-demos-v1'
+const LEGACY_PUBLICATIONS_KEY = 'faviconeting-publications-v1'
 
-const readArray = <T,>(key: string): T[] => {
+const readArray = <T,>(key: string, legacyKey?: string): T[] => {
   try {
-    const value = JSON.parse(localStorage.getItem(key) || '[]')
-    return Array.isArray(value) ? value as T[] : []
+    const current = localStorage.getItem(key)
+    const legacy = !current && legacyKey ? localStorage.getItem(legacyKey) : null
+    const raw = current || legacy || '[]'
+    const value = JSON.parse(raw)
+    if (!Array.isArray(value)) return []
+    if (!current && legacy) localStorage.setItem(key, raw)
+    return value as T[]
   } catch { return [] }
 }
 
@@ -21,8 +28,8 @@ const copy = async (value: string) => navigator.clipboard.writeText(value)
 export default function MarketingStudio() {
   const apps = React.useMemo(() => getAllApps().filter((app) => app.status !== 'idea' && app.status !== 'deprecated'), [])
   const [appId, setAppId] = React.useState(apps[0]?.id || '')
-  const [demos, setDemos] = React.useState<DemoPackage[]>(() => readArray<DemoPackage>(DEMOS_KEY))
-  const [publications, setPublications] = React.useState<PublicationRecord[]>(() => readArray<PublicationRecord>(PUBLICATIONS_KEY))
+  const [demos, setDemos] = React.useState<DemoPackage[]>(() => readArray<DemoPackage>(DEMOS_KEY, LEGACY_DEMOS_KEY))
+  const [publications, setPublications] = React.useState<PublicationRecord[]>(() => readArray<PublicationRecord>(PUBLICATIONS_KEY, LEGACY_PUBLICATIONS_KEY))
   const [selectedDemoId, setSelectedDemoId] = React.useState<string>('')
   const [message, setMessage] = React.useState('')
 
