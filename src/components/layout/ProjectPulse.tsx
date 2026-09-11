@@ -84,9 +84,14 @@ export function ProjectPulse() {
                   </div>
                 ))}
               </div>
-              <a href="https://github.com/dracorisz/appforge/blob/main/docs/PROJECT-PULSE.md" target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 font-medium text-foreground hover:underline">
-                Open tracking docs <ExternalLink className="h-3 w-3" />
-              </a>
+              <div className="mt-3 flex flex-wrap gap-3">
+                <a href="https://docs.sstoken.space/PROJECT-PULSE" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-medium text-foreground hover:underline">
+                  Live tracking docs <ExternalLink className="h-3 w-3" />
+                </a>
+                <a href="https://github.com/dracorisz/appforge/issues" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-medium text-foreground hover:underline">
+                  GitHub issues <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
             </div>
           </div>
         </div>
