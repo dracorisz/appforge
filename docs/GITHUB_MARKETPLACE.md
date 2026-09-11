@@ -29,6 +29,25 @@ The GitHub integration follows a least-privilege model. GitHub identity is used 
 
 The project is open source and uses CI, registry integrity checks, documentation validation, standalone-app boundary audits, changelog/release tracking, and deliberate production deployment gates.
 
+## Current Marketplace eligibility gap
+
+GitHub's current Marketplace requirements mean the existing OAuth-sign-in integration alone is **not sufficient for submission**. Before a listing can be published, AppForge must ship an integration that provides GitHub-platform value beyond authentication, and the listing/application must satisfy GitHub's current Marketplace operating requirements.
+
+Repository work must not invent a repository permission merely to qualify for Marketplace. Add a real GitHub-integrated workflow first, then request only the permissions that workflow needs.
+
+Current requirements to account for before submission include:
+
+- the app must provide GitHub-platform value beyond authentication;
+- the listing must specify a pricing plan, including when the intended offering is free;
+- valid publisher contact information, privacy policy and support method are required;
+- additional listing links must resolve to relevant pages;
+- a logo, feature card and screenshots are required for the listing presentation;
+- the application must handle Marketplace plan-change/cancellation events using the Marketplace API/webhook flow;
+- the app/listing must be public rather than invite-only/public-preview;
+- the Marketplace Developer Agreement must be accepted during submission.
+
+For a free listing, keep the plan simple and avoid introducing artificial paid tiers only to satisfy the form. If AppForge later sells a paid version outside Marketplace, re-check GitHub's then-current paid-listing rules before submission.
+
 ## Current GitHub authorization boundary
 
 The currently implemented production GitHub flow is **OAuth sign-in**, not broad repository administration.
@@ -65,6 +84,22 @@ The live listing form remains authoritative because GitHub may change Marketplac
 
 If a future GitHub App installation flow is added, document its setup URL and installation callback separately from the OAuth sign-in callback.
 
+## Marketplace plan webhook requirement
+
+A Marketplace listing needs a server-side webhook path that can process the relevant Marketplace purchase/plan lifecycle events. Do not handle this in browser code.
+
+Before submission, the implementation should:
+
+1. verify GitHub webhook signatures using a server-only secret;
+2. handle new purchase/free-plan activation, plan changes and cancellation events idempotently;
+3. associate Marketplace state with the correct account/installation without trusting browser-supplied identifiers;
+4. tolerate webhook retries without duplicating entitlements or records;
+5. record only the minimum billing/plan metadata needed by the product;
+6. provide a recovery/reconciliation path for missed or delayed events;
+7. document deletion/retention behavior for Marketplace account state.
+
+Until that exists, the Marketplace issue remains preparation work rather than submission-ready work.
+
 ## Uninstall, revoke, and data handling
 
 - Revoking GitHub OAuth must prevent future GitHub-token use; AppForge must not silently recreate authorization.
@@ -80,22 +115,27 @@ Capture screenshots only from the current deliberate production release. Recomme
 
 1. public AppForge Apps directory;
 2. authenticated workspace/dashboard;
-3. one representative developer utility;
-4. one media/creator workflow;
+3. the concrete GitHub-integrated workflow that qualifies the product beyond authentication;
+4. one representative developer utility;
 5. Settings/Integrations capability surface without secrets.
 
 Use `src/lib/demoManifest.ts` and the screenshot rules in issue #35. Never include tokens, private uploads, email addresses, infrastructure credentials, or unrelated user data.
 
 ## Pre-submission checklist
 
+- a real GitHub-integrated workflow beyond sign-in is implemented and documented;
+- the intended free/paid Marketplace pricing plan is configured;
+- Marketplace plan lifecycle webhook handling is implemented server-side and tested;
+- valid publisher contact information is entered in the draft listing;
 - production, docs, privacy, terms, repository, and support links resolve;
-- listing logo matches canonical AppForge branding;
+- listing logo, feature card and screenshots follow current GitHub listing guidance;
 - screenshots come from the current production SHA;
 - requested permissions match shipped functionality exactly;
 - callback/setup URLs match production configuration;
-- OAuth/client/install secrets are absent from browser assets and repository files;
+- OAuth/client/install/webhook secrets are absent from browser assets and repository files;
 - uninstall/revocation behavior is documented and smoke-tested;
 - listing copy describes current capabilities rather than roadmap promises;
+- current GitHub Marketplace requirements are re-checked immediately before submission;
 - Marketplace review status and requested changes are recorded in issue #51.
 
 Marketplace submission/review itself is an external GitHub action and remains intentionally separate from repository readiness.
