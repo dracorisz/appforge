@@ -31,14 +31,8 @@ const parseSections = (body: string | null): BlogSection[] => {
   const sections: BlogSection[] = []
   let heading = 'About this app'
   let lines: string[] = []
-  const flush = () => {
-    const text = lines.join('\n').trim()
-    if (text) sections.push({ heading, body: text })
-    lines = []
-  }
-  for (const raw of body.split('\n')) {
-    if (raw.startsWith('## ')) { flush(); heading = raw.slice(3).trim() } else lines.push(raw)
-  }
+  const flush = () => { const text = lines.join('\n').trim(); if (text) sections.push({ heading, body: text }); lines = [] }
+  for (const raw of body.split('\n')) { if (raw.startsWith('## ')) { flush(); heading = raw.slice(3).trim() } else lines.push(raw) }
   flush()
   return sections
 }
@@ -62,22 +56,13 @@ function useBlogArticles() {
   const [loading, setLoading] = React.useState(true)
   React.useEffect(() => {
     let active = true
-    loadPublishedFrontendContent('blog_article')
-      .then((records) => { if (active && records.length) setArticles(records.map(recordToArticle)) })
-      .catch((error) => console.warn('AppForge blog CMS unavailable; using bundled articles.', error))
-      .finally(() => { if (active) setLoading(false) })
+    loadPublishedFrontendContent('blog_article').then((records) => { if (active && records.length) setArticles(records.map(recordToArticle)) }).catch((error) => console.warn('AppForge blog CMS unavailable; using bundled articles.', error)).finally(() => { if (active) setLoading(false) })
     return () => { active = false }
   }, [])
   return { articles, loading }
 }
 
-const youtubeEmbed = (url: string) => {
-  try {
-    const parsed = new URL(url)
-    const id = parsed.hostname.includes('youtu.be') ? parsed.pathname.slice(1) : parsed.searchParams.get('v') || (parsed.pathname.startsWith('/embed/') ? parsed.pathname.split('/')[2] : '')
-    return id && /^[\w-]{6,}$/.test(id) ? `https://www.youtube-nocookie.com/embed/${id}` : ''
-  } catch { return '' }
-}
+const youtubeEmbed = (url: string) => { try { const parsed = new URL(url); const id = parsed.hostname.includes('youtu.be') ? parsed.pathname.slice(1) : parsed.searchParams.get('v') || (parsed.pathname.startsWith('/embed/') ? parsed.pathname.split('/')[2] : ''); return id && /^[\w-]{6,}$/.test(id) ? `https://www.youtube-nocookie.com/embed/${id}` : '' } catch { return '' } }
 
 function VideoBlock({ url }: { url?: string }) {
   if (!url) return <div className="mt-8 rounded-2xl border border-dashed border-border/80 bg-background/45 p-6"><div className="flex items-center gap-2 font-semibold"><Clapperboard className="h-4 w-4" /> Video walkthrough</div><p className="mt-2 text-sm leading-6 text-muted-foreground">No walkthrough has been published yet.</p></div>
@@ -88,15 +73,7 @@ function VideoBlock({ url }: { url?: string }) {
 export function PublicBlogPage() {
   const { articles, loading } = useBlogArticles()
   React.useEffect(() => { document.title = 'AppForge Blog' }, [])
-  return (
-    <div className="dark min-h-dvh bg-black text-foreground" style={{ colorScheme: 'dark', '--background': '0 0% 0%' } as React.CSSProperties}>
-      <PublicHeader />
-      <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <section className="border-b border-border/60 pb-8"><div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground"><Sparkles className="h-4 w-4" /> App stories</div><h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">Practical looks inside AppForge.</h1><p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">Product articles covering how AppForge tools are designed, what they solve, and how they fit into the wider platform.</p>{loading && <div className="mt-4 inline-flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking latest published content…</div>}</section>
-        <section className="grid gap-4 py-8 md:grid-cols-2">{articles.map((article) => <Link key={article.slug} to={`/blog/${article.slug}`} className="group flex min-h-64 flex-col overflow-hidden rounded-2xl border border-border/70 bg-background/55 transition-colors hover:border-foreground/20 hover:bg-accent/35">{article.imageUrl ? <img src={article.imageUrl} alt="" className="h-40 w-full object-cover" loading="lazy" /> : null}<div className="flex flex-1 flex-col p-5"><div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{article.appName}</div><h2 className="mt-3 text-2xl font-semibold tracking-[-0.025em]">{article.title}</h2><p className="mt-3 text-sm leading-6 text-muted-foreground">{article.description}</p><div className="mt-auto flex items-center justify-between gap-3 pt-6 text-xs text-muted-foreground"><span className="inline-flex items-center gap-2"><CalendarDays className="h-3.5 w-3.5" /> {article.publishedAt} · {article.readTime}</span><span className="inline-flex items-center gap-1 font-semibold text-foreground">Read <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" /></span></div></div></Link>)}</section>
-      </main>
-    </div>
-  )
+  return <div className="dark min-h-dvh bg-black text-foreground" style={{ colorScheme: 'dark', '--background': '0 0% 0%' } as React.CSSProperties}><PublicHeader /><main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8"><section className="border-b border-border/60 pb-8"><div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground"><Sparkles className="h-4 w-4" /> App stories</div><h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">Practical looks inside AppForge.</h1><p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">Product articles covering how AppForge tools are designed, what they solve, and how they fit into the wider platform.</p>{loading && <div className="mt-4 inline-flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking latest published content…</div>}</section><section className="grid gap-4 py-8 md:grid-cols-2">{articles.map((article) => <Link key={article.slug} to={`/blog/${article.slug}`} className="group flex min-h-64 flex-col overflow-hidden rounded-2xl border border-border/70 bg-background/55 transition-colors hover:border-foreground/20 hover:bg-accent/35">{article.imageUrl ? <img src={article.imageUrl} alt="" className="h-40 w-full object-cover" loading="lazy" /> : null}<div className="flex flex-1 flex-col p-5"><div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{article.appName}</div><h2 className="mt-3 text-2xl font-semibold tracking-[-0.025em]">{article.title}</h2><p className="mt-3 text-sm leading-6 text-muted-foreground">{article.description}</p><div className="mt-auto flex items-center justify-between gap-3 pt-6 text-xs text-muted-foreground"><span className="inline-flex items-center gap-2"><CalendarDays className="h-3.5 w-3.5" /> {article.publishedAt} · {article.readTime}</span><span className="inline-flex items-center gap-1 font-semibold text-foreground">Read <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" /></span></div></div></Link>)}</section></main></div>
 }
 
 export function PublicBlogArticlePage({ slug }: { slug: string }) {
@@ -105,10 +82,5 @@ export function PublicBlogArticlePage({ slug }: { slug: string }) {
   React.useEffect(() => { document.title = article ? `${article.title} · AppForge` : 'AppForge Blog' }, [article])
   if (!article && loading) return <div className="dark flex min-h-dvh items-center justify-center bg-black text-foreground"><Loader2 className="h-6 w-6 animate-spin" /></div>
   if (!article) return <PublicBlogPage />
-  return (
-    <div className="dark min-h-dvh bg-black text-foreground" style={{ colorScheme: 'dark', '--background': '0 0% 0%' } as React.CSSProperties}>
-      <PublicHeader />
-      <main className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 lg:px-8"><Link to="/blog" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> All articles</Link><article className="mt-8"><div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{article.appName}</div><h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">{article.title}</h1><p className="mt-5 text-base leading-8 text-muted-foreground">{article.description}</p><div className="mt-5 flex flex-wrap items-center gap-4 text-xs text-muted-foreground"><span>{article.publishedAt}</span><span>{article.readTime}</span><Link to={article.appRoute} className="font-semibold text-foreground hover:underline">Open {article.appName}</Link></div>{article.imageUrl ? <div className="mt-8 overflow-hidden rounded-2xl border border-border/70"><img src={article.imageUrl} alt={article.title} className="max-h-[34rem] w-full object-cover" /></div> : <div className="mt-8 flex aspect-[16/7] items-center justify-center rounded-2xl border border-dashed border-border/70 bg-background/35 text-muted-foreground"><ImageIcon className="h-8 w-8" /></div>}<VideoBlock url={article.videoUrl} /><div className="mt-10 space-y-9">{article.sections.map((section) => <section key={section.heading}><h2 className="text-2xl font-semibold tracking-[-0.025em]">{section.heading}</h2><p className="mt-3 whitespace-pre-line text-base leading-8 text-muted-foreground">{section.body}</p></section>)}</div></article></main>
-    </div>
-  )
+  return <div className="dark min-h-dvh bg-black text-foreground" style={{ colorScheme: 'dark', '--background': '0 0% 0%' } as React.CSSProperties}><PublicHeader /><main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8"><Link to="/blog" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> All articles</Link><article className="mt-8"><div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{article.appName}</div><h1 className="mt-3 max-w-5xl text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">{article.title}</h1><p className="mt-5 max-w-5xl text-base leading-8 text-muted-foreground">{article.description}</p><div className="mt-5 flex flex-wrap items-center gap-4 text-xs text-muted-foreground"><span>{article.publishedAt}</span><span>{article.readTime}</span><Link to={article.appRoute} className="font-semibold text-foreground hover:underline">Open {article.appName}</Link></div>{article.imageUrl ? <div className="mt-8 overflow-hidden rounded-2xl border border-border/70"><img src={article.imageUrl} alt={article.title} className="max-h-[40rem] w-full object-cover" /></div> : <div className="mt-8 flex aspect-[16/7] items-center justify-center rounded-2xl border border-dashed border-border/70 bg-background/35 text-muted-foreground"><ImageIcon className="h-8 w-8" /></div>}<VideoBlock url={article.videoUrl} /><div className="mt-10 max-w-5xl space-y-9">{article.sections.map((section) => <section key={section.heading}><h2 className="text-2xl font-semibold tracking-[-0.025em]">{section.heading}</h2><p className="mt-3 whitespace-pre-line text-base leading-8 text-muted-foreground">{section.body}</p></section>)}</div></article></main></div>
 }
