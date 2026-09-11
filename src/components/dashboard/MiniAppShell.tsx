@@ -1,9 +1,7 @@
 import React from 'react'
 import { Card, Button, Badge, Input, Textarea } from '@/components/ui'
-import { HeartHandshake, Save, X, Trash2, Star } from 'lucide-react'
+import { Save, X, Trash2, Star } from 'lucide-react'
 import type { MiniApp } from '@/types'
-
-const SUPPORT_URL = 'https://www.paypal.com/paypalme/dracorisz'
 
 export function MiniAppShell({ app, onUpdate, onDelete, onToggleFavorite, isFavorite }: { app: MiniApp; onUpdate?: (app: MiniApp) => void; onDelete?: (id: string) => void; onToggleFavorite?: (id: string) => void; isFavorite?: boolean }) {
   const [editing, setEditing] = React.useState(false)
@@ -30,7 +28,7 @@ export function MiniAppShell({ app, onUpdate, onDelete, onToggleFavorite, isFavo
           </div>
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-bold text-foreground">{app.name}</h1>
-            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{app.description}</p>
+            <p className="mt-1 max-w-3xl text-sm leading-5 text-muted-foreground">{app.description}</p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <Badge color={statusColor}>{app.status}</Badge>
               <Badge color="slate">v{app.version}</Badge>
@@ -40,24 +38,21 @@ export function MiniAppShell({ app, onUpdate, onDelete, onToggleFavorite, isFavo
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/70 bg-background/45 px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Support AppForge">
-            <HeartHandshake className="h-4 w-4" /> Support
-          </a>
           {editing ? (
             <>
-              <Button onClick={save}><Save className="h-4 w-4" /> Save</Button>
-              <Button variant="secondary" onClick={() => { setForm(app); setEditing(false) }}><X className="h-4 w-4" /> Cancel</Button>
+              <Button onClick={save} className="min-h-10"><Save className="h-4 w-4" /> Save</Button>
+              <Button variant="secondary" className="min-h-10" onClick={() => { setForm(app); setEditing(false) }}><X className="h-4 w-4" /> Cancel</Button>
             </>
           ) : (
-            onUpdate && <Button variant="secondary" onClick={() => setEditing(true)}>Edit</Button>
+            onUpdate && <Button variant="secondary" className="min-h-10" onClick={() => setEditing(true)}>Edit</Button>
           )}
           {onToggleFavorite && (
-            <Button variant="ghost" onClick={() => onToggleFavorite(app.id)} className={isFavorite ? 'text-amber-500' : ''} aria-label={isFavorite ? `Remove ${app.name} from favorites` : `Add ${app.name} to favorites`}>
+            <Button variant="ghost" onClick={() => onToggleFavorite(app.id)} className={`min-h-10 min-w-10 ${isFavorite ? 'text-amber-500' : ''}`} aria-label={isFavorite ? `Remove ${app.name} from favorites` : `Add ${app.name} to favorites`} title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}>
               <Star className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
             </Button>
           )}
           {onDelete && (
-            <Button variant="ghost" onClick={() => onDelete(app.id)} className="text-red-500" aria-label={`Delete ${app.name}`}><Trash2 className="h-4 w-4" /></Button>
+            <Button variant="ghost" onClick={() => onDelete(app.id)} className="min-h-10 min-w-10 text-red-500" aria-label={`Delete ${app.name}`} title={`Delete ${app.name}`}><Trash2 className="h-4 w-4" /></Button>
           )}
         </div>
       </div>
@@ -85,7 +80,7 @@ export function MiniAppShell({ app, onUpdate, onDelete, onToggleFavorite, isFavo
           <p><strong>Version:</strong> {app.version}</p>
           <p><strong>Branch:</strong> {app.branch}</p>
           <p><strong>Forks:</strong> {app.forks}</p>
-          {app.url && <p className="sm:col-span-2"><strong>URL:</strong> <a href={app.url} target="_blank" rel="noopener noreferrer" className="text-foreground hover:underline">{app.url}</a></p>}
+          {app.url && <p className="sm:col-span-2 break-all"><strong>URL:</strong> <a href={app.url} target="_blank" rel="noopener noreferrer" className="text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{app.url}</a></p>}
         </div>
       </Card>
     </div>
