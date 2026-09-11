@@ -1,0 +1,125 @@
+/* Shared media presentation for image/video-heavy tools. */
+
+[data-route="/apps/scrapper-pro"] .grid:has(> .surface-card.overflow-hidden) {
+  display: block;
+  column-count: 1;
+  column-gap: 0.8rem;
+}
+
+@media (min-width: 640px) {
+  [data-route="/apps/scrapper-pro"] .grid:has(> .surface-card.overflow-hidden) {
+    column-count: 2;
+  }
+}
+
+@media (min-width: 1100px) {
+  [data-route="/apps/scrapper-pro"] .grid:has(> .surface-card.overflow-hidden) {
+    column-count: 3;
+  }
+}
+
+[data-route="/apps/scrapper-pro"] .grid:has(> .surface-card.overflow-hidden) > .surface-card.overflow-hidden {
+  display: inline-block;
+  width: 100%;
+  margin: 0 0 0.8rem;
+  break-inside: avoid;
+  overflow: hidden;
+  border-radius: 1rem;
+  vertical-align: top;
+}
+
+[data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img) > :is(a, button):first-child {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto !important;
+  min-height: 10rem;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 30% 20%, hsl(var(--foreground) / 0.05), transparent 42%),
+    hsl(var(--muted) / 0.72);
+}
+
+[data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img) > :is(a, button):first-child::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, hsl(var(--background) / 0.62), transparent 48%);
+  opacity: 0.58;
+  transition: opacity 180ms ease;
+}
+
+[data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img) > :is(a, button):first-child img {
+  display: block;
+  width: 100%;
+  height: auto !important;
+  max-height: 34rem;
+  object-fit: cover;
+}
+
+[data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img):hover > :is(a, button):first-child img {
+  transform: scale(1.018);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img) {
+    min-height: 0;
+  }
+
+  [data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img) > div:last-child {
+    position: absolute;
+    inset: auto 0 0;
+    z-index: 3;
+    max-height: 88%;
+    padding-top: 2.6rem;
+    background: linear-gradient(
+      to top,
+      hsl(var(--background) / 0.97) 16%,
+      hsl(var(--background) / 0.88) 54%,
+      hsl(var(--background) / 0.16)
+    );
+    backdrop-filter: blur(13px) saturate(118%);
+    -webkit-backdrop-filter: blur(13px) saturate(118%);
+    transform: translateY(calc(100% - 4.9rem));
+    transition: transform 210ms ease;
+  }
+
+  [data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img):hover > div:last-child,
+  [data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img):focus-within > div:last-child {
+    transform: translateY(0);
+  }
+
+  [data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img):hover > :is(a, button):first-child::after,
+  [data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img):focus-within > :is(a, button):first-child::after {
+    opacity: 0.88;
+  }
+}
+
+@media (max-width: 639px), (hover: none) {
+  [data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img) > div:last-child {
+    position: static !important;
+    transform: none !important;
+    background: hsl(var(--background) / 0.78);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+
+/* Image Labeler keeps a calmer two-column maximum while sharing the same visual language. */
+[data-route="/apps/image-labeler"] .grid:has(img) {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  [data-route="/apps/image-labeler"] .grid:has(img) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-route="/apps/scrapper-pro"] .surface-card,
+  [data-route="/apps/scrapper-pro"] .surface-card * {
+    transition-duration: 0.01ms !important;
+  }
+}

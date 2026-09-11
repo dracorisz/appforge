@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Audit app registry integrity
+        run: npm run audit:apps
+
+      - name: Audit standalone app boundaries
+        run: npm run audit:standalone
+
+      - name: Verify environment capability docs
+        run: npm run docs:env-check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Install VitePress for docs validation
+        run: npm install --no-save --no-package-lock --legacy-peer-deps vitepress@1.6.4
+
+      - name: Validate VitePress docs and internal links
+        run: npx vitepress build docs
+
+      - name: Production build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build
+
+  cloud-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: services/cloud-worker/package-lock.json
+      - run: npm ci --legacy-peer-deps --prefix services/cloud-worker
+      - run: npm test --prefix services/cloud-worker
+      - run: bash -n scripts/cloud/setup.sh scripts/cloud/experiment.sh

@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+trash/
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.import
+
+# IDE
+.devin/
+.idea/
+.vscode/
+.kilo/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Session/network captures
+*.har
+
+# Runtime
+pwa-192x192.png
+pwa-512x512.png
+
+# Local backups
+appforge-*.json
+projectforge-*.json
+appforge-workplan-v1.json
+projectforge-workplan-v1.json
+.vercel
+.env*
+
+.vitepress/cache/

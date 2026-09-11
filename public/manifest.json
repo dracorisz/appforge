@@ -1,0 +1,26 @@
+{
+  "name": "AppForge - Simple, powerful tools",
+  "short_name": "AppForge",
+  "description": "An open-source toolbox of focused web utilities, media tools, and practical browser apps.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "any",
+  "categories": ["utilities", "productivity", "developer"],
+  "icons": [
+    {
+      "src": "/favicon/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
