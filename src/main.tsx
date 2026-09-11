@@ -5,7 +5,8 @@ import App from './App'
 import { AuthProvider } from './auth/AuthProvider'
 import { PwaLifecycle } from './components/pwa/PwaLifecycle'
 import { CookieNotice } from './components/public/CookieNotice'
-import { PublicBlogArticlePage, PublicBlogPage, PublicChangelogPage } from './components/public/PublicContentPages'
+import { ChangelogPage } from './components/public/ChangelogPage'
+import { PublicBlogArticlePage, PublicBlogPage } from './components/public/PublicContentPages'
 import './index.css'
 import './media.css'
 
@@ -13,7 +14,7 @@ function RootApp() {
   const location = useLocation()
 
   if (location.pathname === '/blog') return <PublicBlogPage />
-  if (location.pathname === '/changelog') return <PublicChangelogPage />
+  if (location.pathname === '/changelog') return <ChangelogPage />
   if (location.pathname.startsWith('/blog/')) {
     const slug = location.pathname.slice('/blog/'.length).replace(/\/+$/, '')
     return <PublicBlogArticlePage slug={slug} />
