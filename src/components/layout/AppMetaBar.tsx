@@ -27,6 +27,8 @@ export function AppMetaBar() {
 
   if (!app) return null
 
+  const latestChange = app.changelog?.[0]?.changes?.[0]
+
   const copyCanonicalLink = async () => {
     const url = new URL(app.route, window.location.origin).toString()
     try {
@@ -57,6 +59,11 @@ export function AppMetaBar() {
           <p className="mt-1 line-clamp-2 max-w-4xl text-[11px] leading-4 text-muted-foreground/90 sm:line-clamp-1">
             {app.description}
           </p>
+          {latestChange && (
+            <p className="mt-1 line-clamp-1 max-w-4xl text-[10px] leading-4 text-muted-foreground/70" title={latestChange}>
+              <span className="font-medium text-muted-foreground">Latest:</span> {latestChange}
+            </p>
+          )}
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
