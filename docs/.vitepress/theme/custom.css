@@ -26,31 +26,56 @@
   --vp-button-brand-hover-text: #0f172a;
 }
 
-.VPHome .hero .image,
-.VPHome .hero .image-container {
-  margin-left: auto;
-  margin-right: 0;
-}
-
 .VPNav .container,
 .VPNavBar .container,
 .VPHome .container,
 .VPDoc .container,
 .VPFooter .container {
+  width: 100%;
   max-width: 1152px !important;
   margin-left: auto;
   margin-right: auto;
 }
 
-/* Keep home-page Markdown aligned with the hero/features rather than
-   VitePress's narrower article default. */
-.VPHomeContent .vp-doc {
+/* VitePress adds a sidebar-width offset to the navbar on article pages.
+   Keep the toolbar itself centered inside the same 1152px shell instead. */
+.VPNavBar .content,
+.VPNavBar.has-sidebar .content {
+  width: 100%;
+  max-width: 1152px !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 960px) {
+  .VPNavBar.has-sidebar .content {
+    padding-left: 0 !important;
+  }
+}
+
+/* Home Markdown should use the same width as the hero and feature grid.
+   VitePress otherwise constrains this lower section like a normal article. */
+.VPHomeContent {
+  width: 100%;
+  max-width: none !important;
+}
+
+.VPHomeContent .container {
   width: 100%;
   max-width: 1152px !important;
   margin-left: auto;
   margin-right: auto;
   padding-left: 24px;
   padding-right: 24px;
+}
+
+.VPHomeContent .vp-doc {
+  width: 100%;
+  max-width: none !important;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .VPNavBarTitle .title {
@@ -88,13 +113,19 @@
   justify-content: flex-start;
 }
 
+/* Pin the hero mark to the same right edge as the page shell. */
 .VPHero .image {
   min-width: 0;
+  justify-self: end;
+  margin-left: auto;
+  margin-right: 0;
 }
 
 .VPHero .image-container {
   width: 220px;
   height: 220px;
+  margin-left: auto;
+  margin-right: 0;
 }
 
 .VPHero .image-bg {
@@ -106,6 +137,8 @@
   width: 180px;
   max-width: 180px;
   max-height: 180px;
+  margin-left: auto;
+  margin-right: 0;
   border-radius: 28px;
   object-fit: contain;
   box-shadow: 0 18px 60px rgba(2, 6, 23, 0.22);
@@ -130,11 +163,14 @@
   .VPHero .image {
     margin: 10px auto 28px;
     width: 100%;
+    justify-self: center;
   }
 
   .VPHero .image-container {
     width: min(100%, 220px);
     height: auto;
+    margin-left: auto;
+    margin-right: auto;
     aspect-ratio: 1;
   }
 
@@ -142,6 +178,8 @@
     width: min(180px, 72vw);
     max-width: 180px;
     max-height: none;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
