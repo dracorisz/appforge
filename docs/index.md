@@ -60,7 +60,9 @@ For normal use, go to **[sstoken.space](https://www.sstoken.space/)**. For sourc
 
 ## First-time project pickup
 
-Read **[Getting started](./GETTING_STARTED.md)** and **[Environment & agent pickup](./ENVIRONMENT.md)** first. Then use **[Project Pulse](./PROJECT-PULSE.md)**, **[Development timeline](./DEVELOPMENT_TIMELINE.md)**, **[Issue roadmap](./ISSUE_ROADMAP.md)** and **[Agent handoff](./AGENT_HANDOFF.md)** to understand the current development sequence before changing code.
+Start with **[Getting started](./GETTING_STARTED.md)**. It gives the shortest path for product users, contributors, and maintainers without requiring every specialist document up front. Use **[Project Pulse](./PROJECT-PULSE.md)** for current readiness and **[Apps](./apps/index.md)** for per-app documentation.
+
+Maintainers and coding agents can then continue to **[Environment & agent pickup](./ENVIRONMENT.md)** and **[Agent handoff](./AGENT_HANDOFF.md)**. Historical planning, issue-roadmap, branching, performance, and full-status references remain available in the collapsed maintainer section of the sidebar.
 
 New to the GitHub repository? Read **[GitHub starter guide](./GITHUB_STARTER.md)** for star, watch, fork, discussion, and contribution orientation.
 
@@ -76,7 +78,7 @@ As of 2026-09-11:
 - **Getter Pro** is the current name at `/apps/getter-pro`, with per-result local save/download actions and authenticated Media Vault reference storage;
 - Weather Now supports grouped EU/US city presets, device coordinates, and an explicit sidebar-weather location preference;
 - Task List is aligned with the shared app shell and supports local-first tracking, authenticated sync, filters, progress, complete-all, clear-completed, and inline task editing;
-- the canonical registry contains 45 entries across 14 categories: 35 Beta, 5 Building, and 5 Idea;
+- `src/lib/registry.ts` remains authoritative for the current app inventory and maturity metadata;
 - Markdown Previewer and SVG Tool now have dedicated browser-local implementations behind their canonical routes, while their registry maturity remains Idea pending product verification; PDF Tool, Excel Tool, and Audio Converter remain deliberate planned surfaces;
 - shared mini-app headers, utility controls, and app metadata were tightened for clearer actions, keyboard focus, app/version/status visibility, and latest-change context;
 - mobile/tablet navigation now uses a full-screen app-style drawer with an explicit close control;
@@ -93,7 +95,7 @@ As of 2026-09-11:
 4. Complete Any Converter and Task List standalone-PWA hardening.
 5. Verify Markdown Previewer and SVG Tool product behavior before promoting their registry maturity; keep PDF, Excel, and Audio entries on the planned surface until implemented.
 6. Review remaining Supabase `SECURITY DEFINER` functions according to their actual authorization requirements.
-7. Keep Project Pulse, timeline, issue roadmap, launch checklist, environment, database/security docs, app docs, changelog, and canonical registry aligned.
+7. Keep Project Pulse, launch checklist, environment, database/security docs, app docs, changelog, maintainer references, and canonical registry aligned.
 
 ## Documentation rule
 
