@@ -1,0 +1,93 @@
+name: Changelog
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - CHANGELOG.md
+      - package.json
+      - scripts/changelog.mjs
+      - .github/workflows/changelog.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - CHANGELOG.md
+      - package.json
+      - scripts/changelog.mjs
+      - .github/workflows/changelog.yml
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Semantic version to sync from CHANGELOG.md (defaults to package.json version)
+        required: false
+        type: string
+      publish_release:
+        description: Create or update the matching GitHub Release
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: changelog-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Validate canonical changelog
+        run: node scripts/changelog.mjs validate
+
+  sync-release:
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_release == true
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Resolve release version
+        id: release
+        shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if [ -n "$INPUT_VERSION" ]; then
+            VERSION="${INPUT_VERSION#v}"
+          else
+            VERSION="$(node -p "require('./package.json').version")"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Extract release notes
+        run: node scripts/changelog.mjs extract "${{ steps.release.outputs.version }}" release-notes.md
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release.outputs.tag }}
+          VERSION: ${{ steps.release.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "AppForge $VERSION" --notes-file release-notes.md
+          else
+            if ! git rev-parse "$TAG" >/dev/null 2>&1; then
+              git tag "$TAG" "$GITHUB_SHA"
+              git push origin "$TAG"
+            fi
+            gh release create "$TAG" --title "AppForge $VERSION" --notes-file release-notes.md --verify-tag
+          fi
