@@ -4,12 +4,23 @@ import test from 'node:test'
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8')
 
+const blogRoutes = [
+  '/blog',
+  '/blog/desktop-buddy-your-ai-companion-on-the-desktop',
+  '/blog/getter-pro-capture-web-media-with-a-clear-storage-model',
+  '/blog/weather-now-fast-local-conditions-without-a-heavy-dashboard',
+  '/blog/task-list-a-small-workspace-that-stays-out-of-the-way',
+  '/blog/hugging-face-gallery-a-visible-home-for-generated-assets',
+]
+
 test('public sitemap contains only current canonical public AppForge routes', async () => {
   const sitemap = await read('public/sitemap.xml')
   const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1])
   const expected = [
     'https://www.sstoken.space/',
     'https://www.sstoken.space/explore',
+    ...blogRoutes.map((route) => `https://www.sstoken.space${route}`),
+    'https://www.sstoken.space/changelog',
     'https://www.sstoken.space/apps/getter-pro',
     'https://www.sstoken.space/apps/weather-now',
     'https://www.sstoken.space/apps/crypto-track',
@@ -45,6 +56,17 @@ test('SEO allowlist and canonical aliases match the public release surface', asy
   }
   assert.match(seo, /'\/apps\/scrapper-pro': '\/apps\/getter-pro'/)
   assert.match(seo, /'\/pf-scrapper-pro': '\/apps\/getter-pro'/)
+})
+
+test('blog, changelog and content admin routes stay intentionally exposed at the root router', async () => {
+  const main = await read('src/main.tsx')
+  assert.match(main, /location\.pathname === '\/blog'.*PublicBlogPage/s)
+  assert.match(main, /location\.pathname === '\/changelog'.*ChangelogPage/s)
+  assert.match(main, /location\.pathname === '\/admin\/content'.*AdminContentManager/s)
+  assert.match(main, /location\.pathname\.startsWith\('\/blog\/'\)/)
+
+  const changelogPage = await read('src/components/public/ChangelogPage.tsx')
+  assert.match(changelogPage, /CHANGELOG\.md\?raw/)
 })
 
 test('public Apps directory is permanent at explore while signed-in apps remains workspace-owned', async () => {
