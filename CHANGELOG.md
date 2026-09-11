@@ -27,6 +27,7 @@ This file tracks user-visible AppForge product changes. The canonical source is 
 - Shared utility controls have stronger focus treatment and accessible labeling.
 - Desktop Buddy settings are grouped into character/behavior, generation/cleanup, and capture/PWA sections.
 - Sidebar Weather uses more reliable fallback names and loading behavior when location data is incomplete.
+- Weather Now hydrates saved cities before persistence starts, while the sidebar immediately reflects the selected city and ignores stale overlapping responses.
 - Markdown Previewer and SVG Tool now have dedicated browser-local route implementations; both remain `Idea` until focused product verification supports maturity promotion.
 - Blog content is CMS-backed with bundled fallbacks so public articles continue to render if the content API is temporarily unavailable.
 - Blog articles support optional hero images and privacy-enhanced YouTube video embeds, while other video URLs remain explicit external links.
@@ -41,6 +42,7 @@ This file tracks user-visible AppForge product changes. The canonical source is 
 - Task List now follows the shared full app width and adds inline editing, complete-all, progress feedback and richer task counts while preserving local-first/Supabase sync.
 - Mobile/tablet navigation is now a full-screen app-style drawer with an explicit close control.
 - New visitors start in dark appearance by default while saved Light/Dark/System preferences continue to take precedence.
+- Theme choice now applies before first paint, persists without an initial System-mode overwrite, and tracks operating-system changes while System is selected.
 - SEO metadata recognizes the current public app routes and canonical Getter Pro URL.
 - `sitemap.xml` now contains canonical public pages only; retired Pariflow, old Scrapper Pro and authenticated-only app URLs were removed.
 - Live Supabase schema now includes the owner-RLS Vertex bridge job table.

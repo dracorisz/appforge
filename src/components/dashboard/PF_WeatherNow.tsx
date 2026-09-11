@@ -52,7 +52,12 @@ function ListMetric({ icon: Icon, label, value }: { icon: React.ComponentType<{ 
 
 export function PF_WeatherNow() {
   const [query, setQuery] = React.useState('')
-  const [cities, setCities] = React.useState<WeatherData[]>([])
+  const [cities, setCities] = React.useState<WeatherData[]>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+      return Array.isArray(saved) ? saved : []
+    } catch { return [] }
+  })
   const [loading, setLoading] = React.useState(false)
   const [refreshing, setRefreshing] = React.useState<string | null>(null)
   const [error, setError] = React.useState('')
@@ -61,16 +66,6 @@ export function PF_WeatherNow() {
   const [unit, setUnit] = React.useState<Unit>('c')
   const [locating, setLocating] = React.useState(false)
   const [sidebarLocation, setSidebarLocation] = React.useState(() => localStorage.getItem(SIDEBAR_LOCATION_KEY) || '')
-
-  React.useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        if (Array.isArray(parsed)) setCities(parsed)
-      }
-    } catch { /* ignore malformed local state */ }
-  }, [])
 
   React.useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(cities)) }, [cities])
 

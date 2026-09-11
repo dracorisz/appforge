@@ -71,7 +71,13 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
   const { user, signOut } = useAuth()
   const [searchParams] = useSearchParams()
   const [activeTab, setActiveTab] = React.useState<TabId>(() => searchParams.get('tab') === 'integrations' ? 'integrations' : 'profile')
-  const [themeMode, setThemeMode] = React.useState<ThemeMode>('system')
+  const [themeMode, setThemeMode] = React.useState<ThemeMode>(() => {
+    try {
+      const mode = JSON.parse(localStorage.getItem('appforge-theme') || '{}')?.mode
+      if (mode === 'light' || mode === 'dark' || mode === 'system') return mode
+    } catch { /* ignore malformed local preference */ }
+    return state.settings.theme || 'dark'
+  })
   const [profile, setProfile] = React.useState<AppProfile | null>(null)
   const [privateInfo, setPrivateInfo] = React.useState<PrivateProfileInfo | null>(null)
   const [images, setImages] = React.useState<ProfileImageLink[]>([])
@@ -124,20 +130,21 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
   React.useEffect(() => { void refreshAccount() }, [refreshAccount])
 
   React.useEffect(() => {
-    const raw = localStorage.getItem('appforge-theme')
-    if (!raw) return
-    try { setThemeMode(JSON.parse(raw).mode || 'system') } catch { /* ignore */ }
-  }, [])
-
-  React.useEffect(() => {
     const root = document.documentElement
-    const dark = themeMode === 'dark' || (themeMode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    root.classList.toggle('dark', dark)
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const apply = () => {
+      const dark = themeMode === 'dark' || (themeMode === 'system' && media.matches)
+      root.classList.toggle('dark', dark)
+      root.style.colorScheme = dark ? 'dark' : 'light'
+    }
+    apply()
+    if (themeMode === 'system') media.addEventListener('change', apply)
     localStorage.setItem('appforge-theme', JSON.stringify({ mode: themeMode }))
     if (state.settings.theme !== themeMode) {
       const nextSettings = { ...state.settings, theme: themeMode } as Settings
       setState({ ...state, settings: nextSettings })
     }
+    return () => media.removeEventListener('change', apply)
   }, [themeMode, state, setState])
 
   const flash = (text: string) => {

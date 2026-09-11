@@ -5,6 +5,7 @@ export default defineConfig({
   description: 'Developer documentation, architecture, environment, deployment, release readiness, AI providers, and standalone PWA guidance for AppForge.',
   base: '/',
   cleanUrls: true,
+  appearance: 'dark',
   lastUpdated: true,
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],

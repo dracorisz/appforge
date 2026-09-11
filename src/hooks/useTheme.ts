@@ -21,21 +21,30 @@ const radiusMap: Record<Radius, string> = {
   lg: '0.75rem',
 }
 
+type ThemeSettings = { mode: ThemeMode; accent: AccentColor; radius: Radius }
+
+const readTheme = (): ThemeSettings => {
+  try {
+    const saved = JSON.parse(localStorage.getItem('appforge-theme') || '{}')
+    return {
+      mode: saved.mode === 'light' || saved.mode === 'dark' || saved.mode === 'system' ? saved.mode : 'dark',
+      accent: Object.prototype.hasOwnProperty.call(accentColors, saved.accent) ? saved.accent : 'default',
+      radius: Object.prototype.hasOwnProperty.call(radiusMap, saved.radius) ? saved.radius : 'md',
+    }
+  } catch {
+    return { mode: 'dark', accent: 'default', radius: 'md' }
+  }
+}
+
 export function useTheme() {
-  const [mode, setMode] = useState<ThemeMode>('system')
-  const [accent, setAccent] = useState<AccentColor>('default')
-  const [radius, setRadius] = useState<Radius>('md')
+  const [{ mode, accent, radius }, setTheme] = useState<ThemeSettings>(readTheme)
 
   useEffect(() => {
-    const saved = localStorage.getItem('appforge-theme')
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        setMode(parsed.mode || 'system')
-        setAccent(parsed.accent || 'default')
-        setRadius(parsed.radius || 'md')
-      } catch { /* ignore */ }
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === 'appforge-theme' || event.key === null) setTheme(readTheme())
     }
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
   }, [])
 
   useEffect(() => {
@@ -45,6 +54,7 @@ export function useTheme() {
     const apply = () => {
       const isDark = mode === 'dark' || (mode === 'system' && media.matches)
       root.classList.toggle('dark', isDark)
+      root.style.colorScheme = isDark ? 'dark' : 'light'
 
       const accentData = accentColors[accent]
       const primary = isDark ? accentData.dark : accentData.light
@@ -61,5 +71,12 @@ export function useTheme() {
     return () => media.removeEventListener('change', apply)
   }, [mode, accent, radius])
 
-  return { mode, setMode, accent, setAccent, radius, setRadius }
+  return {
+    mode,
+    setMode: (nextMode: ThemeMode) => setTheme((current) => ({ ...current, mode: nextMode })),
+    accent,
+    setAccent: (nextAccent: AccentColor) => setTheme((current) => ({ ...current, accent: nextAccent })),
+    radius,
+    setRadius: (nextRadius: Radius) => setTheme((current) => ({ ...current, radius: nextRadius })),
+  }
 }

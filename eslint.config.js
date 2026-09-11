@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint'
 
 export default [
   {
-    ignores: ['dist/**', 'node_modules/**', 'public/**', 'coverage/**', 'supabase/**'],
+    ignores: ['dist/**', '**/dist/**', 'node_modules/**', 'public/**', 'coverage/**', 'supabase/**'],
   },
   {
     files: ['**/*.{js,mjs,cjs}'],

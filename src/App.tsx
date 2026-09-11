@@ -58,7 +58,7 @@ const SvgIconsBrowser = React.lazy(() => import('./components/public/SvgIconsBro
 const LandingBuilder = React.lazy(() => import('./components/public/LandingBuilder'))
 const PublicAppsPage = React.lazy(() => import('./components/public/PublicAppsPage').then((module) => ({ default: module.PublicAppsPage })))
 
-const defaultSettings = { theme: 'system' as const }
+const defaultSettings = { theme: 'dark' as const }
 const defaultState: AppState = {
   plan: defaultPlan,
   article: defaultArticle,
