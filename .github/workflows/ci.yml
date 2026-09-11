@@ -36,6 +36,9 @@ jobs:
       - name: Audit standalone app boundaries
         run: npm run audit:standalone
 
+      - name: Verify environment capability docs
+        run: npm run docs:env-check
+
       - name: Lint
         run: npm run lint
 
