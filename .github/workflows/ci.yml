@@ -33,6 +33,9 @@ jobs:
       - name: Audit app registry integrity
         run: npm run audit:apps
 
+      - name: Audit standalone app boundaries
+        run: npm run audit:standalone
+
       - name: Lint
         run: npm run lint
 
