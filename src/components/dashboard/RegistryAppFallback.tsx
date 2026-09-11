@@ -9,10 +9,15 @@ import { DesktopBuddyCapture } from './DesktopBuddyCapture'
 import { DesktopBuddyKdeLibrary } from './DesktopBuddyKdeLibrary'
 import { DesktopBuddyProviderLab } from './DesktopBuddyProviderLab'
 import { DesktopBuddyTransparencyLab } from './DesktopBuddyTransparencyLab'
+import { MarkdownPreviewer } from './MarkdownPreviewer'
+import { SvgTool } from './SvgTool'
 import { WidgetPreferencePanel } from './WidgetPreferencePanel'
 
 export function RegistryAppFallback() {
   const { slug } = useParams()
+
+  if (slug === 'markdown-previewer') return <MarkdownPreviewer />
+  if (slug === 'svg-tool') return <SvgTool />
 
   if (slug === 'desktop-buddy') {
     return (
