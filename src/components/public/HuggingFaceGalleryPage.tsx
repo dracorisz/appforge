@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, ExternalLink, Image as ImageIcon, Loader2, MessageSquareText, Sparkles } from 'lucide-react'
 import { Badge, BuildBadge, Card } from '@/components/ui'
 import { supabase, SUPABASE_PROJECT_URL } from '@/lib/supabase'
+import { ManagedGalleryStrip } from './ManagedGalleryStrip'
 
 export type PublicDragonAsset = {
   id: string
@@ -87,7 +88,7 @@ function InfiniteShowcase({ assets }: { assets: PublicDragonAsset[] }) {
   React.useEffect(() => setIndex((value) => wrap(value, assets.length)), [assets.length])
   if (!assets.length) return <Card className="border-white/10 bg-white/[0.035] p-10 text-center text-sm text-white/45">No public creator-selected scenes yet.</Card>
 
-  const positions = assets.length === 1 ? [0] : assets.length === 2 ? [-1, 0, 1] : [-1, 0, 1]
+  const positions = assets.length === 1 ? [0] : [-1, 0, 1]
   return (
     <div className="relative overflow-hidden py-7" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocusCapture={() => setPaused(true)} onBlurCapture={() => setPaused(false)}>
       <div className="flex items-center justify-center gap-0 md:gap-2" aria-live="polite">
@@ -125,6 +126,8 @@ export function HuggingFaceGalleryPage() {
 
       <main className="mx-auto w-full max-w-7xl space-y-7 px-4 py-8 sm:px-6 lg:px-8">
         <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-5"><div className="flex flex-wrap items-center gap-2 text-xs font-medium text-white/50"><Sparkles className="h-4 w-4" /> Hugging Face powered generation</div><h1 className="mt-2 text-3xl font-semibold tracking-tight text-white">Story Studio × Hugging Face</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-white/55">Story Studio uses Hugging Face for narrative generation and scene artwork. Generated scenes stay private by default; creators explicitly choose what appears here.</p><div className="mt-4 flex flex-wrap gap-2"><Link to="/" className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white/80 hover:bg-white/10"><ArrowLeft className="h-4 w-4" /> Back to AppForge</Link><a href="https://huggingface.co/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white/80 hover:bg-white/10"><ExternalLink className="h-4 w-4" /> Hugging Face</a></div></section>
+
+        <ManagedGalleryStrip />
 
         <section><div className="mb-2 flex items-end justify-between gap-3"><div><h2 className="text-xl font-semibold tracking-tight text-white">Public generated assets</h2><p className="mt-1 text-sm text-white/45">Infinite cinematic carousel; the active scene stays larger than its neighbors.</p></div><span className="text-xs text-white/40">{assets.length} scenes</span></div>{error && <Card className="mb-4 border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">Could not load the public gallery: {error}</Card>}{loading ? <Card className="flex items-center justify-center gap-2 border-white/10 bg-white/[0.035] p-10 text-sm text-white/45"><Loader2 className="h-4 w-4 animate-spin" /> Loading public Story Studio assets…</Card> : <InfiniteShowcase assets={assets} />}</section>
 
