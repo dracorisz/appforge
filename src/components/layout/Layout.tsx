@@ -52,7 +52,7 @@ export function Layout({ children, currentVersion }: { children: React.ReactNode
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <MobileHeader onOpen={() => setMobileOpen(true)} triggerRef={menuTriggerRef} />
         <main className="flex-1 overflow-y-auto p-4 lg:p-8">
-          <div className="mx-auto min-w-0 max-w-6xl">
+          <div className="mx-auto min-w-0 w-full max-w-[1500px]">
             {showProjectPulse && <ProjectPulse />}
             {showAppMeta && <AppMetaBar />}
             {children}
