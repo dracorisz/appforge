@@ -32,7 +32,7 @@ export async function validateChangelog() {
   const releases = parseReleases(source)
   const errors = []
 
-  if (!source.startsWith('# Changelog')) errors.push('CHANGELOG.md must start with # Changelog.')
+  if (!/^#\s+(?:AppForge\s+)?Changelog\s*$/m.test(source.split('\n')[0] || '')) errors.push('CHANGELOG.md must start with # Changelog or # AppForge Changelog.')
   if (!releases.length) errors.push('CHANGELOG.md must contain at least one ## release section.')
   const versions = releases.map((release) => release.version).filter(Boolean)
   if (new Set(versions).size !== versions.length) errors.push('CHANGELOG.md contains duplicate semantic versions.')
