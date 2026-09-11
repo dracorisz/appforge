@@ -19,7 +19,7 @@ Task List is a local-first TODO application designed to be useful inside AppForg
 
 - `src/components/dashboard/TaskList.tsx`
 - route wiring in `src/App.tsx`
-- migration: `supabase/migrations/20260910011000_create_appforge_tasks.sql`
+- migration: `supabase/migrations/20260910013205_create_appforge_tasks.sql`
 
 ## Data model
 

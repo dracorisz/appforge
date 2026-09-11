@@ -163,3 +163,23 @@ Before requesting review:
 Do not include API keys, session tokens, private URLs, cookies, OAuth secrets, personal credentials, or sensitive user content in issues, commits, examples, screenshots, or logs.
 
 Report sensitive vulnerabilities privately rather than opening a public issue. See `SECURITY.md`.
+
+## Community
+
+Outside contributions are welcome. A useful contribution can be a focused bug fix, a new mini-app, or work that moves one existing app closer to Full status: better failure handling, standalone documentation, dependency isolation, accessibility, tests, PWA packaging, or fork instructions.
+
+We also welcome community discussion through GitHub Discussions — ideas, questions, showcases, and long-form project talk. Discussions are the right place for topics that are not yet issues or pull requests.
+
+Recommended flow:
+
+```bash
+git checkout main
+git pull
+git checkout -b feat/image-tool-example
+# make one focused change
+npm run typecheck
+npm run build
+git push -u origin feat/image-tool-example
+```
+
+Then open a pull request against `main`.

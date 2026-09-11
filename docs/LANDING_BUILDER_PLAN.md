@@ -24,7 +24,7 @@ The public marketing homepage and the builder should share one visual language, 
 
 ## AppForge integration
 
-The public front page currently features Hugging Face separately plus Weather Now, Any Converter and Scrapper Pro. Landing Builder is the intended fourth public mini-app once it reaches Beta quality.
+The public front page currently features Hugging Face separately plus Weather Now, Any Converter and Getter Pro. Landing Builder is the intended fourth public mini-app once it reaches Beta quality.
 
 Signed-in users can additionally:
 

@@ -2,7 +2,7 @@ import React from 'react'
 import { ArrowLeft, ExternalLink, ShieldCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-const LAST_UPDATED = 'September 9, 2026'
+const LAST_UPDATED = 'September 11, 2026'
 
 function LegalShell({ title, intro, children }: { title: string; intro: string; children: React.ReactNode }) {
   return (

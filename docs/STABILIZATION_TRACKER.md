@@ -1,6 +1,6 @@
 # AppForge Stabilization Tracker
 
-Last updated: 2026-09-09
+Last updated: 2026-09-11
 
 GitHub Issues are now the canonical actionable backlog. See `docs/ISSUE_ROADMAP.md` for publish-soon ordering. This file records implementation/verification state.
 
@@ -24,7 +24,7 @@ AppForge mini-apps target:
 | Item | Status | Issue | Notes |
 |---|---|---:|---|
 | Public beta regression pass | OPEN | #1 | Final smoke pass before wider promotion. |
-| Patreon/launch/funding materials | OPEN/MANUAL | #3 | Repo prep exists; external account/publication work remains. |
+| Funding/marketing materials | OPEN/MANUAL | #3 | Repo prep exists; external account/publication work remains. |
 | Story Studio HF text/image reliability | VERIFY | #7 | Provider-aware generation exists; current production success/failure path must be tested. |
 | Story Studio Novel + Comics product flow | VERIFY | #8 | Modes, turn-linked imagery and first exports are implemented; deeper project model remains. |
 | Public landing polish | VERIFY | #9 | New hierarchy implemented; capture final screenshot after deployment verification. |
@@ -62,7 +62,7 @@ AppForge mini-apps target:
 |---|---|---|
 | GitHub CTA in header | DONE | Red external CTA; old blurred follow-development button removed. |
 | Hugging Face separated from public mini-app cards | DONE | Official HF mark + dedicated section. |
-| Three public mini-app cards balanced | VERIFY | Weather / Any Converter / Scrapper Pro use unified card structure. |
+| Three public mini-app cards balanced | VERIFY | Weather / Any Converter / Getter Pro use unified card structure. |
 | Google sign-in CTA present | DONE | Auth flow already functional; authenticated button opens workspace. |
 | Signed-in `/landing` route | DONE | Allows returning to public landing after login. |
 | Sidebar simplification | DONE | Removed All Apps / Recent / Favorites / Categories from sidebar; kept Landing / Dashboard / People / Settings + app search. |
@@ -70,7 +70,7 @@ AppForge mini-apps target:
 | Landing Builder plan | DONE | `docs/LANDING_BUILDER_PLAN.md`; tracked in #10. |
 | Landing Builder implementation | OPEN | Future fourth featured no-login mini-app. |
 
-## Media Vault + Scrapper Pro
+## Media Vault + Getter Pro
 
 | Item | Status | Notes |
 |---|---|---|

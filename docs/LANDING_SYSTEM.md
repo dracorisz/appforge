@@ -16,7 +16,7 @@ Use the SVG source for UI rendering and derive raster/social variants from this 
 2. One primary product statement and short positioning paragraph.
 3. Primary Google/workspace CTA plus a secondary public-tool CTA.
 4. Small product-status metrics.
-5. A focused public-tools panel with Weather Now, Any Converter, Scrapper Pro, and the Hugging Face showcase.
+5. A focused public-tools panel with Weather Now, Any Converter, Getter Pro, and the Hugging Face showcase.
 6. Concise footer with privacy, terms, support, and platform context.
 
 The support destination is `https://paypal.me/dracorisz`. Until a confirmed reusable Pica/mascot asset is committed, the support action uses an accessible generic support glyph and explicit labels rather than inventing or misidentifying mascot artwork.

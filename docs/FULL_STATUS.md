@@ -1,6 +1,6 @@
 # AppForge Full Status Standard
 
-Last updated: 2026-09-09
+Last updated: 2026-09-11
 
 `Full` is the terminal readiness status for an AppForge mini-app. It means the mini-app is not only usable inside AppForge, but is complete enough to be forked and developed as an independent ready-made PWA without depending on undocumented AppForge internals.
 
@@ -97,7 +97,7 @@ It is stronger than `Launched`. A Launched app may still depend heavily on AppFo
 
 Do not promote apps to Full based only on feature count. AppForge may advertise Beta and Launched apps today, but Full should remain scarce and credible.
 
-Initial likely Full candidates after verification/packaging are small browser-first utilities such as Any Converter and selected local developer/image tools. Server/provider-heavy apps such as Scrapper Pro, Media Vault and the Story Studio require more extraction documentation and environment packaging before Full.
+Initial likely Full candidates after verification/packaging are small browser-first utilities such as Any Converter and selected local developer/image tools. Server/provider-heavy apps such as Getter Pro, Media Vault and the Story Studio require more extraction documentation and environment packaging before Full.
 
 ## Fork guide template
 

@@ -1,6 +1,6 @@
-# Scrapper Pro
+# Getter Pro
 
-Scrapper Pro is AppForge's server-backed public-media search tool. It searches supported public sources, normalizes results into one result model, keeps optional guest/local saves in the browser, previews media inside AppForge, exports supported content, and lets signed-in users archive source references into Media Vault.
+Getter Pro is AppForge's server-backed public-media search tool (formerly Scrapper Pro). It searches supported public sources, normalizes results into one result model, keeps optional guest/local saves in the browser, previews media inside AppForge, exports supported content, and lets signed-in users archive source references into Media Vault.
 
 ## User-facing features
 
@@ -23,7 +23,7 @@ Scrapper Pro is AppForge's server-backed public-media search tool. It searches s
 
 ## Save semantics
 
-Scrapper Pro now has two intentionally different save paths:
+Getter Pro now has two intentionally different save paths:
 
 ### Local save
 
@@ -46,7 +46,7 @@ The archive action stores a signed-in user's result in `user_media_vault` throug
 - `external_url` points to the best available direct media/thumbnail/source URL;
 - source, result type, original URL, thumbnail, direct media URL, snippet and source date are retained as metadata.
 
-Earlier builds wrote `scrapper-result` rows into `dragon_arena_assets`. Migration `20260909174500_decouple_scrapper_pro_into_media_vault.sql` backfills those legacy rows into Media Vault. New Scrapper saves no longer depend on Dragon Arena.
+Earlier builds wrote `scrapper-result` rows into `dragon_arena_assets`. Migration `20260909174500_decouple_scrapper_pro_into_media_vault.sql` backfills those legacy rows into Media Vault. New saves no longer depend on Dragon Arena.
 
 ## Supported sources
 
@@ -61,7 +61,7 @@ The source list is defined server-side in `api/scrape.js` and mirrored in the UI
 - Medium
 - TikTok — visible as a disabled placeholder pending approval for a suitable official API product and scopes
 
-Public search endpoints can rate-limit, change markup, or temporarily fail. Scrapper Pro reports individual source failures while keeping successful results.
+Public search endpoints can rate-limit, change markup, or temporarily fail. Getter Pro reports individual source failures while keeping successful results.
 
 ## YouTube Data API setup
 
@@ -81,7 +81,7 @@ Fetched channel art remains third-party content. Public availability does not gr
 
 ## TikTok placeholder
 
-TikTok is intentionally visible but disabled. AppForgePf has a developer application, but TikTok's client-credentials token is currently documented for the Research API and Commercial Content API; it is not a general public creator/video search grant. Before enabling the source, confirm the approved product and scopes in the TikTok developer portal.
+TikTok is intentionally visible but disabled. AppForge has a developer application, but TikTok's client-credentials token is currently documented for the Research API and Commercial Content API; it is not a general public creator/video search grant. Before enabling the source, confirm the approved product and scopes in the TikTok developer portal.
 
 Future credentials must use server-only variables named `TIKTOK_CLIENT_KEY` and `TIKTOK_CLIENT_SECRET`. The server will exchange them for a short-lived client access token and cache that token; neither credential nor bearer token may be returned to the browser. Implementation is tracked in GitHub issue #21.
 
@@ -175,10 +175,10 @@ Never add API secrets to browser source or commit `.env` files. Use Vercel/Supab
 4. Save one result locally, refresh, and confirm it remains in **Saved**.
 5. While signed in, archive a result to Media Vault.
 6. Archive the same result again and confirm no duplicate Media Vault row appears.
-7. Open Media Vault → **Scrapper Pro** and confirm title/type/source preview metadata is present.
+7. Open Media Vault → **Getter Pro** and confirm title/type/source preview metadata is present.
 8. Delete the Media Vault reference and confirm the original source remains unaffected.
 9. Enable web/article sources and export an article as PDF.
 
 ## Version
 
-**Scrapper Pro 1.3.0** — official server-side YouTube Data API ingestion, channel/video URL resolution, uploads-playlist traversal, enriched provenance, request caching, and clear configuration/quota failures.
+**Getter Pro 1.3.0** — official server-side YouTube Data API ingestion, channel/video URL resolution, uploads-playlist traversal, enriched provenance, request caching, and clear configuration/quota failures.

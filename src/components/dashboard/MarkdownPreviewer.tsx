@@ -28,6 +28,13 @@ const renderInline = (value: string) => escapeHtml(value)
   .replace(/\*([^*]+)\*/g, '<em>$1</em>')
   .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>')
 
+const sanitizeHtml = (html: string): string => html
+  .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+  .replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe>/gi, '')
+  .replace(/\son\w+\s*=/gi, '')
+  .replace(/<object\b[^>]*>[\s\S]*?<\/object>/gi, '')
+  .replace(/<embed\b[^>]*>/gi, '')
+
 const markdownToSafeHtml = (source: string) => {
   const lines = source.replace(/\r\n?/g, '\n').split('\n')
   const output: string[] = []
@@ -48,7 +55,7 @@ const markdownToSafeHtml = (source: string) => {
     output.push(`<p>${renderInline(raw)}</p>`)
   }
   closeList()
-  return output.join('\n')
+  return sanitizeHtml(output.join('\n'))
 }
 
 export function MarkdownPreviewer() {

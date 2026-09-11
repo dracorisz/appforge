@@ -1,10 +1,10 @@
-# Scrapper Pro standalone / fork checklist
+# Getter Pro standalone / fork checklist
 
-This document complements `README.md` with the provider and deployment steps required when extracting Scrapper Pro from AppForge.
+This document complements `README.md` with the provider and deployment steps required when extracting Getter Pro from AppForge.
 
 ## Core boundary
 
-Scrapper Pro should remain usable with only the providers a fork explicitly enables. Provider failures must degrade to partial-source errors instead of breaking the entire search surface.
+Getter Pro should remain usable with only the providers a fork explicitly enables. Provider failures must degrade to partial-source errors instead of breaking the entire search surface.
 
 ## YouTube Data API v3
 
@@ -54,7 +54,7 @@ Public accessibility does not imply ownership or permission to redistribute, min
 
 ## Production readiness
 
-Before calling a standalone Scrapper Pro fork production-ready:
+Before calling a standalone Getter Pro fork production-ready:
 
 - document every required server variable;
 - enable only providers the fork actually supports;

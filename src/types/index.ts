@@ -425,7 +425,7 @@ export const defaultMiniApps: MiniApp[] = [
   },
   {
     id: 'mini-7',
-    name: 'Scrapper Pro',
+    name: 'Getter Pro',
     codename: 'PF_ScrapperPro',
     description: 'Search 12+ public sources for names, keywords, or handles. Save and organize results.',
     status: 'building',

@@ -1,6 +1,6 @@
 # AppForge database setup
 
-Last updated: 2026-09-10
+Last updated: 2026-09-11
 
 ## Current state
 
@@ -34,7 +34,7 @@ Important current migrations include:
 - account/preferences/profile and role setup;
 - Dragon Arena usage, sessions, assets, sharing and quota functions;
 - Media Vault tables/storage/RPC repairs;
-- `20260910011500_create_appforge_tasks.sql` — Task List table + per-user RLS;
+- `20260910013205_create_appforge_tasks.sql` — Task List table + per-user RLS;
 - `20260910013500_harden_dragon_arena_function_grants.sql` — removes anonymous/public execution from image quota mutations.
 
 The Task List and Dragon Arena grant-hardening migrations have been applied to the connected project.

@@ -1,6 +1,6 @@
 # AppForge Marketing Handoff
 
-Prepared: 2026-09-09
+Prepared: 2026-09-11
 
 This document is the starting point for a dedicated marketing-materials session. It separates what can be advertised today from future positioning so launch copy does not overpromise unfinished functionality.
 
@@ -42,7 +42,7 @@ Alternative:
 
 Marketing language should call this an **active beta / evolving Story Studio**, not a finished Novel/Comics creation platform yet.
 
-**Scrapper Pro**
+**Getter Pro**
 
 - Public media/article search experience.
 - Local saved results.
@@ -138,8 +138,8 @@ Capture current production after the latest stable deployment:
 3. Story Studio Novel mode with short narrative + choices.
 4. Story Studio Comics mode with small scene thumbnail and lightbox.
 5. Generated Assets toolbar/panel.
-6. Media Vault showing General / Story or Dragon / Scrapper sources.
-7. Scrapper Pro search + preview.
+6. Media Vault showing General / Story or Dragon / Getter sources.
+7. Getter Pro search + preview.
 8. Any Converter working example.
 9. Settings → Appearance/Profile privacy.
 10. `/huggingface` gallery with model/provider metadata.
@@ -171,7 +171,7 @@ Before actively buying traffic or making strong public claims, verify:
 - latest Vercel production deployment is READY;
 - landing page has no visible broken assets;
 - public Hugging Face page loads;
-- Scrapper Pro public route works;
+- Getter Pro public route works;
 - Any Converter public route works;
 - Weather public route works;
 - signed-in Story Studio can play a turn;

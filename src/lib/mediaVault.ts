@@ -224,10 +224,10 @@ const scrapperKind = (type: ScrapperVaultResult['type']): VaultMedia['kind'] => 
 export async function saveScrapperVaultResult(result: ScrapperVaultResult): Promise<VaultMedia> {
   const { data: auth } = await supabase.auth.getUser()
   const userId = auth.user?.id
-  if (!userId) throw new Error('Sign in to save Scrapper Pro results to Media Vault.')
+  if (!userId) throw new Error('Sign in to save Getter Pro results to Media Vault.')
 
   const sourceRef = result.originalUrl.trim()
-  if (!sourceRef) throw new Error('Scrapper result has no source URL.')
+  if (!sourceRef) throw new Error('Getter Pro result has no source URL.')
 
   const existing = await supabase
     .from('user_media_vault')

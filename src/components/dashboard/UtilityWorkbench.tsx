@@ -34,9 +34,8 @@ const encodeHtml = (value: string) => value
   .replace(/'/g, '&#039;')
 
 const decodeHtml = (value: string) => {
-  const textarea = document.createElement('textarea')
-  textarea.innerHTML = value
-  return textarea.value
+  const parsed = new DOMParser().parseFromString(`<body>${value}</body>`, 'text/html')
+  return parsed.body.textContent || ''
 }
 
 const decodeJwtPart = (value: string) => {

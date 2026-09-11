@@ -1,6 +1,6 @@
 # AppForge Issue Roadmap
 
-Last updated: 2026-09-10
+Last updated: 2026-09-11
 
 GitHub Issues are the canonical actionable backlog. This page is a sequencing/index layer, not a second task tracker.
 

@@ -7,6 +7,14 @@
 <p align="center">Useful web apps today. Forkable standalone PWAs tomorrow.</p>
 
 <p align="center">
+  <a href="https://github.com/dracorisz/appforge/stargazers"><img src="https://img.shields.io/github/stars/dracorisz/appforge?style=social&label=Star" alt="GitHub Stars"></a>
+  <a href="https://github.com/dracorisz/appforge/fork"><img src="https://img.shields.io/github/forks/dracorisz/appforge?style=social&label=Fork" alt="GitHub Forks"></a>
+  <a href="https://github.com/dracorisz/appforge/watch"><img src="https://img.shields.io/github/watching/dracorisz/appforge?style=social&label=Watch" alt="GitHub Watch"></a>
+  <a href="https://www.sstoken.space/"><img src="https://img.shields.io/badge/live-sstoken.space-brightgreen" alt="Live site"></a>
+  <a href="https://docs.sstoken.space/"><img src="https://img.shields.io/badge/docs-docs.sstoken.space-blue" alt="Docs"></a>
+</p>
+
+<p align="center">
   <a href="https://www.sstoken.space/">Try the public beta</a> ·
   <a href="https://github.com/dracorisz/appforge/issues/new?template=bug_report.yml">Report a bug</a> ·
   <a href="https://github.com/dracorisz/appforge/issues/new?template=feature_request.yml">Request a tool</a> ·

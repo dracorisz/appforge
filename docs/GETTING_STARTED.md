@@ -14,6 +14,8 @@ GitHub Pages is intentionally the documentation portal. It is not the production
 
 New developers and agents should read [Environment & agent pickup](./ENVIRONMENT.md) before changing integrated features. It explains the browser/server secret boundary, Supabase, Vercel, GitHub Pages, AI providers, Cloud experiments, validation expectations, and the source-of-truth files to inspect first.
 
+New to GitHub repository participation? Read the [GitHub starter guide](./GITHUB_STARTER.md) for star, watch, fork, discussion, and contribution orientation.
+
 Then read the [Development timeline](./DEVELOPMENT_TIMELINE.md), [Issue roadmap](./ISSUE_ROADMAP.md), and [Agent handoff](./AGENT_HANDOFF.md) to understand what is current, what remains, and what should not be inferred from older sessions.
 
 ## Local development

@@ -62,6 +62,8 @@ For normal use, go to **[sstoken.space](https://www.sstoken.space/)**. For sourc
 
 Read **[Getting started](./GETTING_STARTED.md)** and **[Environment & agent pickup](./ENVIRONMENT.md)** first. Then use **[Project Pulse](./PROJECT-PULSE.md)**, **[Development timeline](./DEVELOPMENT_TIMELINE.md)**, **[Issue roadmap](./ISSUE_ROADMAP.md)** and **[Agent handoff](./AGENT_HANDOFF.md)** to understand the current development sequence before changing code.
 
+New to the GitHub repository? Read **[GitHub starter guide](./GITHUB_STARTER.md)** for star, watch, fork, discussion, and contribution orientation.
+
 ## Current state snapshot
 
 As of 2026-09-11:

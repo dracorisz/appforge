@@ -1,6 +1,6 @@
 # Security advisor triage
 
-Last updated: 2026-09-10
+Last updated: 2026-09-11
 
 This page records how Supabase advisor warnings are interpreted for AppForge. A warning is not automatically a vulnerability, but it must be classified intentionally.
 
