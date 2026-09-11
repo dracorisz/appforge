@@ -38,6 +38,12 @@ const coordinatesFromSavedLocation = (location: string) => {
   } catch { return null }
 }
 
+const validWeather = (data: unknown): data is Weather => {
+  if (!data || typeof data !== 'object') return false
+  const candidate = data as Record<string, unknown>
+  return typeof candidate.location === 'string' && candidate.location.trim().length > 0 && Number.isFinite(Number(candidate.temp_c))
+}
+
 export function SidebarWeather({ collapsed }: { collapsed: boolean }) {
   const [weather, setWeather] = React.useState<Weather | null>(null)
   const [loading, setLoading] = React.useState(false)
@@ -56,29 +62,38 @@ export function SidebarWeather({ collapsed }: { collapsed: boolean }) {
       const isLocationPlaceholder = location.toLowerCase() === 'your location'
 
       if (savedCoordinates) {
-        const response = await fetch(`/api/weather?lat=${encodeURIComponent(savedCoordinates.latitude)}&lon=${encodeURIComponent(savedCoordinates.longitude)}`)
-        const data = await response.json().catch(() => null)
-        if (response.ok && data?.location && Number.isFinite(Number(data.temp_c))) setWeather(data as Weather)
-        return
+        try {
+          const response = await fetch(`/api/weather?lat=${encodeURIComponent(savedCoordinates.latitude)}&lon=${encodeURIComponent(savedCoordinates.longitude)}`)
+          const data = await response.json().catch(() => null)
+          if (response.ok && validWeather(data)) {
+            setWeather(data)
+            return
+          }
+        } catch { /* fall through to the saved city name */ }
       }
 
       if (isLocationPlaceholder && navigator.geolocation) {
-        await new Promise<void>((resolve) => {
+        const located = await new Promise<boolean>((resolve) => {
           navigator.geolocation.getCurrentPosition(async (position) => {
             try {
               const response = await fetch(`/api/weather?lat=${encodeURIComponent(position.coords.latitude)}&lon=${encodeURIComponent(position.coords.longitude)}`)
               const data = await response.json().catch(() => null)
-              if (response.ok && data?.location && Number.isFinite(Number(data.temp_c))) setWeather(data as Weather)
-            } finally { resolve() }
-          }, () => resolve(), { enableHighAccuracy: false, maximumAge: 300000, timeout: 8000 })
+              if (response.ok && validWeather(data)) {
+                setWeather(data)
+                resolve(true)
+                return
+              }
+            } catch { /* use fallback city below */ }
+            resolve(false)
+          }, () => resolve(false), { enableHighAccuracy: false, maximumAge: 300000, timeout: 8000 })
         })
-        return
+        if (located) return
       }
 
       const safeLocation = isLocationPlaceholder ? FALLBACK_LOCATION : location
       const response = await fetch(`/api/weather?q=${encodeURIComponent(safeLocation)}`)
       const data = await response.json().catch(() => null)
-      if (response.ok && data?.location && Number.isFinite(Number(data.temp_c))) setWeather(data as Weather)
+      if (response.ok && validWeather(data)) setWeather(data)
     } catch { /* weather is an optional sidebar enhancement */ }
     finally { setLoading(false) }
   }, [enabled])
