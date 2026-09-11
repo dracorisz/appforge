@@ -37,8 +37,6 @@
   margin-right: auto;
 }
 
-/* VitePress adds a sidebar-width offset to the navbar on article pages.
-   Keep the toolbar itself centered inside the same 1152px shell instead. */
 .VPNavBar .content,
 .VPNavBar.has-sidebar .content {
   width: 100%;
@@ -53,10 +51,6 @@
   }
 }
 
-/* Home Markdown must use the full desktop shell instead of VitePress's
-   normal ~688px article measure. Target both the home-content wrapper and
-   the rendered markdown directly so this stays stable across VitePress DOM
-   wrapper changes. */
 .VPHomeContent,
 .VPHomeContent .container,
 .VPHomeContent .content,
@@ -75,7 +69,6 @@
   box-sizing: border-box;
 }
 
-/* Do not let an inner content wrapper reintroduce article-width limits. */
 .VPHomeContent .content,
 .VPHomeContent .content-container,
 .VPHomeContent .vp-doc,
@@ -118,10 +111,6 @@
   justify-content: flex-start;
 }
 
-/* Pin the hero mark to the actual right edge of the same 1152px shell.
-   VitePress normally centers .image-container with absolute positioning and
-   a transform, so reset those defaults rather than trying to move it with
-   margins alone. */
 .VPHero .image {
   min-width: 0;
   width: 100%;
@@ -168,16 +157,39 @@
 
 @media (min-width: 960px) {
   .VPHero .container {
-    grid-template-columns: minmax(0, 1fr) minmax(240px, 0.55fr);
-    column-gap: 44px;
+    grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+    column-gap: 36px;
   }
 
   .VPHero .main {
     order: 1;
+    max-width: 720px;
+  }
+
+  .VPHero .text {
+    max-width: 720px;
+    font-size: 42px;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+  }
+
+  .VPHero .tagline {
+    max-width: 680px;
   }
 
   .VPHero .image {
     order: 2;
+  }
+
+  .VPHero .image-container {
+    width: 300px;
+    height: 300px;
+  }
+
+  .VPHero .image-src {
+    width: 270px;
+    max-width: 270px;
+    max-height: 270px;
   }
 }
 
