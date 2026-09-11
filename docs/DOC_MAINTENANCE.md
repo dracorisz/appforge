@@ -1,6 +1,6 @@
 # Documentation maintenance
 
-Last updated: 2026-09-10
+Last updated: 2026-09-11
 
 This page defines how AppForge documentation stays aligned with `main`. The goal is to prevent architecture, release, security, and app-status drift as the project changes quickly.
 
@@ -55,7 +55,7 @@ Do not collapse these into a single “done” state.
 
 ## Docs build behavior
 
-Changes under `docs/**` trigger the GitHub Pages workflow. The portal lives at `https://dracorisz.github.io/appforge/` and is independent from the production app deployment.
+Changes under `docs/**` trigger the GitHub Pages workflow. The public portal lives at `https://docs.sstoken.space/` and is independent from the production app deployment. GitHub Pages is its publishing platform, not the user-facing canonical URL.
 
 The docs site uses the canonical AppForge `favicon.svg` as both browser favicon and header logo.
 

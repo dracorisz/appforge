@@ -52,6 +52,8 @@ The v1.27 release candidate adds two cross-product surfaces that Project Pulse s
 - **Public Apps directory** — `/explore` is the canonical signed-out/signed-in browse surface. It exposes registry search, category filters and public/workspace access labels. Signed-in `/apps` remains the workspace All Apps page; signed-out `/apps` redirects to `/explore`.
 - **Desktop Buddy Vertex bridge** — the product now has a keyless Vercel OIDC → Google Workload Identity Federation → short-lived bridge identity → private Cloud Run architecture, plus owner-scoped/idempotent Supabase recovery jobs. Repository implementation does not equal production activation: actual WIF/IAM and Vercel server values plus one deliberate cost-observed smoke call remain release gates.
 
+Recent consolidation also adds dedicated browser-local implementations for **Markdown Previewer** and **SVG Tool**. Their routes are implemented, but their registry status remains `idea` until focused product verification supports a maturity change. The other planned entries—PDF Tool, Excel Tool, and Audio Converter—continue to render the deliberate planned-app surface.
+
 The public sitemap now contains canonical public pages only. Retired Pariflow, old Scrapper Pro and authenticated-only app routes are excluded.
 
 ## Standalone / Full candidates

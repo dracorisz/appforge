@@ -1,6 +1,6 @@
 # AppForge development timeline
 
-Last updated: 2026-09-10
+Last updated: 2026-09-11
 
 This is a planning horizon, not a promise of exact delivery dates. It exists to keep development sequencing coherent before the next deliberate production deploy and formal release.
 
@@ -24,11 +24,16 @@ Already completed in this phase:
 - public app shell made intentionally dark;
 - tablet/mobile sidebar overlay improved with Escape close, body scroll lock and focus return;
 - docs branding reduced to favicon-derived slate/white with dark/light SVG marks;
-- roadmap, agent handoff, security and environment documentation refreshed.
+- shared app metadata/header actions and utility accessibility refined;
+- Desktop Buddy controls regrouped into character, generation/cleanup, and capture sections;
+- sidebar weather fallback naming and loading behavior hardened;
+- dedicated browser-local Markdown Previewer and SVG Tool implementations routed from their registry entries, with maturity promotion intentionally deferred until verification;
+- roadmap, README, agent handoff, release checklist, security and environment documentation refreshed.
 
 Still required before this phase exits:
 
 - CI green on the complete current `main`, not an earlier commit;
+- one deliberate production deployment followed by the documented live smoke sequence;
 - runtime smoke for Bing → Getter Pro → Media Vault fallback (#50);
 - finish #35 tiny-UI/public-theme/mid-width sidebar verification at supported breakpoints;
 - finish the highest-value Story Studio setup/mobile/accessibility gaps under #8;
@@ -49,7 +54,7 @@ Primary goals:
 2. **Task List** — qualify as a second standalone candidate if the local-first core stays clean and the documented 75%+ target is met.
 3. Add app-specific manifest/fork metadata for selected browser-local utilities.
 4. Add a browser-local dependency-boundary check so auth/server imports cannot silently creep into Full candidates.
-5. Resolve the QR Generator maturity mismatch after functional verification (`idea` status with an explicit route).
+5. Review Markdown Previewer and SVG Tool after functional verification, and only then promote their registry maturity from `idea`.
 
 Exit gate: at least one independently extractable PWA is reproducible from a clean checkout with install/build/offline documentation and no hidden AppForge-server dependency.
 

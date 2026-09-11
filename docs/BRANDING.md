@@ -11,7 +11,7 @@ The PWA manifest in `vite.config.ts` is the source of truth for public product/i
 - **Description:** An open-source toolbox of focused web utilities, media tools, and practical browser apps.
 - **Primary categories:** utilities, productivity, developer
 - **Production:** https://www.sstoken.space/
-- **Documentation:** https://dracorisz.github.io/appforge/
+- **Documentation:** https://docs.sstoken.space/
 - **Repository:** https://github.com/dracorisz/appforge
 
 ## Canonical palette
@@ -71,7 +71,7 @@ Compatibility IDs/routes may intentionally preserve historical names (`ai-dragon
 ## Surface roles
 
 - `sstoken.space` — use AppForge
-- `dracorisz.github.io/appforge/` — understand, build, operate, and contribute
+- `docs.sstoken.space` — understand, build, operate, and contribute
 - GitHub repository — source, issues, pull requests, releases, and automation
 - YouTube — demos, walkthroughs, and product showcases
 - Buy Me a Coffee — optional project support

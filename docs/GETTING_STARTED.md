@@ -5,7 +5,7 @@ AppForge is a Vite + React + TypeScript toolbox that combines focused browser ut
 ## Choose the right surface
 
 - **Use the product:** [sstoken.space](https://www.sstoken.space/)
-- **Read project/developer docs:** [dracorisz.github.io/appforge](https://dracorisz.github.io/appforge/)
+- **Read project/developer docs:** [docs.sstoken.space](https://docs.sstoken.space/)
 - **Source, issues, pull requests and releases:** [github.com/dracorisz/appforge](https://github.com/dracorisz/appforge)
 
 GitHub Pages is intentionally the documentation portal. It is not the production host for API-backed AppForge features.

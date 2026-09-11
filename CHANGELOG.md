@@ -23,6 +23,11 @@ This file tracks user-visible AppForge product changes. The canonical source is 
 - Google bridge setup script with an explicit production `WIF_PRINCIPAL_SET` requirement and no downloadable service-account key.
 
 ### Improved
+- Shared app metadata now exposes clearer app identity, version, maturity, and latest-change context, while compact mini-app headers use fewer competing actions.
+- Shared utility controls have stronger focus treatment and accessible labeling.
+- Desktop Buddy settings are grouped into character/behavior, generation/cleanup, and capture/PWA sections.
+- Sidebar Weather uses more reliable fallback names and loading behavior when location data is incomplete.
+- Markdown Previewer and SVG Tool now have dedicated browser-local route implementations; both remain `Idea` until focused product verification supports maturity promotion.
 - Blog content is CMS-backed with bundled fallbacks so public articles continue to render if the content API is temporarily unavailable.
 - Blog articles support optional hero images and privacy-enhanced YouTube video embeds, while other video URLs remain explicit external links.
 - Landing-page walkthrough title, summary and video can now be overridden by a published `video_teaser` content record while retaining the current bundled walkthrough as a fallback.

@@ -1,6 +1,6 @@
 # AppForge unified launch checklist
 
-Last updated: 2026-09-10
+Last updated: 2026-09-11
 
 This is the cross-project execution order before the next deliberate production release. GitHub Issues remain the authoritative acceptance lists for tracked features.
 
@@ -28,6 +28,9 @@ This is the cross-project execution order before the next deliberate production 
 - [x] Media Vault external image rendering can fall back through stored media/thumbnail metadata without a destructive migration.
 - [x] `npm run audit:apps` validates registry/router integrity; current structural result covers 45 entries / 14 categories and passes.
 - [x] `npm run verify:release` combines app audit, lint, typecheck, tests and build.
+- [x] Shared app metadata/header actions and utility focus/accessibility behavior refined.
+- [x] Desktop Buddy workspace controls grouped into character, generation/cleanup and capture sections.
+- [x] Markdown Previewer and SVG Tool have dedicated browser-local implementations and canonical route handling.
 - [x] Private Cloud Run experiment worker and bounded reservation model documented/prepared.
 - [x] Vercel Git deployments disabled; production remains manual-only via `vercel deploy --prod`.
 - [x] GitHub Pages converted to documentation-only VitePress portal.
@@ -70,7 +73,7 @@ Current app audit expectation:
 - planned app routes resolve intentionally;
 - no duplicate IDs or unexpected duplicate routes.
 
-Current non-blocking audit warning: QR Generator remains `idea` despite an explicit route. Verify its actual maturity before changing status; do not promote it solely to silence the warning.
+Current maturity note: Markdown Previewer and SVG Tool have explicit implementations while their registry status remains `idea`. Verify their complete behavior before promotion. PDF Tool, Excel Tool, and Audio Converter remain intentional planned surfaces.
 
 ## Documentation / branding gate
 

@@ -8,7 +8,7 @@ This page is the shortest reliable path for a new developer or coding agent to u
 - **Primary branch:** `main`
 - **Frontend:** Vite + React + TypeScript
 - **Production app:** https://www.sstoken.space/
-- **Docs:** https://dracorisz.github.io/appforge/
+- **Docs:** https://docs.sstoken.space/
 - **Package manager:** npm
 - **Recommended Node runtime:** Node 22
 

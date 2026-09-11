@@ -8,7 +8,7 @@ AppForge is organized around focused tools with a canonical registry identity an
 
 Desktop Buddy is now the canonical dragon companion at `/apps/desktop-buddy`, replacing retired Pariflow Smpl in the 45-entry registry. The current implementation includes KDE Community Konqi starter artwork with source/license metadata, custom image upload, local persistence, framing controls, versioned buddy packs, transparent 512 × 512 PNG export where the source permits it, browser speech controls, and an `appforge:agent-response` reaction bridge.
 
-Real Hugging Face / Vertex generation and the persistent cross-route companion are still active roadmap items rather than being presented as finished capabilities.
+The current workspace also includes explicit Hugging Face and Vertex generation paths, an owner-scoped Vertex recovery ledger, local transparency repair, a persistent cross-route companion, grouped generation/cleanup controls, browser display capture, and screenshot import fallback. Production provider activation and one cost-observed Vertex smoke call remain separate environment/release gates.
 
 [Read Desktop Buddy documentation](./desktop-buddy.md)
 
@@ -45,6 +45,12 @@ Media Vault is the shared authenticated asset surface for General uploads, Story
 ### Story Studio
 
 Story Studio / Dragon Arena uses the joypad/gamepad icon consistently across app surfaces. Signed-out `/apps/ai-dragon-arena` is an AI integrations/promotional page; authenticated users receive the full creator workspace.
+
+## Newly routed browser tools
+
+**Markdown Previewer** and **SVG Tool** now resolve to dedicated browser-local implementations instead of the generic planned-app card. Markdown Previewer persists a draft, safely escapes raw HTML, renders common Markdown, and supports copy/reset/download. SVG Tool validates XML, rejects script elements from preview, performs conservative cleanup, and supports copy/download.
+
+Both entries intentionally remain `Idea` in the canonical registry until focused product verification and maturity review are complete. PDF Tool, Excel Tool, and Audio Converter still resolve to the planned-app surface.
 
 ## Retired app
 

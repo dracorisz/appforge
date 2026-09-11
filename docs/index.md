@@ -74,6 +74,9 @@ As of 2026-09-11:
 - **Getter Pro** is the current name at `/apps/getter-pro`, with per-result local save/download actions and authenticated Media Vault reference storage;
 - Weather Now supports grouped EU/US city presets, device coordinates, and an explicit sidebar-weather location preference;
 - Task List is aligned with the shared app shell and supports local-first tracking, authenticated sync, filters, progress, complete-all, clear-completed, and inline task editing;
+- the canonical registry contains 45 entries across 14 categories: 35 Beta, 5 Building, and 5 Idea;
+- Markdown Previewer and SVG Tool now have dedicated browser-local implementations behind their canonical routes, while their registry maturity remains Idea pending product verification; PDF Tool, Excel Tool, and Audio Converter remain deliberate planned surfaces;
+- shared mini-app headers, utility controls, and app metadata were tightened for clearer actions, keyboard focus, app/version/status visibility, and latest-change context;
 - mobile/tablet navigation now uses a full-screen app-style drawer with an explicit close control;
 - AppForge defaults to dark appearance for new visitors while preserving saved Light/Dark/System preferences;
 - Supabase Preview, CI validation and cloud-worker checks are green after migration-history cleanup;
@@ -82,12 +85,13 @@ As of 2026-09-11:
 
 ## Current priorities
 
-1. Harden Desktop Buddy generated-image transparency validation and browser/PWA screenshot capture fallbacks.
-2. Finish Desktop Buddy cross-route pinning and ensure AppForge agent surfaces emit the shared response event consistently.
-3. Continue Getter Pro provider reliability and Media Vault workflows, including explicit protected-video reference behavior.
+1. Run production smoke checks for authentication, public routes, responsive shell behavior, and PWA update behavior after each deliberate release.
+2. Runtime-verify Getter Pro → Media Vault external-reference save/reload behavior and protected-video reference handling.
+3. Finish the highest-value Story Studio creator setup, title/cover, mobile, and accessibility work.
 4. Complete Any Converter and Task List standalone-PWA hardening.
-5. Review remaining Supabase `SECURITY DEFINER` functions according to their actual authorization requirements.
-6. Keep Project Pulse, timeline, issue roadmap, launch checklist, environment, database/security docs, app docs, changelog, and canonical registry aligned.
+5. Verify Markdown Previewer and SVG Tool product behavior before promoting their registry maturity; keep PDF, Excel, and Audio entries on the planned surface until implemented.
+6. Review remaining Supabase `SECURITY DEFINER` functions according to their actual authorization requirements.
+7. Keep Project Pulse, timeline, issue roadmap, launch checklist, environment, database/security docs, app docs, changelog, and canonical registry aligned.
 
 ## Documentation rule
 

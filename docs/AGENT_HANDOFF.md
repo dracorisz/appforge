@@ -103,6 +103,8 @@ npm run verify:release
 
 The canonical registry parses as **45 entries across 14 categories**. Route/registry integrity is enforced by `npm run audit:apps` and main CI.
 
+Current maturity split is **35 Beta, 5 Building, and 5 Idea**. Markdown Previewer and SVG Tool have dedicated browser-local implementations routed through `RegistryAppFallback`, but their registry status intentionally remains `idea` pending focused product verification. PDF Tool, Excel Tool, and Audio Converter remain planned surfaces.
+
 Run:
 
 ```bash
@@ -165,14 +167,15 @@ Resolve package/registry/changelog release-boundary drift before a formal GitHub
 - Prefer current app-specific docs over stale broad umbrella notes.
 - Keep compatibility IDs when renaming product-facing apps unless a data migration is intentionally planned.
 
-## Near-term direction before next production deploy
+## Release checkpoint and near-term direction
 
 1. keep main CI green with registry, standalone, env-doc, VitePress, lint/typecheck/test/build and cloud-worker validation;
-2. runtime-smoke Bing → Getter Pro → Media Vault and close #50 only if reload/fallback works;
-3. finish #35 specialized-header/weather/tiny-UI sweep across supported breakpoints;
-4. continue Story Studio project setup/title-cover/mobile/accessibility work under #8;
-5. complete remaining GitHub OAuth smoke items under #32;
-6. continue Any Converter standalone packaging after its dependency boundary is kept clean;
-7. review remaining Supabase `SECURITY DEFINER` warnings function by function;
-8. prepare Marketplace/release assets only from current verified UI and a real GitHub integration beyond sign-in;
-9. deploy production only at a deliberate checkpoint.
+2. after a deliberate deployment, smoke the live build fingerprint, authentication, public routes, responsive shell and PWA update path;
+3. runtime-smoke Bing → Getter Pro → Media Vault and close #50 only if reload/fallback works;
+4. finish #35 specialized-header/weather/tiny-UI sweep across supported breakpoints;
+5. continue Story Studio project setup/title-cover/mobile/accessibility work under #8;
+6. complete remaining GitHub OAuth smoke items under #32;
+7. verify Markdown Previewer and SVG Tool before changing their registry status;
+8. continue Any Converter standalone packaging after its dependency boundary is kept clean;
+9. review remaining Supabase `SECURITY DEFINER` warnings function by function;
+10. prepare Marketplace/release assets only from current verified UI and a real GitHub integration beyond sign-in.

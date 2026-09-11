@@ -52,10 +52,14 @@ See [`docs/FULL_STATUS.md`](./docs/FULL_STATUS.md) for the complete standard.
 **Public without an account**
 
 - landing / sign-in page,
+- searchable Apps directory,
+- Blog and Changelog,
 - Hugging Face integration + public generated-scene gallery,
-- Scrapper Pro,
+- Getter Pro,
 - Weather Now,
+- Crypto Track,
 - Any → Any Converter,
+- Favicon Studio, SVG Icons, and Landing Builder,
 - installable PWA shell,
 - public repository and docs.
 
@@ -130,6 +134,8 @@ Live keyless weather lookup through the AppForge same-origin API layer.
 
 JSON formatting, Base64, URL encode/decode, HTML entities, UUIDs, passwords, secure tokens, hashing, hex/binary, JWT inspection, CSV conversion, timestamps, regex testing, and color utilities.
 
+Markdown Previewer and SVG Tool now have dedicated browser-local implementations routed from their registry entries. They remain marked `Idea` until their product-level verification and maturity metadata are completed; PDF Tool, Excel Tool, and Audio Converter still use the intentional planned-app surface.
+
 ## Quick start
 
 ```bash
@@ -143,8 +149,8 @@ npm run dev
 Checks:
 
 ```bash
-npm run typecheck
-npm run build
+npm run verify:release
+npx vitepress build docs
 ```
 
 ## Stack
@@ -247,7 +253,7 @@ Read:
 
 The canonical production deployment is the Vercel `appforge` project connected to `main`.
 
-`main` is production. Contributor changes should arrive through focused pull requests once collaboration rules are enabled.
+`main` is the production source branch, but Git-triggered Vercel deployments are disabled in `vercel.json`. A production release is a deliberate `vercel deploy --prod` from a verified `main` commit; pushing or merging does not deploy by itself.
 
 Production review paths:
 
