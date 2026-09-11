@@ -7,28 +7,28 @@ This page helps first-time visitors understand the AppForge GitHub repository an
 | Area | What it contains |
 |---|---|
 | `src/` | React application source — components, auth, registry, routing |
-| `api/` | Vercel serverless functions (Getter Pro, media, crypto, weather, AI) |
-| `supabase/` | Database migrations and schema |
-| `docs/` | Long-form documentation (published to GitHub Pages) |
+| `api/` | Vercel serverless functions for server-backed product features |
+| `supabase/` | Database migrations, RLS, storage and RPC history |
+| `docs/` | Concise product, developer and operations documentation |
 | `tests/` | Unit tests run via `npm test` |
 | `services/` | Cloud worker and experiment services |
-| `public/` | Static assets including favicon and PWA icons |
-| `.github/` | CI/CD workflows, issue templates, PR template |
-| `scripts/` | Release and tooling scripts |
+| `public/` | Static assets including the canonical brand mark and AppForge PWA icons |
+| `.github/` | CI/CD workflows, issue templates and PR template |
+| `scripts/` | Validation, release and tooling scripts |
 
 ## How to participate
 
 ### Star the project
 
-Starring the repository helps it gain visibility. It also makes it easy to track changes.
+Starring the repository helps AppForge gain visibility and makes it easier to return to the project.
 
 ### Watch for updates
 
-Use the **Watch** button to receive notifications about new commits, issues, and pull requests.
+Use GitHub's **Watch** control to receive the notifications you want for repository activity.
 
 ### Fork and experiment
 
-Fork the repository to create your own copy. You can freely experiment and then open a pull request to share your work back.
+Forking the repository gives you your own copy for development or experimentation. Contributions back to AppForge should use focused pull requests against `main`.
 
 ### Report a bug
 
@@ -36,11 +36,11 @@ Use the **Bug report** template. Include the exact Footer build fingerprint from
 
 ### Request a tool
 
-Use the **Feature or mini-app request** template. Tell us what problem you want solved and what the smallest useful version looks like.
+Use the **Feature or mini-app request** template and describe the user problem and smallest useful workflow.
 
 ### Start a discussion
 
-Use **GitHub Discussions** for ideas, questions, showcases, or long-form project talk. Discussions are the right place for things that are not yet issues or pull requests.
+Use **GitHub Discussions** for ideas, questions, showcases, or longer product/community discussion that is not yet actionable work.
 
 ## Quick links
 
@@ -53,14 +53,17 @@ Use **GitHub Discussions** for ideas, questions, showcases, or long-form project
 
 ## Before you start
 
-1. Read [CONTRIBUTING.md](../CONTRIBUTING.md) for coding and PR expectations
-2. Read [docs/ENVIRONMENT.md](ENVIRONMENT.md) for the integrated environment and secret boundaries
-3. Read [docs/FULL_STATUS.md](FULL_STATUS.md) for the fork-ready app standard
-4. Check existing issues before opening a new one
+1. Read [CONTRIBUTING.md](../CONTRIBUTING.md) for coding and PR expectations.
+2. Read [Getting started](./GETTING_STARTED.md) for the shortest product/developer orientation.
+3. Read [App model](./APP_MODEL.md) for registry, routing, access and shared UI conventions.
+4. Read [Environment](./ENVIRONMENT.md) before changing credentials, providers or deployment-sensitive behavior.
+5. Check existing issues before opening a new one.
+
+AppForge itself is the installable Progressive Web App. Internal tools are developed as parts of this integrated product; separate product spin-offs, if created later, belong in separate projects.
 
 ## Community
 
-This project is open source and welcomes participation from everyone. Please be welcoming, respectful, and constructive. See [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) for details.
+This project is open source and welcomes constructive participation. See [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) for community expectations.
 
 ## License
 
