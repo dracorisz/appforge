@@ -79,6 +79,10 @@ begin
 end;
 $$;
 
+-- The earlier private-media-vault migration used a different TABLE return shape.
+-- PostgreSQL cannot CREATE OR REPLACE across a return-type change, so drop the
+-- zero-argument function explicitly to keep full-history/preview replays valid.
+drop function if exists public.user_media_usage_bytes();
 create or replace function public.user_media_usage_bytes()
 returns table(used_bytes bigint)
 language sql
