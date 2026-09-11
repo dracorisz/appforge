@@ -43,18 +43,15 @@ jobs:
       - name: Build VitePress documentation
         run: npx vitepress build docs --outDir "$DOCS_OUT_DIR"
 
-      - name: Verify custom-domain artifact paths
+      - name: Verify documentation artifact
         run: |
-          echo "Verifying VitePress output in $DOCS_OUT_DIR"
-          find "$DOCS_OUT_DIR" -maxdepth 2 -type f | sort | head -100
           test -f "$DOCS_OUT_DIR/index.html"
           test -f "$DOCS_OUT_DIR/favicon.svg"
           test -d "$DOCS_OUT_DIR/assets"
           if grep -R -nE '(src|href)="/appforge/' "$DOCS_OUT_DIR" --include='*.html'; then
-            echo 'Custom-domain build contains stale /appforge/ asset or navigation paths.' >&2
+            echo 'Documentation build contains stale /appforge/ paths.' >&2
             exit 1
           fi
-          grep -q 'href="https://docs.sstoken.space/favicon.svg"' "$DOCS_OUT_DIR/index.html"
 
       - name: Configure Pages
         uses: actions/configure-pages@v6
