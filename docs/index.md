@@ -9,8 +9,8 @@ hero:
   text: Build, understand, and ship focused web tools.
   tagline: "Developer documentation for the current AppForge product: apps, architecture, releases, AI providers, cloud experiments, and standalone PWA work."
   image:
-    src: /favicon.svg
-    alt: AppForge triangle mark
+    src: https://www.sstoken.space/new-header.svg
+    alt: Dragoljub full-stack developer technology profile banner
   actions:
     - theme: brand
       text: Getting Started
@@ -18,6 +18,9 @@ hero:
     - theme: alt
       text: Browse Apps
       link: /apps/
+    - theme: alt
+      text: Project Pulse
+      link: /PROJECT-PULSE
     - theme: alt
       text: Open App ↗
       link: https://www.sstoken.space/
@@ -37,7 +40,7 @@ features:
     linkText: Read architecture docs
   - title: Release readiness
     details: Project Pulse, timeline, Full-status criteria, roadmap, and launch checks separate code completion from production verification.
-    link: /DEVELOPMENT_TIMELINE
+    link: /PROJECT-PULSE
     linkText: Review readiness
   - title: Security & operations
     details: Review Supabase advisor triage, provider credentials, environment boundaries, and pre-release validation rules.
@@ -57,31 +60,34 @@ For normal use, go to **[sstoken.space](https://www.sstoken.space/)**. For sourc
 
 ## First-time project pickup
 
-Read **[Getting started](./GETTING_STARTED.md)** and **[Environment & agent pickup](./ENVIRONMENT.md)** first. Then use **[Development timeline](./DEVELOPMENT_TIMELINE.md)**, **[Issue roadmap](./ISSUE_ROADMAP.md)** and **[Agent handoff](./AGENT_HANDOFF.md)** to understand the current development sequence before changing code.
+Read **[Getting started](./GETTING_STARTED.md)** and **[Environment & agent pickup](./ENVIRONMENT.md)** first. Then use **[Project Pulse](./PROJECT-PULSE.md)**, **[Development timeline](./DEVELOPMENT_TIMELINE.md)**, **[Issue roadmap](./ISSUE_ROADMAP.md)** and **[Agent handoff](./AGENT_HANDOFF.md)** to understand the current development sequence before changing code.
 
 ## Current state snapshot
 
-As of 2026-09-10:
+As of 2026-09-11:
 
 - Google and GitHub authentication are implemented through Supabase Auth;
+- public Blog and Changelog routes are live in the frontend, with admin+AAL2/TOTP-protected frontend content CRUD at `/admin/content`;
+- the canonical changelog remains `CHANGELOG.md`, with validation/release-note automation in `.github/workflows/changelog.yml` and `scripts/changelog.mjs`;
 - signed-out `/apps/ai-dragon-arena` is an AI integrations/promotional surface, while Story Studio creation remains authenticated;
-- **Desktop Buddy** is the canonical AI companion beta at `/apps/desktop-buddy`, with KDE Konqi starter artwork, portable local packs, framing, transparent PNG export where the source permits it, browser voice, and an AppForge response-event bridge;
-- **Getter Pro** is the current name at `/apps/getter-pro`, with per-result local save/download actions plus bulk Media Vault workflows;
-- **Pariflow Smpl is retired** from the canonical app registry and its old route redirects back to the app catalogue;
-- Dashboard search switches immediately into a focused results view instead of leaving Recent/Categories above the matches;
-- Task List remains a local-first standalone-PWA candidate with optional authenticated sync;
-- the canonical registry remains at 45 entries by replacing retired Pariflow with Desktop Buddy;
-- GitHub Pages is documentation-only and uses the canonical AppForge `favicon.svg` as its large homepage mark as well as its navigation identity;
-- production deployment remains an intentional release step after CI rather than an assumption based on local working state.
+- **Desktop Buddy** is the canonical AI companion beta at `/apps/desktop-buddy`, with KDE Konqi starter artwork, portable local packs, framing, generated-character archiving, browser voice, and an AppForge response-event bridge;
+- **Getter Pro** is the current name at `/apps/getter-pro`, with per-result local save/download actions and authenticated Media Vault reference storage;
+- Weather Now supports grouped EU/US city presets, device coordinates, and an explicit sidebar-weather location preference;
+- Task List is aligned with the shared app shell and supports local-first tracking, authenticated sync, filters, progress, complete-all, clear-completed, and inline task editing;
+- mobile/tablet navigation now uses a full-screen app-style drawer with an explicit close control;
+- AppForge defaults to dark appearance for new visitors while preserving saved Light/Dark/System preferences;
+- Supabase Preview, CI validation and cloud-worker checks are green after migration-history cleanup;
+- GitHub Pages remains documentation-only at `docs.sstoken.space`, aligned to the same 1152px content width used by the main AppForge shell;
+- production deployment remains an intentional release step after CI rather than an assumption based on repository state.
 
 ## Current priorities
 
-1. Complete provider-backed Desktop Buddy generation for Hugging Face and Vertex AI without exposing credentials.
+1. Harden Desktop Buddy generated-image transparency validation and browser/PWA screenshot capture fallbacks.
 2. Finish Desktop Buddy cross-route pinning and ensure AppForge agent surfaces emit the shared response event consistently.
-3. Continue Getter Pro provider reliability and Media Vault workflows, including source-specific download fallbacks.
+3. Continue Getter Pro provider reliability and Media Vault workflows, including explicit protected-video reference behavior.
 4. Complete Any Converter and Task List standalone-PWA hardening.
 5. Review remaining Supabase `SECURITY DEFINER` functions according to their actual authorization requirements.
-6. Keep Project Pulse, timeline, issue roadmap, launch checklist, environment, database/security docs, app docs, and canonical registry aligned.
+6. Keep Project Pulse, timeline, issue roadmap, launch checklist, environment, database/security docs, app docs, changelog, and canonical registry aligned.
 
 ## Documentation rule
 
