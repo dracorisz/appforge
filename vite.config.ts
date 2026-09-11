@@ -6,7 +6,7 @@ const runtimeEnv = ((globalThis as typeof globalThis & {
   process?: { env?: Record<string, string | undefined> }
 }).process?.env || {})
 
-const appVersion = runtimeEnv.npm_package_version || '1.18.0'
+const appVersion = runtimeEnv.npm_package_version || '1.27.0'
 const gitSha = runtimeEnv.VERCEL_GIT_COMMIT_SHA || runtimeEnv.GITHUB_SHA || 'local'
 const buildTime = new Date().toISOString()
 const requestedBasePath = runtimeEnv.VITE_BASE_PATH || '/'
@@ -87,10 +87,10 @@ export default defineConfig({
         ],
         shortcuts: [
           {
-            name: 'Scrapper Pro',
-            short_name: 'Scrapper',
-            description: 'Search public media sources in AppForge Scrapper Pro.',
-            url: `${basePath}apps/scrapper-pro`,
+            name: 'Getter Pro',
+            short_name: 'Getter',
+            description: 'Search public media sources in AppForge Getter Pro.',
+            url: `${basePath}apps/getter-pro`,
             icons: [{ src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml' }]
           },
           {
