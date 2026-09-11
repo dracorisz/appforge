@@ -8,11 +8,16 @@ import { PwaLifecycle } from './components/pwa/PwaLifecycle'
 import { CookieNotice } from './components/public/CookieNotice'
 import { ChangelogPage } from './components/public/ChangelogPage'
 import { PublicBlogArticlePage, PublicBlogPage } from './components/public/PublicContentPages'
+import { updateSeo } from './lib/seo'
 import './index.css'
 import './media.css'
 
 function RootApp() {
   const location = useLocation()
+
+  React.useEffect(() => {
+    updateSeo(location.pathname)
+  }, [location.pathname])
 
   if (location.pathname === '/blog') return <PublicBlogPage />
   if (location.pathname === '/changelog') return <ChangelogPage />
