@@ -1,6 +1,7 @@
 :root {
   --appforge-ink: #0f172a;
   --appforge-paper: #ffffff;
+  --vp-layout-max-width: 1152px;
   --vp-c-brand-1: #0f172a;
   --vp-c-brand-2: #111827;
   --vp-c-brand-3: #020617;
@@ -23,27 +24,45 @@
   --vp-home-hero-image-background-image: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.09), transparent 68%);
 }
 
+.VPNav .container,
+.VPHome .container,
+.VPDoc .container,
+.VPFooter .container {
+  max-width: 1152px !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .VPNavBarTitle .title { font-weight: 700; letter-spacing: -0.01em; }
 .VPNavBarTitle .logo { border-radius: 8px; }
 .VPHero .container { align-items: center; }
-.VPHero .main { max-width: 720px; text-align: left; }
+.VPHero .main { max-width: 610px; text-align: left; }
 .VPHero .name,
 .VPHero .text,
 .VPHero .tagline { margin-left: 0; margin-right: 0; text-align: left; }
-.VPHero .tagline { max-width: 680px; }
+.VPHero .text { max-width: 620px; }
+.VPHero .tagline { max-width: 620px; }
 .VPHero .actions { justify-content: flex-start; }
-.VPHero .image { min-width: 320px; }
-.VPHero .image-container { width: 320px; height: 320px; }
-.VPHero .image-src { width: min(320px, 34vw); max-width: 320px; max-height: 320px; }
+.VPHero .image { min-width: 0; }
+.VPHero .image-container { width: min(500px, 43vw); height: 210px; }
+.VPHero .image-bg { width: 100%; height: 100%; }
+.VPHero .image-src {
+  width: min(500px, 43vw);
+  max-width: 500px;
+  max-height: 210px;
+  border-radius: 16px;
+  object-fit: contain;
+  box-shadow: 0 18px 60px rgba(2, 6, 23, 0.22);
+}
 @media (min-width: 960px) {
-  .VPHero .container { grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr); column-gap: 56px; }
+  .VPHero .container { grid-template-columns: minmax(0, 1fr) minmax(380px, .92fr); column-gap: 44px; }
   .VPHero .main { order: 1; }
   .VPHero .image { order: 2; }
 }
 @media (max-width: 959px) {
-  .VPHero .image { margin: 8px auto 28px; }
-  .VPHero .image-container { width: 240px; height: 240px; }
-  .VPHero .image-src { width: 220px; max-height: 220px; }
+  .VPHero .image { margin: 10px auto 28px; width: 100%; }
+  .VPHero .image-container { width: min(100%, 620px); height: auto; aspect-ratio: 6.4 / 1; }
+  .VPHero .image-src { width: 100%; max-width: 620px; max-height: none; }
 }
 .VPFeature { border-color: rgba(15, 23, 42, 0.12); }
 .dark .VPFeature { border-color: rgba(255, 255, 255, 0.1); }
