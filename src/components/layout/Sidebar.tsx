@@ -8,7 +8,7 @@ import {
 import { getAllApps, getAppsByCategory, searchApps } from '@/lib/registry'
 import { appSidebarPreferenceKey, isAppVisibleInSidebar, isCategoryVisibleInSidebar, loadCategoryOverrides, resolveCategories, subscribeCategoryOverrides } from '@/lib/categories'
 import { useAuth } from '@/auth/AuthProvider'
-import { ensureProfile } from '@/lib/account'
+import { ensureProfile, getRole } from '@/lib/account'
 import { DragonArenaIcon } from '@/components/dashboard/DragonArenaIcon'
 import { SidebarWeather } from './SidebarWeather'
 
@@ -28,17 +28,19 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
   const [signingOut, setSigningOut] = React.useState(false)
   const [profileAvatar, setProfileAvatar] = React.useState<string | null>(null)
   const [profileName, setProfileName] = React.useState<string | null>(null)
+  const [profileRole, setProfileRole] = React.useState<'user' | 'admin'>('user')
   const [, refreshWorkspace] = React.useReducer((value) => value + 1, 0)
 
   React.useEffect(() => subscribeCategoryOverrides(refreshWorkspace), [])
 
   React.useEffect(() => {
     let cancelled = false
-    if (!user) { setProfileAvatar(null); setProfileName(null); return }
-    void ensureProfile(user).then((profile) => {
+    if (!user) { setProfileAvatar(null); setProfileName(null); setProfileRole('user'); return }
+    void Promise.all([ensureProfile(user), getRole(user.id)]).then(([profile, role]) => {
       if (cancelled) return
       setProfileAvatar(profile.avatar_url || null)
       setProfileName(profile.display_name || profile.username || null)
+      setProfileRole(role)
     }).catch(() => undefined)
     return () => { cancelled = true }
   }, [user, location.pathname])
@@ -67,7 +69,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
 
       <nav className="scrollbar-hide flex-1 overflow-y-auto overflow-x-hidden px-3 py-2">
         {!isCollapsed && <h3 className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">System</h3>}
-        <div className="space-y-0.5">{coreItems.map((item) => { const Icon = item.icon; const active = location.pathname === item.path; return <NavLink key={item.id} to={item.path} onClick={onClose} title={isCollapsed ? item.label : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'}`}><Icon className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">{item.label}</span>}</NavLink> })}</div>
+        <div className="space-y-0.5">{coreItems.map((item) => { const Icon = item.icon; const active = location.pathname === item.path; return <NavLink key={item.id} to={item.path} onClick={onClose} title={isCollapsed ? item.label : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'}`}><Icon className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">{item.label}</span>}</NavLink> })}{profileRole === 'admin' && <NavLink to="/admin/content" onClick={onClose} title={isCollapsed ? 'Content Manager' : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${location.pathname === '/admin/content' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'}`}><FileText className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">Content Manager</span>}</NavLink>}</div>
         {(sidebarCategories.length > 0 || sidebarApps.length > 0) && <div className="mt-5">
           {!isCollapsed && <div className="mb-1 flex items-center justify-between px-3"><h3 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Workspace</h3><NavLink to="/workspace" onClick={onClose} className="text-[10px] text-muted-foreground hover:text-foreground">Customize</NavLink></div>}
           {sidebarCategories.length > 0 && <div className="space-y-0.5">{sidebarCategories.map((category) => { const Icon = iconMap[category.icon] || Wrench; const path = `/category/${category.id}`; const active = location.pathname === path; return <NavLink key={category.id} to={path} onClick={onClose} title={isCollapsed ? category.name : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'}`}><Icon className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">{category.name}</span>}</NavLink> })}</div>}
