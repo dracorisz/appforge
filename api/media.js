@@ -3,6 +3,18 @@ import { isIP } from 'node:net'
 
 const MAX_BYTES = 35 * 1024 * 1024
 const MAX_REDIRECTS = 3
+const PROTECTED_PAGE_HOSTS = [
+  'youtube.com',
+  'youtu.be',
+  'tiktok.com',
+  'instagram.com',
+  'facebook.com',
+  'fb.watch',
+  'x.com',
+  'twitter.com',
+  'vimeo.com',
+  'twitch.tv',
+]
 
 const isPrivateIp = (address) => {
   if (!address) return true
@@ -15,6 +27,15 @@ const isPrivateIp = (address) => {
   if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true
   if (parts[0] === 192 && parts[1] === 168) return true
   return false
+}
+
+const isProtectedSourcePage = (value) => {
+  try {
+    const host = new URL(String(value || '')).hostname.toLowerCase().replace(/^www\./, '')
+    return PROTECTED_PAGE_HOSTS.some((entry) => host === entry || host.endsWith(`.${entry}`))
+  } catch {
+    return false
+  }
 }
 
 const assertSafeUrl = async (value) => {
@@ -55,7 +76,9 @@ const fetchMedia = async (initialUrl) => {
         const location = response.headers.get('location')
         if (!location) throw new Error('Redirect has no destination')
         if (redirect === MAX_REDIRECTS) throw new Error('Too many redirects')
-        current = await assertSafeUrl(new URL(location, current).toString())
+        const next = new URL(location, current).toString()
+        if (isProtectedSourcePage(next)) throw new Error('Protected source pages are reference-only in Getter Pro')
+        current = await assertSafeUrl(next)
         continue
       }
 
@@ -114,6 +137,13 @@ export default async function handler(req, res) {
   try {
     const target = String(req.query?.url || '')
     if (!target) return res.status(400).json({ error: 'url is required' })
+    if (isProtectedSourcePage(target)) {
+      return res.status(409).json({
+        error: 'This provider page is reference-only. Save its URL to Media Vault instead of downloading protected media.',
+        code: 'protected_source_reference_only',
+        action: 'save_reference',
+      })
+    }
 
     const response = await fetchMedia(target)
     const contentType = String(response.headers.get('content-type') || '').split(';')[0].toLowerCase()
@@ -123,7 +153,7 @@ export default async function handler(req, res) {
 
     const data = await readLimited(response)
     const extension = extensionFor(contentType)
-    const requestedName = safeFilename(req.query?.name, `scrapper-pro.${extension}`)
+    const requestedName = safeFilename(req.query?.name, `getter-pro.${extension}`)
     const filename = requestedName.includes('.') ? requestedName : `${requestedName}.${extension}`
 
     res.setHeader('Content-Type', contentType)
