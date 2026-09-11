@@ -4,31 +4,58 @@ import test from 'node:test'
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8')
 
+const blogRoutes = [
+  '/blog',
+  '/blog/desktop-buddy-your-ai-companion-on-the-desktop',
+  '/blog/getter-pro-capture-web-media-with-a-clear-storage-model',
+  '/blog/weather-now-fast-local-conditions-without-a-heavy-dashboard',
+  '/blog/task-list-a-small-workspace-that-stays-out-of-the-way',
+  '/blog/hugging-face-gallery-a-visible-home-for-generated-assets',
+]
+
 test('public sitemap contains only current canonical public AppForge routes', async () => {
   const sitemap = await read('public/sitemap.xml')
-  assert.match(sitemap, /https:\/\/www\.sstoken\.space\/landing/)
-  assert.match(sitemap, /https:\/\/www\.sstoken\.space\/explore/)
-  assert.match(sitemap, /https:\/\/www\.sstoken\.space\/blog/)
-  assert.match(sitemap, /https:\/\/www\.sstoken\.space\/changelog/)
-  assert.match(sitemap, /https:\/\/www\.sstoken\.space\/huggingface/)
-  assert.match(sitemap, /https:\/\/www\.sstoken\.space\/apps\/getter-pro/)
-  assert.match(sitemap, /https:\/\/www\.sstoken\.space\/apps\/weather-now/)
-  assert.match(sitemap, /https:\/\/www\.sstoken\.space\/apps\/any-converter/)
-  assert.doesNotMatch(sitemap, /scrapper-pro/)
-  assert.doesNotMatch(sitemap, /pariflow/)
+  const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1])
+  const expected = [
+    'https://www.sstoken.space/',
+    'https://www.sstoken.space/explore',
+    ...blogRoutes.map((route) => `https://www.sstoken.space${route}`),
+    'https://www.sstoken.space/changelog',
+    'https://www.sstoken.space/apps/getter-pro',
+    'https://www.sstoken.space/apps/weather-now',
+    'https://www.sstoken.space/apps/crypto-track',
+    'https://www.sstoken.space/apps/any-converter',
+    'https://www.sstoken.space/apps/favicon-studio',
+    'https://www.sstoken.space/apps/svg-icons',
+    'https://www.sstoken.space/apps/landing-builder',
+    'https://www.sstoken.space/apps/ai-dragon-arena',
+    'https://www.sstoken.space/huggingface',
+    'https://www.sstoken.space/privacy',
+    'https://www.sstoken.space/terms',
+  ]
+  assert.deepEqual(locations, expected)
+  assert.doesNotMatch(sitemap, /pariflow/i)
+  assert.doesNotMatch(sitemap, /scrapper-pro/i)
+  assert.doesNotMatch(sitemap, /\/settings|\/workspace|\/people|\/apps\/desktop-buddy/)
 })
 
 test('SEO allowlist and canonical aliases match the public release surface', async () => {
   const seo = await read('src/lib/seo.ts')
-  assert.match(seo, /'\/landing'/)
-  assert.match(seo, /'\/explore'/)
-  assert.match(seo, /'\/blog'/)
-  assert.match(seo, /'\/changelog'/)
-  assert.match(seo, /'\/huggingface'/)
-  assert.match(seo, /'\/apps\/getter-pro'/)
-  assert.match(seo, /'\/apps\/weather-now'/)
-  assert.match(seo, /'\/apps\/any-converter'/)
+  for (const route of [
+    '/explore',
+    '/apps/getter-pro',
+    '/apps/weather-now',
+    '/apps/crypto-track',
+    '/apps/any-converter',
+    '/apps/favicon-studio',
+    '/apps/svg-icons',
+    '/apps/landing-builder',
+    '/apps/ai-dragon-arena',
+  ]) {
+    assert.match(seo, new RegExp(`['"]${route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`))
+  }
   assert.match(seo, /'\/apps\/scrapper-pro': '\/apps\/getter-pro'/)
+  assert.match(seo, /'\/pf-scrapper-pro': '\/apps\/getter-pro'/)
 })
 
 test('blog, changelog and content admin routes stay intentionally exposed at the root router', async () => {
@@ -46,7 +73,6 @@ test('public Apps directory is permanent at explore while signed-in apps remains
   const app = await read('src/App.tsx')
   const landing = await read('src/auth/LoginPage.tsx')
   const publicHeader = await read('src/components/public/PublicHeader.tsx')
-
   assert.match(app, /location\.pathname === '\/explore'.*PublicAppsPage/)
   assert.match(app, /!user && !loading && location\.pathname === '\/apps'.*Navigate to="\/explore"/)
   assert.match(landing, /<PublicHeader/)
