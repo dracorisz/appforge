@@ -16,6 +16,9 @@ This file tracks user-visible AppForge product changes. The canonical source is 
 - Desktop Buddy **Vertex AI secure bridge** using Vercel OIDC → Google Workload Identity Federation → short-lived service-account credentials → IAM-protected Cloud Run.
 - Owner-scoped, idempotent Vertex bridge job ledger in Supabase. Browser/network retries reuse the same request/job rather than silently starting another paid image.
 - Desktop Buddy Vertex provider selector, readiness state, explicit generation flow and Recover Vertex job action.
+- Desktop Buddy **Transparency Repair** tool that converts model-painted checkerboard/flat edge backgrounds into real PNG alpha locally, with adjustable tolerance and preview before activation.
+- Desktop Buddy **Screen Capture** tool using browser display capture where available, plus a screenshot-import fallback for Brave and installed PWA environments that block screen sharing.
+- Desktop Buddy screenshots can be downloaded locally or archived privately in Media Vault under `Screenshots`.
 - Safe Vertex bridge status card under Settings → Integrations; infrastructure identifiers remain server/deployment configuration rather than profile fields.
 - Google bridge setup script with an explicit production `WIF_PRINCIPAL_SET` requirement and no downloadable service-account key.
 
@@ -27,6 +30,12 @@ This file tracks user-visible AppForge product changes. The canonical source is 
 - Story Studio and Desktop Buddy now share one Hugging Face image-provider implementation.
 - Desktop Buddy preserves a Vertex idempotency key across browser timeouts and keeps ambiguous worker timeouts recoverable.
 - Desktop Buddy provider documentation now describes real HF/Vertex boundaries, keyless identity and recovery behavior.
+- Getter Pro media downloads now explicitly reject protected provider page URLs as reference-only while preserving downloads for direct, unprotected image/video resources.
+- Getter Pro Media Vault references remain the supported save path for protected YouTube/TikTok/social-media source pages.
+- Documentation layout now follows the main AppForge 1152px content width, uses the large SVG profile banner on the docs homepage, and links Project Pulse directly to the live docs portal and GitHub issues.
+- Task List now follows the shared full app width and adds inline editing, complete-all, progress feedback and richer task counts while preserving local-first/Supabase sync.
+- Mobile/tablet navigation is now a full-screen app-style drawer with an explicit close control.
+- New visitors start in dark appearance by default while saved Light/Dark/System preferences continue to take precedence.
 - SEO metadata recognizes the current public app routes and canonical Getter Pro URL.
 - `sitemap.xml` now contains canonical public pages only; retired Pariflow, old Scrapper Pro and authenticated-only app URLs were removed.
 - Live Supabase schema now includes the owner-RLS Vertex bridge job table.
