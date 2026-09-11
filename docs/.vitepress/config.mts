@@ -39,7 +39,6 @@ export default defineConfig({
     nav: [
       { text: 'Guide', link: '/GETTING_STARTED' },
       { text: 'Apps', link: '/apps/' },
-      { text: 'Desktop Buddy', link: '/apps/desktop-buddy' },
       { text: 'Architecture', link: '/APP_MODEL' },
       { text: 'Open App ↗', link: 'https://www.sstoken.space/' },
     ],
@@ -49,32 +48,8 @@ export default defineConfig({
         items: [
           { text: 'Overview', link: '/' },
           { text: 'Getting started', link: '/GETTING_STARTED' },
-          { text: 'Environment & agent pickup', link: '/ENVIRONMENT' },
-          { text: 'Development timeline', link: '/DEVELOPMENT_TIMELINE' },
           { text: 'Project Pulse', link: '/PROJECT-PULSE' },
-          { text: 'Full-status standard', link: '/FULL_STATUS' },
-          { text: 'Issue roadmap', link: '/ISSUE_ROADMAP' },
           { text: 'Launch checklist', link: '/LAUNCH-CHECKLIST' },
-        ],
-      },
-      {
-        text: 'Architecture & platform',
-        items: [
-          { text: 'App model', link: '/APP_MODEL' },
-          { text: 'Database', link: '/DATABASE' },
-          { text: 'Security advisories', link: '/SECURITY_ADVISORS' },
-          { text: 'AI providers', link: '/AI-PROVIDERS' },
-          { text: 'Cloud experiments', link: '/CLOUD-EXPERIMENTS' },
-          { text: 'Branching', link: '/BRANCHING' },
-          { text: 'Performance baseline', link: '/PERFORMANCE_BASELINE' },
-        ],
-      },
-      {
-        text: 'Identity, brand & OAuth',
-        items: [
-          { text: 'Branding', link: '/BRANDING' },
-          { text: 'GitHub auth', link: '/GITHUB_AUTH' },
-          { text: 'OAuth verification', link: '/OAUTH_VERIFICATION' },
         ],
       },
       {
@@ -90,20 +65,45 @@ export default defineConfig({
         ],
       },
       {
-        text: 'Publishing & growth',
+        text: 'Architecture & platform',
         items: [
-          { text: 'Marketing handoff', link: '/MARKETING_HANDOFF' },
-          { text: 'Landing system', link: '/LANDING_SYSTEM' },
-          { text: 'Landing media', link: '/LANDING_MEDIA' },
+          { text: 'App model', link: '/APP_MODEL' },
+          { text: 'Database', link: '/DATABASE' },
+          { text: 'Security advisories', link: '/SECURITY_ADVISORS' },
+          { text: 'AI providers', link: '/AI-PROVIDERS' },
+          { text: 'Cloud experiments', link: '/CLOUD-EXPERIMENTS' },
+        ],
+      },
+      {
+        text: 'Identity & access',
+        collapsed: true,
+        items: [
+          { text: 'Branding', link: '/BRANDING' },
+          { text: 'GitHub auth', link: '/GITHUB_AUTH' },
+          { text: 'OAuth verification', link: '/OAUTH_VERIFICATION' },
         ],
       },
       {
         text: 'Maintainers & agents',
-        collapsed: false,
+        collapsed: true,
         items: [
           { text: 'Environment & agent pickup', link: '/ENVIRONMENT' },
           { text: 'Agent handoff', link: '/AGENT_HANDOFF' },
+          { text: 'Development timeline', link: '/DEVELOPMENT_TIMELINE' },
+          { text: 'Issue roadmap', link: '/ISSUE_ROADMAP' },
+          { text: 'Full-status standard', link: '/FULL_STATUS' },
+          { text: 'Branching', link: '/BRANCHING' },
+          { text: 'Performance baseline', link: '/PERFORMANCE_BASELINE' },
           { text: 'Docs maintenance', link: '/DOC_MAINTENANCE' },
+        ],
+      },
+      {
+        text: 'Publishing & growth',
+        collapsed: true,
+        items: [
+          { text: 'Marketing handoff', link: '/MARKETING_HANDOFF' },
+          { text: 'Landing system', link: '/LANDING_SYSTEM' },
+          { text: 'Landing media', link: '/LANDING_MEDIA' },
         ],
       },
     ],
