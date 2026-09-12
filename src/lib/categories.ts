@@ -27,11 +27,20 @@ export function isAppVisibleInSidebar(id: string, override?: CategoryOverride) {
 
 const STORAGE_KEY = 'appforge-category-overrides-v2'
 const EVENT_NAME = 'appforge:category-overrides'
+let activeScope: string | null = null
+
+const scopedStorageKey = () => activeScope ? `${STORAGE_KEY}:${activeScope}` : STORAGE_KEY
+
+export function setCategoryOverrideScope(userId: string | null) {
+  if (activeScope === userId) return
+  activeScope = userId
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(EVENT_NAME))
+}
 
 export function loadCategoryOverrides(): Record<string, CategoryOverride> {
   if (typeof window === 'undefined') return {}
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
+    const raw = window.localStorage.getItem(scopedStorageKey())
     if (!raw) return {}
     const parsed = JSON.parse(raw)
     return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
@@ -42,7 +51,7 @@ export function loadCategoryOverrides(): Record<string, CategoryOverride> {
 
 export function saveCategoryOverrides(overrides: Record<string, CategoryOverride>) {
   if (typeof window === 'undefined') return
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides))
+  window.localStorage.setItem(scopedStorageKey(), JSON.stringify(overrides))
   window.dispatchEvent(new CustomEvent(EVENT_NAME))
 }
 
