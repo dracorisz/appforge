@@ -16,7 +16,7 @@ export default defineConfig({
     search: { provider: 'local' },
     nav: [
       { text: 'Guide', link: '/GETTING_STARTED' },
-      { text: 'Apps', link: '/apps/' },
+      { text: 'Applications', link: '/apps/' },
       { text: 'Support', link: 'https://github.com/dracorisz/appforge/issues' },
       { text: 'AppForge', link: 'https://www.sstoken.space/' },
     ],
@@ -26,7 +26,7 @@ export default defineConfig({
         items: [
           { text: 'Overview', link: '/' },
           { text: 'Getting started', link: '/GETTING_STARTED' },
-          { text: 'Apps', link: '/apps/' },
+          { text: 'Applications', link: '/apps/' },
           { text: 'App model', link: '/APP_MODEL' },
           { text: 'Environment', link: '/ENVIRONMENT' },
           { text: 'Launch checklist', link: '/LAUNCH-CHECKLIST' },
