@@ -6,19 +6,16 @@
 }
 
 .VPHome .VPHero .image {
+  width: 100%;
   justify-content: flex-end;
   margin-left: auto;
   margin-right: 0;
+  padding-right: 0 !important;
 }
 
 .VPHome .VPHero .image-container {
-  margin-left: auto;
-  margin-right: 0;
-}
-
-.VPHome .VPHero .image-src {
-  margin-left: auto;
-  margin-right: 0;
+  margin-left: auto !important;
+  margin-right: 0 !important;
 }
 
 .VPHome .VPHero .container,
@@ -30,6 +27,12 @@
   margin-right: auto;
   padding-left: 24px;
   padding-right: 24px;
+}
+
+.dark .VPNavBarMenuLink:hover,
+.dark .VPMenuLink:hover,
+.dark .vp-doc a:hover {
+  color: #fff !important;
 }
 
 @media (min-width: 640px) {
@@ -53,5 +56,11 @@
   .VPHome .VPHero .image-container {
     transform: none !important;
     right: 0 !important;
+  }
+
+  .VPHome .VPHero .image-src {
+    left: auto !important;
+    right: 0 !important;
+    transform: translateY(-50%) !important;
   }
 }
