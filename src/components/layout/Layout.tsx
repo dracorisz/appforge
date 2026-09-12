@@ -25,9 +25,7 @@ export function Layout({ children, currentVersion }: { children: React.ReactNode
     if (!mobileOpen) return
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeMobileSidebar()
-    }
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') closeMobileSidebar() }
     window.addEventListener('keydown', onKeyDown)
     return () => {
       document.body.style.overflow = previousOverflow
@@ -55,7 +53,9 @@ export function Layout({ children, currentVersion }: { children: React.ReactNode
           <div className="mx-auto min-w-0 w-full max-w-[1500px]">
             {showProjectPulse && <ProjectPulse />}
             {showAppMeta && <AppMetaBar />}
-            {children}
+            <div className="app-content w-full [&>div:first-child]:!mx-0 [&>div:first-child]:!w-full [&>div:first-child]:!max-w-none">
+              {children}
+            </div>
           </div>
         </main>
         <Footer version={currentVersion} />
