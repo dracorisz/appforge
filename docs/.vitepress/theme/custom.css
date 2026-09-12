@@ -30,12 +30,26 @@
 }
 
 .dark .VPNavBarMenuLink:hover,
+.dark .VPNavBarMenuLink.active,
+.dark .VPNavBarMenuLink:active,
 .dark .VPNavBarMenuGroup .button:hover,
+.dark .VPNavBarMenuGroup .button.active,
+.dark .VPNavBarMenuGroup .button:active,
 .dark .VPMenuLink:hover,
+.dark .VPMenuLink.active,
+.dark .VPMenuLink:active,
 .dark .VPMenuLink:hover .text,
+.dark .VPMenuLink.active .text,
+.dark .VPMenuLink:active .text,
 .dark .VPSidebarItem .link:hover,
+.dark .VPSidebarItem .link.active,
+.dark .VPSidebarItem .link:active,
 .dark .VPSidebarItem .link:hover .text,
-.dark .vp-doc a:hover {
+.dark .VPSidebarItem .link.active .text,
+.dark .VPSidebarItem .link:active .text,
+.dark .vp-doc a:hover,
+.dark .vp-doc a.active,
+.dark .vp-doc a:active {
   color: #fff !important;
 }
 
