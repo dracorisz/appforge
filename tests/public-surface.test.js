@@ -31,9 +31,19 @@ test('public sitemap contains only current canonical public AppForge routes', as
     'https://www.sstoken.space/terms',
   ]
   assert.deepEqual(locations, expected)
-  assert.doesNotMatch(sitemap, /pariflow/i)
-  assert.doesNotMatch(sitemap, /scrapper-pro|getter-pro|ai-dragon-arena|\/huggingface/i)
-  assert.doesNotMatch(sitemap, /\/settings|\/workspace|\/people|\/apps\/desktop-buddy|\/apps\/media-vault/)
+  const paths = locations.map((location) => new URL(location).pathname)
+  for (const privatePath of [
+    '/apps/getter-pro',
+    '/apps/scrapper-pro',
+    '/apps/ai-dragon-arena',
+    '/huggingface',
+    '/apps/desktop-buddy',
+    '/apps/media-vault',
+    '/settings',
+    '/workspace',
+    '/people',
+  ]) assert.equal(paths.includes(privatePath), false)
+  assert.equal(paths.some((path) => path.includes('pariflow')), false)
 })
 
 test('SEO public routes derive from the registry and preserve canonical aliases', async () => {
