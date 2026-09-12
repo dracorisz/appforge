@@ -44,6 +44,7 @@ import { loadUserPreferences, saveUserPreferences } from './lib/preferences'
 import { loadCategoryOverrides, saveCategoryOverrides, setCategoryOverrideScope, subscribeCategoryOverrides } from './lib/categories'
 import { stripLegacyMiniAppCommerce } from './lib/legacyMiniApps'
 import { updateSeo } from './lib/seo'
+import { getApp } from './lib/registry'
 
 const SettingsPage = React.lazy(() => import('./components/resources/Settings').then((module) => ({ default: module.SettingsPage })))
 const PeoplePage = React.lazy(() => import('./components/resources/People').then((module) => ({ default: module.PeoplePage })))
@@ -102,6 +103,7 @@ const utilitySlugs = new Set(['json-formatter','uuid-generator','password-genera
 const imageSlugs = new Set(['image-resizer','image-converter','image-compressor','image-metadata'])
 const localSlugs = new Set(['csv-converter','timestamp-converter','regex-tester'])
 const privatePaths = new Set(['/apps/getter-pro','/apps/scrapper-pro','/apps/media-vault','/apps/desktop-buddy','/apps/ai-dragon-arena'])
+const toolNameForSlug = (slug: string) => getApp(slug)?.name || slug.replace(/-/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
 
 function publicAppPage(pathname: string): React.ReactNode | null {
   const slug = pathname.startsWith('/apps/') ? pathname.slice('/apps/'.length) : ''
@@ -117,9 +119,9 @@ function publicAppPage(pathname: string): React.ReactNode | null {
   if (pathname === '/apps/task-list') return <PublicToolShell toolName="Task List"><TaskList /></PublicToolShell>
   if (pathname === '/apps/qr-generator') return <PublicToolShell toolName="QR Generator" toolIcon={<QrCode className="h-4 w-4" />}><QrGenerator /></PublicToolShell>
   if (pathname === '/apps/color-picker') return <PublicToolShell toolName="Color Picker"><ColorPickerTool /></PublicToolShell>
-  if (utilitySlugs.has(slug)) return <PublicToolShell toolName={slug}><UtilityWorkbench /></PublicToolShell>
-  if (imageSlugs.has(slug)) return <PublicToolShell toolName={slug}><ImageWorkbench /></PublicToolShell>
-  if (localSlugs.has(slug)) return <PublicToolShell toolName={slug}><LocalToolsWorkbench /></PublicToolShell>
+  if (utilitySlugs.has(slug)) return <PublicToolShell toolName={toolNameForSlug(slug)}><UtilityWorkbench /></PublicToolShell>
+  if (imageSlugs.has(slug)) return <PublicToolShell toolName={toolNameForSlug(slug)}><ImageWorkbench /></PublicToolShell>
+  if (localSlugs.has(slug)) return <PublicToolShell toolName={toolNameForSlug(slug)}><LocalToolsWorkbench /></PublicToolShell>
   return null
 }
 
