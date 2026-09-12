@@ -142,6 +142,24 @@ const normalizeEmail = (value: unknown) => {
   return text
 }
 
+const normalizeUsername = (value: unknown) => {
+  const username = trimOrNull(value)?.toLowerCase() || null
+  if (!username) return null
+  if (username.length > 64 || !/^[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?$/.test(username)) {
+    throw new Error('Username may use lowercase letters, numbers, dots, underscores, and hyphens, and cannot start or end with punctuation.')
+  }
+  return username
+}
+
+const normalizeGithubUsername = (value: unknown) => {
+  const username = trimOrNull(value)?.replace(/^@/, '') || null
+  if (!username) return null
+  if (username.length > 39 || !/^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/.test(username) || username.includes('--')) {
+    throw new Error('GitHub username must be a valid GitHub handle.')
+  }
+  return username
+}
+
 export async function ensureProfile(user: User): Promise<AppProfile> {
   const existing = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
   if (existing.error) throw existing.error
@@ -155,12 +173,12 @@ export async function saveProfile(userId: string, patch: Partial<AppProfile>): P
   const skills = Array.isArray(patch.skills) ? patch.skills.map((skill) => skill.trim().slice(0, 80)).filter(Boolean).slice(0, 16) : []
   const payload = {
     display_name: trimLimited(patch.display_name, 120),
-    username: trimLimited(patch.username, 64),
+    username: normalizeUsername(patch.username),
     avatar_url: trimLimited(patch.avatar_url, 2_000),
     bio: trimLimited(patch.bio, 2_000),
     website: normalizeHttpUrl(patch.website),
     location: trimLimited(patch.location, 160),
-    github_username: trimLimited(patch.github_username, 80)?.replace(/^@/, '') || null,
+    github_username: normalizeGithubUsername(patch.github_username),
     headline: trimLimited(patch.headline, 240),
     skills,
     open_to_collaboration: patch.open_to_collaboration ?? true,
@@ -221,13 +239,14 @@ export async function uploadProfileImage(userId: string, file: File, kind: 'avat
   const image = await supabase.from('user_images').insert({ owner_id: userId, title: file.name, source_url: publicUrl.publicUrl, storage_path: path, mime_type: file.type, metadata: { size: file.size } }).select('*').single()
   if (image.error) { await supabase.storage.from('profile-media').remove([path]); throw image.error }
 
-  const previousAvatar = kind === 'avatar'
-    ? await supabase.from('profile_images').select('image_id').eq('profile_id', userId).eq('kind', 'avatar')
+  const replacingSingle = kind === 'avatar' || kind === 'cover'
+  const previousSingle = replacingSingle
+    ? await supabase.from('profile_images').select('image_id').eq('profile_id', userId).eq('kind', kind)
     : null
-  if (previousAvatar?.error) {
+  if (previousSingle?.error) {
     await supabase.from('user_images').delete().eq('id', image.data.id).eq('owner_id', userId)
     await supabase.storage.from('profile-media').remove([path])
-    throw previousAvatar.error
+    throw previousSingle.error
   }
 
   const link = await supabase.from('profile_images').insert({ profile_id: userId, image_id: image.data.id, kind, sort_order: kind === 'gallery' ? Date.now() : 0 })
@@ -245,10 +264,13 @@ export async function uploadProfileImage(userId: string, file: File, kind: 'avat
       await supabase.storage.from('profile-media').remove([path])
       throw profile.error
     }
-    const oldIds = (previousAvatar?.data || []).map((row) => row.image_id).filter((id): id is string => Boolean(id))
+  }
+
+  if (replacingSingle) {
+    const oldIds = (previousSingle?.data || []).map((row) => row.image_id).filter((id): id is string => Boolean(id) && id !== image.data.id)
     if (oldIds.length) {
       const oldImages = await supabase.from('user_images').select('id,storage_path').eq('owner_id', userId).in('id', oldIds)
-      await supabase.from('profile_images').delete().eq('profile_id', userId).eq('kind', 'avatar').in('image_id', oldIds)
+      await supabase.from('profile_images').delete().eq('profile_id', userId).eq('kind', kind).in('image_id', oldIds)
       await supabase.from('user_images').delete().eq('owner_id', userId).in('id', oldIds)
       const oldPaths = (oldImages.data || []).map((row) => row.storage_path).filter((value): value is string => Boolean(value))
       if (oldPaths.length) await supabase.storage.from('profile-media').remove(oldPaths)
