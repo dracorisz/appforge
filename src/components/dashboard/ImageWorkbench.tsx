@@ -11,6 +11,11 @@ type ImageInfo = {
   height: number
 }
 
+const MAX_IMAGE_BYTES = 25 * 1024 * 1024
+const MAX_DIMENSION = 8192
+const MAX_PIXELS = 50_000_000
+const SUPPORTED_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif'])
+
 const ROUTES: Record<string, { mode: Mode; title: string; description: string }> = {
   '/apps/image-resizer': { mode: 'resize', title: 'Image Resizer', description: 'Resize images locally with optional aspect-ratio locking and download the result.' },
   '/apps/image-converter': { mode: 'convert', title: 'Image Converter', description: 'Convert common browser-supported image formats without uploading the source file.' },
@@ -27,23 +32,40 @@ const formatBytes = (bytes: number) => {
 }
 
 const gcd = (a: number, b: number): number => b ? gcd(b, a % b) : a
+const clampDimension = (value: number) => Math.max(1, Math.min(MAX_DIMENSION, Math.round(value || 1)))
+const validateCanvasSize = (width: number, height: number) => {
+  if (width > MAX_DIMENSION || height > MAX_DIMENSION || width * height > MAX_PIXELS) {
+    throw new Error(`Output is too large for reliable browser processing. Keep each side at ${MAX_DIMENSION}px or less and total pixels under ${Math.round(MAX_PIXELS / 1_000_000)} MP.`)
+  }
+}
 
 const loadImage = (file: File): Promise<ImageInfo> => new Promise((resolve, reject) => {
-  if (!file.type.startsWith('image/')) return reject(new Error('Choose an image file.'))
+  if (!SUPPORTED_IMAGE_TYPES.has(file.type)) return reject(new Error('Choose a PNG, JPEG, WebP, GIF, or AVIF image.'))
+  if (file.size > MAX_IMAGE_BYTES) return reject(new Error('Choose an image under 25 MB for reliable browser-local processing.'))
   const url = URL.createObjectURL(file)
   const image = new Image()
-  image.onload = () => resolve({ file, url, width: image.naturalWidth, height: image.naturalHeight })
+  image.onload = () => {
+    if (!image.naturalWidth || !image.naturalHeight || image.naturalWidth > MAX_DIMENSION || image.naturalHeight > MAX_DIMENSION || image.naturalWidth * image.naturalHeight > MAX_PIXELS) {
+      URL.revokeObjectURL(url)
+      reject(new Error(`Image dimensions are too large. Use up to ${MAX_DIMENSION}px per side and ${Math.round(MAX_PIXELS / 1_000_000)} megapixels.`))
+      return
+    }
+    resolve({ file, url, width: image.naturalWidth, height: image.naturalHeight })
+  }
   image.onerror = () => { URL.revokeObjectURL(url); reject(new Error('The browser could not decode this image.')) }
   image.src = url
 })
 
 const imageToBlob = async (info: ImageInfo, width: number, height: number, mime: string, quality: number) => {
+  const safeWidth = clampDimension(width)
+  const safeHeight = clampDimension(height)
+  validateCanvasSize(safeWidth, safeHeight)
   const source = new Image()
   source.src = info.url
   await source.decode()
   const canvas = document.createElement('canvas')
-  canvas.width = Math.max(1, Math.round(width))
-  canvas.height = Math.max(1, Math.round(height))
+  canvas.width = safeWidth
+  canvas.height = safeHeight
   const context = canvas.getContext('2d')
   if (!context) throw new Error('Canvas is not available in this browser.')
   context.imageSmoothingEnabled = true
@@ -106,13 +128,15 @@ export function ImageWorkbench() {
   }
 
   const updateWidth = (nextWidth: number) => {
-    setWidth(Math.max(1, nextWidth))
-    if (lockRatio && info) setHeight(Math.max(1, Math.round(nextWidth * info.height / info.width)))
+    const safeWidth = clampDimension(nextWidth)
+    setWidth(safeWidth)
+    if (lockRatio && info) setHeight(clampDimension(safeWidth * info.height / info.width))
   }
 
   const updateHeight = (nextHeight: number) => {
-    setHeight(Math.max(1, nextHeight))
-    if (lockRatio && info) setWidth(Math.max(1, Math.round(nextHeight * info.width / info.height)))
+    const safeHeight = clampDimension(nextHeight)
+    setHeight(safeHeight)
+    if (lockRatio && info) setWidth(clampDimension(safeHeight * info.width / info.height))
   }
 
   const process = async () => {
@@ -122,6 +146,7 @@ export function ImageWorkbench() {
     try {
       const targetWidth = definition.mode === 'resize' ? width : info.width
       const targetHeight = definition.mode === 'resize' ? height : info.height
+      validateCanvasSize(targetWidth, targetHeight)
       const targetMime = definition.mode === 'convert' ? mime : definition.mode === 'compress' ? mime : (info.file.type === 'image/png' ? 'image/png' : mime)
       const blob = await imageToBlob(info, targetWidth, targetHeight, targetMime, quality / 100)
       if (outputUrl) URL.revokeObjectURL(outputUrl)
@@ -156,10 +181,10 @@ export function ImageWorkbench() {
       <Card className="p-4 sm:p-5">
         {!info ? (
           <label onDragOver={(event) => { event.preventDefault(); setDragging(true) }} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); void acceptFile(event.dataTransfer.files?.[0]) }} className={`flex min-h-64 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center transition-colors ${dragging ? 'border-foreground/30 bg-accent/70' : 'border-border hover:border-foreground/20 hover:bg-accent/35'}`}>
-            <input type="file" accept="image/*" className="hidden" onChange={(event) => { void acceptFile(event.target.files?.[0]); event.currentTarget.value = '' }} />
+            <input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="hidden" onChange={(event) => { void acceptFile(event.target.files?.[0]); event.currentTarget.value = '' }} />
             <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border/70 bg-background/50"><Upload className="h-5 w-5 text-muted-foreground" /></div>
             <h2 className="mt-4 text-sm font-semibold text-foreground">Drop an image here</h2>
-            <p className="mt-1 text-sm text-muted-foreground">or click to choose a local file</p>
+            <p className="mt-1 text-sm text-muted-foreground">or click to choose a local file · max 25 MB / 50 MP</p>
           </label>
         ) : (
           <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
@@ -169,7 +194,7 @@ export function ImageWorkbench() {
             </div>
 
             <div className="space-y-4">
-              {definition.mode === 'resize' && <><div className="grid gap-3 sm:grid-cols-2"><Input label="Width" type="number" min={1} value={width} onChange={(event) => updateWidth(Number(event.target.value) || 1)} /><Input label="Height" type="number" min={1} value={height} onChange={(event) => updateHeight(Number(event.target.value) || 1)} /></div><label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={lockRatio} onChange={(event) => setLockRatio(event.target.checked)} /> Lock original aspect ratio ({ratio})</label></>}
+              {definition.mode === 'resize' && <><div className="grid gap-3 sm:grid-cols-2"><Input label="Width" type="number" min={1} max={MAX_DIMENSION} value={width} onChange={(event) => updateWidth(Number(event.target.value) || 1)} /><Input label="Height" type="number" min={1} max={MAX_DIMENSION} value={height} onChange={(event) => updateHeight(Number(event.target.value) || 1)} /></div><label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={lockRatio} onChange={(event) => setLockRatio(event.target.checked)} /> Lock original aspect ratio ({ratio})</label></>}
 
               {(definition.mode === 'convert' || definition.mode === 'compress') && <Select label="Output format" value={mime} onChange={(event) => setMime(event.target.value)}><option value="image/jpeg">JPEG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option><option value="image/avif">AVIF</option></Select>}
 
@@ -186,7 +211,7 @@ export function ImageWorkbench() {
               <div className="flex flex-wrap gap-2">
                 {definition.mode !== 'metadata' && <Button onClick={() => void process()} disabled={working}>{working ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />} Process</Button>}
                 {outputBlob && <Button variant="secondary" onClick={download}><Download className="h-4 w-4" /> Download</Button>}
-                <label><input type="file" accept="image/*" className="hidden" onChange={(event) => { void acceptFile(event.target.files?.[0]); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm font-medium hover:bg-accent"><ImageIcon className="h-4 w-4" /> Replace image</span></label>
+                <label><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="hidden" onChange={(event) => { void acceptFile(event.target.files?.[0]); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm font-medium hover:bg-accent"><ImageIcon className="h-4 w-4" /> Replace image</span></label>
               </div>
             </div>
           </div>
