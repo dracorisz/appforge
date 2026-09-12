@@ -55,19 +55,19 @@ There is no per-app `Full`, fork-ready, extraction-ready, or standalone-PWA matu
 
 ## Access model
 
-**Public without an account** includes the landing page, searchable Apps directory, Blog, Changelog, Hugging Face gallery/integration surface, and explicitly public tools such as Getter Pro, Weather Now, Crypto Track, Any Converter, Favicon Studio, SVG Icons, Landing Builder, and the signed-out Story Studio integrations surface.
+**Public without an account** includes the landing page, searchable Apps directory, Blog, Changelog, and all registry apps not marked account-backed/private.
 
-**Authenticated workspace** includes the dashboard/catalog, favorites and recent tools, profile/preferences, protected tools, Story Studio creation, Media Vault, and user-owned synced data.
+**Authenticated workspace** includes the dashboard/catalog, favorites and recent tools, profile/preferences, user-owned synced data, and the private app set: **Getter Pro, Media Vault, Desktop Buddy, and Story Studio**. Story Studio's creator-controlled public showcase data may be shared only when a user explicitly opts in; the Story Studio workspace itself remains private.
 
-**Admin** capabilities are role-based, with sensitive frontend-content mutations intended to require an AAL2/TOTP session.
+**Admin** capabilities live in the unified Settings/Admin console and require the admin role plus an AAL2/TOTP session for protected administration. The console covers users, content/docs/media, app presentation, and Marketing Studio.
 
 Supabase Row Level Security remains the data boundary. Public source code does not make private user data public.
 
 ## Product areas
 
-AppForge currently includes browser-local developer and conversion tools, image/SVG workflows, Getter Pro media discovery, Media Vault storage/reference workflows, Weather Now, Crypto Track, Task List, Story Studio, Desktop Buddy, Favicon Studio, SVG Icons, Landing Builder, and additional registry-backed utilities and experiments.
+AppForge currently includes browser-local developer and conversion tools, image/SVG workflows, Getter Pro media discovery, Media Vault storage/reference workflows, Weather Now, Crypto Track, Task List, Story Studio, Desktop Buddy, Favicon Studio, SVG Icons, Landing Builder, and additional registry-backed utilities.
 
-Use the live **Apps** directory for the current full catalog; `src/lib/registry.ts` is authoritative for app names, routes, categories, versions, and maturity.
+Use the live **Apps** directory for the current public catalog; `src/lib/registry.ts` is authoritative for app names, routes, categories, versions, maturity, and the explicit private-app boundary.
 
 ## Quick start
 
@@ -88,10 +88,10 @@ npx vitepress build docs
 
 ## Stack
 
-- React 18 + TypeScript
+- React 19 + TypeScript
 - Vite 6
-- React Router 6
-- Tailwind CSS 3.4
+- React Router 7
+- Tailwind CSS 4
 - Lucide / react-icons
 - AppForge PWA via `vite-plugin-pwa`
 - Vercel static deployment + same-project serverless `/api` functions
@@ -104,21 +104,22 @@ src/
   App.tsx                         routing + auth/public access boundary
   auth/                           session and login flow
   components/
+    admin/                        unified AAL2/TOTP-protected admin console
     dashboard/                    app implementations and workbenches
     layout/                       authenticated shell and sidebar
     public/                       shared public navigation/pages/tool shell
     pwa/                          AppForge install/update/offline lifecycle
-    resources/                    Settings, People, account/admin surfaces
+    resources/                    Settings, People and supporting resources
     ui/                           shared controls, cards and media UI
   lib/
-    registry.ts                   canonical app catalog + metadata
+    registry.ts                   canonical app catalog + access metadata
     buildInfo.ts                  deployment/build fingerprint
     account.ts                    profile/image/role/MFA adapters
     preferences.ts                per-user preference sync
 api/                              narrow Vercel server endpoints
-supabase/migrations/               reproducible auth/data/storage schema
-scripts/                           validation/release tooling
-docs/                              concise product, developer and operations docs
+supabase/migrations/              reproducible auth/data/storage schema
+scripts/                          validation/release tooling
+docs/                             concise product, developer and operations docs
 ```
 
 ## AppForge PWA
@@ -136,10 +137,10 @@ The human product version lives in `package.json`. Normal commits do not require
 For a named release:
 
 ```bash
-npm run version:set -- 1.19.0
+npm run version:set -- 1.27.0
 ```
 
-The canonical production deployment is the Vercel `appforge` project connected to `main`. Git-triggered Vercel deployments are disabled in `vercel.json`, so pushing or merging is not itself a production release.
+The canonical production deployment is the Vercel `appforge` project connected to `main`. Git-triggered Vercel deployments are disabled in `vercel.json`, so pushing to `main` is not itself a production release.
 
 Production is deployed deliberately from a verified `main` state, then checked against the launch/smoke-test guidance.
 
@@ -159,16 +160,15 @@ App-specific implementation detail should generally live close to source, API co
 
 Outside contributions are welcome. Useful work includes focused bug fixes, accessibility and responsive improvements, shared UI cleanup, app functionality, reliability, provider/data hardening, tests, documentation, and platform performance/PWA work.
 
+The maintained project branch is `main`. External contributors should use a fork/PR workflow and target `main`; maintainers keep repository work consolidated on `main`.
+
+Run the release checks before opening a pull request:
+
 ```bash
-git checkout main
-git pull
-git checkout -b feat/example
-# make one focused change
 npm run verify:release
-git push -u origin feat/example
 ```
 
-Then open a pull request against `main`. Read `CONTRIBUTING.md` and `SECURITY.md` before submitting substantial changes.
+Read `CONTRIBUTING.md` and `SECURITY.md` before submitting substantial changes.
 
 ## Environment and secrets
 
