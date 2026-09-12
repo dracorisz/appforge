@@ -49,8 +49,9 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: { state:
   const location = useLocation()
   const routeSearch = typeof (location.state as { appSearch?: unknown } | null)?.appSearch === 'string' ? String((location.state as { appSearch: string }).appSearch) : ''
   const [query, setQuery] = React.useState(routeSearch)
+  const [categoryRevision, refreshCategories] = React.useReducer((value) => value + 1, 0)
   const apps = React.useMemo(() => getAllApps().filter((app) => app.status !== 'deprecated'), [])
-  const categories = resolveCategories()
+  const categories = React.useMemo(() => resolveCategories(), [categoryRevision])
   const favorites = state.favorites || []
   const recentApps = (state.recentApps || []).map((id) => apps.find((app) => app.id === id)).filter((app): app is AppDefinition => Boolean(app))
   const categoryId = location.pathname.match(/^\/category\/(.+)$/)?.[1]
@@ -59,6 +60,9 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: { state:
   const isRecent = location.pathname === '/recent'
   const isFavorites = location.pathname === '/favorites'
   const isDashboard = location.pathname === '/'
+
+  React.useEffect(() => subscribeCategoryOverrides(refreshCategories), [])
+  React.useEffect(() => { setQuery(routeSearch) }, [routeSearch])
 
   let visibleApps = apps
   let title = 'All apps'
