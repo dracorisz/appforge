@@ -41,7 +41,7 @@ import { BUILD_INFO } from './lib/buildInfo'
 import { useAuth } from './auth/AuthProvider'
 import { LoginPage } from './auth/LoginPage'
 import { loadUserPreferences, saveUserPreferences } from './lib/preferences'
-import { loadCategoryOverrides, saveCategoryOverrides, subscribeCategoryOverrides } from './lib/categories'
+import { loadCategoryOverrides, saveCategoryOverrides, setCategoryOverrideScope, subscribeCategoryOverrides } from './lib/categories'
 import { stripLegacyMiniAppCommerce } from './lib/legacyMiniApps'
 import { updateSeo } from './lib/seo'
 
@@ -73,18 +73,27 @@ const defaultState: AppState = {
   recentApps: [],
 }
 
-const hydrateStoredState = (raw: string): AppState => {
-  const parsed = JSON.parse(raw) as Partial<AppState>
-  return {
-    ...defaultState,
-    ...parsed,
-    settings: { ...defaultState.settings, ...(parsed.settings || {}) },
-    miniApps: stripLegacyMiniAppCommerce(Array.isArray(parsed.miniApps) ? parsed.miniApps : defaultState.miniApps),
-    favorites: Array.isArray(parsed.favorites) ? parsed.favorites : [],
-    recentApps: Array.isArray(parsed.recentApps) ? parsed.recentApps : [],
-    documentReadiness: Array.isArray(parsed.documentReadiness) ? parsed.documentReadiness : defaultDocumentReadiness,
-    messages: Array.isArray(parsed.messages) ? parsed.messages : defaultMessages,
-  }
+const normalizeState = (parsed: Partial<AppState>, base: AppState = defaultState): AppState => ({
+  ...base,
+  ...parsed,
+  settings: { ...base.settings, ...(parsed.settings || {}) },
+  miniApps: stripLegacyMiniAppCommerce(Array.isArray(parsed.miniApps) ? parsed.miniApps : base.miniApps),
+  favorites: Array.isArray(parsed.favorites) ? parsed.favorites : base.favorites,
+  recentApps: Array.isArray(parsed.recentApps) ? parsed.recentApps : base.recentApps,
+  documentReadiness: Array.isArray(parsed.documentReadiness) ? parsed.documentReadiness : base.documentReadiness,
+  messages: Array.isArray(parsed.messages) ? parsed.messages : base.messages,
+})
+
+const hydrateStoredState = (raw: string, base: AppState = defaultState): AppState => normalizeState(JSON.parse(raw) as Partial<AppState>, base)
+const workspaceStorageKey = (userId: string) => `appforge-workplan-v1:${userId}`
+const persistedWorkspace = (state: AppState) => ({ ...state, miniApps: stripLegacyMiniAppCommerce(state.miniApps) })
+
+const loadScopedWorkspace = (userId: string): AppState => {
+  try {
+    const raw = localStorage.getItem(workspaceStorageKey(userId))
+    if (raw) return hydrateStoredState(raw)
+  } catch { /* ignore malformed or unavailable local cache */ }
+  return defaultState
 }
 
 const routeFallback = <div className="flex min-h-[40vh] items-center justify-center px-4 text-sm text-muted-foreground">Loading AppForge…</div>
@@ -118,46 +127,58 @@ function App() {
   const location = useLocation()
   const { user, loading } = useAuth()
   const [remoteReady, setRemoteReady] = React.useState(false)
-  const [state, setState] = React.useState<AppState>(() => {
-    try { const raw = localStorage.getItem('appforge-workplan-v1'); if (raw) return hydrateStoredState(raw) } catch { /* ignore */ }
-    try { const raw = localStorage.getItem('projectforge-workplan-v1'); if (raw) return hydrateStoredState(raw) } catch { /* ignore */ }
-    return defaultState
-  })
+  const [state, setState] = React.useState<AppState>(defaultState)
 
   React.useEffect(() => { updateSeo(location.pathname) }, [location.pathname])
-  React.useEffect(() => {
-    localStorage.setItem('appforge-workplan-v1', JSON.stringify({ ...state, miniApps: stripLegacyMiniAppCommerce(state.miniApps) }))
-  }, [state])
 
   React.useEffect(() => {
     let cancelled = false
     setRemoteReady(false)
-    if (!user) return () => { cancelled = true }
+
+    if (!user) {
+      setCategoryOverrideScope(null)
+      setState(defaultState)
+      return () => { cancelled = true }
+    }
+
+    setCategoryOverrideScope(user.id)
+    const localState = loadScopedWorkspace(user.id)
+    setState(localState)
+
     const hydrate = async () => {
       try {
         const remote = await loadUserPreferences(user.id)
         if (cancelled) return
         if (remote) {
-          if (remote.appState) setState((current) => ({ ...current, ...remote.appState, settings: { ...current.settings, ...(remote.appState?.settings || {}) }, miniApps: stripLegacyMiniAppCommerce(Array.isArray(remote.appState?.miniApps) ? remote.appState.miniApps : current.miniApps) }))
+          setState(remote.appState ? normalizeState(remote.appState, localState) : localState)
           saveCategoryOverrides(remote.categoryOverrides || {})
-        } else await saveUserPreferences(user.id, { appState: { ...state, miniApps: stripLegacyMiniAppCommerce(state.miniApps) }, categoryOverrides: loadCategoryOverrides() })
-      } catch (error) { console.error('AppForge remote preference hydration failed', error) }
-      finally { if (!cancelled) setRemoteReady(true) }
+        } else {
+          saveCategoryOverrides({})
+          await saveUserPreferences(user.id, { appState: persistedWorkspace(localState), categoryOverrides: {} })
+        }
+      } catch (error) {
+        console.error('AppForge remote preference hydration failed', error)
+      } finally {
+        if (!cancelled) setRemoteReady(true)
+      }
     }
+
     void hydrate()
     return () => { cancelled = true }
   }, [user?.id])
 
   React.useEffect(() => {
     if (!user || !remoteReady) return
-    const timer = window.setTimeout(() => void saveUserPreferences(user.id, { appState: { ...state, miniApps: stripLegacyMiniAppCommerce(state.miniApps) } }).catch((error) => console.error('AppForge remote state sync failed', error)), 650)
+    const nextState = persistedWorkspace(state)
+    try { localStorage.setItem(workspaceStorageKey(user.id), JSON.stringify(nextState)) } catch { /* local cache is best-effort */ }
+    const timer = window.setTimeout(() => void saveUserPreferences(user.id, { appState: nextState }).catch((error) => console.error('AppForge remote state sync failed', error)), 650)
     return () => window.clearTimeout(timer)
-  }, [state, user, remoteReady])
+  }, [state, user?.id, remoteReady])
 
   React.useEffect(() => {
     if (!user || !remoteReady) return
     return subscribeCategoryOverrides(() => { void saveUserPreferences(user.id, { categoryOverrides: loadCategoryOverrides() }).catch((error) => console.error('AppForge category sync failed', error)) })
-  }, [user, remoteReady])
+  }, [user?.id, remoteReady])
 
   const addToRecent = (appId: string) => setState((prev) => ({ ...prev, recentApps: [appId, ...(prev.recentApps || []).filter((id) => id !== appId)].slice(0, 20) }))
   const toggleFavorite = (appId: string) => setState((prev) => ({ ...prev, favorites: (prev.favorites || []).includes(appId) ? (prev.favorites || []).filter((id) => id !== appId) : [...(prev.favorites || []), appId] }))
