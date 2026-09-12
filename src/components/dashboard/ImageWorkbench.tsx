@@ -97,11 +97,15 @@ export function ImageWorkbench() {
   const [working, setWorking] = React.useState(false)
   const [dragging, setDragging] = React.useState(false)
   const [error, setError] = React.useState('')
+  const infoRef = React.useRef<ImageInfo | null>(null)
+  const outputUrlRef = React.useRef('')
 
+  React.useEffect(() => { infoRef.current = info }, [info])
+  React.useEffect(() => { outputUrlRef.current = outputUrl }, [outputUrl])
   React.useEffect(() => () => {
-    if (info?.url) URL.revokeObjectURL(info.url)
-    if (outputUrl) URL.revokeObjectURL(outputUrl)
-  }, [info?.url, outputUrl])
+    if (infoRef.current?.url) URL.revokeObjectURL(infoRef.current.url)
+    if (outputUrlRef.current) URL.revokeObjectURL(outputUrlRef.current)
+  }, [])
 
   React.useEffect(() => {
     if (!info) return
@@ -109,9 +113,11 @@ export function ImageWorkbench() {
     setHeight(info.height)
     setMime(definition.mode === 'convert' ? 'image/webp' : info.file.type === 'image/png' ? 'image/png' : 'image/jpeg')
     setOutputBlob(null)
-    if (outputUrl) URL.revokeObjectURL(outputUrl)
-    setOutputUrl('')
-  }, [definition.mode, info?.file.name])
+    setOutputUrl((current) => {
+      if (current) URL.revokeObjectURL(current)
+      return ''
+    })
+  }, [definition.mode, info?.url])
 
   const acceptFile = async (file?: File) => {
     if (!file) return
@@ -149,10 +155,12 @@ export function ImageWorkbench() {
       validateCanvasSize(targetWidth, targetHeight)
       const targetMime = definition.mode === 'convert' ? mime : definition.mode === 'compress' ? mime : (info.file.type === 'image/png' ? 'image/png' : mime)
       const blob = await imageToBlob(info, targetWidth, targetHeight, targetMime, quality / 100)
-      if (outputUrl) URL.revokeObjectURL(outputUrl)
       const url = URL.createObjectURL(blob)
       setOutputBlob(blob)
-      setOutputUrl(url)
+      setOutputUrl((current) => {
+        if (current) URL.revokeObjectURL(current)
+        return url
+      })
     } catch (processError) {
       setError(processError instanceof Error ? processError.message : 'Image processing failed.')
     } finally {
