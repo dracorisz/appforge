@@ -1,3 +1,4 @@
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 import {
   Camera,
@@ -194,7 +195,7 @@ export function PF_UserMediaVault() {
   return (
     <div className="w-full space-y-5 pb-10">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-        <div><div className="flex flex-wrap items-center gap-2"><Badge color="purple">Private vault</Badge><span className="text-xs text-muted-foreground">Folders, sorting, private uploads and app-generated assets</span></div><h1 className="mt-1 flex items-center gap-2 text-2xl font-semibold tracking-tight"><Upload className="h-6 w-6" /> Media Vault</h1><p className="mt-1 max-w-4xl text-sm leading-6 text-muted-foreground">Organize your files into personal folders. Desktop Buddy generations are automatically archived in Desktop Buddies, while Story Studio assets stay linked to their authoritative story records.</p></div>
+        <div><AppHeading /></div>
         <div className="flex flex-wrap items-center gap-2"><Button variant="secondary" onClick={() => void refresh()} disabled={loading}><RefreshCw className="h-4 w-4" /> Refresh</Button><input type="file" multiple accept="image/*,video/*,audio/*,application/pdf,.txt,.md,.json" className="hidden" onChange={handleUpload} disabled={uploading} id="vault-upload" /><label htmlFor="vault-upload" className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 bg-background/45 px-3 py-2 text-sm font-medium hover:bg-accent"><Upload className="h-4 w-4" />{uploading ? 'Uploading…' : `Upload to ${uploadTarget === 'general' ? 'General' : uploadTarget}`}</label></div>
       </div>
 

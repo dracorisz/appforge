@@ -1,3 +1,4 @@
+import { PublicFooter } from './PublicFooter'
 import React from 'react'
 import { ArrowRight, Boxes, Search, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -21,7 +22,7 @@ export function PublicAppsPage() {
   }, [apps, category, query])
 
   return (
-    <div className="dark min-h-dvh bg-black text-foreground" style={{ colorScheme: 'dark', '--background': '0 0% 0%' } as React.CSSProperties}>
+    <div className="dark flex min-h-dvh flex-col bg-black text-foreground" style={{ colorScheme: 'dark', '--background': '0 0% 0%' } as React.CSSProperties}>
       <PublicHeader />
       <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <section className="border-b border-border/60 pb-7">
@@ -52,7 +53,7 @@ export function PublicAppsPage() {
           ))}
         </section>
         {!visible.length && <div className="rounded-2xl border border-border/70 p-8 text-center text-sm text-muted-foreground">No apps match.</div>}
-      </main>
+      </main><PublicFooter />
     </div>
   )
 }

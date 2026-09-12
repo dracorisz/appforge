@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Navigate, Link } from 'react-router-dom'
+import { Navigate, Link, useSearchParams } from 'react-router-dom'
 import { KeyRound, Loader2, RefreshCw, ShieldCheck, Trash2, UserRound } from 'lucide-react'
 import { Badge, Button, Card } from '@/components/ui'
 import { useAuth } from '@/auth/AuthProvider'
@@ -23,7 +23,10 @@ export function AdminConsolePage() {
   const [role, setRole] = React.useState<'user' | 'admin' | null>(null)
   const [aal2, setAal2] = React.useState(false)
   const [loading, setLoading] = React.useState(true)
-  const [section, setSection] = React.useState<Section>('users')
+  const [params, setParams] = useSearchParams()
+  const requestedSection = params.get('section')
+  const section: Section = requestedSection === 'content' || requestedSection === 'apps' || requestedSection === 'marketing' ? requestedSection : 'users'
+  const setSection = (value: Section) => { const next = new URLSearchParams(params); next.set('section', value); setParams(next) }
   const [users, setUsers] = React.useState<AdminUser[]>([])
   const [busy, setBusy] = React.useState('')
   const [error, setError] = React.useState('')
@@ -56,13 +59,13 @@ export function AdminConsolePage() {
   if (!user) return <Navigate to="/login" replace />
   if (loading) return <div className="flex min-h-[40vh] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>
   if (role !== 'admin') return <Card className="p-6 text-center"><ShieldCheck className="mx-auto h-7 w-7 text-muted-foreground" /><h1 className="mt-3 text-lg font-semibold">Admin only</h1><Link to="/settings" className="mt-4 inline-flex text-sm underline">Back to Settings</Link></Card>
-  if (!aal2) return <Card className="p-6 text-center"><KeyRound className="mx-auto h-7 w-7 text-muted-foreground" /><h1 className="mt-3 text-lg font-semibold">TOTP verification required</h1><p className="mt-2 text-sm text-muted-foreground">Verify this session in Settings → Security.</p><Link to="/settings" className="mt-4 inline-flex text-sm underline">Open Settings</Link></Card>
+  if (!aal2) return <Card className="p-6 text-center"><KeyRound className="mx-auto h-7 w-7 text-muted-foreground" /><h1 className="mt-3 text-lg font-semibold">TOTP verification required</h1><p className="mt-2 text-sm text-muted-foreground">Verify this session in Settings → Security.</p><Link to="/settings?tab=security" className="mt-4 inline-flex text-sm underline">Open Security</Link></Card>
 
   return (
     <div className="w-full space-y-5 pb-10">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="flex items-center gap-2"><Badge color="green">Admin</Badge><Badge color="blue">AAL2</Badge></div><h1 className="mt-2 text-2xl font-semibold tracking-tight">Admin</h1><p className="mt-1 text-sm text-muted-foreground">Users, content, app presentation and internal marketing tools.</p></div><Link to="/settings" className="text-sm text-muted-foreground hover:text-foreground">Back to Settings</Link></div>
 
-      <div className="flex flex-wrap gap-1 border-b border-border/70 pb-2">{(['users','content','apps','marketing'] as Section[]).map((id) => <button key={id} onClick={() => setSection(id)} className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize ${section === id ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{id}</button>)}</div>
+      <div className="flex flex-wrap gap-1 border-b border-border/70 pb-2">{(['users','content','apps','marketing'] as Section[]).map((id) => <button key={id} onClick={() => setSection(id)} className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize ${section === id ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{id === 'content' ? 'Content Manager' : id === 'marketing' ? 'Marketing Studio' : id}</button>)}</div>
       {message && <Card className="border-emerald-500/25 bg-emerald-500/5 p-3 text-sm text-emerald-600 dark:text-emerald-400">{message}</Card>}
       {error && <Card className="border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</Card>}
 

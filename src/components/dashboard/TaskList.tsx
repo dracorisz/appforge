@@ -1,6 +1,7 @@
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
-import { Check, CheckCircle2, Circle, ClipboardList, ListTodo, Pencil, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react'
-import { Badge, Button, Card, Input } from '@/components/ui'
+import { Check, CheckCircle2, Circle, ClipboardList, Pencil, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react'
+import { Button, Card, Input } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/auth/AuthProvider'
 
@@ -231,7 +232,7 @@ export function TaskList() {
   return (
     <div className="w-full space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h1 className="flex items-center gap-2 text-2xl font-bold"><ListTodo className="h-6 w-6" /> Task List</h1><Badge color="green">PWA ready</Badge></div><p className="mt-1 max-w-3xl text-sm text-muted-foreground">Local-first TODO tracking with authenticated Supabase sync, inline editing, progress actions, filtering, search, and completed-task cleanup.</p></div>
+        <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><AppHeading /></div></div>
         <Button variant="secondary" onClick={() => void syncFromRemote()} disabled={!user || syncing} className="self-start sm:self-auto"><RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} /> Sync</Button>
       </div>
 

@@ -4,7 +4,6 @@ import { Sidebar, MobileHeader } from './Sidebar'
 import { Footer } from './Footer'
 import { BackToTop } from './BackToTop'
 import { ProjectPulse } from './ProjectPulse'
-import { AppMetaBar } from './AppMetaBar'
 import { DesktopBuddyOverlay } from '@/components/dashboard/DesktopBuddyOverlay'
 
 export function Layout({ children, currentVersion }: { children: React.ReactNode; currentVersion?: string }) {
@@ -13,7 +12,6 @@ export function Layout({ children, currentVersion }: { children: React.ReactNode
   const menuTriggerRef = React.useRef<HTMLButtonElement | null>(null)
   const location = useLocation()
   const showProjectPulse = location.pathname === '/' || location.pathname === '/recent'
-  const showAppMeta = location.pathname.startsWith('/apps/')
   const showDesktopBuddy = location.pathname !== '/apps/desktop-buddy'
 
   const closeMobileSidebar = React.useCallback(() => {
@@ -52,7 +50,6 @@ export function Layout({ children, currentVersion }: { children: React.ReactNode
         <main className="flex-1 overflow-y-auto p-4 lg:p-8">
           <div className="mx-auto min-w-0 w-full max-w-[1500px]">
             {showProjectPulse && <ProjectPulse />}
-            {showAppMeta && <AppMetaBar />}
             <div className="app-content w-full [&>div:first-child]:!mx-0 [&>div:first-child]:!w-full [&>div:first-child]:!max-w-none [&>div:first-child]:!p-0">
               {children}
             </div>

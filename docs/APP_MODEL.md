@@ -55,7 +55,10 @@ AppForge apps should converge on the same platform conventions:
 - shared navigation and shell behavior;
 - semantic Appearance tokens rather than app-specific hardcoded themes;
 - consistent Card, Button, Input, Select, dialog, and focus behavior;
-- compact app/meta information where useful;
+- a registry-backed `AppHeading` with an icon, title and concise purpose; no decorative status/category pills or duplicated metadata bars;
+- shared shape tokens in `tailwind.config.js` driven by `--radius`, with deliberate circles kept for avatars and progress indicators;
+- default Card padding when the caller does not specify its own padding;
+- the same `max-w-7xl` public header/content/footer alignment, using `PublicFooter` across public pages;
 - touch-safe controls and responsive layouts;
 - explicit loading, empty, success, retry, and recoverable error states;
 - no duplicate global support/navigation controls inside individual app work surfaces;
@@ -87,3 +90,18 @@ Before changing an app to `launched`, verify that:
 9. production smoke testing succeeds after the deliberate release.
 
 Use **[Project Pulse](./PROJECT-PULSE.md)** for the project-wide readiness view and **[Apps](./apps/index.md)** for the consolidated catalog guidance.
+
+## Admin entry points
+
+Settings → Admin links directly to the protected unified console:
+
+- `/settings/admin?section=content` — Content Manager, including the public landing app-count toggle;
+- `/settings/admin?section=marketing` — Marketing Studio;
+- `/settings/admin?section=apps` — app presentation;
+- `/settings/admin?section=users` — accounts.
+
+All sections keep the admin-role and TOTP/AAL2 boundary. The landing app-count preference is stored as `show_active_app_count` in the published walkthrough record’s metadata, defaults to visible, and can be changed by AAL2 admins only.
+
+## DNS Checker
+
+`/apps/dns-checker` replaces the TXT-only tool. The old `/apps/dns-txt-checker` route remains compatible and the internal app ID remains stable for existing favorites. Google Public DNS provides keyless DNS-over-HTTPS queries. Common records checks 12 types; the type selector and numeric type input support other resource records. The record map shows one resolver’s answers and their relationships, not geographic propagation. Zone transfers are excluded. SRV/DKIM/DMARC and reverse PTR queries require the appropriate complete DNS owner name.

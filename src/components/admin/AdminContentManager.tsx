@@ -113,6 +113,23 @@ export function AdminContentManager({ embedded = false, adminVerified = false }:
     finally { setBusy('') }
   }
 
+  const landingTeaser = items.find((item) => item.content_type === 'video_teaser' && item.published)
+  const saveLandingCount = async (show: boolean) => {
+    if (!user || !aal2 || !isAdmin) return
+    setBusy('landing'); setError(''); setMessage('')
+    try {
+      if (landingTeaser) {
+        await updateFrontendContent(landingTeaser.id, { metadata: { ...landingTeaser.metadata, show_active_app_count: show } })
+        if (selectedId === landingTeaser.id) setDraft((current) => ({ ...current, metadata: { ...current.metadata, show_active_app_count: show } }))
+      } else {
+        await createFrontendContent({ ...makeDraft('video_teaser'), slug: 'appforge-walkthrough', title: 'See AppForge in action', published: true, metadata: { show_active_app_count: show } }, user.id)
+      }
+      await refreshItems()
+      setMessage('Landing page updated.')
+    } catch (saveError) { setError(saveError instanceof Error ? saveError.message : 'Could not update landing page.') }
+    finally { setBusy('') }
+  }
+
   const visible = items.filter((item) => item.content_type === filterType)
   const flash = (text: string) => { setMessage(text); window.setTimeout(() => setMessage(''), 1800) }
   const selectItem = (item: FrontendContentRecord) => { setSelectedId(item.id); setDraft(toDraft(item)); setFilterType(item.content_type); setError('') }
@@ -180,6 +197,7 @@ export function AdminContentManager({ embedded = false, adminVerified = false }:
     {message && <div className="rounded-lg border border-emerald-500/25 bg-emerald-500/5 p-2 text-xs text-emerald-600 dark:text-emerald-400">{message}</div>}
     {error && <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive">{error}</div>}
 
+    <section className="rounded-xl border border-border/70 p-4" aria-label="Landing page presentation"><h3 className="text-sm font-semibold">Landing page</h3><label className="mt-3 flex items-center gap-3 text-sm"><input type="checkbox" checked={landingTeaser?.metadata.show_active_app_count !== false} disabled={Boolean(busy)} onChange={(event) => void saveLandingCount(event.target.checked)} />Show active app count and open-source row</label><p className="mt-2 text-xs text-muted-foreground">Applies to the public landing and sign-in pages. Changes save immediately.</p></section>
     <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
       <aside className="rounded-2xl border border-border/70 bg-background/40 p-3"><button onClick={newItem} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-border/70 text-sm font-semibold hover:bg-accent"><Plus className="h-4 w-4" /> New</button><div className="mt-3 space-y-2">{visible.map((item) => <button key={item.id} onClick={() => selectItem(item)} className={`w-full rounded-xl border p-3 text-left ${selectedId === item.id ? 'border-foreground/30 bg-accent/50' : 'border-border/60 hover:bg-accent/25'}`}><div className="truncate text-sm font-medium">{item.title}</div><div className="mt-1 truncate text-[11px] text-muted-foreground">{item.slug}</div></button>)}{!visible.length && <div className="p-4 text-center text-xs text-muted-foreground">No items.</div>}</div></aside>
 

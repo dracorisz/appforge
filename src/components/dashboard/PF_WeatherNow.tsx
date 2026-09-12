@@ -1,3 +1,4 @@
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 import { Card, Button, Input, Badge } from '@/components/ui'
 import { ArrowUpDown, Cloud, CloudRain, CloudSun, Droplets, Eye, Gauge, LayoutGrid, List, Loader2, MapPin, RefreshCw, Snowflake, Star, Sun, Sunrise, Sunset, Thermometer, Wind, X } from 'lucide-react'
@@ -191,7 +192,7 @@ export function PF_WeatherNow() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="flex flex-wrap items-center gap-2"><h1 className="text-2xl font-bold text-foreground">Weather Now</h1><Badge color="green">Live lookup · cached cards</Badge></div><p className="mt-1 max-w-2xl text-sm text-muted-foreground">Current conditions by city, postal code, or device coordinates through SSToken's same-origin Open-Meteo endpoint. Saved cards keep their last successful snapshot until refreshed.</p></div><div className="flex items-center gap-1 rounded-lg border border-border p-1">{(['c', 'f'] as Unit[]).map((value) => <button key={value} onClick={() => setUnit(value)} className={`rounded-md px-2.5 py-1 text-xs font-medium ${unit === value ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>°{value.toUpperCase()}</button>)}</div></div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="flex flex-wrap items-center gap-2"><AppHeading /></div></div><div className="flex items-center gap-1 rounded-lg border border-border p-1">{(['c', 'f'] as Unit[]).map((value) => <button key={value} onClick={() => setUnit(value)} className={`rounded-md px-2.5 py-1 text-xs font-medium ${unit === value ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>°{value.toUpperCase()}</button>)}</div></div>
 
       <Card className="p-4 sm:p-5">
         <div className="rounded-2xl border border-border/70 bg-background/35 p-3 sm:p-4">

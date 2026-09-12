@@ -12,7 +12,7 @@ import {
   PF_CryptoTrack,
   PF_WeatherNow,
   PF_AIDragonArena,
-  PF_DnsTxtChecker,
+  DNSChecker,
   AnyToAnyConverter,
   UtilityWorkbench,
   ImageWorkbench,
@@ -115,7 +115,7 @@ function publicAppPage(pathname: string): React.ReactNode | null {
   if (pathname === '/apps/landing-builder') return <PublicToolShell toolName="Landing Builder" toolIcon={<PanelsTopLeft className="h-4 w-4" />}>{lazyPage(<LandingBuilder />)}</PublicToolShell>
   if (pathname === '/apps/image-labeler') return <PublicToolShell toolName="Image Labeler"><PF_ImageLabeler /></PublicToolShell>
   if (pathname === '/apps/creator-svg') return <PublicToolShell toolName="Creator SVG"><PF_CreatorSVG /></PublicToolShell>
-  if (pathname === '/apps/dns-txt-checker') return <PublicToolShell toolName="DNS TXT Checker"><PF_DnsTxtChecker /></PublicToolShell>
+  if (pathname === '/apps/dns-checker' || pathname === '/apps/dns-txt-checker') return <PublicToolShell toolName="DNS Checker"><DNSChecker /></PublicToolShell>
   if (pathname === '/apps/task-list') return <PublicToolShell toolName="Task List"><TaskList /></PublicToolShell>
   if (pathname === '/apps/qr-generator') return <PublicToolShell toolName="QR Generator" toolIcon={<QrCode className="h-4 w-4" />}><QrGenerator /></PublicToolShell>
   if (pathname === '/apps/color-picker') return <PublicToolShell toolName="Color Picker"><ColorPickerTool /></PublicToolShell>
@@ -225,7 +225,8 @@ function App() {
         <Route path="/apps/crypto-track" element={<PF_CryptoTrack />} />
         <Route path="/apps/weather-now" element={<PF_WeatherNow />} />
         <Route path="/apps/ai-dragon-arena" element={<PF_AIDragonArena />} />
-        <Route path="/apps/dns-txt-checker" element={<PF_DnsTxtChecker />} />
+        <Route path="/apps/dns-checker" element={<DNSChecker />} />
+        <Route path="/apps/dns-txt-checker" element={<Navigate to="/apps/dns-checker" replace />} />
         <Route path="/apps/data-converter" element={<AnyToAnyConverter />} />
         <Route path="/apps/any-converter" element={<Navigate to="/apps/data-converter" replace />} />
         <Route path="/apps/task-list" element={<TaskList />} />
@@ -248,7 +249,7 @@ function App() {
         <Route path="/pf-crypto-track" element={<Navigate to="/apps/crypto-track" replace />} />
         <Route path="/pf-weather-now" element={<Navigate to="/apps/weather-now" replace />} />
         <Route path="/pf-ai-dragon-arena" element={<Navigate to="/apps/ai-dragon-arena" replace />} />
-        <Route path="/pf-dns-txt-checker" element={<Navigate to="/apps/dns-txt-checker" replace />} />
+        <Route path="/pf-dns-txt-checker" element={<Navigate to="/apps/dns-checker" replace />} />
         <Route path="/pf-qr-generator" element={<Navigate to="/apps/qr-generator" replace />} />
         <Route path="/pf-color-picker" element={<Navigate to="/apps/color-picker" replace />} />
         <Route path="/pf-media-vault" element={<Navigate to="/apps/media-vault" replace />} />

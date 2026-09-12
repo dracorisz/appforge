@@ -1,5 +1,6 @@
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
-import { Card, Button, Input, Badge } from '@/components/ui'
+import { Card, Button, Input } from '@/components/ui'
 import {
   AlertCircle,
   ChevronLeft,
@@ -181,19 +182,18 @@ export function PF_CryptoTrack() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-bold text-foreground">Crypto Track</h1>
-            <Badge color="green">Live market data</Badge>
-            {resolvedProvider && <Badge color="slate">{resolvedProvider}</Badge>}
+            <AppHeading />
+
+
           </div>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Live cryptocurrency prices, 24-hour change, market cap, and volume through SSToken's server-side provider fallback. No exposed provider keys or silent demo prices.
-          </p>
+
         </div>
         <Button variant="secondary" onClick={() => fetchCoins(provider)} disabled={loading}>
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
         </Button>
       </div>
 
+      {resolvedProvider && <p className="text-xs text-muted-foreground">Market data source: {resolvedProvider}</p>}
       <Card>
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-end">
           <div>

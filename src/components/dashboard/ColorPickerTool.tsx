@@ -1,5 +1,6 @@
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
-import { Check, Copy, ImagePlus, Palette, ShieldCheck, Upload } from 'lucide-react'
+import { Check, Copy, ImagePlus, Palette, Upload } from 'lucide-react'
 import { Button, Card, Input } from '@/components/ui'
 
 type RGB = { r: number; g: number; b: number }
@@ -131,7 +132,7 @@ export function ColorPickerTool() {
 
   return (
     <div className="space-y-5 pb-8">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><h1 className="text-2xl font-semibold tracking-tight text-foreground">Color Picker</h1><p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">Choose a color directly or sample pixels from a local image. Copy HEX, RGB, HSL, and a compact extracted palette.</p></div><span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5" /> Browser-local</span></div>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><AppHeading /></div></div>
 
       <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
         <Card className="p-4">

@@ -1,3 +1,4 @@
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 import { Copy, Download, Image as ImageIcon, RotateCcw, Upload } from 'lucide-react'
 
@@ -170,9 +171,9 @@ export default function FaviconStudio() {
     <div className="mx-auto grid w-full max-w-6xl gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <section className="surface-card rounded-2xl border p-5 sm:p-6">
         <div className="mb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Browser-local</p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight">Favicon Studio</h1>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">Create text, emoji, SVG-style, or uploaded-image favicons without sending the source image to a server.</p>
+
+          <AppHeading />
+
         </div>
 
         <div className="grid gap-4">

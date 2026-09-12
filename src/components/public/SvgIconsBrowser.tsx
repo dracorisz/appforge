@@ -1,3 +1,4 @@
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 import { Copy, Download, Heart, Search, Star } from 'lucide-react'
 import type { IconType } from 'react-icons'
@@ -152,7 +153,7 @@ export default function SvgIconsBrowser() {
     <div className="mx-auto w-full max-w-7xl p-4 sm:p-6">
       <section className="surface-card rounded-2xl border p-4 sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div><p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Lazy-loaded catalog</p><h1 className="mt-2 text-2xl font-semibold tracking-tight">SVG Icons</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Browse every icon pack exposed by react-icons without loading every pack up front. Packs are loaded only when selected; favorites and recent icons stay in this browser.</p></div>
+          <div><AppHeading /></div>
           <div className="flex flex-wrap gap-3 text-xs text-muted-foreground"><span>{Object.keys(PACKS).length} packs</span><span>{filtered.length} matching icons</span><span>{favorites.length} favorites</span></div>
         </div>
 

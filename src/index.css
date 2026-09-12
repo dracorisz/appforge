@@ -237,3 +237,17 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Shared app identity, spacing and shape. Adjust --radius for all standard surfaces. */
+.app-heading { margin-bottom: 1rem; }
+.app-heading-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--muted) / 0.5);
+}

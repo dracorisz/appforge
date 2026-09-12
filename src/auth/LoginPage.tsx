@@ -4,7 +4,7 @@ import { SiGithub as Github, SiGoogle as Google } from 'react-icons/si'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui'
 import { getAllApps } from '@/lib/registry'
-import { BUILD_INFO } from '@/lib/buildInfo'
+import { PublicFooter } from '@/components/public/PublicFooter'
 import { loadPublishedFrontendContent } from '@/lib/frontendContent'
 import { PublicHeader } from '@/components/public/PublicHeader'
 import { useAuth } from './AuthProvider'
@@ -13,7 +13,6 @@ import { consumeReturnPath, normalizeReturnPath } from './returnPath'
 const DEFAULT_VIDEO_URL = 'https://www.youtube.com/watch?v=5dAQXJXbvhI'
 const DEFAULT_VIDEO_EMBED_URL = 'https://www.youtube-nocookie.com/embed/5dAQXJXbvhI?rel=0&modestbranding=1'
 const APPFORGE_MARK = '/favicon.svg?v=2'
-const DOCS_URL = 'https://docs.sstoken.space/'
 
 const publicTools = [
   { label: 'Weather Now', description: 'Live weather lookup', path: '/apps/weather-now', icon: Cloud },
@@ -48,6 +47,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
   const [error, setError] = React.useState('')
   const [videoUrl, setVideoUrl] = React.useState(DEFAULT_VIDEO_URL)
   const [videoEmbedUrl, setVideoEmbedUrl] = React.useState(DEFAULT_VIDEO_EMBED_URL)
+  const [showAppCount, setShowAppCount] = React.useState(true)
   const [videoTitle, setVideoTitle] = React.useState('See AppForge in action')
   const [videoSummary, setVideoSummary] = React.useState('A short walkthrough of the current AppForge experience.')
   const apps = React.useMemo(() => getAllApps(), [])
@@ -62,6 +62,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
     loadPublishedFrontendContent('video_teaser').then((records) => {
       if (!active || !records[0]) return
       const teaser = records[0]
+      setShowAppCount(teaser.metadata?.show_active_app_count !== false)
       if (teaser.title) setVideoTitle(teaser.title)
       if (teaser.summary) setVideoSummary(teaser.summary)
       if (teaser.video_url) {
@@ -109,7 +110,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
                 {user ? <Button className="h-11 px-5" onClick={() => navigate('/')} disabled={loading}>Open workspace <ArrowRight className="h-4 w-4" /></Button> : <><Button className="h-11 px-5" onClick={() => void login('google')} disabled={Boolean(busyProvider) || loading}><Google className="h-4 w-4" />{loading ? 'Checking session…' : busyProvider === 'google' ? 'Opening Google…' : 'Continue with Google'}</Button><Button variant="secondary" className="h-11 px-5" onClick={() => void login('github')} disabled={Boolean(busyProvider) || loading}><Github className="h-4 w-4" />{busyProvider === 'github' ? 'Opening GitHub…' : 'Continue with GitHub'}</Button></>}
               </div>
               {error && <div role="alert" aria-live="polite" className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
-              <p className="mt-8 border-t border-border/60 pt-5 text-xs text-muted-foreground"><strong className="font-semibold text-foreground">{apps.length}</strong> active apps · open source</p>
+              {showAppCount && <p className="mt-8 border-t border-border/60 pt-5 text-xs text-muted-foreground"><strong className="font-semibold text-foreground">{apps.length}</strong> active apps · open source</p>}
             </section>
 
             <section className="relative mx-auto w-full max-w-xl lg:max-w-none" aria-label="Public tools and workspace access">
@@ -130,7 +131,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
           </section>
         </main>
 
-        <footer className="mx-auto flex w-full max-w-7xl shrink-0 flex-col gap-3 border-t border-border/60 px-4 py-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"><span className="inline-flex items-center gap-2"><img src={APPFORGE_MARK} alt="" className="h-5 w-5 rounded-md" decoding="async" /> AppForge · v{BUILD_INFO.version}</span><span className="flex flex-wrap items-center gap-x-4 gap-y-2"><Link to="/blog" className="hover:text-foreground">Blog</Link><Link to="/changelog" className="hover:text-foreground">Changelog</Link><Link to="/privacy" className="hover:text-foreground">Privacy</Link><Link to="/terms" className="hover:text-foreground">Terms</Link><a href="https://paypal.me/dracorisz" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">Support</a><a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="hover:text-foreground">Docs</a></span></footer>
+        <PublicFooter />
       </div>
     </div>
   )

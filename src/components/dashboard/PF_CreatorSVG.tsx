@@ -1,3 +1,4 @@
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 import { Card, Button, Input, Textarea } from '@/components/ui'
 import { Download, Eye, RefreshCw, Copy, Check, Image as ImageIcon } from 'lucide-react'
@@ -196,8 +197,8 @@ export function PF_CreatorSVG() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground dark:text-foreground">Creator SVG</h1>
-        <p className="mt-1 text-sm text-foreground dark:text-muted-foreground">Configure and download a reusable portfolio/SVG header. Everything is generated locally in your browser.</p>
+        <AppHeading />
+
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">

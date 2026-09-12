@@ -1,17 +1,14 @@
+import { PublicHeader } from './PublicHeader'
+import { PublicFooter } from './PublicFooter'
 import React from 'react'
-import { ArrowLeft, ExternalLink, ShieldCheck } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { ShieldCheck } from 'lucide-react'
 
 const LAST_UPDATED = 'September 11, 2026'
 
 function LegalShell({ title, intro, children }: { title: string; intro: string; children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-5">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Back to AppForge</Link>
-          <div className="inline-flex items-center gap-2 text-xs text-muted-foreground"><img src="/favicon.svg" alt="" className="h-5 w-5" /> AppForge · sstoken.space</div>
-        </header>
+    <div className="dark flex min-h-screen flex-col bg-background text-foreground"><PublicHeader />
+      <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <main className="py-8">
           <div className="mb-8">
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/55 px-3 py-1.5 text-xs font-medium text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5" /> Public beta policy</div>
@@ -21,11 +18,8 @@ function LegalShell({ title, intro, children }: { title: string; intro: string; 
           </div>
           <div className="surface-card space-y-7 rounded-2xl border p-5 text-sm leading-7 sm:p-7 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_p]:text-muted-foreground [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:text-muted-foreground">{children}</div>
         </main>
-        <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 py-5 text-xs text-muted-foreground">
-          <span>AppForge · open-source public beta</span>
-          <span className="flex gap-4"><Link to="/privacy" className="hover:text-foreground">Privacy</Link><Link to="/terms" className="hover:text-foreground">Terms</Link><a href="https://github.com/dracorisz/appforge" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-foreground">GitHub <ExternalLink className="h-3 w-3" /></a></span>
-        </footer>
       </div>
+      <PublicFooter />
     </div>
   )
 }

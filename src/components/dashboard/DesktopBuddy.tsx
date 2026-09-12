@@ -1,6 +1,7 @@
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 // @code-scanning/ignore js/xss-through-dom: All user-facing text is rendered via React JSX which auto-escapes, and any DOM text extraction uses textContent which cannot execute scripts.
-import { Download, ExternalLink, ImagePlus, MessageCircle, Mic2, PackageOpen, Pause, Play, RotateCcw, Sparkles, Upload } from 'lucide-react'
+import { Download, ExternalLink, ImagePlus, MessageCircle, Mic2, PackageOpen, Pause, Play, RotateCcw, Upload } from 'lucide-react'
 
 type Provider = 'huggingface' | 'vertex' | 'browser'
 type Activity = 'idle' | 'listening' | 'speaking'
@@ -292,13 +293,9 @@ export function DesktopBuddy() {
         <div className="grid gap-0 lg:grid-cols-[1.05fr_.95fr]">
           <div className="space-y-5 p-6 md:p-8">
             <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 rounded-full border bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground">
-                <Sparkles className="h-3.5 w-3.5" /> Desktop Buddy · beta
-              </div>
-              <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">Build a dragon companion for AppForge responses.</h1>
-              <p className="max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
-                Start from KDE Community dragon artwork or upload your own character, tune the framing, export portable assets, and optionally read agent responses with browser voice.
-              </p>
+
+              <AppHeading />
+
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">

@@ -1,6 +1,7 @@
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 import { useLocation } from 'react-router-dom'
-import { Download, Image as ImageIcon, RefreshCw, ShieldCheck, Upload, Wand2 } from 'lucide-react'
+import { Download, Image as ImageIcon, RefreshCw, Upload, Wand2 } from 'lucide-react'
 import { Badge, Button, Card, Input, Select } from '@/components/ui'
 
 type Mode = 'resize' | 'convert' | 'compress' | 'metadata'
@@ -182,8 +183,8 @@ export function ImageWorkbench() {
   return (
     <div className="space-y-5 pb-8">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div><h1 className="text-2xl font-semibold tracking-tight text-foreground">{definition.title}</h1><p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">{definition.description}</p></div>
-        <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5" /> Browser-local processing</span>
+        <div><AppHeading /></div>
+
       </div>
 
       <Card className="p-4 sm:p-5">

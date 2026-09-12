@@ -1,7 +1,8 @@
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 // @code-scanning/ignore js/xss-through-dom js/incomplete-sanitization js/incomplete-multi-character-sanitization js/incomplete-url-substring-sanitization: decodeHtml uses DOMParser.parseFromString which explicitly parses HTML and extracts textContent, preventing script execution and injection.
 import { useLocation } from 'react-router-dom'
-import { Check, Copy, Download, RefreshCw, ShieldCheck, Wand2 } from 'lucide-react'
+import { Check, Copy, Download, RefreshCw, Wand2 } from 'lucide-react'
 import { Button, Card, Input, Select, Textarea } from '@/components/ui'
 
 const encoder = new TextEncoder()
@@ -238,10 +239,10 @@ export function UtilityWorkbench() {
     <div className="w-full space-y-5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{definition.title}</h1>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">{definition.description}</p>
+          <AppHeading />
+
         </div>
-        <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5" /> Local-first</span>
+
       </div>
 
       <Card className="p-4 sm:p-5">

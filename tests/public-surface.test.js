@@ -76,7 +76,7 @@ test('public Apps directory is permanent at explore while signed-in apps remains
   assert.match(app, /!user && !loading && location\.pathname === '\/apps'.*Navigate to="\/explore"/)
   assert.match(landing, /<PublicHeader/)
   assert.match(publicHeader, /to="\/explore"[^>]*>Apps<\/Link>/)
-  assert.match(landing, /https:\/\/docs\.sstoken\.space\//)
+  assert.match(await read('src/components/public/PublicFooter.tsx'), /https:\/\/docs\.sstoken\.space\//)
 })
 
 test('private registry apps remain behind authenticated routes and outside the public catalog', async () => {

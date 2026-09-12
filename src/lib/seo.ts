@@ -13,6 +13,8 @@ const publicRoutes = new Set([
   '/pf-crypto-track',
 ])
 const aliases: Record<string, string> = {
+  '/apps/dns-txt-checker': '/apps/dns-checker',
+  '/pf-dns-txt-checker': '/apps/dns-checker',
   '/landing': '/',
   '/apps/scrapper-pro': '/apps/getter-pro',
   '/pf-scrapper-pro': '/apps/getter-pro',

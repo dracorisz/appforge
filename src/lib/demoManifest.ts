@@ -19,7 +19,7 @@ const TARGETS: DemoCaptureTarget[] = [
   { appId: 'image-labeler', route: '/apps/image-labeler', viewports: ['desktop'], requiresAuth: true, fixture: 'empty-safe' },
   { appId: 'creator-svg', route: '/apps/creator-svg', viewports: ['desktop'], requiresAuth: true, fixture: 'seeded-safe' },
   { appId: 'crypto-track', route: '/apps/crypto-track', viewports: ['desktop'], requiresAuth: true, fixture: 'seeded-safe' },
-  { appId: 'dns-txt-checker', route: '/apps/dns-txt-checker', viewports: ['desktop'], requiresAuth: true, fixture: 'seeded-safe' },
+  { appId: 'dns-txt-checker', route: '/apps/dns-checker', viewports: ['desktop'], requiresAuth: true, fixture: 'seeded-safe' },
   { appId: 'media-vault', route: '/apps/media-vault', viewports: ['desktop'], requiresAuth: true, fixture: 'empty-safe', note: 'Use an empty/demo account; do not capture user uploads or private filenames.' },
 ]
 

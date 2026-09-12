@@ -1,3 +1,4 @@
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 // @code-scanning/ignore js/xss-through-dom: Image URLs and metadata are rendered via React JSX (auto-escaped); image src attributes use local object URLs and do not reinterpret DOM text as HTML.
 import { Card, Button, Input, Badge } from '@/components/ui'
@@ -280,12 +281,10 @@ export function PF_ImageLabeler() {
     <div className="space-y-6">
       <div>
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-bold text-foreground">Image Labeler</h1>
-          <Badge color="green">Local-first</Badge>
+          <AppHeading />
+
         </div>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Review and label local image folders without uploading the images. Works well with ComfyUI output folders and other generated-image collections.
-        </p>
+
       </div>
 
       <Card>

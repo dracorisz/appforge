@@ -1,7 +1,8 @@
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 // @code-scanning/ignore js/incomplete-sanitization: All user input is rendered via React JSX with auto-escaping; no dangerouslySetInnerHTML or innerHTML usage exists in this component.
 import { useLocation } from 'react-router-dom'
-import { Check, Copy, Download, RefreshCw, ShieldCheck, Wand2 } from 'lucide-react'
+import { Check, Copy, Download, RefreshCw, Wand2 } from 'lucide-react'
 import { Button, Card, Input, Select, Textarea } from '@/components/ui'
 import { findConverter } from '@/lib/converters'
 
@@ -216,7 +217,7 @@ export function LocalToolsWorkbench() {
 
   return (
     <div className="space-y-5 pb-8">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><h1 className="text-2xl font-semibold tracking-tight text-foreground">{definition.title}</h1><p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">{definition.description}</p></div><span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5" /> Browser-local</span></div>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><AppHeading /></div></div>
 
       <Card className="p-4 sm:p-5">
         <div className="grid gap-4 lg:grid-cols-2">

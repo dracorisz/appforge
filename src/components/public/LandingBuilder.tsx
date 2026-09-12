@@ -1,3 +1,4 @@
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 import { ArrowDown, ArrowUp, Download, Image as ImageIcon, Plus, Save, Trash2, Upload } from 'lucide-react'
 
@@ -202,7 +203,7 @@ export default function LandingBuilder() {
   return (
     <div className="mx-auto grid w-full max-w-[1500px] gap-5 p-4 sm:p-6 xl:grid-cols-[420px_minmax(0,1fr)]">
       <aside className="surface-card self-start rounded-2xl border p-4 xl:sticky xl:top-4 xl:max-h-[calc(100dvh-2rem)] xl:overflow-auto">
-        <div><p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">No-login core</p><h1 className="mt-2 text-2xl font-semibold tracking-tight">Landing Builder</h1><p className="mt-2 text-sm leading-6 text-muted-foreground">Compose a responsive page locally, save/import project JSON, and export standalone HTML.</p></div>
+        <div><AppHeading /></div>
 
         <div className="mt-5 grid gap-3">
           <label className="grid gap-1.5 text-sm font-medium">Project name<input value={project.name} onChange={(event) => setProject((current) => ({ ...current, name: event.target.value }))} className="h-11 rounded-xl border bg-background px-3" /></label>

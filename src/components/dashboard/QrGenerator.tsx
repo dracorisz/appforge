@@ -1,3 +1,4 @@
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 import { AlertCircle, Copy, Download, ExternalLink, QrCode, RefreshCw } from 'lucide-react'
 import { Button, Card, Input } from '@/components/ui'
@@ -78,7 +79,7 @@ export function QrGenerator() {
   return (
     <div className="w-full space-y-5 pb-10">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div><h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight"><QrCode className="h-6 w-6" /> QR Generator</h1><p className="mt-1 text-sm text-muted-foreground">Create QR codes for links, text or Wi-Fi.</p></div>
+        <div><AppHeading /></div>
         <div className="flex gap-2"><Button variant="secondary" onClick={() => { setNonce((current) => current + 1); setError('') }} disabled={!url || busy}><RefreshCw className="h-4 w-4" /> Refresh</Button><Button onClick={() => void download()} disabled={!url || busy}><Download className="h-4 w-4" /> {busy ? 'Downloading…' : 'Download'}</Button></div>
       </div>
 

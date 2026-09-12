@@ -1,3 +1,4 @@
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 import { Card, Button, Badge, Select } from '@/components/ui'
 import { ArrowLeftRight, Copy, Download, RotateCcw, Check, AlertCircle, Upload } from 'lucide-react'
@@ -137,8 +138,8 @@ export function AnyToAnyConverter() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Data Converter</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Convert JSON, CSV, YAML, XML, Markdown, HTML, encoded text, and plain text.</p>
+        <AppHeading />
+
       </div>
 
       <Card>

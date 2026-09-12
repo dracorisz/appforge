@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { getGeminiHeaders } from '@/lib/aiProviders'
 import { emitAgentResponse } from '@/lib/agentEvents'
+import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 import { BookOpen, Download, GalleryThumbnails, Globe2, ImagePlus, KeyRound, Loader2, LockKeyhole, Palette, RefreshCcw, Send, Trophy, Users, X } from 'lucide-react'
 import { GiDragonHead, GiDungeonGate, GiRuneSword, GiScrollUnfurled, GiSparkles, GiSpikedShield } from 'react-icons/gi'
@@ -395,6 +396,7 @@ export function PF_AIDragonArenaStudio() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-3 pb-10 text-foreground" style={themeStyle} data-story-theme={storyTheme}>
+      <AppHeading />
       <div className="flex flex-wrap items-center justify-between gap-3 px-1">
         <div className="flex items-center gap-1 rounded-xl border border-border/70 bg-card p-1">
           <button onClick={() => setMode('novel')} className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${mode === 'novel' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}><BookOpen className="h-4 w-4" /> Novel</button>
