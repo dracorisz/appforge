@@ -35,12 +35,40 @@ const DEFAULT_SOURCES = ['duckduckgo-images', 'bing-images', 'wikimedia', 'reddi
 const SAVED_KEY = 'appforge-scrapper-saved'
 const VAULT_CHANGED_EVENT = 'appforge:media-vault-changed'
 
-const readSaved = (): ScrapperProResult[] => {
-  try { const parsed = JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'); return Array.isArray(parsed) ? parsed : [] }
-  catch { return [] }
+const safeHttpUrl = (value?: string) => {
+  if (!value) return undefined
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : undefined
+  } catch { return undefined }
 }
 
-const dedupe = (items: ScrapperProResult[]) => Array.from(new Map(items.filter((item) => item?.url).map((item) => [`${item.type}:${item.mediaUrl || item.url}`, item])).values())
+const normalizeResult = (item: ScrapperProResult): ScrapperProResult | null => {
+  if (!item || typeof item !== 'object') return null
+  const url = safeHttpUrl(item.url)
+  if (!url || !item.id || !item.title) return null
+  return {
+    ...item,
+    id: String(item.id).slice(0, 500),
+    source: String(item.source || 'Unknown').slice(0, 120),
+    title: String(item.title).slice(0, 1_000),
+    snippet: String(item.snippet || '').slice(0, 10_000),
+    url,
+    thumbnail: safeHttpUrl(item.thumbnail),
+    mediaUrl: safeHttpUrl(item.mediaUrl),
+  }
+}
+
+const dedupe = (items: ScrapperProResult[]) => Array.from(new Map(
+  items.map(normalizeResult).filter((item): item is ScrapperProResult => Boolean(item)).map((item) => [`${item.type}:${item.mediaUrl || item.url}`, item]),
+).values())
+
+const readSaved = (): ScrapperProResult[] => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(SAVED_KEY) || '[]')
+    return Array.isArray(parsed) ? dedupe(parsed as ScrapperProResult[]).slice(0, 300) : []
+  } catch { return [] }
+}
 
 const downloadJson = (value: unknown, filename: string) => {
   const blob = new Blob([JSON.stringify(value, null, 2)], { type: 'application/json;charset=utf-8' })
@@ -80,7 +108,10 @@ export function PF_ScrapperProNext() {
   const [message, setMessage] = React.useState('')
   const [filter, setFilter] = React.useState<'all' | ScrapperProResult['type']>('all')
 
-  React.useEffect(() => { localStorage.setItem(SAVED_KEY, JSON.stringify(saved.slice(0, 300))) }, [saved])
+  React.useEffect(() => {
+    try { localStorage.setItem(SAVED_KEY, JSON.stringify(saved.slice(0, 300))) }
+    catch { setMessage('Browser storage is full or unavailable. Export important results or use Media Vault for durable references.') }
+  }, [saved])
 
   const fetchYouTube = async (cleanQuery: string, pageToken?: string) => {
     const response = await fetch('/api/youtube-search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: cleanQuery, ...(pageToken ? { pageToken } : {}) }) })
@@ -145,7 +176,7 @@ export function PF_ScrapperProNext() {
   }
 
   const downloadResult = async (result: ScrapperProResult) => {
-    const target = result.mediaUrl || result.thumbnail; if (!target) { setMessage('This result does not expose a directly downloadable media URL.'); return }
+    const target = safeHttpUrl(result.mediaUrl || result.thumbnail); if (!target) { setMessage('This result does not expose a directly downloadable media URL.'); return }
     try { const response = await fetch(target); if (!response.ok) throw new Error(`HTTP ${response.status}`); const blob = await response.blob(); if (!blob.size) throw new Error('Empty media response'); const objectUrl = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = objectUrl; link.download = filenameFor(result, blob.type); document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(objectUrl); setMessage(`Downloaded “${result.title}”.`) }
     catch { const link = document.createElement('a'); link.href = target; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.download = filenameFor(result); document.body.appendChild(link); link.click(); link.remove(); setMessage('The source blocks direct browser download, so the original media was opened for saving.') }
   }
@@ -154,7 +185,10 @@ export function PF_ScrapperProNext() {
   const saveSelectedVault = async () => { if (!selectedResults.length) return; let success = 0; for (const result of selectedResults) if (await saveOneVault(result, true)) success += 1; const failed = selectedResults.length - success; setMessage(`Media Vault confirmed ${success} save${success === 1 ? '' : 's'}${failed ? ` · ${failed} failed` : ''}.`) }
 
   const exportCollectibleCandidates = () => { if (!selectedResults.length) return; const exportedAt = new Date().toISOString(); downloadJson({ schema: 'appforge.collectible-candidates.v1', exportedAt, rightsReminder: 'Public availability does not grant ownership, commercial rights, or minting permission. Verify creator/channel rights before any collectible or token-art use.', autoMint: false, candidates: selectedResults.map((result) => ({ intent: 'collectible-candidate', title: result.title, source: result.source, originalUrl: result.url, creatorOrChannel: typeof result.provenance?.channelTitle === 'string' ? result.provenance.channelTitle : undefined, sourceId: result.provenance?.youtubeId, channelId: result.provenance?.channelId, thumbnail: result.thumbnail, mediaUrl: result.mediaUrl, provenance: result.provenance })) }, `appforge-collectible-candidates-${exportedAt.slice(0, 10)}.json`); setMessage('Candidate metadata exported with creator/source attribution. Nothing was minted.') }
-  const copyUrl = async (url: string) => { await navigator.clipboard.writeText(url); setMessage('Source URL copied.') }
+  const copyUrl = async (url: string) => {
+    try { await navigator.clipboard.writeText(url); setMessage('Source URL copied.') }
+    catch { setMessage('Clipboard access was blocked by the browser. Open the source and copy the URL from the address bar.') }
+  }
   const counts = React.useMemo(() => ({ image: results.filter((item) => item.type === 'image').length, video: results.filter((item) => item.type === 'video').length, article: results.filter((item) => item.type === 'article').length, post: results.filter((item) => item.type === 'post').length }), [results])
 
   return (
