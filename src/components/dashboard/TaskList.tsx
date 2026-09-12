@@ -31,10 +31,12 @@ const normalizeTask = (item: unknown): Task | null => {
   return { id: row.id, title: row.title.slice(0, MAX_TITLE), completed: Boolean(row.completed), created_at: created, updated_at: updated }
 }
 
+const isTask = (item: Task | null): item is Task => item !== null
+
 const loadLocal = (userId?: string): Task[] => {
   try {
     const parsed = JSON.parse(localStorage.getItem(taskStorageKey(userId)) || '[]')
-    if (Array.isArray(parsed)) return parsed.slice(0, MAX_TASKS).map(normalizeTask).filter((item): item is Task => Boolean(item))
+    if (Array.isArray(parsed)) return parsed.slice(0, MAX_TASKS).map(normalizeTask).filter(isTask)
   } catch { /* ignore malformed local state */ }
   return []
 }
@@ -105,7 +107,7 @@ export function TaskList() {
       if (generation !== syncGenerationRef.current || currentUserRef.current !== syncUserId) return
 
       const deleted = loadDeleted(syncUserId)
-      const remote = ((data || []) as unknown[]).map(normalizeTask).filter((item): item is Task => Boolean(item) && !deleted.has(item.id))
+      const remote = ((data || []) as unknown[]).map(normalizeTask).filter(isTask).filter((task) => !deleted.has(task.id))
       const local = loadLocal(syncUserId).filter((task) => !deleted.has(task.id))
       const mergedMap = new Map<string, Task>()
       remote.forEach((task) => mergedMap.set(task.id, task))
@@ -116,7 +118,7 @@ export function TaskList() {
         const ids = Array.from(deleted)
         const { error: deleteError } = await supabase.from('appforge_tasks').delete().eq('user_id', syncUserId).in('id', ids)
         if (deleteError) throw deleteError
-        saveDeleted(syncUserId, new Set())
+        saveDeleted(syncUserId, new Set<string>())
       }
       if (merged.length) {
         const { error: seedError } = await supabase.from('appforge_tasks').upsert(merged.map((task) => ({ ...task, user_id: syncUserId })))
