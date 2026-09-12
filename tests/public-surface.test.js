@@ -58,12 +58,14 @@ test('SEO allowlist and canonical aliases match the public release surface', asy
   assert.match(seo, /'\/pf-scrapper-pro': '\/apps\/getter-pro'/)
 })
 
-test('blog, changelog and content admin routes stay intentionally exposed at the root router', async () => {
+test('blog and changelog stay public while legacy content admin redirects into the protected admin console', async () => {
   const main = await read('src/main.tsx')
+  const app = await read('src/App.tsx')
   assert.match(main, /location\.pathname === '\/blog'.*PublicBlogPage/s)
   assert.match(main, /location\.pathname === '\/changelog'.*ChangelogPage/s)
-  assert.match(main, /location\.pathname === '\/admin\/content'.*AdminContentManager/s)
+  assert.match(main, /location\.pathname === '\/admin\/content'.*Navigate to="\/settings\/admin"/s)
   assert.match(main, /location\.pathname\.startsWith\('\/blog\/'\)/)
+  assert.match(app, /path="\/settings\/admin".*AdminConsolePage/s)
 
   const changelogPage = await read('src/components/public/ChangelogPage.tsx')
   assert.match(changelogPage, /CHANGELOG\.md\?raw/)
