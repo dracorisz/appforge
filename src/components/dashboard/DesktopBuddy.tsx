@@ -31,6 +31,7 @@ type StarterAsset = {
 const STORAGE_KEY = 'appforge-desktop-buddy-v1'
 const MAX_IMAGE_BYTES = 2_500_000
 const MAX_PACK_IMAGE_CHARS = 4_000_000
+const ALLOWED_UPLOAD_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'])
 
 const KDE_LICENSE = 'KDE mascot artwork: CC BY-SA / GFDL / LGPL'
 const KDE_STARTERS: StarterAsset[] = [
@@ -77,15 +78,27 @@ const defaultConfig: BuddyConfig = {
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 const isProvider = (value: unknown): value is Provider => value === 'huggingface' || value === 'vertex' || value === 'browser'
+const safeHttpUrl = (value: unknown) => {
+  if (typeof value !== 'string' || !value.trim()) return ''
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString().slice(0, 2_000) : ''
+  } catch { return '' }
+}
+const safeImageSource = (value: unknown) => {
+  if (typeof value !== 'string' || !value || value.length > MAX_PACK_IMAGE_CHARS) return defaultConfig.imageDataUrl
+  if (/^data:image\/(?:png|jpeg|webp|svg\+xml)[;,]/i.test(value)) return value
+  return safeHttpUrl(value) || defaultConfig.imageDataUrl
+}
 
 const sanitizeConfig = (value: Partial<BuddyConfig>): BuddyConfig => ({
   name: typeof value.name === 'string' ? value.name.slice(0, 64) : defaultConfig.name,
   provider: isProvider(value.provider) ? value.provider : defaultConfig.provider,
   voiceEnabled: typeof value.voiceEnabled === 'boolean' ? value.voiceEnabled : defaultConfig.voiceEnabled,
   voiceName: typeof value.voiceName === 'string' ? value.voiceName.slice(0, 160) : '',
-  imageDataUrl: typeof value.imageDataUrl === 'string' && value.imageDataUrl.length <= MAX_PACK_IMAGE_CHARS ? value.imageDataUrl : defaultConfig.imageDataUrl,
+  imageDataUrl: safeImageSource(value.imageDataUrl),
   assetLabel: typeof value.assetLabel === 'string' ? value.assetLabel.slice(0, 120) : '',
-  assetSourceUrl: typeof value.assetSourceUrl === 'string' ? value.assetSourceUrl.slice(0, 500) : '',
+  assetSourceUrl: safeHttpUrl(value.assetSourceUrl),
   assetLicense: typeof value.assetLicense === 'string' ? value.assetLicense.slice(0, 240) : '',
   scale: clamp(Number.isFinite(value.scale) ? Number(value.scale) : defaultConfig.scale, 45, 145),
   offsetX: clamp(Number.isFinite(value.offsetX) ? Number(value.offsetX) : defaultConfig.offsetX, -120, 120),
@@ -163,8 +176,9 @@ export function DesktopBuddy() {
   const onUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
-    if (!file.type.startsWith('image/')) {
+    if (!ALLOWED_UPLOAD_TYPES.has(file.type)) {
       setMessage('Choose a PNG, WebP, JPEG, or SVG image.')
+      event.target.value = ''
       return
     }
     if (file.size > MAX_IMAGE_BYTES) {
@@ -173,13 +187,14 @@ export function DesktopBuddy() {
       return
     }
     const reader = new FileReader()
+    reader.onerror = () => setMessage('The browser could not read that character image.')
     reader.onload = () => {
       const imageDataUrl = String(reader.result || '')
       if (imageDataUrl.length > MAX_PACK_IMAGE_CHARS) {
         setMessage('That image expands too much for a portable local buddy pack. Choose a smaller asset.')
         return
       }
-      setConfig((current) => ({ ...current, imageDataUrl, assetLabel: file.name, assetSourceUrl: '', assetLicense: 'User-supplied asset' }))
+      setConfig((current) => ({ ...current, imageDataUrl: safeImageSource(imageDataUrl), assetLabel: file.name, assetSourceUrl: '', assetLicense: 'User-supplied asset' }))
       setMessage('Character loaded locally.')
     }
     reader.readAsDataURL(file)
@@ -223,12 +238,13 @@ export function DesktopBuddy() {
       return
     }
     const reader = new FileReader()
+    reader.onerror = () => setMessage('The browser could not read that buddy pack.')
     reader.onload = () => {
       try {
         const parsed = JSON.parse(String(reader.result || '{}')) as { app?: unknown; version?: unknown; config?: Partial<BuddyConfig> }
         if (parsed.app !== 'desktop-buddy' || ![1, 2].includes(Number(parsed.version)) || !parsed.config) throw new Error('Invalid buddy pack')
         setConfig(sanitizeConfig(parsed.config))
-        setMessage('Buddy pack imported.')
+        setMessage('Buddy pack imported and unsafe source URLs were discarded.')
       } catch {
         setMessage('That file is not a valid Desktop Buddy pack.')
       }
@@ -266,11 +282,9 @@ export function DesktopBuddy() {
     window.dispatchEvent(new CustomEvent('appforge:agent-response', { detail: { text } }))
   }
 
-  const providerNote = config.provider === 'huggingface'
-    ? 'Hugging Face selected · server-side generation adapter is the next provider milestone.'
-    : config.provider === 'vertex'
-      ? 'Vertex AI selected · generation remains explicit/manual to stay inside the project cost controls.'
-      : 'Browser mode selected · no provider credential is used.'
+  const providerNote = config.provider === 'browser'
+    ? 'Local/browser preference saved with this buddy pack. The Generate tab controls actual AI generation providers.'
+    : `${config.provider === 'vertex' ? 'Vertex AI' : 'Hugging Face'} preference saved with this buddy pack. Use Generate to check availability and run an explicit generation request.`
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 p-4 md:p-6">
@@ -293,7 +307,7 @@ export function DesktopBuddy() {
                 <input className="mt-2 w-full bg-transparent text-sm outline-none" value={config.name} maxLength={64} onChange={(e) => setConfig((c) => ({ ...c, name: e.target.value }))} />
               </label>
               <label className="rounded-2xl border p-4">
-                <span className="text-xs font-medium text-muted-foreground">Provider path</span>
+                <span className="text-xs font-medium text-muted-foreground">Pack provider preference</span>
                 <select className="mt-2 w-full bg-transparent text-sm outline-none" value={config.provider} onChange={(e) => setConfig((c) => ({ ...c, provider: e.target.value as Provider }))}>
                   <option value="huggingface">Hugging Face</option>
                   <option value="vertex">Vertex AI</option>
