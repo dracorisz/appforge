@@ -5,6 +5,7 @@ import { getConverters, getFormats, findConverter, getConvertersFrom } from '@/l
 
 type Format = string
 
+const MAX_TEXT_FILE_BYTES = 8 * 1024 * 1024
 const extensionByFormat: Record<string, string> = {
   json: 'json',
   csv: 'csv',
@@ -116,6 +117,10 @@ export function AnyToAnyConverter() {
   }
 
   const loadFile = async (file: File) => {
+    if (file.size > MAX_TEXT_FILE_BYTES) {
+      setError('Choose a text file under 8 MB so conversion stays responsive in the browser.')
+      return
+    }
     try {
       const text = await file.text()
       setInput(text)
