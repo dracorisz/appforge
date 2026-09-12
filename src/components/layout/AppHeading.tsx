@@ -13,8 +13,11 @@ export function AppHeading() {
   const app = getAllApps().find((item) => item.route === (aliases[pathname] || pathname))
   if (!app) return null
   const Icon = app.id === 'ai-dragon-arena' ? DragonArenaIcon : icons[app.icon as keyof typeof icons] || Wrench
-  return <div className="app-heading">
-    <h1 className="flex items-center gap-3 text-2xl font-semibold tracking-tight text-foreground"><span className="app-heading-icon"><Icon className="h-5 w-5" /></span>{app.name}</h1>
+  return <header className="app-heading w-full min-w-0">
+    <div className="flex min-w-0 items-center gap-2.5">
+      <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
+      <h1 className="min-w-0 text-2xl font-semibold tracking-tight text-foreground">{app.name}</h1>
+    </div>
     <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{app.description}</p>
-  </div>
+  </header>
 }
