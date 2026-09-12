@@ -109,7 +109,7 @@ const ROUTES: Record<string, UtilityDefinition> = {
   '/apps/token-generator': { mode: 'token', title: 'Token Generator', description: 'Generate cryptographically secure API keys and bearer-style secrets.' },
   '/apps/hash-tool': { mode: 'hash', title: 'Hash Tool', description: 'Calculate SHA checksums locally using the Web Crypto API.', inputLabel: 'Text to hash', outputLabel: 'Digest' },
   '/apps/hex-converter': { mode: 'hex', title: 'Hex / Binary Converter', description: 'Convert UTF-8 text to hexadecimal or binary and back.', inputLabel: 'Input', outputLabel: 'Result' },
-  '/apps/jwt-decoder': { mode: 'jwt', title: 'JWT Decoder', description: 'Inspect JWT header and payload locally. Signature verification is intentionally not implied.', inputLabel: 'JWT', outputLabel: 'Decoded claims' },
+  '/apps/jwt-decoder': { mode: 'jwt', title: 'JWT Decoder', description: 'Inspect a three-part compact JWT header and payload locally. Signature verification is intentionally not implied.', inputLabel: 'JWT', outputLabel: 'Decoded claims' },
 }
 
 export const IMPLEMENTED_UTILITY_ROUTES = new Set(Object.keys(ROUTES))
@@ -191,8 +191,8 @@ export function UtilityWorkbench() {
           break
         case 'jwt': {
           const parts = input.trim().split('.')
-          if (parts.length < 2) throw new Error('JWT must contain at least a header and payload.')
-          next = JSON.stringify({ header: decodeJwtPart(parts[0]), payload: decodeJwtPart(parts[1]) }, null, 2)
+          if (parts.length !== 3 || !parts[0] || !parts[1]) throw new Error('JWT must use the three-part compact form: header.payload.signature.')
+          next = JSON.stringify({ header: decodeJwtPart(parts[0]), payload: decodeJwtPart(parts[1]), signaturePresent: Boolean(parts[2]) }, null, 2)
           break
         }
       }
