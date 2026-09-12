@@ -238,18 +238,22 @@ export function PF_ImageLabeler() {
       const parsed = JSON.parse(await file.text())
       if (!Array.isArray(parsed)) throw new Error('Expected a JSON array of label records.')
       const imported: Record<string, ImageLabel> = {}
-      parsed.slice(0, MAX_IMAGE_COUNT).forEach((item) => {
+      parsed.slice(0, MAX_IMAGE_COUNT).forEach((item: unknown) => {
         if (!item || typeof item !== 'object') return
-        const rawPath = String(item.path || item.filename || '').trim().slice(0, 1000)
+        const record = item as Record<string, unknown>
+        const rawPath = String(record.path || record.filename || '').trim().slice(0, 1000)
         if (!rawPath) return
         const matching = images.find((image) => image.path === rawPath || image.name === rawPath)
         const key = matching?.id || rawPath
+        const safeTags: string[] = Array.isArray(record.tags)
+          ? Array.from(new Set(record.tags.map((tag: unknown) => String(tag).trim().slice(0, 80)).filter((tag): tag is string => Boolean(tag)))).slice(0, 32)
+          : []
         imported[key] = {
-          filename: String(item.filename || rawPath.split('/').pop() || rawPath).slice(0, 255),
+          filename: String(record.filename || rawPath.split('/').pop() || rawPath).slice(0, 255),
           path: rawPath,
-          label: String(item.label || '').slice(0, 1000),
-          tags: Array.isArray(item.tags) ? Array.from(new Set(item.tags.map((tag: unknown) => String(tag).trim().slice(0, 80)).filter(Boolean))).slice(0, 32) : [],
-          approved: Boolean(item.approved),
+          label: String(record.label || '').slice(0, 1000),
+          tags: safeTags,
+          approved: Boolean(record.approved),
         }
       })
       setLabels((current) => ({ ...current, ...imported }))
@@ -299,53 +303,19 @@ export function PF_ImageLabeler() {
           </div>
         </div>
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
-          className="hidden"
-          onChange={(event) => {
-            const files = Array.from(event.target.files || [])
-            const firstPath = (files[0] as File & { webkitRelativePath?: string } | undefined)?.webkitRelativePath
-            const root = firstPath?.split('/')[0] || 'Selected images'
-            assetsFromFiles(files, root)
-            event.target.value = ''
-          }}
-        />
-        <input
-          ref={importInputRef}
-          type="file"
-          accept="application/json,.json"
-          className="hidden"
-          onChange={(event) => {
-            const file = event.target.files?.[0]
-            if (file) void importLabels(file)
-            event.target.value = ''
-          }}
-        />
+        <input ref={fileInputRef} type="file" multiple accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="hidden" onChange={(event) => { const files = Array.from(event.target.files || []); const firstPath = (files[0] as File & { webkitRelativePath?: string } | undefined)?.webkitRelativePath; const root = firstPath?.split('/')[0] || 'Selected images'; assetsFromFiles(files, root); event.target.value = '' }} />
+        <input ref={importInputRef} type="file" accept="application/json,.json" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void importLabels(file); event.target.value = '' }} />
 
         {error && <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">{error}</div>}
 
-        {images.length > 0 && (
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-lg border border-border bg-muted/30 p-3"><p className="text-xs text-muted-foreground">Images</p><p className="mt-1 text-xl font-semibold text-foreground">{images.length}</p></div>
-            <div className="rounded-lg border border-border bg-muted/30 p-3"><p className="text-xs text-muted-foreground">Labeled</p><p className="mt-1 text-xl font-semibold text-foreground">{labeledCount}</p></div>
-            <div className="rounded-lg border border-border bg-muted/30 p-3"><p className="text-xs text-muted-foreground">Approved</p><p className="mt-1 text-xl font-semibold text-foreground">{approvedCount} <span className="text-xs font-normal text-muted-foreground">({completion}%)</span></p></div>
-          </div>
-        )}
+        {images.length > 0 && <div className="mt-4 grid gap-3 sm:grid-cols-3"><div className="rounded-lg border border-border bg-muted/30 p-3"><p className="text-xs text-muted-foreground">Images</p><p className="mt-1 text-xl font-semibold text-foreground">{images.length}</p></div><div className="rounded-lg border border-border bg-muted/30 p-3"><p className="text-xs text-muted-foreground">Labeled</p><p className="mt-1 text-xl font-semibold text-foreground">{labeledCount}</p></div><div className="rounded-lg border border-border bg-muted/30 p-3"><p className="text-xs text-muted-foreground">Approved</p><p className="mt-1 text-xl font-semibold text-foreground">{approvedCount} <span className="text-xs font-normal text-muted-foreground">({completion}%)</span></p></div></div>}
       </Card>
 
       {currentImage ? (
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,.65fr)]">
           <Card>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2"><Badge color="slate">{currentIndex + 1} / {images.length}</Badge><span className="max-w-[55vw] truncate text-xs text-muted-foreground">{currentImage.path}</span></div>
-              <div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => goTo(currentIndex - 1)} disabled={currentIndex === 0}><ChevronLeft className="h-4 w-4" /></Button><Button variant="ghost" size="sm" onClick={() => goTo(currentIndex + 1)} disabled={currentIndex === images.length - 1}><ChevronRight className="h-4 w-4" /></Button><Button variant="ghost" size="sm" onClick={saveCurrentImage} title="Download original"><Download className="h-4 w-4" /></Button><Button variant="ghost" size="sm" onClick={() => setLightbox(currentImage.url)} title="Full screen"><Maximize2 className="h-4 w-4" /></Button></div>
-            </div>
-
+            <div className="flex flex-wrap items-center justify-between gap-2"><div className="flex items-center gap-2"><Badge color="slate">{currentIndex + 1} / {images.length}</Badge><span className="max-w-[55vw] truncate text-xs text-muted-foreground">{currentImage.path}</span></div><div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => goTo(currentIndex - 1)} disabled={currentIndex === 0}><ChevronLeft className="h-4 w-4" /></Button><Button variant="ghost" size="sm" onClick={() => goTo(currentIndex + 1)} disabled={currentIndex === images.length - 1}><ChevronRight className="h-4 w-4" /></Button><Button variant="ghost" size="sm" onClick={saveCurrentImage} title="Download original"><Download className="h-4 w-4" /></Button><Button variant="ghost" size="sm" onClick={() => setLightbox(currentImage.url)} title="Full screen"><Maximize2 className="h-4 w-4" /></Button></div></div>
             <button type="button" onClick={() => setLightbox(currentImage.url)} className="mt-4 flex min-h-[360px] w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-black/5 p-2 dark:bg-black/30"><img src={currentImage.url} alt={currentImage.name} className="max-h-[62vh] max-w-full object-contain" /></button>
-
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground"><span>{currentImage.name}</span><span>{formatBytes(currentImage.size)}</span><span>{currentImage.type || 'image'}</span></div>
           </Card>
 
@@ -353,27 +323,20 @@ export function PF_ImageLabeler() {
             <Card>
               <label className="text-sm font-medium text-foreground">Label</label>
               <Input value={currentLabel?.label || ''} onChange={(event) => updateLabel({ label: event.target.value.slice(0, 1000) })} placeholder="e.g. portrait, product shot, motion reference…" className="mt-2" />
-
               <label className="mt-4 block text-sm font-medium text-foreground">Tags</label>
               <div className="mt-2 flex gap-2"><Input value={tagInput} onChange={(event) => setTagInput(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); addTag() } }} placeholder="Add tag" /><Button variant="secondary" onClick={addTag}><Tag className="h-4 w-4" /></Button></div>
               <div className="mt-2 flex flex-wrap gap-1.5">{(currentLabel?.tags || []).map((tag) => <button key={tag} onClick={() => removeTag(tag)} className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs text-foreground hover:bg-accent">{tag}<X className="h-3 w-3 text-muted-foreground" /></button>)}</div>
-
               <Button className="mt-5 w-full" variant={currentLabel?.approved ? 'secondary' : 'primary'} onClick={() => updateLabel({ approved: !currentLabel?.approved })}><Check className="h-4 w-4" /> {currentLabel?.approved ? 'Approved' : 'Approve image'}</Button>
             </Card>
 
             <Card>
               <div className="flex items-center justify-between"><h2 className="text-sm font-medium text-foreground">Folder queue</h2><span className="text-xs text-muted-foreground">{completion}% approved</span></div>
-              <div className="mt-3 max-h-[340px] space-y-1 overflow-y-auto pr-1">{images.map((image, index) => {
-                const item = labels[image.id]
-                return <button key={image.id} onClick={() => goTo(index)} className={`flex w-full items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-xs ${index === currentIndex ? 'border-foreground/30 bg-accent' : 'border-transparent hover:bg-accent/50'}`}><span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${item?.approved ? 'bg-emerald-500/15 text-emerald-500' : 'bg-muted text-muted-foreground'}`}>{item?.approved ? <Check className="h-3 w-3" /> : index + 1}</span><span className="min-w-0 flex-1 truncate text-foreground">{image.path}</span></button>
-              })}</div>
+              <div className="mt-3 max-h-[340px] space-y-1 overflow-y-auto pr-1">{images.map((image, index) => { const item = labels[image.id]; return <button key={image.id} onClick={() => goTo(index)} className={`flex w-full items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-xs ${index === currentIndex ? 'border-foreground/30 bg-accent' : 'border-transparent hover:bg-accent/50'}`}><span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${item?.approved ? 'bg-emerald-500/15 text-emerald-500' : 'bg-muted text-muted-foreground'}`}>{item?.approved ? <Check className="h-3 w-3" /> : index + 1}</span><span className="min-w-0 flex-1 truncate text-foreground">{image.path}</span></button> })}</div>
               <Button variant="ghost" size="sm" className="mt-3 w-full" onClick={clearFolderLabels}><RotateCcw className="h-3.5 w-3.5" /> Clear labels for this folder</Button>
             </Card>
           </div>
         </div>
-      ) : (
-        <Card><div className="py-12 text-center"><ImageIcon className="mx-auto h-7 w-7 text-muted-foreground" /><h2 className="mt-3 text-sm font-medium text-foreground">Open a local image folder</h2><p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">Supported formats: PNG, JPEG, WebP, GIF, and AVIF. Images are previewed through local object URLs and are not uploaded.</p></div></Card>
-      )}
+      ) : <Card><div className="py-12 text-center"><ImageIcon className="mx-auto h-7 w-7 text-muted-foreground" /><h2 className="mt-3 text-sm font-medium text-foreground">Open a local image folder</h2><p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">Supported formats: PNG, JPEG, WebP, GIF, and AVIF. Images are previewed through local object URLs and are not uploaded.</p></div></Card>}
 
       {lightbox && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={() => setLightbox(null)}><button onClick={() => setLightbox(null)} className="absolute right-4 top-4 rounded-lg bg-black/40 p-2 text-white hover:bg-black/60" aria-label="Close preview"><X className="h-6 w-6" /></button><img src={lightbox} alt="Full-size preview" className="max-h-[92vh] max-w-[96vw] object-contain" /></div>}
     </div>
