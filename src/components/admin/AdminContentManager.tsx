@@ -168,7 +168,8 @@ export function AdminContentManager({ embedded = false, adminVerified = false }:
     finally { setBusy('') }
   }
 
-  const draftWithVertex = async () => {
+  const draftWithVertex = async (publish = false) => {
+    if (!user) return
     const topic = vertexTopic.trim() || draft.title.trim()
     if (!topic) { setError('Add a topic or title first.'); return }
     setBusy('vertex'); setError('')
@@ -180,8 +181,13 @@ export function AdminContentManager({ embedded = false, adminVerified = false }:
       const payload = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(payload.error || 'Vertex draft failed.')
       const article = payload.article || {}
-      setDraft((current) => ({ ...current, title: String(article.title || current.title), slug: cleanSlug(String(article.title || current.slug || topic)), summary: String(article.summary || current.summary || ''), body: String(article.body || current.body || ''), app_route: String(article.app_route || current.app_route || ''), metadata: typeof article.metadata === 'object' && article.metadata ? article.metadata : current.metadata }))
-      flash(`Vertex draft loaded${payload.model ? ` · ${payload.model}` : ''}.`)
+      const generated: FrontendContentDraft = { ...draft, title: String(article.title || draft.title), slug: cleanSlug(String(article.title || draft.slug || topic)), summary: String(article.summary || draft.summary || ''), body: String(article.body || draft.body || ''), app_route: String(article.app_route || draft.app_route || ''), metadata: typeof article.metadata === 'object' && article.metadata ? article.metadata : draft.metadata, published: publish || draft.published }
+      setDraft(generated)
+      if (publish) {
+        const saved = selectedId ? await updateFrontendContent(selectedId, generated) : await createFrontendContent(generated, user.id)
+        await refreshItems(); setSelectedId(saved.id); setDraft(toDraft(saved))
+        flash(`Vertex article published${payload.model ? ` · ${payload.model}` : ''}.`)
+      } else flash(`Vertex draft loaded${payload.model ? ` · ${payload.model}` : ''}. Review it, then Save or Publish.`)
     } catch (vertexError) { setError(vertexError instanceof Error ? vertexError.message : 'Vertex draft failed.') }
     finally { setBusy('') }
   }
@@ -202,7 +208,7 @@ export function AdminContentManager({ embedded = false, adminVerified = false }:
       <aside className="rounded-2xl border border-border/70 bg-background/40 p-3"><button onClick={newItem} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-border/70 text-sm font-semibold hover:bg-accent"><Plus className="h-4 w-4" /> New</button><div className="mt-3 space-y-2">{visible.map((item) => <button key={item.id} onClick={() => selectItem(item)} className={`w-full rounded-xl border p-3 text-left ${selectedId === item.id ? 'border-foreground/30 bg-accent/50' : 'border-border/60 hover:bg-accent/25'}`}><div className="truncate text-sm font-medium">{item.title}</div><div className="mt-1 truncate text-[11px] text-muted-foreground">{item.slug}</div></button>)}{!visible.length && <div className="p-4 text-center text-xs text-muted-foreground">No items.</div>}</div></aside>
 
       <section className="rounded-2xl border border-border/70 bg-background/40 p-4 sm:p-5">
-        {(draft.content_type === 'blog_article' || draft.content_type === 'docs_page') && <div className="mb-4 rounded-xl border border-border/70 p-3"><div className="flex items-center gap-2 text-sm font-semibold"><Sparkles className="h-4 w-4" /> Vertex draft</div><div className="mt-3 flex gap-2"><input value={vertexTopic} onChange={(event) => setVertexTopic(event.target.value)} className="h-10 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 text-sm" placeholder="Topic" /><button type="button" onClick={() => void draftWithVertex()} disabled={busy === 'vertex'} className="inline-flex h-10 items-center gap-2 rounded-lg border border-border px-3 text-sm font-semibold hover:bg-accent">{busy === 'vertex' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Draft</button></div></div>}
+        {(draft.content_type === 'blog_article' || draft.content_type === 'docs_page') && <div className="mb-4 rounded-xl border border-border/70 p-3"><div className="flex items-center gap-2 text-sm font-semibold"><Sparkles className="h-4 w-4" /> Vertex writing</div><div className="mt-3 flex flex-col gap-2 sm:flex-row"><input value={vertexTopic} onChange={(event) => setVertexTopic(event.target.value)} className="h-10 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 text-sm" placeholder="Topic" /><button type="button" onClick={() => void draftWithVertex(false)} disabled={busy === 'vertex'} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border px-3 text-sm font-semibold hover:bg-accent">{busy === 'vertex' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Generate draft</button>{draft.content_type === 'blog_article' && <button type="button" onClick={() => void draftWithVertex(true)} disabled={busy === 'vertex'} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground"><CheckCircle2 className="h-4 w-4" /> Generate & publish</button>}</div></div>}
         <form onSubmit={save} className="space-y-4">
           <div className="flex items-center justify-between"><h3 className="text-lg font-semibold">{selectedId ? 'Edit' : 'New'} {draft.content_type === 'docs_page' ? 'Docs page' : 'content'}</h3>{selectedId && <button type="button" onClick={newItem} className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent"><X className="h-4 w-4" /></button>}</div>
           <div className="grid gap-3 md:grid-cols-2"><label className="text-xs font-medium text-muted-foreground">Title<input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground" /></label><label className="text-xs font-medium text-muted-foreground">Slug<input value={draft.slug} onChange={(event) => setDraft((current) => ({ ...current, slug: event.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground" placeholder={draft.content_type === 'docs_page' ? 'GETTING_STARTED' : 'article-slug'} /></label></div>

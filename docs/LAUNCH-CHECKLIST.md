@@ -24,7 +24,7 @@ Before or immediately after the deliberate production deploy, prioritize:
 5. Story Studio primary creation flow and generated-scene handling;
 6. Getter Pro search/download/reference behavior and Getter Pro → Media Vault save/reload;
 7. Media Vault Grid/Showcase/List and source actions;
-8. Desktop Buddy local character workflow, generation/recovery states, transparency repair, and capture/import fallback;
+8. Desktop Buddy local character workflow, generation/recovery states, alpha verification/repair, widget switch, and widget-only screenshot capture;
 9. Task List local create/edit/complete/delete and authenticated sync;
 10. Weather Now plus sidebar location preference;
 11. representative browser-local tools such as Any Converter;

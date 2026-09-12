@@ -237,15 +237,8 @@ export function UtilityWorkbench() {
 
   return (
     <div className="w-full space-y-5">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <AppHeading />
-
-        </div>
-
-      </div>
-
       <Card className="p-4 sm:p-5">
+        <AppHeading />
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-3">
             {operationOptions.length > 0 && (

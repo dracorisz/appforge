@@ -27,6 +27,7 @@ test('public sitemap contains only current canonical public AppForge routes', as
     'https://www.sstoken.space/apps/favicon-studio',
     'https://www.sstoken.space/apps/svg-icons',
     'https://www.sstoken.space/apps/landing-builder',
+    'https://www.sstoken.space/apps/background-remover',
     'https://www.sstoken.space/privacy',
     'https://www.sstoken.space/terms',
   ]

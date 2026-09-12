@@ -279,15 +279,8 @@ export function PF_ImageLabeler() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <div className="flex flex-wrap items-center gap-2">
-          <AppHeading />
-
-        </div>
-
-      </div>
-
       <Card>
+        <AppHeading />
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Current selection</p>

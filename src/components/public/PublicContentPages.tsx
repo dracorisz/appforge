@@ -63,12 +63,12 @@ function useBlogArticles() {
   return { articles, loading }
 }
 
-const youtubeEmbed = (url: string) => { try { const parsed = new URL(url); const id = parsed.hostname.includes('youtu.be') ? parsed.pathname.slice(1) : parsed.searchParams.get('v') || (parsed.pathname.startsWith('/embed/') ? parsed.pathname.split('/')[2] : ''); return id && /^[\w-]{6,}$/.test(id) ? `https://www.youtube-nocookie.com/embed/${id}` : '' } catch { return '' } }
+const youtubeEmbed = (url: string) => { try { const parsed = new URL(url); const host = parsed.hostname.toLowerCase().replace(/^www\./, ''); if (!['youtu.be', 'youtube.com', 'm.youtube.com', 'youtube-nocookie.com'].includes(host)) return ''; const id = host === 'youtu.be' ? parsed.pathname.slice(1) : parsed.searchParams.get('v') || (parsed.pathname.startsWith('/embed/') ? parsed.pathname.split('/')[2] : ''); return id && /^[\w-]{6,}$/.test(id) ? `https://www.youtube-nocookie.com/embed/${id}` : '' } catch { return '' } }
 
 function VideoBlock({ url }: { url?: string }) {
   if (!url) return <div className="mt-8 rounded-2xl border border-dashed border-border/80 bg-background/45 p-6"><div className="flex items-center gap-2 font-semibold"><Clapperboard className="h-4 w-4" /> Video walkthrough</div><p className="mt-2 text-sm leading-6 text-muted-foreground">No walkthrough has been published yet.</p></div>
   const embed = youtubeEmbed(url)
-  return <div className="mt-8 overflow-hidden rounded-2xl border border-border/80 bg-background/45">{embed ? <iframe src={embed} title="Article video walkthrough" className="aspect-video w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen /> : <div className="p-6"><a href={url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-semibold underline underline-offset-4">Open video <ArrowRight className="h-4 w-4" /></a></div>}</div>
+  return <div className="mt-8 overflow-hidden rounded-2xl border border-border/80 bg-black">{embed ? <iframe src={embed} title="Article video walkthrough" className="aspect-video w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen /> : <video src={url} title="Article video walkthrough" className="aspect-video w-full object-contain" controls preload="metadata" playsInline />}</div>
 }
 
 export function PublicBlogPage() {

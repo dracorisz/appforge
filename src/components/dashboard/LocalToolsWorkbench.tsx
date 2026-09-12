@@ -217,9 +217,8 @@ export function LocalToolsWorkbench() {
 
   return (
     <div className="space-y-5 pb-8">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><AppHeading /></div></div>
-
       <Card className="p-4 sm:p-5">
+        <AppHeading />
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-3">
             {definition.mode === 'csv' && <><Select label="Output" value={operation} onChange={(event) => setOperation(event.target.value)}><option value="json">JSON</option><option value="markdown">Markdown table</option><option value="sql">SQL INSERT</option></Select>{operation === 'sql' && <Input label="SQL table name" value={tableName} onChange={(event) => setTableName(event.target.value.slice(0, 120))} />}</>}

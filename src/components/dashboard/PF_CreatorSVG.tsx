@@ -196,13 +196,9 @@ export function PF_CreatorSVG() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <AppHeading />
-
-      </div>
-
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
+          <AppHeading />
           <h2 className="text-lg font-semibold text-foreground dark:text-foreground">Configuration</h2>
           <div className="mt-4 space-y-3">
             <Input label="Name" value={config.name} onChange={(e) => update({ name: e.target.value })} />

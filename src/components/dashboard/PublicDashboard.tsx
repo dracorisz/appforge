@@ -16,10 +16,13 @@ function AppIcon({ app, className = 'h-5 w-5' }: { app: Pick<AppDefinition, 'id'
 }
 
 function ToolCard({ app, favorite, onFavorite, onOpen }: { app: AppDefinition; favorite: boolean; onFavorite: () => void; onOpen: () => void }) {
-  return <Card className="flex min-h-40 flex-col p-4 transition-colors hover:border-foreground/15">
+  return <Card className="flex min-h-40 flex-col overflow-hidden p-0 transition-colors hover:border-foreground/15">
+    {app.coverImage && <img src={app.coverImage} alt="" className="h-28 w-full object-cover" loading="lazy" />}
+    <div className="flex flex-1 flex-col p-4">
     <div className="flex items-start justify-between gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/70 bg-background/45"><AppIcon app={app} /></span><button type="button" aria-label={favorite ? `Remove ${app.name} from favorites` : `Add ${app.name} to favorites`} onClick={onFavorite} className={`rounded-lg p-1.5 hover:bg-accent ${favorite ? 'text-amber-500' : 'text-muted-foreground hover:text-foreground'}`}><Star className={`h-4 w-4 ${favorite ? 'fill-current' : ''}`} /></button></div>
     <div className="mt-4 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="font-semibold text-foreground">{app.name}</h3></div><p className="mt-1.5 line-clamp-2 text-sm leading-5 text-muted-foreground">{app.description}</p></div>
     <button type="button" onClick={onOpen} className="mt-4 inline-flex items-center justify-end gap-1 border-t border-border/60 pt-3 text-xs font-medium text-foreground hover:text-primary">Open <ArrowRight className="h-3.5 w-3.5" /></button>
+    </div>
   </Card>
 }
 
@@ -47,9 +50,9 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: { state:
   const location = useLocation()
   const routeSearch = typeof (location.state as { appSearch?: unknown } | null)?.appSearch === 'string' ? String((location.state as { appSearch: string }).appSearch) : ''
   const [query, setQuery] = React.useState(routeSearch)
-  const [categoryRevision, refreshCategories] = React.useReducer((value) => value + 1, 0)
-  const apps = React.useMemo(() => getAllApps().filter((app) => app.status !== 'deprecated'), [])
-  const categories = React.useMemo(() => resolveCategories(), [categoryRevision])
+  const [, refreshCategories] = React.useReducer((value) => value + 1, 0)
+  const apps = getAllApps().filter((app) => app.status !== 'deprecated')
+  const categories = resolveCategories()
   const favorites = state.favorites || []
   const recentApps = (state.recentApps || []).map((id) => apps.find((app) => app.id === id)).filter((app): app is AppDefinition => Boolean(app))
   const categoryId = location.pathname.match(/^\/category\/(.+)$/)?.[1]
@@ -59,7 +62,11 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: { state:
   const isFavorites = location.pathname === '/favorites'
   const isDashboard = location.pathname === '/'
 
-  React.useEffect(() => subscribeCategoryOverrides(refreshCategories), [])
+  React.useEffect(() => {
+    const unsubscribe = subscribeCategoryOverrides(refreshCategories)
+    window.addEventListener('appforge:app-overrides-updated', refreshCategories)
+    return () => { unsubscribe(); window.removeEventListener('appforge:app-overrides-updated', refreshCategories) }
+  }, [])
   React.useEffect(() => { setQuery(routeSearch) }, [routeSearch])
 
   let visibleApps = apps

@@ -28,7 +28,7 @@ export type VaultQuota = {
   remaining_bytes: number
 }
 
-export type VaultFolder = 'general' | 'dragon-arena' | 'scrapper-pro' | string
+export type VaultFolder = 'general' | 'dragon-arena' | 'getter-pro' | string
 
 export type ScrapperVaultResult = {
   source: string
@@ -66,7 +66,7 @@ export const vaultItemUrl = async (item: VaultMedia, expires = 3600) => {
 export const vaultFolder = (item: Pick<VaultMedia, 'metadata' | 'source_app'>): string => {
   const value = item.metadata?.folder
   if (typeof value === 'string' && value.trim()) return value.trim()
-  if (item.source_app === 'scrapper-pro') return 'scrapper-pro'
+  if (item.source_app === 'getter-pro' || item.source_app === 'scrapper-pro') return 'getter-pro'
   return 'general'
 }
 
@@ -233,7 +233,7 @@ export async function saveScrapperVaultResult(result: ScrapperVaultResult): Prom
     .from('user_media_vault')
     .select('*')
     .eq('user_id', userId)
-    .eq('source_app', 'scrapper-pro')
+    .in('source_app', ['getter-pro', 'scrapper-pro'])
     .eq('source_ref', sourceRef)
     .maybeSingle()
   if (existing.error) throw existing.error
@@ -251,10 +251,10 @@ export async function saveScrapperVaultResult(result: ScrapperVaultResult): Prom
     description: result.snippet || null,
     is_public: false,
     external_url: externalUrl,
-    source_app: 'scrapper-pro',
+    source_app: 'getter-pro',
     source_ref: sourceRef,
     metadata: {
-      folder: 'scrapper-pro',
+      folder: 'getter-pro',
       source: result.source,
       type: result.type,
       original_url: result.originalUrl,
@@ -274,7 +274,7 @@ export async function saveScrapperVaultResult(result: ScrapperVaultResult): Prom
     .from('user_media_vault')
     .select('*')
     .eq('user_id', userId)
-    .eq('source_app', 'scrapper-pro')
+    .in('source_app', ['getter-pro', 'scrapper-pro'])
     .eq('source_ref', sourceRef)
     .maybeSingle()
   if (retry.error || !retry.data) throw inserted.error

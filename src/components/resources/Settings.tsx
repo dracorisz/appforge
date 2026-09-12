@@ -30,6 +30,7 @@ import { useAuth } from '@/auth/AuthProvider'
 import { BUILD_INFO } from '@/lib/buildInfo'
 import { loadCategoryOverrides, saveCategoryOverrides } from '@/lib/categories'
 import { createWorkspaceBackup, parseWorkspaceBackup, type WorkspaceImportPreview } from '@/lib/workspaceBackup'
+import { isWidgetEnabled, setWidgetEnabled } from '@/lib/widgetPreferences'
 import { VertexBridgeStatus } from './VertexBridgeStatus'
 import {
   adminDeleteUser,
@@ -287,25 +288,25 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
     } finally { setBusy('') }
   }
 
-  const loadAdmin = async () => {
+  const loadAdmin = React.useCallback(async () => {
     if (role !== 'admin' || currentLevel !== 'aal2') return
     setBusy('admin-load')
     try { setAdminUsers(await adminListUsers()) }
     catch (adminError) { setError(adminError instanceof Error ? adminError.message : 'Could not load admin users.') }
     finally { setBusy('') }
-  }
+  }, [currentLevel, role])
 
   React.useEffect(() => {
     if (activeTab === 'admin' && role === 'admin' && currentLevel === 'aal2') void loadAdmin()
-  }, [activeTab, role, currentLevel])
+  }, [activeTab, role, currentLevel, loadAdmin])
 
   const exportWorkspace = () => {
     const payload = createWorkspaceBackup({
       exportedAt: new Date().toISOString(),
-      build: BUILD_INFO,
-      profile,
+      accountId: user?.id,
       workspace: state,
       categoryOverrides: loadCategoryOverrides(),
+      widgets: { 'weather-sidebar': isWidgetEnabled('weather-sidebar'), 'desktop-buddy': isWidgetEnabled('desktop-buddy') },
     })
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
@@ -327,7 +328,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
     reader.onerror = () => setError('Could not read that workspace backup.')
     reader.onload = () => {
       try {
-        const preview = parseWorkspaceBackup(String(reader.result || '{}'), state)
+        const preview = parseWorkspaceBackup(String(reader.result || '{}'), state, user?.id)
         setImportPreview(preview)
         setImportFileName(file.name)
         setError('')
@@ -344,6 +345,10 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
     if (!importPreview) return
     setState(importPreview.workspace)
     saveCategoryOverrides(importPreview.categoryOverrides)
+    for (const key of ['weather-sidebar', 'desktop-buddy'] as const) {
+      const value = importPreview.widgets[key]
+      if (typeof value === 'boolean') setWidgetEnabled(key, value)
+    }
     setThemeMode(importPreview.workspace.settings.theme)
     setImportPreview(null)
     setImportFileName('')
@@ -497,13 +502,13 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
         <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
           <Card className="p-4">
             <h2 className="text-sm font-semibold text-foreground">Workspace backup</h2>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">Export a versioned AppForge workspace backup containing workspace state, settings, favorites, recent apps and category overrides. Imports are validated and previewed before anything is replaced.</p>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">Export the preferences that belong to this account: appearance, favorites, recent apps, sidebar categories and widget switches. Imports are validated before replacement.</p>
             <div className="mt-4 flex flex-wrap gap-2"><Button onClick={exportWorkspace}><Download className="h-4 w-4" /> Export workspace JSON</Button><label><input type="file" accept="application/json,.json" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) importWorkspace(file); e.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm font-medium hover:bg-accent"><Upload className="h-4 w-4" /> Review import</span></label></div>
-            {importPreview && <div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-4"><div className="flex flex-wrap items-center justify-between gap-2"><div><div className="text-sm font-semibold text-foreground">Import preview</div><div className="mt-1 text-xs text-muted-foreground">{importFileName} · backup v{importPreview.version}{importPreview.summary.legacy ? ' · legacy format' : ''}{importPreview.exportedAt ? ` · ${new Date(importPreview.exportedAt).toLocaleString()}` : ''}</div></div><Badge color={importPreview.summary.legacy ? 'yellow' : 'green'}>{importPreview.summary.legacy ? 'Migrated' : 'Validated'}</Badge></div><div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 text-xs"><div className="rounded-lg border border-border/60 p-2"><div className="font-semibold text-foreground">{importPreview.summary.favorites}</div><div className="text-muted-foreground">Favorites</div></div><div className="rounded-lg border border-border/60 p-2"><div className="font-semibold text-foreground">{importPreview.summary.recentApps}</div><div className="text-muted-foreground">Recent apps</div></div><div className="rounded-lg border border-border/60 p-2"><div className="font-semibold text-foreground">{importPreview.summary.categoryOverrides}</div><div className="text-muted-foreground">Category overrides</div></div><div className="rounded-lg border border-border/60 p-2"><div className="font-semibold text-foreground">{importPreview.summary.miniApps}</div><div className="text-muted-foreground">Registry apps</div></div><div className="rounded-lg border border-border/60 p-2"><div className="font-semibold text-foreground">{importPreview.summary.sources}</div><div className="text-muted-foreground">Sources</div></div><div className="rounded-lg border border-border/60 p-2"><div className="font-semibold text-foreground">{importPreview.summary.outreach}</div><div className="text-muted-foreground">Outreach rows</div></div></div><p className="mt-3 text-xs leading-5 text-muted-foreground">Applying this backup replaces compatible workspace fields with the previewed values, preserves current defaults for missing fields, and updates category overrides. Account identity, private profile information, uploaded media, provider secrets and server-owned app data are not imported.</p><div className="mt-3 flex flex-wrap gap-2"><Button onClick={applyWorkspaceImport}><Check className="h-4 w-4" /> Apply backup</Button><Button variant="secondary" onClick={() => { setImportPreview(null); setImportFileName('') }}>Cancel</Button></div></div>}
+            {importPreview && <div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-4"><div className="flex flex-wrap items-center justify-between gap-2"><div><div className="text-sm font-semibold text-foreground">Import preview</div><div className="mt-1 text-xs text-muted-foreground">{importFileName} · backup v{importPreview.version}{importPreview.summary.legacy ? ' · legacy format' : ''}{importPreview.exportedAt ? ` · ${new Date(importPreview.exportedAt).toLocaleString()}` : ''}</div></div></div><div className="mt-3 grid grid-cols-2 gap-2 text-xs"><div className="rounded-lg border border-border/60 p-2"><div className="font-semibold text-foreground">{importPreview.summary.favorites}</div><div className="text-muted-foreground">Favorites</div></div><div className="rounded-lg border border-border/60 p-2"><div className="font-semibold text-foreground">{importPreview.summary.recentApps}</div><div className="text-muted-foreground">Recent apps</div></div><div className="rounded-lg border border-border/60 p-2"><div className="font-semibold text-foreground">{importPreview.summary.categoryOverrides}</div><div className="text-muted-foreground">Sidebar preferences</div></div><div className="rounded-lg border border-border/60 p-2"><div className="font-semibold text-foreground">{importPreview.summary.widgets}</div><div className="text-muted-foreground">Widget switches</div></div></div><p className="mt-3 text-xs leading-5 text-muted-foreground">Applying this backup updates only account workspace preferences. Identity, profile records, media, app content and provider secrets are never imported.</p><div className="mt-3 flex flex-wrap gap-2"><Button onClick={applyWorkspaceImport}><Check className="h-4 w-4" /> Apply backup</Button><Button variant="secondary" onClick={() => { setImportPreview(null); setImportFileName('') }}>Cancel</Button></div></div>}
           </Card>
           <Card className="p-4">
             <h2 className="text-sm font-semibold text-foreground">What this backup means</h2>
-            <div className="mt-3 space-y-3 text-xs leading-5 text-muted-foreground"><div><div className="font-medium text-foreground">Included</div><p>AppForge workspace records stored in AppState, Appearance theme, favorites, recent apps, registry/custom workspace state and personalized category overrides.</p></div><div><div className="font-medium text-foreground">Not included</div><p>Supabase Auth identity, TOTP factors, private profile rows, uploaded binaries, Story Studio scene files, Media Vault bytes, provider-side state, API tokens or browser-local data owned by individual mini-apps.</p></div><div><div className="font-medium text-foreground">Product exports stay separate</div><p>Novel/Comics exports, converted files, Landing Builder projects and other mini-app artifacts are creator products. Workspace backup only restores AppForge workspace preferences/state around those apps.</p></div></div>
+            <div className="mt-3 space-y-3 text-xs leading-5 text-muted-foreground"><div><div className="font-medium text-foreground">Included</div><p>Theme, favorites, recent apps, personalized sidebar categories and Weather/Desktop Buddy widget switches.</p></div><div><div className="font-medium text-foreground">Not included</div><p>Auth identity, profile data, admin content, registry definitions, media, generated projects, uploads or API/provider secrets.</p></div></div>
           </Card>
         </div>
       )}

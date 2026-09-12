@@ -76,7 +76,7 @@ export default function MarketingStudio() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl p-4 sm:p-6">
+    <div className="w-full">
       <section className="surface-card rounded-2xl border p-5 sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -120,7 +120,6 @@ export default function MarketingStudio() {
               <div className="flex flex-wrap items-start justify-between gap-4"><div><div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{record.channel} · {record.format}</div><h3 className="mt-2 font-semibold">{record.title}</h3></div><select value={record.status} onChange={(event) => updatePublication(record.id, { status: event.target.value as PublicationStatus })} className="h-10 rounded-lg border bg-background px-3 text-sm"><option value="draft">Draft</option><option value="ready">Ready</option><option value="publishing">Publishing</option><option value="published">Published</option><option value="failed">Failed</option></select></div>
               <label className="mt-4 grid gap-1.5 text-sm font-medium">Title<input value={record.title} onChange={(event) => updatePublication(record.id, { title: event.target.value })} className="h-11 rounded-xl border bg-background px-3" /></label>
               <label className="mt-3 grid gap-1.5 text-sm font-medium">Description<textarea value={record.description} onChange={(event) => updatePublication(record.id, { description: event.target.value })} rows={8} className="rounded-xl border bg-background p-3 text-sm leading-6" /></label>
-              <label className="mt-3 grid gap-1.5 text-sm font-medium">Tags<input value={record.tags.join(', ')} onChange={(event) => updatePublication(record.id, { tags: event.target.value.split(',').map((tag) => tag.trim()).filter(Boolean) })} className="h-11 rounded-xl border bg-background px-3" /></label>
               <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]"><label className="grid gap-1.5 text-sm font-medium">Published URL<input value={record.remoteUrl || ''} onChange={(event) => updatePublication(record.id, { remoteUrl: event.target.value })} placeholder="https://youtu.be/…" className="h-11 rounded-xl border bg-background px-3" /></label><button type="button" onClick={() => markPublished(record)} className="inline-flex min-h-11 items-center justify-center gap-2 self-end rounded-xl border px-4 text-sm font-semibold hover:bg-accent"><CheckCircle2 className="h-4 w-4" /> Mark published</button></div>
               <div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={() => void copy(`${record.title}\n\n${record.description}\n\nTags: ${record.tags.join(', ')}`)} className="inline-flex min-h-10 items-center gap-2 rounded-xl border px-3 text-xs font-semibold hover:bg-accent"><Clipboard className="h-3.5 w-3.5" /> Copy publication package</button><button type="button" disabled title="Enable only after Google approves the narrow delegated YouTube upload scope" className="inline-flex min-h-10 cursor-not-allowed items-center gap-2 rounded-xl border px-3 text-xs font-semibold opacity-50"><Send className="h-3.5 w-3.5" /> Upload via YouTube OAuth · approval required</button></div>
             </article>)}

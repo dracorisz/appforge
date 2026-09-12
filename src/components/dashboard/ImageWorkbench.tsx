@@ -118,7 +118,7 @@ export function ImageWorkbench() {
       if (current) URL.revokeObjectURL(current)
       return ''
     })
-  }, [definition.mode, info?.url])
+  }, [definition.mode, info])
 
   const acceptFile = async (file?: File) => {
     if (!file) return
@@ -182,12 +182,8 @@ export function ImageWorkbench() {
 
   return (
     <div className="space-y-5 pb-8">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div><AppHeading /></div>
-
-      </div>
-
       <Card className="p-4 sm:p-5">
+        <AppHeading />
         {!info ? (
           <label onDragOver={(event) => { event.preventDefault(); setDragging(true) }} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); void acceptFile(event.dataTransfer.files?.[0]) }} className={`flex min-h-64 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center transition-colors ${dragging ? 'border-foreground/30 bg-accent/70' : 'border-border hover:border-foreground/20 hover:bg-accent/35'}`}>
             <input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="hidden" onChange={(event) => { void acceptFile(event.target.files?.[0]); event.currentTarget.value = '' }} />

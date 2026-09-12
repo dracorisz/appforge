@@ -107,7 +107,7 @@ export function PF_CryptoTrack() {
 
   React.useEffect(() => {
     fetchCoins('auto')
-  }, [])
+  }, [fetchCoins])
 
   React.useEffect(() => {
     localStorage.setItem(WATCHLIST_KEY, JSON.stringify(Array.from(watchlist)))

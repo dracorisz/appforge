@@ -137,12 +137,8 @@ export function AnyToAnyConverter() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <AppHeading />
-
-      </div>
-
       <Card>
+        <AppHeading />
         <div className="flex flex-col gap-4 md:flex-row md:items-end">
           <div className="flex-1">
             <label className="mb-1.5 block text-sm font-medium text-foreground">Input format</label>

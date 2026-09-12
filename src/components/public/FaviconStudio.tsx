@@ -170,7 +170,7 @@ export default function FaviconStudio() {
   return (
     <div className="mx-auto grid w-full max-w-6xl gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <section className="surface-card rounded-2xl border p-5 sm:p-6">
-        <div className="mb-6">
+        <div>
 
           <AppHeading />
 

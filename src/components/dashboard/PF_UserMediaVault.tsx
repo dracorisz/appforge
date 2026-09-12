@@ -20,6 +20,7 @@ import {
   X,
 } from 'lucide-react'
 import { Badge, Button, Card } from '@/components/ui'
+import { MediaShowbox } from '@/components/ui/MediaShowbox'
 import { supabase } from '@/lib/supabase'
 import {
   listVaultMedia,
@@ -42,17 +43,27 @@ const SYSTEM_FOLDERS: { id: VaultFolder | 'all'; label: string; icon: React.Comp
   { id: 'desktop-buddies', label: 'Desktop Buddies', icon: Sparkles },
   { id: 'Screenshots', label: 'Screenshots', icon: Camera },
   { id: 'dragon-arena', label: 'Story Studio', icon: Gamepad2 },
-  { id: 'scrapper-pro', label: 'Getter Pro', icon: Search },
+  { id: 'getter-pro', label: 'Getter Pro', icon: Search },
 ]
 const RESERVED_FOLDERS = new Set(SYSTEM_FOLDERS.filter((item) => item.id !== 'all').map((item) => String(item.id).toLowerCase()))
 
 const kindIcon = (kind: VaultMedia['kind']) => kind === 'video' ? FileVideo : kind === 'image' ? FileImage : FileText
 const kindBadge = (kind: VaultMedia['kind']) => <Badge color={kind === 'video' ? 'blue' : kind === 'image' ? 'green' : 'slate'}>{kind}</Badge>
 const formatBytes = (bytes: number) => bytes < 1024 ? `${bytes} B` : bytes < 1024 ** 2 ? `${(bytes / 1024).toFixed(1)} KB` : bytes < 1024 ** 3 ? `${(bytes / 1024 ** 2).toFixed(1)} MB` : `${(bytes / 1024 ** 3).toFixed(2)} GB`
-const sourceLabel = (item: VaultMedia) => item.source_app === 'scrapper-pro' ? 'reference' : item.source_bucket === 'dragon-arena-assets' ? 'story asset' : item.size_bytes ? formatBytes(item.size_bytes) : 'stored'
+const sourceLabel = (item: VaultMedia) => item.source_app === 'getter-pro' || item.source_app === 'scrapper-pro' ? 'reference' : item.source_bucket === 'dragon-arena-assets' ? 'story asset' : item.size_bytes ? formatBytes(item.size_bytes) : 'stored'
 const metadataUrl = (item: VaultMedia, key: 'media_url' | 'thumbnail' | 'original_url') => typeof item.metadata?.[key] === 'string' && String(item.metadata[key]).trim() ? String(item.metadata[key]).trim() : null
 const uniqueUrls = (values: Array<string | null | undefined>) => [...new Set(values.filter((value): value is string => Boolean(value)))]
 const isPinnedAsset = (item: VaultMedia) => item.metadata?.source_table === 'dragon_arena_assets' || vaultFolder(item) === 'desktop-buddies'
+const youtubeId = (value: string | null | undefined) => {
+  if (!value) return ''
+  try {
+    const url = new URL(value)
+    const host = url.hostname.toLowerCase().replace(/^www\./, '')
+    if (host === 'youtu.be') return url.pathname.split('/')[1]?.slice(0, 11) || ''
+    if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'youtube-nocookie.com') return (url.searchParams.get('v') || url.pathname.match(/^\/(?:shorts|embed)\/([^/]+)/)?.[1] || '').slice(0, 11)
+  } catch { return '' }
+  return ''
+}
 
 const VaultThumb = ({ item }: { item: VaultMedia }) => {
   const [urls, setUrls] = React.useState<string[]>([])
@@ -68,7 +79,9 @@ const VaultThumb = ({ item }: { item: VaultMedia }) => {
   }, [item])
   const Icon = kindIcon(item.kind)
   const url = urls[urlIndex] || null
+  const ytId = item.kind === 'video' ? youtubeId(item.source_ref) || youtubeId(metadataUrl(item, 'original_url')) || youtubeId(url) : ''
   if (item.kind === 'image' && url) return <img src={url} alt={item.title || item.file_name || ''} loading="lazy" onError={() => setUrlIndex((index) => index + 1)} className="h-full w-full object-cover" />
+  if (item.kind === 'video' && ytId) return <><img src={metadataUrl(item, 'thumbnail') || `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`} alt={item.title || 'YouTube video'} loading="lazy" className="h-full w-full object-cover" /><span className="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white"><Play className="ml-0.5 h-5 w-5" /></span></>
   if (item.kind === 'video' && url) return <><video src={url} muted preload="metadata" className="h-full w-full object-cover" /><span className="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white"><Play className="ml-0.5 h-5 w-5" /></span></>
   return <div className="flex h-full items-center justify-center text-5xl text-muted-foreground"><Icon /></div>
 }
@@ -137,7 +150,7 @@ export function PF_UserMediaVault() {
     setFolder(name)
   }
 
-  const uploadTarget = folder !== 'all' && folder !== 'dragon-arena' && folder !== 'scrapper-pro' ? folder : 'general'
+  const uploadTarget = folder !== 'all' && folder !== 'dragon-arena' && folder !== 'getter-pro' ? folder : 'general'
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.currentTarget
     const files = Array.from(input.files || [])
@@ -219,7 +232,7 @@ export function PF_UserMediaVault() {
         })}
       </div>
 
-      {preview && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={() => setPreview(null)}>{preview.item.kind === 'video' ? <video src={preview.url} controls autoPlay className="max-h-[90vh] max-w-[90vw] rounded-xl" onClick={(event) => event.stopPropagation()} /> : preview.item.kind === 'image' ? <img src={preview.url} alt={preview.item.title || ''} onError={() => setPreview((current) => current && current.fallbacks.length ? { ...current, url: current.fallbacks[0], fallbacks: current.fallbacks.slice(1) } : current)} className="max-h-[90vh] max-w-[90vw] rounded-xl" onClick={(event) => event.stopPropagation()} /> : <div className="max-w-md rounded-xl border border-border/70 bg-background p-6 text-center text-muted-foreground">Preview is not available for this item type. Use the source/download action.</div>}<button onClick={() => setPreview(null)} className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"><X className="h-5 w-5" /></button></div>}
+      {preview && (preview.item.kind === 'image' || preview.item.kind === 'video') ? <MediaShowbox open onClose={() => setPreview(null)} type={preview.item.kind} title={preview.item.title || preview.item.file_name || 'Media Vault item'} source={sourceLabel(preview.item)} originalUrl={metadataUrl(preview.item, 'original_url') || preview.item.source_ref || preview.item.external_url || preview.url} mediaUrl={preview.url} thumbnail={metadataUrl(preview.item, 'thumbnail') || undefined} note="Private Media Vault preview. YouTube references play in the privacy-enhanced embedded player." /> : preview ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={() => setPreview(null)}><div className="max-w-md rounded-xl border border-border/70 bg-background p-6 text-center text-muted-foreground">Preview is not available for this item type. Use the source/download action.</div><button onClick={() => setPreview(null)} className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"><X className="h-5 w-5" /></button></div> : null}
     </div>
   )
 }

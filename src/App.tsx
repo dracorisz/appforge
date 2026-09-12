@@ -44,7 +44,8 @@ import { loadUserPreferences, saveUserPreferences } from './lib/preferences'
 import { loadCategoryOverrides, saveCategoryOverrides, setCategoryOverrideScope, subscribeCategoryOverrides } from './lib/categories'
 import { stripLegacyMiniAppCommerce } from './lib/legacyMiniApps'
 import { updateSeo } from './lib/seo'
-import { getApp } from './lib/registry'
+import { getApp, getManageableApps } from './lib/registry'
+import { loadAppOverrides } from './lib/appOverrides'
 
 const SettingsPage = React.lazy(() => import('./components/resources/Settings').then((module) => ({ default: module.SettingsPage })))
 const PeoplePage = React.lazy(() => import('./components/resources/People').then((module) => ({ default: module.PeoplePage })))
@@ -55,6 +56,7 @@ const TermsOfServicePage = React.lazy(() => import('./components/public/LegalPag
 const FaviconStudio = React.lazy(() => import('./components/public/FaviconStudio'))
 const SvgIconsBrowser = React.lazy(() => import('./components/public/SvgIconsBrowser'))
 const LandingBuilder = React.lazy(() => import('./components/public/LandingBuilder'))
+const BackgroundRemover = React.lazy(() => import('./components/public/BackgroundRemover'))
 const PublicAppsPage = React.lazy(() => import('./components/public/PublicAppsPage').then((module) => ({ default: module.PublicAppsPage })))
 
 const defaultSettings = { theme: 'dark' as const }
@@ -113,6 +115,7 @@ function publicAppPage(pathname: string): React.ReactNode | null {
   if (pathname === '/apps/favicon-studio') return <PublicToolShell toolName="Favicon Studio" toolIcon={<ImageIcon className="h-4 w-4" />}>{lazyPage(<FaviconStudio />)}</PublicToolShell>
   if (pathname === '/apps/svg-icons') return <PublicToolShell toolName="SVG Icons" toolIcon={<Palette className="h-4 w-4" />}>{lazyPage(<SvgIconsBrowser />)}</PublicToolShell>
   if (pathname === '/apps/landing-builder') return <PublicToolShell toolName="Landing Builder" toolIcon={<PanelsTopLeft className="h-4 w-4" />}>{lazyPage(<LandingBuilder />)}</PublicToolShell>
+  if (pathname === '/apps/background-remover') return <PublicToolShell toolName="Background Remover">{lazyPage(<BackgroundRemover />)}</PublicToolShell>
   if (pathname === '/apps/image-labeler') return <PublicToolShell toolName="Image Labeler"><PF_ImageLabeler /></PublicToolShell>
   if (pathname === '/apps/creator-svg') return <PublicToolShell toolName="Creator SVG"><PF_CreatorSVG /></PublicToolShell>
   if (pathname === '/apps/dns-checker' || pathname === '/apps/dns-txt-checker') return <PublicToolShell toolName="DNS Checker"><DNSChecker /></PublicToolShell>
@@ -130,6 +133,16 @@ function App() {
   const { user, loading } = useAuth()
   const [remoteReady, setRemoteReady] = React.useState(false)
   const [state, setState] = React.useState<AppState>(defaultState)
+  const [registryReady, setRegistryReady] = React.useState(false)
+  const [, refreshRegistry] = React.useReducer((value) => value + 1, 0)
+
+  React.useEffect(() => {
+    let active = true
+    void loadAppOverrides().catch((error) => console.warn('App presentation overrides unavailable.', error)).finally(() => { if (active) setRegistryReady(true) })
+    const onUpdate = () => refreshRegistry()
+    window.addEventListener('appforge:app-overrides-updated', onUpdate)
+    return () => { active = false; window.removeEventListener('appforge:app-overrides-updated', onUpdate) }
+  }, [])
 
   React.useEffect(() => { updateSeo(location.pathname) }, [location.pathname])
 
@@ -167,7 +180,7 @@ function App() {
 
     void hydrate()
     return () => { cancelled = true }
-  }, [user?.id])
+  }, [user])
 
   React.useEffect(() => {
     if (!user || !remoteReady) return
@@ -175,18 +188,21 @@ function App() {
     try { localStorage.setItem(workspaceStorageKey(user.id), JSON.stringify(nextState)) } catch { /* local cache is best-effort */ }
     const timer = window.setTimeout(() => void saveUserPreferences(user.id, { appState: nextState }).catch((error) => console.error('AppForge remote state sync failed', error)), 650)
     return () => window.clearTimeout(timer)
-  }, [state, user?.id, remoteReady])
+  }, [state, user, remoteReady])
 
   React.useEffect(() => {
     if (!user || !remoteReady) return
     return subscribeCategoryOverrides(() => { void saveUserPreferences(user.id, { categoryOverrides: loadCategoryOverrides() }).catch((error) => console.error('AppForge category sync failed', error)) })
-  }, [user?.id, remoteReady])
+  }, [user, remoteReady])
 
   const addToRecent = (appId: string) => setState((prev) => ({ ...prev, recentApps: [appId, ...(prev.recentApps || []).filter((id) => id !== appId)].slice(0, 20) }))
   const toggleFavorite = (appId: string) => setState((prev) => ({ ...prev, favorites: (prev.favorites || []).includes(appId) ? (prev.favorites || []).filter((id) => id !== appId) : [...(prev.favorites || []), appId] }))
   const dashboard = <PublicDashboard state={state} onOpenApp={addToRecent} onToggleFavorite={toggleFavorite} />
   const requestedPath = `${location.pathname}${location.search}${location.hash}`
 
+  if (!registryReady) return routeFallback
+  const routeApp = getManageableApps().find((item) => item.route === location.pathname)
+  if (routeApp?.visible === false) return <Navigate to={user ? '/' : '/explore'} replace />
   if (location.pathname === '/privacy') return lazyPage(<PrivacyPolicyPage />)
   if (location.pathname === '/terms') return lazyPage(<TermsOfServicePage />)
   if (location.pathname === '/landing') return <LoginPage landingOnly />
@@ -236,6 +252,7 @@ function App() {
         <Route path="/apps/favicon-studio" element={lazyPage(<FaviconStudio />)} />
         <Route path="/apps/svg-icons" element={lazyPage(<SvgIconsBrowser />)} />
         <Route path="/apps/landing-builder" element={lazyPage(<LandingBuilder />)} />
+        <Route path="/apps/background-remover" element={lazyPage(<BackgroundRemover />)} />
 
         {Array.from(utilitySlugs).map((slug) => <Route key={slug} path={`/apps/${slug}`} element={<UtilityWorkbench />} />)}
         {Array.from(imageSlugs).map((slug) => <Route key={slug} path={`/apps/${slug}`} element={<ImageWorkbench />} />)}

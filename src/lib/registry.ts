@@ -17,6 +17,7 @@ export interface AppDefinition {
   changelog?: { version: string; date: string; changes: string[] }[]
   forks?: number
   externalUrl?: string
+  visible?: boolean
 }
 
 export interface CategoryDefinition {
@@ -56,6 +57,7 @@ const APPS: AppDefinition[] = [
   app({ id: 'image-converter', name: 'Image Converter', description: 'Convert images to common browser formats.', category: 'image', icon: 'Image', route: '/apps/image-converter', tags: ['image', 'convert'], status: 'beta', version: '0.2.0' }),
   app({ id: 'image-compressor', name: 'Image Compressor', description: 'Compress images locally with quality control.', category: 'image', icon: 'Image', route: '/apps/image-compressor', tags: ['image', 'compress'], status: 'beta', version: '0.2.0' }),
   app({ id: 'image-metadata', name: 'Image Metadata', description: 'Inspect image dimensions and file details.', category: 'image', icon: 'Image', route: '/apps/image-metadata', tags: ['image', 'metadata'], status: 'beta', version: '0.2.0' }),
+  app({ id: 'background-remover', name: 'Background Remover', description: 'Remove flat and checkerboard image backgrounds locally.', category: 'image', icon: 'Eraser', route: '/apps/background-remover', tags: ['image', 'background', 'transparency'], status: 'beta', version: '1.0.0' }),
   app({ id: 'creator-svg', name: 'Creator SVG', description: 'Build reusable SVG headers and exports.', category: 'svg-icons', icon: 'Palette', route: '/apps/creator-svg', tags: ['svg', 'builder'], status: 'beta', version: '1.1.0' }),
   app({ id: 'favicon-studio', name: 'Favicon Studio', description: 'Create and export favicon assets.', category: 'svg-icons', icon: 'Image', route: '/apps/favicon-studio', tags: ['favicon', 'icons'], status: 'beta', version: '1.0.0' }),
   app({ id: 'svg-icons-browser', name: 'SVG Icons', description: 'Browse icon packs and export SVG or React snippets.', category: 'svg-icons', icon: 'Palette', route: '/apps/svg-icons', tags: ['svg', 'icons'], status: 'beta', version: '1.0.0' }),
@@ -86,16 +88,18 @@ const APPS: AppDefinition[] = [
 ]
 
 const APP_MAP = new Map(APPS.map((item) => [item.id, item]))
+const CORE_APPS = APPS.map((item) => ({ ...item, tags: [...item.tags] }))
 
-export function getApp(id: string): AppDefinition | undefined { return APP_MAP.get(id) }
-export function getAppsByCategory(categoryId: string): AppDefinition[] { return APPS.filter((item) => item.category === categoryId) }
+export function getApp(id: string): AppDefinition | undefined { const item = APP_MAP.get(id); return item?.visible === false ? undefined : item }
+export function getAppsByCategory(categoryId: string): AppDefinition[] { return APPS.filter((item) => item.visible !== false && item.category === categoryId) }
 export function searchApps(query: string): AppDefinition[] {
   const normalized = query.toLowerCase().trim()
-  if (!normalized) return APPS
-  return APPS.filter((item) => item.name.toLowerCase().includes(normalized) || item.description.toLowerCase().includes(normalized) || item.category.toLowerCase().includes(normalized) || item.tags.some((tag) => tag.toLowerCase().includes(normalized)))
+  if (!normalized) return getAllApps()
+  return APPS.filter((item) => item.visible !== false && (item.name.toLowerCase().includes(normalized) || item.description.toLowerCase().includes(normalized) || item.category.toLowerCase().includes(normalized) || item.tags.some((tag) => tag.toLowerCase().includes(normalized))))
 }
-export function getAllApps(): AppDefinition[] { return APPS }
-export function getPublicApps(): AppDefinition[] { return APPS.filter(isPublicApp) }
+export function getAllApps(): AppDefinition[] { return APPS.filter((item) => item.visible !== false) }
+export function getManageableApps(): AppDefinition[] { return APPS }
+export function getPublicApps(): AppDefinition[] { return APPS.filter((item) => item.visible !== false && isPublicApp(item)) }
 export function getAllCategories(): CategoryDefinition[] { return CATEGORIES }
 
 export function updateApp(next: AppDefinition): void {
@@ -116,6 +120,26 @@ export function addApp(next: AppDefinition): void {
   if (APP_MAP.has(next.id)) throw new Error(`App already exists: ${next.id}`)
   APPS.push(next)
   APP_MAP.set(next.id, next)
+}
+
+export type AppOverride = { app_id: string; name?: string | null; description?: string | null; category?: string | null; status?: AppStatus | null; cover_image?: string | null; tags?: unknown; visible?: boolean | null }
+export function applyAppOverrides(overrides: AppOverride[]): void {
+  APPS.splice(0, APPS.length, ...CORE_APPS.map((base) => {
+    const override = overrides.find((item) => item.app_id === base.id)
+    if (!override) return { ...base, tags: [...base.tags] }
+    return {
+      ...base,
+      name: override.name?.trim() || base.name,
+      description: override.description?.trim() || base.description,
+      category: override.category?.trim() || base.category,
+      status: override.status || base.status,
+      coverImage: override.cover_image?.trim() || base.coverImage,
+      tags: Array.isArray(override.tags) ? override.tags.filter((tag): tag is string => typeof tag === 'string').slice(0, 20) : base.tags,
+      visible: override.visible !== false,
+    }
+  }))
+  APP_MAP.clear()
+  APPS.forEach((item) => APP_MAP.set(item.id, item))
 }
 
 export { APPS, APP_MAP }

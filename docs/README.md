@@ -20,7 +20,8 @@ This directory holds the long-form documentation for AppForge. It is the canonic
 ## Apps documented
 
 - **Story Studio** (`apps/dragon-arena/`) — AI-assisted story creation, scene generation, asset continuity, points, and creator workflows
-- **Desktop Buddy** (`apps/desktop-buddy.md`) — local-first dragon character companion, portable buddy packs, HF/Vertex generation paths, transparency repair, capture fallback, and browser voice
+- **Desktop Buddy** (`apps/desktop-buddy.md`) — local-first dragon character companion, portable buddy packs, server-locked HF/Vertex generation, alpha verification/repair, widget-only capture, and browser voice
+- **Background Remover** — browser-local flat/checkerboard background removal with real PNG alpha output
 - **Media Vault** (`apps/media-vault.md`) — private per-user storage with quota, linked Story Studio assets, and Getter Pro references
 - **Getter Pro** (`apps/scrapper-pro/`) — public-source media search with preview, downloads, and Media Vault archiving
 - **Any Converter** (`apps/any-converter/README.md`) — browser-local text and structured-data conversion

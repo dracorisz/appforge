@@ -86,15 +86,15 @@ export function DesktopBuddyKdeLibrary() {
           const source = sourceUrl(starter.file)
           const active = currentSource === source
           return (
-            <article key={starter.id} className={`overflow-hidden rounded-2xl border bg-background/40 ${active ? 'ring-2 ring-primary/35' : ''}`}>
+            <article key={starter.id} className={`flex h-full min-h-[27rem] flex-col overflow-hidden rounded-2xl border bg-background/40 ${active ? 'ring-2 ring-primary/35' : ''}`}>
               <div className="grid aspect-square place-items-center bg-muted/30 p-4">
                 <img src={imageUrl(starter.file)} alt={starter.name} loading="lazy" className="max-h-full max-w-full object-contain" />
               </div>
-              <div className="space-y-2 p-3">
+              <div className="flex flex-1 flex-col space-y-2 p-3">
                 <div className="flex items-start justify-between gap-2"><h3 className="text-sm font-semibold">{starter.name}</h3>{active && <Check className="h-4 w-4 shrink-0" />}</div>
                 <p className="min-h-8 text-[11px] leading-4 text-muted-foreground">{starter.note}</p>
                 <p className="text-[10px] leading-4 text-muted-foreground">{starter.author}<br />{starter.license}</p>
-                <div className="flex gap-2 pt-1">
+                <div className="mt-auto flex gap-2 pt-3">
                   <button type="button" onClick={() => selectStarter(starter)} className="flex-1 rounded-lg border px-2 py-1.5 text-xs font-semibold hover:bg-accent">{active ? 'Active' : 'Use character'}</button>
                   <a href={source} target="_blank" rel="noreferrer" className="grid h-8 w-8 place-items-center rounded-lg border text-muted-foreground hover:bg-accent hover:text-foreground" aria-label={`Open source page for ${starter.name}`}><ExternalLink className="h-3.5 w-3.5" /></a>
                 </div>

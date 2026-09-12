@@ -2,7 +2,7 @@ import type { AppState } from '@/types'
 import type { CategoryOverride } from './categories'
 
 export const WORKSPACE_BACKUP_FORMAT = 'appforge-workspace'
-export const WORKSPACE_BACKUP_VERSION = 2
+export const WORKSPACE_BACKUP_VERSION = 3
 
 const MAX_COLLECTION_ITEMS = 5_000
 const MAX_CATEGORY_OVERRIDES = 500
@@ -14,10 +14,10 @@ export type WorkspaceBackupEnvelope = {
   format: typeof WORKSPACE_BACKUP_FORMAT
   version: number
   exportedAt: string
-  build?: unknown
-  profile?: unknown
-  workspace: AppState
+  accountId?: string
+  workspace: Pick<AppState, 'settings' | 'favorites' | 'recentApps'>
   categoryOverrides?: CategoryOverrides
+  widgets?: Record<string, boolean>
 }
 
 export type WorkspaceImportPreview = {
@@ -25,13 +25,12 @@ export type WorkspaceImportPreview = {
   exportedAt: string | null
   workspace: AppState
   categoryOverrides: CategoryOverrides
+  widgets: Record<string, boolean>
   summary: {
     favorites: number
     recentApps: number
     categoryOverrides: number
-    miniApps: number
-    sources: number
-    outreach: number
+    widgets: number
     legacy: boolean
   }
 }
@@ -97,20 +96,20 @@ const normalizeCategoryOverrides = (value: unknown): CategoryOverrides => {
 export const createWorkspaceBackup = (params: {
   workspace: AppState
   exportedAt: string
-  build?: unknown
-  profile?: unknown
   categoryOverrides?: CategoryOverrides
+  accountId?: string
+  widgets?: Record<string, boolean>
 }): WorkspaceBackupEnvelope => ({
   format: WORKSPACE_BACKUP_FORMAT,
   version: WORKSPACE_BACKUP_VERSION,
   exportedAt: params.exportedAt,
-  build: params.build,
-  profile: params.profile,
-  workspace: params.workspace,
+  accountId: params.accountId,
+  workspace: { settings: params.workspace.settings, favorites: params.workspace.favorites, recentApps: params.workspace.recentApps },
   categoryOverrides: params.categoryOverrides || {},
+  widgets: params.widgets || {},
 })
 
-export const parseWorkspaceBackup = (text: string, current: AppState): WorkspaceImportPreview => {
+export const parseWorkspaceBackup = (text: string, current: AppState, currentAccountId?: string): WorkspaceImportPreview => {
   const parsed: unknown = JSON.parse(text)
   if (!isRecord(parsed)) throw new Error('Backup must contain a JSON object.')
 
@@ -118,10 +117,12 @@ export const parseWorkspaceBackup = (text: string, current: AppState): Workspace
   const version = typeof parsed.version === 'number' ? parsed.version : 1
   if (!Number.isInteger(version) || version < 1) throw new Error('Backup version is invalid.')
   if (version > WORKSPACE_BACKUP_VERSION) throw new Error(`This backup uses version ${version}, but this AppForge build supports up to version ${WORKSPACE_BACKUP_VERSION}.`)
+  if (version >= 3 && currentAccountId && typeof parsed.accountId === 'string' && parsed.accountId !== currentAccountId) throw new Error('This workspace backup belongs to a different AppForge account.')
 
   const rawWorkspace = isEnvelope ? parsed.workspace : parsed
   const workspace = mergeWorkspaceState(rawWorkspace, current)
   const categoryOverrides = normalizeCategoryOverrides(isEnvelope ? parsed.categoryOverrides : undefined)
+  const widgets = isEnvelope && isRecord(parsed.widgets) ? Object.fromEntries(Object.entries(parsed.widgets).filter((entry): entry is [string, boolean] => typeof entry[1] === 'boolean').slice(0, 20)) : {}
   const exportedAt = typeof parsed.exportedAt === 'string' ? parsed.exportedAt.slice(0, 100) : null
 
   return {
@@ -129,13 +130,12 @@ export const parseWorkspaceBackup = (text: string, current: AppState): Workspace
     exportedAt,
     workspace,
     categoryOverrides,
+    widgets,
     summary: {
       favorites: workspace.favorites.length,
       recentApps: workspace.recentApps.length,
       categoryOverrides: Object.keys(categoryOverrides).length,
-      miniApps: workspace.miniApps.length,
-      sources: workspace.sources.length,
-      outreach: workspace.outreach.length,
+      widgets: isEnvelope && isRecord(parsed.widgets) ? Object.values(parsed.widgets).filter((value) => typeof value === 'boolean').length : 0,
       legacy: parsed.format !== WORKSPACE_BACKUP_FORMAT,
     },
   }

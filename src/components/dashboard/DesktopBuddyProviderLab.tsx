@@ -2,6 +2,7 @@ import React from 'react'
 import { Check, Cloud, Download, FolderOpen, ImagePlus, Images, KeyRound, Loader2, RefreshCw, Sparkles } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { listVaultMedia, uploadVaultMedia, vaultItemUrl, type VaultMedia } from '@/lib/mediaVault'
+import { repairImageTransparency } from '@/lib/imageTransparency'
 
 const BUDDY_STORAGE_KEY = 'appforge-desktop-buddy-v1'
 const HF_KEYS_STORAGE = 'dragon-arena-hf-keys'
@@ -37,6 +38,7 @@ type GenerationReply = {
   status?: string
   error?: string
   provenance?: Record<string, unknown>
+  constraintsApplied?: boolean
 }
 
 type GalleryBuddy = { item: VaultMedia; url: string | null }
@@ -48,33 +50,6 @@ const loadPersonalHfTokens = () => {
   } catch {
     return []
   }
-}
-
-const formatBytes = (bytes?: number) => {
-  if (!bytes) return ''
-  return bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(0)} KB` : `${(bytes / 1024 / 1024).toFixed(2)} MB`
-}
-
-const dataUrlToPng = async (dataUrl: string): Promise<{ dataUrl: string; blob: Blob }> => {
-  const image = new Image()
-  image.src = dataUrl
-  await image.decode()
-  const canvas = document.createElement('canvas')
-  canvas.width = Math.max(1, image.naturalWidth)
-  canvas.height = Math.max(1, image.naturalHeight)
-  const context = canvas.getContext('2d')
-  if (!context) throw new Error('Canvas is unavailable for PNG normalization.')
-  context.clearRect(0, 0, canvas.width, canvas.height)
-  context.drawImage(image, 0, 0)
-  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'))
-  if (!blob) throw new Error('Could not normalize generated character to PNG.')
-  const normalized = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(String(reader.result || ''))
-    reader.onerror = () => reject(reader.error || new Error('Could not read normalized PNG.'))
-    reader.readAsDataURL(blob)
-  })
-  return { dataUrl: normalized, blob }
 }
 
 const downloadDataUrl = (dataUrl: string, filename: string) => {
@@ -178,12 +153,12 @@ export function DesktopBuddyProviderLab() {
       bridgeJobId: payload.bridgeJobId || undefined,
       generatedAt: new Date().toISOString(),
     }
-    const normalized = await dataUrlToPng(payload.imageDataUrl)
+    const normalized = await repairImageTransparency(payload.imageDataUrl, 38, true)
     const normalizedPayload = { ...payload, imageDataUrl: normalized.dataUrl, mimeType: 'image/png', sizeBytes: normalized.blob.size, provenance }
     setResult(normalizedPayload)
     try {
       await archiveResult(normalizedPayload, source, normalized.blob)
-      setMessage(`Generated with ${payload.provider || source} · ${payload.model || 'provider model'} · normalized to PNG · saved in Media Vault / Desktop Buddies.`)
+      setMessage(`Generated with ${payload.provider || source} · server prompt lock ${payload.constraintsApplied ? 'confirmed' : 'not reported'} · ${normalized.repaired ? `opaque background repaired (${normalized.transparentPercent.toFixed(1)}% alpha)` : `alpha verified (${normalized.transparentPercent.toFixed(1)}%)`} · saved in Media Vault / Desktop Buddies.`)
     } catch (archiveError) {
       setMessage(`Generated with ${payload.provider || source}, but Media Vault archive failed: ${archiveError instanceof Error ? archiveError.message : 'unknown error'}`)
     }
@@ -210,7 +185,7 @@ export function DesktopBuddyProviderLab() {
     const response = await fetch('/api/desktop-buddy-vertex', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ prompt: `${prompt.trim()}\n\n${TRANSPARENT_PNG_REQUIREMENT}`, clientRequestId }),
+      body: JSON.stringify({ prompt: prompt.trim(), clientRequestId }),
     })
     const payload = await response.json().catch(() => ({})) as GenerationReply
     if (payload.bridgeJobId) {
@@ -323,7 +298,7 @@ export function DesktopBuddyProviderLab() {
           <button type="button" onClick={() => void refreshStatus()} disabled={loadingStatus} className="inline-flex min-h-9 items-center gap-2 rounded-xl border px-3 text-xs font-semibold hover:bg-accent disabled:opacity-50"><RefreshCw className={`h-3.5 w-3.5 ${loadingStatus ? 'animate-spin' : ''}`} /> Provider status</button>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-emerald-500/25 bg-emerald-500/5 p-3 text-xs leading-5 text-muted-foreground"><strong className="text-foreground">Locked output rule:</strong> {TRANSPARENT_PNG_REQUIREMENT} This requirement is appended by the server for Hugging Face and by the client bridge for Vertex, so it does not depend on the editable prompt.</div>
+        <div className="mt-4 rounded-2xl border border-emerald-500/25 bg-emerald-500/5 p-3 text-xs leading-5 text-muted-foreground"><strong className="text-foreground">Locked output rule:</strong> {TRANSPARENT_PNG_REQUIREMENT} Both provider endpoints append this on the server, report that it was applied, and the browser verifies actual alpha before accepting the result.</div>
 
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <button type="button" onClick={() => setProvider('huggingface')} className={`rounded-2xl border p-3 text-left ${provider === 'huggingface' ? 'ring-2 ring-primary/30' : 'bg-background/45'}`}>

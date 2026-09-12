@@ -1,5 +1,6 @@
 import React from 'react'
 import { Check, Download, Eraser, ImagePlus, Loader2, WandSparkles } from 'lucide-react'
+import { safeCanvasImageSource } from '@/lib/imageTransparency'
 
 const BUDDY_STORAGE_KEY = 'appforge-desktop-buddy-v1'
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024
@@ -133,19 +134,19 @@ const downloadResult = (result: RepairResult, name: string) => {
   URL.revokeObjectURL(url)
 }
 
-export function DesktopBuddyTransparencyLab() {
+export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone?: boolean }) {
   const [source, setSource] = React.useState<SourceImage | null>(null)
   const [result, setResult] = React.useState<RepairResult | null>(null)
   const [tolerance, setTolerance] = React.useState(38)
   const [processing, setProcessing] = React.useState(false)
   const [message, setMessage] = React.useState('Use this when an AI model paints gray/white checkerboard squares instead of returning real transparent pixels.')
 
-  const loadActiveBuddy = () => {
+  const loadActiveBuddy = async () => {
     try {
       const raw = localStorage.getItem(BUDDY_STORAGE_KEY)
       const current = raw ? JSON.parse(raw) as { imageDataUrl?: string; assetLabel?: string } : null
       if (!current?.imageDataUrl) throw new Error('No active Desktop Buddy image is stored in this browser.')
-      setSource({ name: current.assetLabel || 'active-desktop-buddy', dataUrl: current.imageDataUrl })
+      setSource({ name: current.assetLabel || 'active-desktop-buddy', dataUrl: await safeCanvasImageSource(current.imageDataUrl) })
       setResult(null)
       setMessage('Loaded the active Desktop Buddy. Run background repair and inspect the preview before applying it.')
     } catch (error) {
@@ -213,14 +214,14 @@ export function DesktopBuddyTransparencyLab() {
   }
 
   return (
-    <section className="mx-auto mt-6 w-full max-w-6xl rounded-3xl border bg-card p-5 shadow-sm md:p-6" aria-label="Desktop Buddy transparency repair">
+    <section className={`mx-auto w-full max-w-6xl rounded-2xl border bg-card p-5 shadow-sm md:p-6 ${standalone ? '' : 'mt-6'}`} aria-label={standalone ? 'Background Remover' : 'Desktop Buddy transparency repair'}>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <div className="flex items-center gap-2"><Eraser className="h-5 w-5" /><h2 className="font-semibold">Transparency repair</h2></div>
+          <div className="flex items-center gap-2"><Eraser className="h-5 w-5" /><h2 className="font-semibold">{standalone ? 'Remove image background' : 'Transparency repair'}</h2></div>
           <p className="mt-1 max-w-3xl text-xs leading-5 text-muted-foreground">Some image models draw a checkerboard pattern even when asked for transparency. This local tool samples dominant edge colors, removes matching background pixels, feathers the edge, and exports a PNG with a real alpha channel. Nothing is uploaded.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={loadActiveBuddy} className="inline-flex min-h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent"><WandSparkles className="h-4 w-4" /> Use active Buddy</button>
+          {!standalone && <button type="button" onClick={() => void loadActiveBuddy()} className="inline-flex min-h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent"><WandSparkles className="h-4 w-4" /> Use active Buddy</button>}
           <label className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent"><ImagePlus className="h-4 w-4" /> Choose image<input type="file" accept="image/*" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void importImage(file); event.currentTarget.value = '' }} /></label>
         </div>
       </div>
@@ -258,7 +259,7 @@ export function DesktopBuddyTransparencyLab() {
           <div className="text-xs text-muted-foreground"><span className="font-medium text-foreground">{result.width} × {result.height}</span> · {result.transparentPercent.toFixed(1)}% transparent/feathered pixels</div>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => downloadResult(result, source.name)} className="inline-flex min-h-9 items-center gap-2 rounded-lg border px-3 text-xs font-semibold hover:bg-accent"><Download className="h-3.5 w-3.5" /> Download PNG</button>
-            <button type="button" onClick={applyToBuddy} className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground"><Check className="h-3.5 w-3.5" /> Use in Buddy</button>
+            {!standalone && <button type="button" onClick={applyToBuddy} className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground"><Check className="h-3.5 w-3.5" /> Use in Buddy</button>}
           </div>
         </div>
       )}

@@ -54,6 +54,8 @@ System folders remain product-owned:
 - **Story Studio** — linked story assets that remain authoritative in Story Studio tables;
 - **Getter Pro** — saved source references.
 
+Getter Pro references use the canonical `getter-pro` source/folder property. Legacy `scrapper-pro` rows are migrated in place without changing ownership or source URLs. YouTube references remain metadata rows and play through the privacy-enhanced embedded player in Media Vault.
+
 Eligible `user_media_vault` rows can be moved between personal folders by updating their metadata. Linked Story Studio records and Desktop Buddy generation records stay pinned to their product-owned collections so those apps do not lose their authoritative galleries.
 
 File sort order is a presentation preference in the Media Vault UI rather than destructive database reordering; users can sort by date, name, size, or type without rewriting asset records.

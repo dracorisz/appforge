@@ -102,6 +102,10 @@ Settings → Admin links directly to the protected unified console:
 
 All sections keep the admin-role and TOTP/AAL2 boundary. The landing app-count preference is stored as `show_active_app_count` in the published walkthrough record’s metadata, defaults to visible, and can be changed by AAL2 admins only.
 
+The published walkthrough may be either a supported YouTube URL or a video uploaded to the admin content bucket. App presentation overrides are public-readable and admin-writable; cover images and the global visibility switch apply consistently to catalogs, search, sidebar navigation, landing counts, and direct app routes.
+
+Workspace backup format v3 contains only account workspace preferences: theme, favorites, recent apps, sidebar/category overrides, and widget switches. It deliberately excludes old registry/project seed rows, profile data, media, generated projects, and provider credentials.
+
 ## DNS Checker
 
 `/apps/dns-checker` replaces the TXT-only tool. The old `/apps/dns-txt-checker` route remains compatible and the internal app ID remains stable for existing favorites. Google Public DNS provides keyless DNS-over-HTTPS queries. Common records checks 12 types; the type selector and numeric type input support other resource records. The record map shows one resolver’s answers and their relationships, not geographic propagation. Zone transfers are excluded. SRV/DKIM/DMARC and reverse PTR queries require the appropriate complete DNS owner name.

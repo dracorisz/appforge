@@ -8,9 +8,11 @@ import { PublicHeader } from './PublicHeader'
 const categoryName = (id: string) => CATEGORIES.find((category) => category.id === id)?.name || id
 
 export function PublicAppsPage() {
-  const apps = React.useMemo(() => getPublicApps().filter((app) => app.status !== 'deprecated'), [])
+  const [, refreshRegistry] = React.useReducer((value) => value + 1, 0)
+  const apps = getPublicApps().filter((app) => app.status !== 'deprecated')
   const [query, setQuery] = React.useState('')
   const [category, setCategory] = React.useState('all')
+  React.useEffect(() => { window.addEventListener('appforge:app-overrides-updated', refreshRegistry); return () => window.removeEventListener('appforge:app-overrides-updated', refreshRegistry) }, [])
   const categories = React.useMemo(() => Array.from(new Set(apps.map((app) => app.category))).sort((a, b) => categoryName(a).localeCompare(categoryName(b))), [apps])
   const visible = React.useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -46,6 +48,7 @@ export function PublicAppsPage() {
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-live="polite">
           {visible.map((app) => (
             <Link key={app.id} to={app.route} className="group flex min-h-44 flex-col rounded-2xl border border-border/70 bg-background/55 p-4 transition-colors hover:border-foreground/20 hover:bg-accent/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              {app.coverImage && <img src={app.coverImage} alt="" className="-mx-4 -mt-4 mb-4 h-28 w-[calc(100%+2rem)] rounded-t-2xl object-cover" loading="lazy" />}
               <div className="min-w-0"><div className="truncate text-base font-semibold">{app.name}</div><div className="mt-1 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">{categoryName(app.category)}</div></div>
               <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">{app.description}</p>
               <div className="mt-auto flex items-center justify-between gap-3 pt-4"><span className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{app.status}</span><span className="inline-flex items-center gap-1 text-xs font-semibold">Open <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" /></span></div>

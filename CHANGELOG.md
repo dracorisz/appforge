@@ -17,7 +17,7 @@ This file tracks user-visible AppForge product changes. The canonical source is 
 - Owner-scoped, idempotent Vertex bridge job ledger in Supabase. Browser/network retries reuse the same request/job rather than silently starting another paid image.
 - Desktop Buddy Vertex provider selector, readiness state, explicit generation flow and Recover Vertex job action.
 - Desktop Buddy **Transparency Repair** tool that converts model-painted checkerboard/flat edge backgrounds into real PNG alpha locally, with adjustable tolerance and preview before activation.
-- Desktop Buddy **Screen Capture** tool using browser display capture where available, plus a screenshot-import fallback for Brave and installed PWA environments that block screen sharing.
+- Desktop Buddy screenshot capture is available from the enabled floating widget, where it can assist across AppForge pages; the redundant in-app Capture tab was removed.
 - Desktop Buddy screenshots can be downloaded locally or archived privately in Media Vault under `Screenshots`.
 - Safe Vertex bridge status card under Settings → Integrations; infrastructure identifiers remain server/deployment configuration rather than profile fields.
 - Google bridge setup script with an explicit production `WIF_PRINCIPAL_SET` requirement and no downloadable service-account key.

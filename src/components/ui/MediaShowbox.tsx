@@ -7,10 +7,11 @@ const youtubeId = (value?: string) => {
   if (!value) return null
   try {
     const url = new URL(value)
-    if (url.hostname.includes('youtu.be')) return url.pathname.replace(/^\//, '').slice(0, 11)
-    if (url.hostname.includes('youtube.com')) {
+    const host = url.hostname.toLowerCase().replace(/^www\./, '')
+    if (host === 'youtu.be') return url.pathname.replace(/^\//, '').slice(0, 11)
+    if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'youtube-nocookie.com') {
       if (url.pathname.startsWith('/shorts/')) return url.pathname.split('/')[2]?.slice(0, 11) || null
-      return url.searchParams.get('v')?.slice(0, 11) || null
+      return (url.searchParams.get('v') || (url.pathname.startsWith('/embed/') ? url.pathname.split('/')[2] : ''))?.slice(0, 11) || null
     }
   } catch {
     return null

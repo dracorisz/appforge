@@ -103,6 +103,7 @@ export default async function handler(req, res) {
       provider: `huggingface:${generated.provider}`,
       providerModel: generated.providerModel,
       personalKeyUsed: usingPersonalKey,
+      constraintsApplied: true,
       requestId,
       durationMs: Date.now() - startedAt,
       provenance: {

@@ -137,7 +137,7 @@ export default async function handler(req, res) {
       const job = await getJob(token, id, user.id)
       if (!job) return res.status(404).json({ error: 'Vertex job not found.', requestId })
       const recovered = await recoverOrDownload({ token, user, job, credentials })
-      return res.status(200).json({ ok: true, bridgeJobId: job.id, clientRequestId: job.client_request_id, workerJobId: job.worker_job_id, provider: 'vertex-ai', requestId, ...recovered })
+      return res.status(200).json({ ok: true, bridgeJobId: job.id, clientRequestId: job.client_request_id, workerJobId: job.worker_job_id, provider: 'vertex-ai', constraintsApplied: true, requestId, ...recovered })
     }
 
     const prompt = typeof req.body?.prompt === 'string' ? req.body.prompt.trim() : ''
@@ -151,7 +151,7 @@ export default async function handler(req, res) {
       bridgeJobId = existing.id
       workerJobId = existing.worker_job_id
       const recovered = await recoverOrDownload({ token, user, job: existing, credentials })
-      return res.status(200).json({ ok: true, idempotentReplay: true, bridgeJobId, clientRequestId, workerJobId, provider: 'vertex-ai', requestId, ...recovered })
+      return res.status(200).json({ ok: true, idempotentReplay: true, bridgeJobId, clientRequestId, workerJobId, provider: 'vertex-ai', constraintsApplied: true, requestId, ...recovered })
     }
 
     bridgeJobId = crypto.randomUUID()
@@ -164,7 +164,7 @@ export default async function handler(req, res) {
       workerCompleted = true
       await patchJob(token, bridgeJobId, user.id, { status: 'complete', output_uri: worker.output, model: worker.model || MODEL, error_code: null })
       const recovered = await recoverOrDownload({ token, user, job: { id: bridgeJobId, user_id: user.id, client_request_id: clientRequestId, worker_job_id: workerJobId, status: 'complete', output_uri: worker.output, model: worker.model || MODEL }, credentials })
-      return res.status(200).json({ ok: true, bridgeJobId, clientRequestId, workerJobId, provider: 'vertex-ai', requestId, ...recovered })
+      return res.status(200).json({ ok: true, bridgeJobId, clientRequestId, workerJobId, provider: 'vertex-ai', constraintsApplied: true, requestId, ...recovered })
     } catch (workerError) {
       const mapped = publicError(workerError)
       const errorName = String(workerError?.name || '').toLowerCase()

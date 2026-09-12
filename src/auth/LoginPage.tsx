@@ -70,7 +70,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
         if (safeUrl) {
           setVideoUrl(safeUrl)
           const embed = youtubeEmbed(safeUrl)
-          if (embed) setVideoEmbedUrl(embed)
+          setVideoEmbedUrl(embed)
         }
       }
     }).catch((teaserError) => console.warn('AppForge video teaser unavailable; using bundled walkthrough.', teaserError))
@@ -126,7 +126,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
           <section className="border-t border-border/60 py-8 sm:py-10" aria-labelledby="walkthrough-title">
             <div className="grid gap-5 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
               <div className="lg:pr-3"><div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"><PlayCircle className="h-4 w-4" /> Walkthrough</div><h2 id="walkthrough-title" className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{videoTitle}</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{videoSummary}</p><a href={videoUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Open video <ArrowRight className="h-4 w-4" /></a></div>
-              <div className="overflow-hidden rounded-2xl border border-border/70 bg-black shadow-xl shadow-foreground/5"><iframe src={videoEmbedUrl} title="AppForge product walkthrough" className="aspect-video w-full border-0" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /></div>
+              <div className="overflow-hidden rounded-2xl border border-border/70 bg-black shadow-xl shadow-foreground/5">{videoEmbedUrl ? <iframe src={videoEmbedUrl} title="AppForge product walkthrough" className="aspect-video w-full border-0" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <video src={videoUrl} title="AppForge product walkthrough" className="aspect-video w-full bg-black object-contain" controls preload="metadata" playsInline />}</div>
             </div>
           </section>
         </main>

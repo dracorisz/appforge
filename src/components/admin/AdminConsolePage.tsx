@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Navigate, Link, useSearchParams } from 'react-router-dom'
 import { KeyRound, Loader2, RefreshCw, ShieldCheck, Trash2, UserRound } from 'lucide-react'
-import { Badge, Button, Card } from '@/components/ui'
+import { Button, Card } from '@/components/ui'
 import { useAuth } from '@/auth/AuthProvider'
 import {
   adminDeleteUser,
@@ -63,7 +63,7 @@ export function AdminConsolePage() {
 
   return (
     <div className="w-full space-y-5 pb-10">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="flex items-center gap-2"><Badge color="green">Admin</Badge><Badge color="blue">AAL2</Badge></div><h1 className="mt-2 text-2xl font-semibold tracking-tight">Admin</h1><p className="mt-1 text-sm text-muted-foreground">Users, content, app presentation and internal marketing tools.</p></div><Link to="/settings" className="text-sm text-muted-foreground hover:text-foreground">Back to Settings</Link></div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><h1 className="text-2xl font-semibold tracking-tight">Admin</h1><p className="mt-1 text-sm text-muted-foreground">Users, content, app presentation and internal marketing tools.</p></div><Link to="/settings" className="text-sm text-muted-foreground hover:text-foreground">Back to Settings</Link></div>
 
       <div className="flex flex-wrap gap-1 border-b border-border/70 pb-2">{(['users','content','apps','marketing'] as Section[]).map((id) => <button key={id} onClick={() => setSection(id)} className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize ${section === id ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{id === 'content' ? 'Content Manager' : id === 'marketing' ? 'Marketing Studio' : id}</button>)}</div>
       {message && <Card className="border-emerald-500/25 bg-emerald-500/5 p-3 text-sm text-emerald-600 dark:text-emerald-400">{message}</Card>}

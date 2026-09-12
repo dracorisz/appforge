@@ -152,10 +152,7 @@ export default function SvgIconsBrowser() {
   return (
     <div className="mx-auto w-full max-w-7xl p-4 sm:p-6">
       <section className="surface-card rounded-2xl border p-4 sm:p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div><AppHeading /></div>
-          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground"><span>{Object.keys(PACKS).length} packs</span><span>{filtered.length} matching icons</span><span>{favorites.length} favorites</span></div>
-        </div>
+        <AppHeading />
 
         <div className="mt-5 grid gap-3 md:grid-cols-[minmax(220px,0.45fr)_minmax(260px,1fr)_180px]">
           <label className="grid gap-1.5 text-sm font-medium">Icon pack<select value={pack} onChange={(event) => setPack(event.target.value as PackKey)} className="h-11 rounded-xl border bg-background px-3">{Object.entries(PACKS).map(([key, item]) => <option key={key} value={key}>{item.label}</option>)}</select></label>
