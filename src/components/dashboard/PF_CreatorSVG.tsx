@@ -13,12 +13,12 @@ export interface HeaderConfig {
 }
 
 const defaultConfig: HeaderConfig = {
-  name: 'DRAGOLJUB',
-  title: 'Senior Full-Stack Web Developer',
-  experience: '15+ Years Professional Experience',
-  tagline: 'SCALABLE WEB ARCHITECTURE • APIs • CLOUD & WEB3',
-  available: 'Available Immediately',
-  milestone: 'Flexible on Milestones',
+  name: 'YOUR NAME',
+  title: 'Product Engineer & Creator',
+  experience: 'Build • Ship • Iterate',
+  tagline: 'WEB PRODUCTS • APIs • AUTOMATION • AI',
+  available: 'Available for projects',
+  milestone: 'Flexible delivery',
   theme: 'dark'
 }
 
@@ -153,6 +153,7 @@ export function PF_CreatorSVG() {
       }
       URL.revokeObjectURL(url)
     }
+    img.onerror = () => URL.revokeObjectURL(url)
     img.src = url
   }
 
@@ -172,10 +173,14 @@ export function PF_CreatorSVG() {
     }
   }
 
-  const copySvgCode = () => {
-    navigator.clipboard.writeText(svgCode)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const copySvgCode = async () => {
+    try {
+      await navigator.clipboard.writeText(svgCode)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setCopied(false)
+    }
   }
 
   const update = (patch: Partial<HeaderConfig>) => {
@@ -192,7 +197,7 @@ export function PF_CreatorSVG() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground dark:text-foreground">Creator SVG</h1>
-        <p className="mt-1 text-sm text-foreground dark:text-muted-foreground">Configure and download your resume/SVG header. No spatial distortion effects.</p>
+        <p className="mt-1 text-sm text-foreground dark:text-muted-foreground">Configure and download a reusable portfolio/SVG header. Everything is generated locally in your browser.</p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -211,7 +216,7 @@ export function PF_CreatorSVG() {
             </div>
             <div className="flex flex-wrap gap-2 pt-2">
               <Button onClick={downloadSvg}><Download className="h-4 w-4" /> Download SVG</Button>
-              <Button variant="secondary" onClick={downloadPng}><ImageIcon className="h-4 w-4" /> Save as PNG</Button>
+              <Button variant="secondary" onClick={() => void downloadPng()}><ImageIcon className="h-4 w-4" /> Save as PNG</Button>
               <Button variant="secondary" onClick={previewUrl ? hidePreview : showPreview}><Eye className="h-4 w-4" /> {previewUrl ? 'Hide' : 'Preview'}</Button>
               <Button variant="ghost" onClick={() => setConfig(defaultConfig)}><RefreshCw className="h-4 w-4" /> Reset</Button>
             </div>
@@ -227,7 +232,7 @@ export function PF_CreatorSVG() {
             <div className="mt-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-medium text-foreground dark:text-foreground">SVG Code</h3>
-                <Button variant="ghost" onClick={copySvgCode} className="!px-2 !py-1">
+                <Button variant="ghost" onClick={() => void copySvgCode()} className="!px-2 !py-1">
                   {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 </Button>
               </div>
