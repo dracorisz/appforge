@@ -5,6 +5,7 @@ const ACCOUNT_PREFIX = 'appforge-account-local-v1'
 // Public, device-level preferences such as theme/weather remain intentionally shared.
 const ACCOUNT_LOCAL_KEYS = [
   'appforge-desktop-buddy-v1',
+  'appforge-widget-desktop-buddy',
   'appforge-scrapper-saved',
   'dragon-arena-hf-keys',
   'dragon-arena-hf-key',
