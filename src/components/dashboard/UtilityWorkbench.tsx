@@ -13,6 +13,13 @@ const bytesToBase64Url = (bytes: Uint8Array) => {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
 }
 const randomBytes = (length: number) => crypto.getRandomValues(new Uint8Array(length))
+const secureRandomIndex = (limit: number) => {
+  if (!Number.isInteger(limit) || limit < 1 || limit > 256) throw new Error('Invalid random alphabet size.')
+  const ceiling = 256 - (256 % limit)
+  const byte = new Uint8Array(1)
+  do { crypto.getRandomValues(byte) } while (byte[0] >= ceiling)
+  return byte[0] % limit
+}
 
 const utf8ToBase64 = (value: string) => {
   const bytes = encoder.encode(value)
@@ -22,7 +29,9 @@ const utf8ToBase64 = (value: string) => {
 }
 
 const base64ToUtf8 = (value: string) => {
-  const binary = atob(value.replace(/-/g, '+').replace(/_/g, '/'))
+  const normalized = value.trim().replace(/-/g, '+').replace(/_/g, '/')
+  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=')
+  const binary = atob(padded)
   const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0))
   return new TextDecoder().decode(bytes)
 }
@@ -137,7 +146,7 @@ export function UtilityWorkbench() {
         }
         case 'base64':
           next = operation === 'decode'
-            ? base64ToUtf8(input.trim())
+            ? base64ToUtf8(input)
             : operation === 'url-safe'
               ? utf8ToBase64(input).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
               : utf8ToBase64(input)
@@ -157,10 +166,8 @@ export function UtilityWorkbench() {
           const digits = '0123456789'
           const symbols = '!@#$%^&*()-_=+[]{};:,.?'
           const alphabet = lower + upper + digits + symbols
-          const createPassword = () => {
-            const bytes = randomBytes(Math.max(8, Math.min(length, 128)))
-            return Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join('')
-          }
+          const passwordLength = Math.max(8, Math.min(length, 128))
+          const createPassword = () => Array.from({ length: passwordLength }, () => alphabet[secureRandomIndex(alphabet.length)]).join('')
           next = Array.from({ length: Math.max(1, Math.min(quantity, 50)) }, createPassword).join('\n')
           break
         }
@@ -200,13 +207,19 @@ export function UtilityWorkbench() {
 
   const copy = async () => {
     if (!output) return
-    await navigator.clipboard.writeText(output)
-    setCopied(true)
-    window.setTimeout(() => setCopied(false), 1400)
+    setError('')
+    try {
+      await navigator.clipboard.writeText(output)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1400)
+    } catch {
+      setError('Clipboard access was blocked by the browser.')
+    }
   }
 
   const generator = ['uuid', 'password', 'token'].includes(definition.mode)
-  const entropyBits = definition.mode === 'password' ? Math.round(length * Math.log2(26 * 2 + 10 + 25)) : null
+  const passwordAlphabetLength = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{};:,.?'.length
+  const entropyBits = definition.mode === 'password' ? Math.round(Math.max(8, Math.min(length, 128)) * Math.log2(passwordAlphabetLength)) : null
 
   const operationOptions = (() => {
     switch (definition.mode) {
@@ -222,11 +235,11 @@ export function UtilityWorkbench() {
   })()
 
   return (
-    <div className="space-y-5">
+    <div className="w-full space-y-5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">{definition.title}</h1>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">{definition.description}</p>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">{definition.description}</p>
         </div>
         <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5" /> Local-first</span>
       </div>
@@ -251,9 +264,9 @@ export function UtilityWorkbench() {
               <Textarea label={definition.inputLabel || 'Input'} value={input} onChange={(event) => setInput(event.target.value)} rows={14} placeholder={definition.inputPlaceholder || 'Paste or type here…'} className="font-mono text-xs" />
             )}
 
-            {entropyBits !== null && <p className="text-xs text-muted-foreground">Approximate search space: ~{entropyBits} bits before composition biases.</p>}
+            {entropyBits !== null && <p className="text-xs text-muted-foreground">Approximate search space: ~{entropyBits} bits with unbiased character selection.</p>}
 
-            {error && <div className="rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
+            {error && <div role="alert" className="rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
 
             <Button onClick={() => void run()} disabled={working || (!generator && !input && definition.mode !== 'uuid')}>
               {working ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
@@ -265,7 +278,7 @@ export function UtilityWorkbench() {
             <div className="flex items-center justify-between gap-3">
               <label className="text-sm font-medium text-foreground">{definition.outputLabel || 'Generated output'}</label>
               <div className="flex gap-1">
-                <Button variant="ghost" size="sm" onClick={copy} disabled={!output}>{copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />} {copied ? 'Copied' : 'Copy'}</Button>
+                <Button variant="ghost" size="sm" onClick={() => void copy()} disabled={!output}>{copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />} {copied ? 'Copied' : 'Copy'}</Button>
                 <Button variant="ghost" size="sm" onClick={() => output && downloadText(output, `${definition.mode}-output.txt`)} disabled={!output}><Download className="h-3.5 w-3.5" /> Download</Button>
               </div>
             </div>
