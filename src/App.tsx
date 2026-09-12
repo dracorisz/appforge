@@ -1,32 +1,30 @@
 import React from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { ArrowLeftRight, Bitcoin, Image as ImageIcon, Palette, PanelsTopLeft } from 'lucide-react'
+import { ArrowLeftRight, Bitcoin, Image as ImageIcon, Palette, PanelsTopLeft, QrCode } from 'lucide-react'
 import { Layout } from './components/layout/Layout'
 import { PublicToolShell } from './components/public/PublicToolShell'
 import { PublicDashboard } from './components/dashboard/PublicDashboard'
-import { ScrapperProIcon, WeatherNowIcon } from './components/dashboard/AppIcons'
-import { DragonArenaIcon } from './components/dashboard/DragonArenaIcon'
+import { WeatherNowIcon } from './components/dashboard/AppIcons'
 import {
   PF_ScrapperPro,
   PF_ImageLabeler,
   PF_CreatorSVG,
   PF_CryptoTrack,
   PF_WeatherNow,
-  PF_PariflowSmpl,
   PF_AIDragonArena,
   PF_DnsTxtChecker,
-  MiniAppShell,
   AnyToAnyConverter,
   UtilityWorkbench,
   ImageWorkbench,
   LocalToolsWorkbench,
   ColorPickerTool,
   TaskList,
+  DesktopBuddy,
   RegistryAppFallback,
   PF_UserMediaVault,
+  QrGenerator,
 } from './components/dashboard'
-import { PF_GuestDragonArena } from './components/dashboard/PF_GuestDragonArena'
-import type { AppState, MiniApp } from './types'
+import type { AppState } from './types'
 import {
   defaultArticle,
   defaultPitches,
@@ -49,7 +47,7 @@ import { updateSeo } from './lib/seo'
 
 const SettingsPage = React.lazy(() => import('./components/resources/Settings').then((module) => ({ default: module.SettingsPage })))
 const PeoplePage = React.lazy(() => import('./components/resources/People').then((module) => ({ default: module.PeoplePage })))
-const MarketingStudio = React.lazy(() => import('./components/resources/MarketingStudio'))
+const AdminConsolePage = React.lazy(() => import('./components/admin/AdminConsolePage').then((module) => ({ default: module.AdminConsolePage })))
 const HuggingFaceGalleryPage = React.lazy(() => import('./components/public/HuggingFaceGalleryPage').then((module) => ({ default: module.HuggingFaceGalleryPage })))
 const PrivacyPolicyPage = React.lazy(() => import('./components/public/LegalPages').then((module) => ({ default: module.PrivacyPolicyPage })))
 const TermsOfServicePage = React.lazy(() => import('./components/public/LegalPages').then((module) => ({ default: module.TermsOfServicePage })))
@@ -89,13 +87,32 @@ const hydrateStoredState = (raw: string): AppState => {
   }
 }
 
-const routeFallback = (
-  <div className="flex min-h-[40vh] items-center justify-center px-4 text-sm text-muted-foreground">
-    Loading AppForge…
-  </div>
-)
-
+const routeFallback = <div className="flex min-h-[40vh] items-center justify-center px-4 text-sm text-muted-foreground">Loading AppForge…</div>
 const lazyPage = (page: React.ReactNode) => <React.Suspense fallback={routeFallback}>{page}</React.Suspense>
+const utilitySlugs = new Set(['json-formatter','uuid-generator','password-generator','token-generator','base64-tool','hash-tool','url-encoder','html-encoder','jwt-decoder','hex-converter'])
+const imageSlugs = new Set(['image-resizer','image-converter','image-compressor','image-metadata'])
+const localSlugs = new Set(['csv-converter','timestamp-converter','regex-tester'])
+const privatePaths = new Set(['/apps/getter-pro','/apps/scrapper-pro','/apps/media-vault','/apps/desktop-buddy','/apps/ai-dragon-arena'])
+
+function publicAppPage(pathname: string): React.ReactNode | null {
+  const slug = pathname.startsWith('/apps/') ? pathname.slice('/apps/'.length) : ''
+  if (pathname === '/apps/weather-now' || pathname === '/pf-weather-now') return <PublicToolShell toolName="Weather Now" toolIcon={<WeatherNowIcon />}><PF_WeatherNow /></PublicToolShell>
+  if (pathname === '/apps/crypto-track' || pathname === '/pf-crypto-track') return <PublicToolShell toolName="Crypto Track" toolIcon={<Bitcoin className="h-4 w-4" />}><PF_CryptoTrack /></PublicToolShell>
+  if (pathname === '/apps/data-converter' || pathname === '/apps/any-converter') return <PublicToolShell toolName="Data Converter" toolIcon={<ArrowLeftRight className="h-4 w-4" />}><AnyToAnyConverter /></PublicToolShell>
+  if (pathname === '/apps/favicon-studio') return <PublicToolShell toolName="Favicon Studio" toolIcon={<ImageIcon className="h-4 w-4" />}>{lazyPage(<FaviconStudio />)}</PublicToolShell>
+  if (pathname === '/apps/svg-icons') return <PublicToolShell toolName="SVG Icons" toolIcon={<Palette className="h-4 w-4" />}>{lazyPage(<SvgIconsBrowser />)}</PublicToolShell>
+  if (pathname === '/apps/landing-builder') return <PublicToolShell toolName="Landing Builder" toolIcon={<PanelsTopLeft className="h-4 w-4" />}>{lazyPage(<LandingBuilder />)}</PublicToolShell>
+  if (pathname === '/apps/image-labeler') return <PublicToolShell toolName="Image Labeler"><PF_ImageLabeler /></PublicToolShell>
+  if (pathname === '/apps/creator-svg') return <PublicToolShell toolName="Creator SVG"><PF_CreatorSVG /></PublicToolShell>
+  if (pathname === '/apps/dns-txt-checker') return <PublicToolShell toolName="DNS TXT Checker"><PF_DnsTxtChecker /></PublicToolShell>
+  if (pathname === '/apps/task-list') return <PublicToolShell toolName="Task List"><TaskList /></PublicToolShell>
+  if (pathname === '/apps/qr-generator') return <PublicToolShell toolName="QR Generator" toolIcon={<QrCode className="h-4 w-4" />}><QrGenerator /></PublicToolShell>
+  if (pathname === '/apps/color-picker') return <PublicToolShell toolName="Color Picker"><ColorPickerTool /></PublicToolShell>
+  if (utilitySlugs.has(slug)) return <PublicToolShell toolName={slug}><UtilityWorkbench /></PublicToolShell>
+  if (imageSlugs.has(slug)) return <PublicToolShell toolName={slug}><ImageWorkbench /></PublicToolShell>
+  if (localSlugs.has(slug)) return <PublicToolShell toolName={slug}><LocalToolsWorkbench /></PublicToolShell>
+  return null
+}
 
 function App() {
   const location = useLocation()
@@ -109,8 +126,7 @@ function App() {
 
   React.useEffect(() => { updateSeo(location.pathname) }, [location.pathname])
   React.useEffect(() => {
-    const current = { ...state, miniApps: stripLegacyMiniAppCommerce(state.miniApps) }
-    localStorage.setItem('appforge-workplan-v1', JSON.stringify(current))
+    localStorage.setItem('appforge-workplan-v1', JSON.stringify({ ...state, miniApps: stripLegacyMiniAppCommerce(state.miniApps) }))
   }, [state])
 
   React.useEffect(() => {
@@ -122,18 +138,9 @@ function App() {
         const remote = await loadUserPreferences(user.id)
         if (cancelled) return
         if (remote) {
-          if (remote.appState) {
-            setState((current) => ({
-              ...current,
-              ...remote.appState,
-              settings: { ...current.settings, ...(remote.appState?.settings || {}) },
-              miniApps: stripLegacyMiniAppCommerce(Array.isArray(remote.appState?.miniApps) ? remote.appState.miniApps : current.miniApps),
-            }))
-          }
+          if (remote.appState) setState((current) => ({ ...current, ...remote.appState, settings: { ...current.settings, ...(remote.appState?.settings || {}) }, miniApps: stripLegacyMiniAppCommerce(Array.isArray(remote.appState?.miniApps) ? remote.appState.miniApps : current.miniApps) }))
           saveCategoryOverrides(remote.categoryOverrides || {})
-        } else {
-          await saveUserPreferences(user.id, { appState: { ...state, miniApps: stripLegacyMiniAppCommerce(state.miniApps) }, categoryOverrides: loadCategoryOverrides() })
-        }
+        } else await saveUserPreferences(user.id, { appState: { ...state, miniApps: stripLegacyMiniAppCommerce(state.miniApps) }, categoryOverrides: loadCategoryOverrides() })
       } catch (error) { console.error('AppForge remote preference hydration failed', error) }
       finally { if (!cancelled) setRemoteReady(true) }
     }
@@ -143,10 +150,7 @@ function App() {
 
   React.useEffect(() => {
     if (!user || !remoteReady) return
-    const timer = window.setTimeout(() => {
-      const current = { ...state, miniApps: stripLegacyMiniAppCommerce(state.miniApps) }
-      void saveUserPreferences(user.id, { appState: current }).catch((error) => console.error('AppForge remote state sync failed', error))
-    }, 650)
+    const timer = window.setTimeout(() => void saveUserPreferences(user.id, { appState: { ...state, miniApps: stripLegacyMiniAppCommerce(state.miniApps) } }).catch((error) => console.error('AppForge remote state sync failed', error)), 650)
     return () => window.clearTimeout(timer)
   }, [state, user, remoteReady])
 
@@ -157,36 +161,25 @@ function App() {
 
   const addToRecent = (appId: string) => setState((prev) => ({ ...prev, recentApps: [appId, ...(prev.recentApps || []).filter((id) => id !== appId)].slice(0, 20) }))
   const toggleFavorite = (appId: string) => setState((prev) => ({ ...prev, favorites: (prev.favorites || []).includes(appId) ? (prev.favorites || []).filter((id) => id !== appId) : [...(prev.favorites || []), appId] }))
-  const updateMiniApp = (updated: MiniApp) => setState((prev) => ({ ...prev, miniApps: prev.miniApps.map((app) => app.id === updated.id ? updated : app) }))
-  const miniAppRoute = (miniAppId: string) => {
-    const app = state.miniApps.find((item) => item.id === miniAppId)
-    if (!app) return <Navigate to="/apps" replace />
-    return <MiniAppShell app={app} onUpdate={updateMiniApp} onToggleFavorite={toggleFavorite} isFavorite={(state.favorites || []).includes(miniAppId)} />
-  }
-
   const dashboard = <PublicDashboard state={state} onOpenApp={addToRecent} onToggleFavorite={toggleFavorite} />
   const requestedPath = `${location.pathname}${location.search}${location.hash}`
 
   if (location.pathname === '/privacy') return lazyPage(<PrivacyPolicyPage />)
   if (location.pathname === '/terms') return lazyPage(<TermsOfServicePage />)
-  if (location.pathname === '/huggingface') return lazyPage(<HuggingFaceGalleryPage />)
   if (location.pathname === '/landing') return <LoginPage landingOnly />
   if (location.pathname === '/explore') return lazyPage(<PublicAppsPage />)
   if (location.pathname === '/login') return <LoginPage />
+  if (location.pathname === '/apps/any-converter') return <Navigate to="/apps/data-converter" replace />
   if (!user && !loading && location.pathname === '/apps') return <Navigate to="/explore" replace />
 
   if (!user && !loading) {
-    if (location.pathname === '/apps/getter-pro' || location.pathname === '/apps/scrapper-pro' || location.pathname === '/pf-scrapper-pro') return <PublicToolShell toolName="Getter Pro" toolIcon={<ScrapperProIcon />}><PF_ScrapperPro /></PublicToolShell>
-    if (location.pathname === '/apps/weather-now' || location.pathname === '/pf-weather-now') return <PublicToolShell toolName="Weather Now" toolIcon={<WeatherNowIcon />}><PF_WeatherNow /></PublicToolShell>
-    if (location.pathname === '/apps/crypto-track' || location.pathname === '/pf-crypto-track') return <PublicToolShell toolName="Crypto Track" toolIcon={<Bitcoin className="h-4 w-4" />}><PF_CryptoTrack /></PublicToolShell>
-    if (location.pathname === '/apps/any-converter') return <PublicToolShell toolName="Any Converter" toolIcon={<ArrowLeftRight className="h-4 w-4" />}><AnyToAnyConverter /></PublicToolShell>
-    if (location.pathname === '/apps/favicon-studio') return <PublicToolShell toolName="Favicon Studio" toolIcon={<ImageIcon className="h-4 w-4" />}>{lazyPage(<FaviconStudio />)}</PublicToolShell>
-    if (location.pathname === '/apps/svg-icons') return <PublicToolShell toolName="SVG Icons" toolIcon={<Palette className="h-4 w-4" />}>{lazyPage(<SvgIconsBrowser />)}</PublicToolShell>
-    if (location.pathname === '/apps/landing-builder') return <PublicToolShell toolName="Landing Builder" toolIcon={<PanelsTopLeft className="h-4 w-4" />}>{lazyPage(<LandingBuilder />)}</PublicToolShell>
-    if (location.pathname === '/apps/ai-dragon-arena' || location.pathname === '/pf-ai-dragon-arena') return <PublicToolShell toolName="AI Integrations" toolIcon={<DragonArenaIcon className="h-4 w-4" />}><PF_GuestDragonArena /></PublicToolShell>
+    if (privatePaths.has(location.pathname) || location.pathname === '/huggingface') return <LoginPage returnTo={requestedPath} />
+    const publicPage = publicAppPage(location.pathname)
+    if (publicPage) return publicPage
   }
 
   if (loading || !user) return <LoginPage returnTo={requestedPath} />
+  if (location.pathname === '/huggingface') return lazyPage(<HuggingFaceGalleryPage />)
 
   return (
     <Layout currentVersion={BUILD_INFO.version}>
@@ -199,6 +192,8 @@ function App() {
         <Route path="/categories" element={<Navigate to="/workspace" replace />} />
         <Route path="/category/:id" element={dashboard} />
         <Route path="/people" element={lazyPage(<PeoplePage />)} />
+        <Route path="/settings" element={lazyPage(<SettingsPage state={state} setState={setState} />)} />
+        <Route path="/settings/admin" element={lazyPage(<AdminConsolePage />)} />
 
         <Route path="/apps/getter-pro" element={<PF_ScrapperPro />} />
         <Route path="/apps/scrapper-pro" element={<Navigate to="/apps/getter-pro" replace />} />
@@ -206,29 +201,22 @@ function App() {
         <Route path="/apps/creator-svg" element={<PF_CreatorSVG />} />
         <Route path="/apps/crypto-track" element={<PF_CryptoTrack />} />
         <Route path="/apps/weather-now" element={<PF_WeatherNow />} />
-        <Route path="/apps/pariflow-smpl" element={<PF_PariflowSmpl />} />
         <Route path="/apps/ai-dragon-arena" element={<PF_AIDragonArena />} />
         <Route path="/apps/dns-txt-checker" element={<PF_DnsTxtChecker />} />
-        <Route path="/apps/any-converter" element={<AnyToAnyConverter />} />
+        <Route path="/apps/data-converter" element={<AnyToAnyConverter />} />
+        <Route path="/apps/any-converter" element={<Navigate to="/apps/data-converter" replace />} />
         <Route path="/apps/task-list" element={<TaskList />} />
         <Route path="/apps/media-vault" element={<PF_UserMediaVault />} />
+        <Route path="/apps/desktop-buddy" element={<DesktopBuddy />} />
+        <Route path="/apps/qr-generator" element={<QrGenerator />} />
         <Route path="/apps/favicon-studio" element={lazyPage(<FaviconStudio />)} />
         <Route path="/apps/svg-icons" element={lazyPage(<SvgIconsBrowser />)} />
         <Route path="/apps/landing-builder" element={lazyPage(<LandingBuilder />)} />
-        <Route path="/marketing" element={lazyPage(<MarketingStudio />)} />
-        <Route path="/settings" element={lazyPage(<SettingsPage state={state} setState={setState} />)} />
 
-        {['json-formatter','uuid-generator','password-generator','token-generator','base64-tool','hash-tool','url-encoder','html-encoder','jwt-decoder','hex-converter'].map((slug) => <Route key={slug} path={`/apps/${slug}`} element={<UtilityWorkbench />} />)}
-        {['image-resizer','image-converter','image-compressor','image-metadata'].map((slug) => <Route key={slug} path={`/apps/${slug}`} element={<ImageWorkbench />} />)}
-        {['csv-converter','timestamp-converter','regex-tester'].map((slug) => <Route key={slug} path={`/apps/${slug}`} element={<LocalToolsWorkbench />} />)}
+        {Array.from(utilitySlugs).map((slug) => <Route key={slug} path={`/apps/${slug}`} element={<UtilityWorkbench />} />)}
+        {Array.from(imageSlugs).map((slug) => <Route key={slug} path={`/apps/${slug}`} element={<ImageWorkbench />} />)}
+        {Array.from(localSlugs).map((slug) => <Route key={slug} path={`/apps/${slug}`} element={<LocalToolsWorkbench />} />)}
         <Route path="/apps/color-picker" element={<ColorPickerTool />} />
-
-        <Route path="/apps/pitch-deck" element={miniAppRoute('mini-2')} />
-        <Route path="/apps/invoice-studio" element={miniAppRoute('mini-3')} />
-        <Route path="/apps/source-grade" element={miniAppRoute('mini-5')} />
-        <Route path="/apps/link-checker" element={miniAppRoute('mini-9')} />
-        <Route path="/apps/qr-generator" element={miniAppRoute('mini-13')} />
-        <Route path="/apps/resume-forge" element={miniAppRoute('mini-1')} />
 
         <Route path="/pf-scrapper-pro" element={<Navigate to="/apps/getter-pro" replace />} />
         <Route path="/pf-getter-pro" element={<Navigate to="/apps/getter-pro" replace />} />
@@ -236,18 +224,10 @@ function App() {
         <Route path="/pf-creator-svg" element={<Navigate to="/apps/creator-svg" replace />} />
         <Route path="/pf-crypto-track" element={<Navigate to="/apps/crypto-track" replace />} />
         <Route path="/pf-weather-now" element={<Navigate to="/apps/weather-now" replace />} />
-        <Route path="/pf-pariflow-smpl" element={<Navigate to="/apps/pariflow-smpl" replace />} />
         <Route path="/pf-ai-dragon-arena" element={<Navigate to="/apps/ai-dragon-arena" replace />} />
         <Route path="/pf-dns-txt-checker" element={<Navigate to="/apps/dns-txt-checker" replace />} />
-        <Route path="/pf-pitch-deck" element={<Navigate to="/apps/pitch-deck" replace />} />
-        <Route path="/pf-invoice-studio" element={<Navigate to="/apps/invoice-studio" replace />} />
-        <Route path="/pf-source-grade" element={<Navigate to="/apps/source-grade" replace />} />
-        <Route path="/pf-link-checker" element={<Navigate to="/apps/link-checker" replace />} />
-        <Route path="/pf-json-formatter" element={<Navigate to="/apps/json-formatter" replace />} />
-        <Route path="/pf-csv-converter" element={<Navigate to="/apps/csv-converter" replace />} />
         <Route path="/pf-qr-generator" element={<Navigate to="/apps/qr-generator" replace />} />
         <Route path="/pf-color-picker" element={<Navigate to="/apps/color-picker" replace />} />
-        <Route path="/pf-resume-forge" element={<Navigate to="/apps/resume-forge" replace />} />
         <Route path="/pf-media-vault" element={<Navigate to="/apps/media-vault" replace />} />
         <Route path="/apps/:slug" element={<RegistryAppFallback />} />
         <Route path="*" element={<Navigate to="/" replace />} />
