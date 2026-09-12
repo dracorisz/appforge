@@ -1,4 +1,4 @@
-import { getAllApps } from './registry'
+import { getAllApps, getPublicApps } from './registry'
 // @code-scanning/ignore js/xss-through-dom: structuredData.textContent uses JSON.stringify output which is safe - no user-controlled HTML is injected.
 const SITE_URL = 'https://www.sstoken.space'
 const SITE_NAME = 'AppForge'
@@ -7,20 +7,16 @@ const FALLBACK_DESCRIPTION = 'AppForge is an open-source toolbox of focused web 
 const SOCIAL_IMAGE = `${SITE_URL}/favicon/apple-touch-icon.png`
 
 const publicRoutes = new Set([
-  '/', '/landing', '/explore', '/privacy', '/terms', '/huggingface', '/blog', '/changelog',
-  '/apps/getter-pro', '/apps/scrapper-pro', '/pf-scrapper-pro',
-  '/apps/weather-now', '/pf-weather-now',
-  '/apps/crypto-track', '/pf-crypto-track',
-  '/apps/any-converter',
-  '/apps/favicon-studio',
-  '/apps/svg-icons',
-  '/apps/landing-builder',
-  '/apps/ai-dragon-arena', '/pf-ai-dragon-arena',
+  '/', '/landing', '/explore', '/privacy', '/terms', '/blog', '/changelog',
+  ...getPublicApps().map((app) => app.route),
+  '/pf-weather-now',
+  '/pf-crypto-track',
 ])
 const aliases: Record<string, string> = {
   '/landing': '/',
   '/apps/scrapper-pro': '/apps/getter-pro',
   '/pf-scrapper-pro': '/apps/getter-pro',
+  '/apps/any-converter': '/apps/data-converter',
   '/pf-weather-now': '/apps/weather-now',
   '/pf-crypto-track': '/apps/crypto-track',
   '/pf-ai-dragon-arena': '/apps/ai-dragon-arena',
@@ -49,32 +45,27 @@ function setCanonical(url: string) {
 export function updateSeo(pathname: string) {
   const canonicalPath = aliases[pathname] || pathname
   const app = getAllApps().find((item) => item.route === canonicalPath)
-  const isHuggingFaceGallery = canonicalPath === '/huggingface'
   const isAppsDirectory = canonicalPath === '/explore'
   const isBlog = canonicalPath === '/blog'
   const isBlogArticle = canonicalPath.startsWith('/blog/')
   const isChangelog = canonicalPath === '/changelog'
-  const isPublic = publicRoutes.has(pathname) || isBlogArticle
+  const isPublic = publicRoutes.has(pathname) || publicRoutes.has(canonicalPath) || isBlogArticle
   const title = isAppsDirectory
     ? `Apps | ${SITE_NAME}`
-    : isHuggingFaceGallery
-      ? `Story Studio × Hugging Face | ${SITE_NAME}`
-      : isBlog
-        ? `Blog | ${SITE_NAME}`
-        : isBlogArticle
-          ? `App story | ${SITE_NAME}`
-          : isChangelog
-            ? `Changelog | ${SITE_NAME}`
-            : app ? `${app.name} | ${SITE_NAME}` : FALLBACK_TITLE
+    : isBlog
+      ? `Blog | ${SITE_NAME}`
+      : isBlogArticle
+        ? `App story | ${SITE_NAME}`
+        : isChangelog
+          ? `Changelog | ${SITE_NAME}`
+          : app ? `${app.name} | ${SITE_NAME}` : FALLBACK_TITLE
   const description = isAppsDirectory
     ? 'Browse AppForge web apps and utilities across AI, media, developer tools, converters, crypto, weather, productivity, and more.'
-    : isHuggingFaceGallery
-      ? 'Explore AppForge Story Studio Hugging Face model rotation, public generated scenes, and admin-curated gallery images.'
-      : isBlog || isBlogArticle
-        ? 'Read AppForge product stories, practical app guides, implementation notes, and creator workflow updates.'
-        : isChangelog
-          ? 'Follow AppForge release history and user-visible changes, generated from the canonical changelog on main.'
-          : app?.description || FALLBACK_DESCRIPTION
+    : isBlog || isBlogArticle
+      ? 'Read AppForge product stories, practical app guides, implementation notes, and creator workflow updates.'
+      : isChangelog
+        ? 'Follow AppForge release history and user-visible changes, generated from the canonical changelog on main.'
+        : app?.description || FALLBACK_DESCRIPTION
   const url = `${SITE_URL}${canonicalPath === '/' ? '/' : canonicalPath}`
   const robots = isPublic ? 'index, follow' : 'noindex, nofollow'
   const cover = app?.coverImage ? `${SITE_URL}${app.coverImage}` : SOCIAL_IMAGE
@@ -109,13 +100,11 @@ export function updateSeo(pathname: string) {
 
   const collectionName = isAppsDirectory
     ? 'AppForge Apps'
-    : isHuggingFaceGallery
-      ? 'Story Studio × Hugging Face'
-      : isBlog
-        ? 'AppForge Blog'
-        : isChangelog
-          ? 'AppForge Changelog'
-          : SITE_NAME
+    : isBlog
+      ? 'AppForge Blog'
+      : isChangelog
+        ? 'AppForge Changelog'
+        : SITE_NAME
 
   structuredData.textContent = JSON.stringify(app ? {
     '@context': 'https://schema.org',
@@ -137,11 +126,11 @@ export function updateSeo(pathname: string) {
     isPartOf: { '@type': 'Blog', name: 'AppForge Blog', url: `${SITE_URL}/blog` },
   } : {
     '@context': 'https://schema.org',
-    '@type': isAppsDirectory || isHuggingFaceGallery || isBlog || isChangelog ? 'CollectionPage' : 'WebSite',
+    '@type': isAppsDirectory || isBlog || isChangelog ? 'CollectionPage' : 'WebSite',
     name: collectionName,
     description,
     url,
     image: cover,
-    isPartOf: isAppsDirectory || isHuggingFaceGallery || isBlog || isChangelog ? { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL } : undefined,
+    isPartOf: isAppsDirectory || isBlog || isChangelog ? { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL } : undefined,
   })
 }
