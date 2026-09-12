@@ -77,7 +77,7 @@ export interface AdminUser {
 
 export type AssuranceLevel = 'aal1' | 'aal2' | null
 
-const PROFILE_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif'])
+const PROFILE_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
 
 const normalizeAssuranceLevel = (value: unknown): AssuranceLevel => {
   if (value === 'aal1' || value === 'aal2') return value
@@ -230,7 +230,7 @@ export async function listProfileImages(profileId?: string): Promise<ProfileImag
 
 const safeFileName = (name: string) => name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(-90) || 'image'
 export async function uploadProfileImage(userId: string, file: File, kind: 'avatar' | 'gallery' | 'cover' = 'gallery') {
-  if (!PROFILE_IMAGE_TYPES.has(file.type)) throw new Error('Choose a PNG, JPEG, WebP, GIF, or AVIF image.')
+  if (!PROFILE_IMAGE_TYPES.has(file.type)) throw new Error('Choose a PNG, JPEG, WebP, or GIF image.')
   if (file.size > 10 * 1024 * 1024) throw new Error('Images must be 10 MB or smaller.')
   const path = `${userId}/${crypto.randomUUID()}-${safeFileName(file.name)}`
   const upload = await supabase.storage.from('profile-media').upload(path, file, { upsert: false, contentType: file.type, cacheControl: '3600' })
