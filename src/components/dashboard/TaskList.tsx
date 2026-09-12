@@ -16,20 +16,22 @@ type Filter = 'all' | 'active' | 'completed'
 
 const STORAGE_KEY = 'appforge-task-list-v1'
 const now = () => new Date().toISOString()
+const taskStorageKey = (userId?: string) => `${STORAGE_KEY}:${userId || 'anonymous'}`
 
-const loadLocal = (): Task[] => {
+const loadLocal = (userId?: string): Task[] => {
   try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    const parsed = JSON.parse(localStorage.getItem(taskStorageKey(userId)) || '[]')
     if (Array.isArray(parsed)) return parsed.filter((item) => item && typeof item.id === 'string' && typeof item.title === 'string')
-  } catch { /* ignore malformed legacy state */ }
+  } catch { /* ignore malformed local state */ }
   return []
 }
 
-const saveLocal = (tasks: Task[]) => localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks))
+const saveLocal = (userId: string | undefined, tasks: Task[]) => localStorage.setItem(taskStorageKey(userId), JSON.stringify(tasks))
 
 export function TaskList() {
   const { user } = useAuth()
-  const [tasks, setTasks] = React.useState<Task[]>(loadLocal)
+  const userId = user?.id
+  const [tasks, setTasks] = React.useState<Task[]>(() => loadLocal(userId))
   const [title, setTitle] = React.useState('')
   const [query, setQuery] = React.useState('')
   const [filter, setFilter] = React.useState<Filter>('all')
@@ -39,37 +41,41 @@ export function TaskList() {
   const [error, setError] = React.useState('')
   const [remoteReady, setRemoteReady] = React.useState(false)
 
-  React.useEffect(() => { saveLocal(tasks) }, [tasks])
+  React.useEffect(() => { saveLocal(userId, tasks) }, [tasks, userId])
 
   const syncFromRemote = React.useCallback(async () => {
-    if (!user) { setRemoteReady(false); return }
+    if (!userId) { setRemoteReady(false); return }
     setSyncing(true)
     setError('')
     try {
       const { data, error: readError } = await supabase
         .from('appforge_tasks')
         .select('id,title,completed,created_at,updated_at')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
       if (readError) throw readError
       const remote = (data || []) as Task[]
       if (remote.length) setTasks(remote)
-      else if (tasks.length) {
-        const { error: seedError } = await supabase.from('appforge_tasks').upsert(tasks.map((task) => ({ ...task, user_id: user.id })))
-        if (seedError) throw seedError
+      else {
+        const scopedLocal = loadLocal(userId)
+        setTasks(scopedLocal)
+        if (scopedLocal.length) {
+          const { error: seedError } = await supabase.from('appforge_tasks').upsert(scopedLocal.map((task) => ({ ...task, user_id: userId })))
+          if (seedError) throw seedError
+        }
       }
       setRemoteReady(true)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Remote task sync is unavailable; local tasks are still safe.')
       setRemoteReady(false)
     } finally { setSyncing(false) }
-  }, [user?.id])
+  }, [userId])
 
   React.useEffect(() => { void syncFromRemote() }, [syncFromRemote])
 
   const persist = async (task: Task) => {
-    if (!user || !remoteReady) return
-    const { error: writeError } = await supabase.from('appforge_tasks').upsert({ ...task, user_id: user.id })
+    if (!userId || !remoteReady) return
+    const { error: writeError } = await supabase.from('appforge_tasks').upsert({ ...task, user_id: userId })
     if (writeError) setError(writeError.message)
   }
 
@@ -110,16 +116,16 @@ export function TaskList() {
     if (!changed.length) return
     const changedIds = new Set(changed.map((task) => task.id))
     setTasks((current) => current.map((task) => changedIds.has(task.id) ? { ...task, completed: true, updated_at: timestamp } : task))
-    if (!user || !remoteReady) return
-    const { error: writeError } = await supabase.from('appforge_tasks').upsert(changed.map((task) => ({ ...task, user_id: user.id })))
+    if (!userId || !remoteReady) return
+    const { error: writeError } = await supabase.from('appforge_tasks').upsert(changed.map((task) => ({ ...task, user_id: userId })))
     if (writeError) setError(writeError.message)
   }
 
   const remove = async (task: Task) => {
     setTasks((current) => current.filter((item) => item.id !== task.id))
     if (editingId === task.id) { setEditingId(null); setEditingTitle('') }
-    if (!user || !remoteReady) return
-    const { error: deleteError } = await supabase.from('appforge_tasks').delete().eq('id', task.id).eq('user_id', user.id)
+    if (!userId || !remoteReady) return
+    const { error: deleteError } = await supabase.from('appforge_tasks').delete().eq('id', task.id).eq('user_id', userId)
     if (deleteError) setError(deleteError.message)
   }
 
@@ -127,8 +133,8 @@ export function TaskList() {
     const completedIds = tasks.filter((task) => task.completed).map((task) => task.id)
     if (!completedIds.length) return
     setTasks((current) => current.filter((task) => !task.completed))
-    if (!user || !remoteReady) return
-    const { error: deleteError } = await supabase.from('appforge_tasks').delete().eq('user_id', user.id).in('id', completedIds)
+    if (!userId || !remoteReady) return
+    const { error: deleteError } = await supabase.from('appforge_tasks').delete().eq('user_id', userId).in('id', completedIds)
     if (deleteError) setError(deleteError.message)
   }
 
@@ -155,7 +161,7 @@ export function TaskList() {
       <div className="grid gap-3 sm:grid-cols-3">
         <Card className="p-4"><div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Active</div><div className="mt-1 text-2xl font-semibold text-foreground">{active}</div></Card>
         <Card className="p-4"><div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Completed</div><div className="mt-1 text-2xl font-semibold text-foreground">{completed}</div></Card>
-        <Card className="p-4"><div className="flex items-center justify-between gap-3"><div><div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Progress</div><div className="mt-1 text-2xl font-semibold text-foreground">{progress}%</div></div><div className="text-xs text-muted-foreground">{remoteReady ? 'Cloud ready' : 'Local-first'}</div></div><div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-foreground/70 transition-[width]" style={{ width: `${progress}%` }} /></div></Card>
+        <Card className="p-4"><div className="flex items-center justify-between gap-3"><div><div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Progress</div><div className="mt-1 text-2xl font-semibold text-foreground">{progress}%</div></div><div className="text-xs text-muted-foreground">{remoteReady ? 'Cloud ready' : user ? 'Local fallback' : 'Local-only'}</div></div><div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-foreground/70 transition-[width]" style={{ width: `${progress}%` }} /></div></Card>
       </div>
 
       <Card className="p-4 sm:p-5">
@@ -183,7 +189,7 @@ export function TaskList() {
             <div className="flex items-center gap-1">{editingId === task.id ? <><Button variant="ghost" size="sm" onClick={() => saveEdit(task)} disabled={!editingTitle.trim()} title="Save task"><Check className="h-4 w-4" /></Button><Button variant="ghost" size="sm" onClick={() => { setEditingId(null); setEditingTitle('') }} title="Cancel editing"><X className="h-4 w-4" /></Button></> : <Button variant="ghost" size="sm" onClick={() => beginEdit(task)} title="Edit task"><Pencil className="h-4 w-4" /></Button>}<Button variant="ghost" size="sm" onClick={() => void remove(task)} title="Delete task"><Trash2 className="h-4 w-4" /></Button></div>
           </Card>
         ))}
-        {!visibleTasks.length && <Card className="flex flex-col items-center justify-center py-12 text-center"><ClipboardList className="h-8 w-8 text-muted-foreground" /><div className="mt-3 text-sm font-medium">{tasks.length ? 'No tasks match this view' : 'No tasks yet'}</div><div className="mt-1 text-xs text-muted-foreground">{tasks.length ? 'Change the filter or search text.' : 'Add the next concrete thing that moves AppForge forward.'}</div></Card>}
+        {!visibleTasks.length && <Card className="flex flex-col items-center justify-center py-12 text-center"><ClipboardList className="h-8 w-8 text-muted-foreground" /><div className="mt-3 text-sm font-medium">{tasks.length ? 'No tasks match this view' : 'No tasks yet'}</div><div className="mt-1 text-xs text-muted-foreground">{tasks.length ? 'Change the filter or search text.' : 'Add your next task to get started.'}</div></Card>}
       </div>
     </div>
   )
