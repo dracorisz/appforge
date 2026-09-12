@@ -21,7 +21,7 @@ export function PublicToolShell({ children, toolName, toolIcon }: { children: Re
             </Link>
           </div>
         )}
-        <div className="app-content w-full [&>div:first-child]:!mx-0 [&>div:first-child]:!w-full [&>div:first-child]:!max-w-none">{children}</div>
+        <div className="app-content w-full [&>div:first-child]:!mx-0 [&>div:first-child]:!w-full [&>div:first-child]:!max-w-none [&>div:first-child]:!p-0">{children}</div>
       </main>
       <footer className="border-t border-border/65 bg-background/75"><div className="mx-auto flex w-full max-w-[1500px] flex-col gap-2 px-4 py-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"><span>AppForge public tools.</span><span>Sign in for synced history, profile, favorites, private storage and protected features.</span></div></footer>
     </div>
