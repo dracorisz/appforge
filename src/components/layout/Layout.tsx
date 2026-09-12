@@ -53,7 +53,7 @@ export function Layout({ children, currentVersion }: { children: React.ReactNode
           <div className="mx-auto min-w-0 w-full max-w-[1500px]">
             {showProjectPulse && <ProjectPulse />}
             {showAppMeta && <AppMetaBar />}
-            <div className="app-content w-full [&>div:first-child]:!mx-0 [&>div:first-child]:!w-full [&>div:first-child]:!max-w-none">
+            <div className="app-content w-full [&>div:first-child]:!mx-0 [&>div:first-child]:!w-full [&>div:first-child]:!max-w-none [&>div:first-child]:!p-0">
               {children}
             </div>
           </div>
