@@ -22,10 +22,21 @@ const publicTools = [
 
 type AuthProviderName = 'google' | 'github'
 
+const safeExternalUrl = (value: string) => {
+  try {
+    const parsed = new URL(value)
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:' ? parsed.toString() : ''
+  } catch { return '' }
+}
+
 const youtubeEmbed = (url: string) => {
   try {
     const parsed = new URL(url)
-    const id = parsed.hostname.includes('youtu.be') ? parsed.pathname.slice(1) : parsed.searchParams.get('v') || (parsed.pathname.startsWith('/embed/') ? parsed.pathname.split('/')[2] : '')
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return ''
+    const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '')
+    const supportedHost = hostname === 'youtube.com' || hostname === 'm.youtube.com' || hostname === 'youtu.be' || hostname === 'youtube-nocookie.com'
+    if (!supportedHost) return ''
+    const id = hostname === 'youtu.be' ? parsed.pathname.slice(1) : parsed.searchParams.get('v') || (parsed.pathname.startsWith('/embed/') ? parsed.pathname.split('/')[2] : '')
     return id && /^[\w-]{6,}$/.test(id) ? `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1` : ''
   } catch { return '' }
 }
@@ -54,9 +65,12 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
       if (teaser.title) setVideoTitle(teaser.title)
       if (teaser.summary) setVideoSummary(teaser.summary)
       if (teaser.video_url) {
-        setVideoUrl(teaser.video_url)
-        const embed = youtubeEmbed(teaser.video_url)
-        if (embed) setVideoEmbedUrl(embed)
+        const safeUrl = safeExternalUrl(teaser.video_url)
+        if (safeUrl) {
+          setVideoUrl(safeUrl)
+          const embed = youtubeEmbed(safeUrl)
+          if (embed) setVideoEmbedUrl(embed)
+        }
       }
     }).catch((teaserError) => console.warn('AppForge video teaser unavailable; using bundled walkthrough.', teaserError))
     return () => { active = false }
