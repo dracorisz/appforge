@@ -212,6 +212,7 @@ export function LocalToolsWorkbench() {
   }
 
   const filename = definition.mode === 'csv' ? `csv-${operation}.${operation === 'json' ? 'json' : operation === 'markdown' ? 'md' : 'sql'}` : `${definition.mode}-output.txt`
+  const runDisabled = working || (definition.mode === 'regex' ? !pattern.trim() : !input.trim())
 
   return (
     <div className="space-y-5 pb-8">
@@ -224,7 +225,7 @@ export function LocalToolsWorkbench() {
             {definition.mode === 'regex' && <><div className="grid gap-3 sm:grid-cols-[1fr_8rem]"><Input label="Pattern" value={pattern} onChange={(event) => setPattern(event.target.value.slice(0, MAX_REGEX_PATTERN_CHARS))} placeholder="(https?)://([^/]+)" /><Input label="Flags" value={flags} onChange={(event) => setFlags(event.target.value.slice(0, 8))} placeholder="gi" /></div><Select label="Result" value={operation} onChange={(event) => setOperation(event.target.value)}><option value="matches">Match details</option><option value="replace">Replacement preview</option></Select>{operation === 'replace' && <Input label="Replacement" value={replacement} onChange={(event) => setReplacement(event.target.value.slice(0, 20_000))} placeholder="$2" />}<p className="text-xs text-muted-foreground">Regex evaluation runs in an isolated worker and is stopped after 1.5 seconds to protect the app from pathological patterns.</p></>}
             <Textarea label={definition.mode === 'csv' ? 'CSV input' : definition.mode === 'regex' ? 'Test text' : 'Timestamp or date'} value={input} onChange={(event) => setInput(event.target.value)} rows={definition.mode === 'timestamp' ? 4 : 15} className="font-mono text-xs" placeholder={definition.mode === 'csv' ? 'name,email\nAda,ada@example.com' : definition.mode === 'regex' ? 'Paste text to test…' : '1757376000 or 2026-09-08T12:00:00Z'} />
             {error && <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
-            <Button onClick={() => void run()} disabled={working || !input.trim()}>{working ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />} Run</Button>
+            <Button onClick={() => void run()} disabled={runDisabled}>{working ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />} Run</Button>
           </div>
 
           <div className="space-y-3"><div className="flex items-center justify-between gap-3"><label className="text-sm font-medium text-foreground">Result</label><div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => void copy()} disabled={!output}>{copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />} {copied ? 'Copied' : 'Copy'}</Button><Button variant="ghost" size="sm" onClick={() => output && downloadText(output, filename)} disabled={!output}><Download className="h-3.5 w-3.5" /> Download</Button></div></div><pre className="surface-card min-h-[22rem] max-h-[36rem] overflow-auto whitespace-pre-wrap break-words rounded-xl border p-4 font-mono text-xs leading-5 text-foreground">{output || 'Output will appear here.'}</pre></div>
