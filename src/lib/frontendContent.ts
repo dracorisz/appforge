@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 
-export type FrontendContentType = 'blog_article' | 'video_teaser' | 'gallery_image'
+export type FrontendContentType = 'blog_article' | 'video_teaser' | 'gallery_image' | 'docs_page'
 
 export type FrontendContentRecord = {
   id: string
