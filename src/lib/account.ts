@@ -77,6 +77,8 @@ export interface AdminUser {
 
 export type AssuranceLevel = 'aal1' | 'aal2' | null
 
+const PROFILE_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif'])
+
 const normalizeAssuranceLevel = (value: unknown): AssuranceLevel => {
   if (value === 'aal1' || value === 'aal2') return value
   return null
@@ -117,6 +119,8 @@ const trimOrNull = (value: unknown) => {
   return text || null
 }
 
+const trimLimited = (value: unknown, max: number) => trimOrNull(value)?.slice(0, max) || null
+
 const normalizeHttpUrl = (value: unknown) => {
   const text = trimOrNull(value)
   if (!text) return null
@@ -124,7 +128,7 @@ const normalizeHttpUrl = (value: unknown) => {
   try {
     const url = new URL(candidate)
     if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error('Website must use http:// or https://.')
-    return url.toString()
+    return url.toString().slice(0, 2_000)
   } catch (error) {
     if (error instanceof Error && error.message === 'Website must use http:// or https://.') throw error
     throw new Error('Website must be a valid web address.')
@@ -134,7 +138,7 @@ const normalizeHttpUrl = (value: unknown) => {
 const normalizeEmail = (value: unknown) => {
   const text = trimOrNull(value)?.toLowerCase() || null
   if (!text) return null
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) throw new Error('Public email must be a valid email address.')
+  if (text.length > 320 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) throw new Error('Public email must be a valid email address.')
   return text
 }
 
@@ -148,16 +152,16 @@ export async function ensureProfile(user: User): Promise<AppProfile> {
 }
 
 export async function saveProfile(userId: string, patch: Partial<AppProfile>): Promise<AppProfile> {
-  const skills = Array.isArray(patch.skills) ? patch.skills.map((skill) => skill.trim()).filter(Boolean).slice(0, 16) : []
+  const skills = Array.isArray(patch.skills) ? patch.skills.map((skill) => skill.trim().slice(0, 80)).filter(Boolean).slice(0, 16) : []
   const payload = {
-    display_name: trimOrNull(patch.display_name),
-    username: trimOrNull(patch.username),
-    avatar_url: trimOrNull(patch.avatar_url),
-    bio: trimOrNull(patch.bio),
+    display_name: trimLimited(patch.display_name, 120),
+    username: trimLimited(patch.username, 64),
+    avatar_url: trimLimited(patch.avatar_url, 2_000),
+    bio: trimLimited(patch.bio, 2_000),
     website: normalizeHttpUrl(patch.website),
-    location: trimOrNull(patch.location),
-    github_username: trimOrNull(patch.github_username)?.replace(/^@/, '') || null,
-    headline: trimOrNull(patch.headline),
+    location: trimLimited(patch.location, 160),
+    github_username: trimLimited(patch.github_username, 80)?.replace(/^@/, '') || null,
+    headline: trimLimited(patch.headline, 240),
     skills,
     open_to_collaboration: patch.open_to_collaboration ?? true,
     is_public: patch.is_public ?? true,
@@ -180,7 +184,22 @@ export async function getPrivateProfileInfo(userId: string): Promise<PrivateProf
 }
 
 export async function savePrivateProfileInfo(userId: string, patch: Partial<PrivateProfileInfo>): Promise<PrivateProfileInfo> {
-  const payload = { user_id: userId, sex: trimOrNull(patch.sex), birth_date: trimOrNull(patch.birth_date), phone: trimOrNull(patch.phone), address_line1: trimOrNull(patch.address_line1), address_line2: trimOrNull(patch.address_line2), city: trimOrNull(patch.city), region: trimOrNull(patch.region), postal_code: trimOrNull(patch.postal_code), country: trimOrNull(patch.country), organization: trimOrNull(patch.organization), job_title: trimOrNull(patch.job_title), notes: trimOrNull(patch.notes), updated_at: new Date().toISOString() }
+  const payload = {
+    user_id: userId,
+    sex: trimLimited(patch.sex, 80),
+    birth_date: trimLimited(patch.birth_date, 40),
+    phone: trimLimited(patch.phone, 80),
+    address_line1: trimLimited(patch.address_line1, 240),
+    address_line2: trimLimited(patch.address_line2, 240),
+    city: trimLimited(patch.city, 160),
+    region: trimLimited(patch.region, 160),
+    postal_code: trimLimited(patch.postal_code, 40),
+    country: trimLimited(patch.country, 120),
+    organization: trimLimited(patch.organization, 200),
+    job_title: trimLimited(patch.job_title, 200),
+    notes: trimLimited(patch.notes, 4_000),
+    updated_at: new Date().toISOString(),
+  }
   const result = await supabase.from('profile_private_info').upsert(payload, { onConflict: 'user_id' }).select('*').single()
   if (result.error) throw result.error
   return result.data as PrivateProfileInfo
@@ -193,7 +212,7 @@ export async function listProfileImages(profileId?: string): Promise<ProfileImag
 
 const safeFileName = (name: string) => name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(-90) || 'image'
 export async function uploadProfileImage(userId: string, file: File, kind: 'avatar' | 'gallery' | 'cover' = 'gallery') {
-  if (!file.type.startsWith('image/')) throw new Error('Choose an image file.')
+  if (!PROFILE_IMAGE_TYPES.has(file.type)) throw new Error('Choose a PNG, JPEG, WebP, GIF, or AVIF image.')
   if (file.size > 10 * 1024 * 1024) throw new Error('Images must be 10 MB or smaller.')
   const path = `${userId}/${crypto.randomUUID()}-${safeFileName(file.name)}`
   const upload = await supabase.storage.from('profile-media').upload(path, file, { upsert: false, contentType: file.type, cacheControl: '3600' })
@@ -227,7 +246,13 @@ export async function uploadProfileImage(userId: string, file: File, kind: 'avat
       throw profile.error
     }
     const oldIds = (previousAvatar?.data || []).map((row) => row.image_id).filter((id): id is string => Boolean(id))
-    if (oldIds.length) await supabase.from('profile_images').delete().eq('profile_id', userId).eq('kind', 'avatar').in('image_id', oldIds)
+    if (oldIds.length) {
+      const oldImages = await supabase.from('user_images').select('id,storage_path').eq('owner_id', userId).in('id', oldIds)
+      await supabase.from('profile_images').delete().eq('profile_id', userId).eq('kind', 'avatar').in('image_id', oldIds)
+      await supabase.from('user_images').delete().eq('owner_id', userId).in('id', oldIds)
+      const oldPaths = (oldImages.data || []).map((row) => row.storage_path).filter((value): value is string => Boolean(value))
+      if (oldPaths.length) await supabase.storage.from('profile-media').remove(oldPaths)
+    }
   }
   return image.data as UserImage
 }
