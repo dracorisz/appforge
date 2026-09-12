@@ -188,7 +188,7 @@ export async function savePrivateProfileInfo(userId: string, patch: Partial<Priv
 
 export async function getRole(userId: string): Promise<'user' | 'admin'> { const result = await supabase.from('app_roles').select('role').eq('user_id', userId).maybeSingle(); if (result.error) throw result.error; return result.data?.role === 'admin' ? 'admin' : 'user' }
 export async function claimFirstAdmin(): Promise<boolean> { const result = await supabase.rpc('claim_first_admin'); if (result.error) throw result.error; return Boolean(result.data) }
-export async function listVisibleProfiles(): Promise<AppProfile[]> { const result = await supabase.from('profiles').select('*').eq('is_public', true).order('created_at', { ascending: true }); if (result.error) throw result.error; return (result.data || []) as AppProfile[] }
+export async function listVisibleProfiles(): Promise<AppProfile[]> { const result = await supabase.rpc('list_visible_profiles'); if (result.error) throw result.error; return (result.data || []) as AppProfile[] }
 export async function listProfileImages(profileId?: string): Promise<ProfileImageLink[]> { let query = supabase.from('profile_images').select('profile_id,image_id,kind,sort_order,user_images(*)').order('sort_order', { ascending: true }); if (profileId) query = query.eq('profile_id', profileId); const result = await query; if (result.error) throw result.error; return (result.data || []) as unknown as ProfileImageLink[] }
 
 const safeFileName = (name: string) => name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(-90) || 'image'
