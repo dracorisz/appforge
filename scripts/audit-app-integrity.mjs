@@ -38,6 +38,12 @@ const sharedRouteSlugs = new Set()
 for (const match of appSource.matchAll(/\[([^\]]+)\]\.map\(\(slug\) => <Route key=\{slug\} path=\{`\/apps\/\$\{slug\}`\}/g)) {
   for (const slugMatch of match[1].matchAll(/'([^']+)'/g)) sharedRouteSlugs.add(slugMatch[1])
 }
+for (const routeSet of appSource.matchAll(/const\s+(\w+)\s*=\s*new Set\(\[([^\]]+)\]\)/g)) {
+  const setName = routeSet[1]
+  const isUsedForRoutes = new RegExp(`Array\\.from\\(${setName}\\)\\.map\\(\\(slug\\) => <Route`).test(appSource)
+  if (!isUsedForRoutes) continue
+  for (const slugMatch of routeSet[2].matchAll(/'([^']+)'/g)) sharedRouteSlugs.add(slugMatch[1])
+}
 
 const explicitRoutes = new Set()
 for (const match of appSource.matchAll(/<Route\s+path="([^"]+)"/g)) explicitRoutes.add(match[1])
@@ -52,15 +58,8 @@ for (const [id, values] of duplicateValues(apps, 'id')) {
   errors.push(`Duplicate app id: ${id} (${values.map((item) => item.name).join(', ')})`)
 }
 
-const allowedRouteAliases = new Map([
-  ['/apps/any-converter', new Set(['any-converter', 'data-shortcut'])],
-])
-
 for (const [route, values] of duplicateValues(apps, 'route')) {
-  const expected = allowedRouteAliases.get(route)
-  const ids = new Set(values.map((item) => item.id))
-  const matchesExpected = expected && ids.size === expected.size && [...ids].every((id) => expected.has(id))
-  if (!matchesExpected) errors.push(`Unexpected duplicate route: ${route} (${values.map((item) => item.id).join(', ')})`)
+  errors.push(`Unexpected duplicate route: ${route} (${values.map((item) => item.id).join(', ')})`)
 }
 
 const implementationCounts = { explicit: 0, shared: 0, dedicatedFallback: 0, planned: 0 }
