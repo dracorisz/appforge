@@ -1,5 +1,5 @@
 import React from 'react'
-import { ArrowLeftRight, ArrowRight, Cloud, PlayCircle, Search, ShieldCheck } from 'lucide-react'
+import { ArrowLeftRight, ArrowRight, Cloud, PlayCircle, ShieldCheck } from 'lucide-react'
 import { SiGithub as Github, SiGoogle as Google } from 'react-icons/si'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui'
@@ -17,8 +17,7 @@ const DOCS_URL = 'https://docs.sstoken.space/'
 
 const publicTools = [
   { label: 'Weather Now', description: 'Live weather lookup', path: '/apps/weather-now', icon: Cloud },
-  { label: 'Any Converter', description: 'Local format conversion', path: '/apps/any-converter', icon: ArrowLeftRight },
-  { label: 'Getter Pro', description: 'Public media discovery', path: '/apps/getter-pro', icon: Search },
+  { label: 'Data Converter', description: 'Local format conversion', path: '/apps/data-converter', icon: ArrowLeftRight },
 ]
 
 type AuthProviderName = 'google' | 'github'
@@ -39,7 +38,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
   const [videoUrl, setVideoUrl] = React.useState(DEFAULT_VIDEO_URL)
   const [videoEmbedUrl, setVideoEmbedUrl] = React.useState(DEFAULT_VIDEO_EMBED_URL)
   const [videoTitle, setVideoTitle] = React.useState('See AppForge in action')
-  const [videoSummary, setVideoSummary] = React.useState('A concise walkthrough of the current AppForge experience, including the public tools and authenticated workspace.')
+  const [videoSummary, setVideoSummary] = React.useState('A short walkthrough of the current AppForge experience.')
   const apps = React.useMemo(() => getAllApps(), [])
 
   React.useEffect(() => {
@@ -59,16 +58,12 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
         const embed = youtubeEmbed(teaser.video_url)
         if (embed) setVideoEmbedUrl(embed)
       }
-    }).catch((teaserError) => console.warn('AppForge video teaser CMS unavailable; using bundled walkthrough.', teaserError))
+    }).catch((teaserError) => console.warn('AppForge video teaser unavailable; using bundled walkthrough.', teaserError))
     return () => { active = false }
   }, [])
 
   const login = async (provider: AuthProviderName) => {
-    if (user) {
-      navigate('/')
-      return
-    }
-
+    if (user) { navigate('/'); return }
     setBusyProvider(provider)
     setError('')
     try {
@@ -80,8 +75,6 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
       setBusyProvider(null)
     }
   }
-
-  const openWorkspace = () => navigate('/')
 
   return (
     <div className="dark min-h-dvh overflow-x-hidden bg-black text-foreground" style={{ colorScheme: 'dark', '--background': '0 0% 0%' } as React.CSSProperties}>
@@ -97,33 +90,33 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
           <div className="grid items-center gap-8 lg:min-h-[calc(100dvh-8rem)] lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] lg:gap-10 xl:gap-12">
             <section className="max-w-4xl py-4 lg:py-8">
               <h1 className="max-w-4xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-6xl lg:text-[4.15rem] lg:leading-[1.02] xl:text-[4.55rem]">Build useful things.<span className="block text-muted-foreground">Own the workflow.</span></h1>
-              <p className="mt-5 max-w-2xl text-pretty text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">AppForge brings practical web tools, creator workflows and experiments into one coherent workspace with clear public and signed-in surfaces.</p>
+              <p className="mt-5 max-w-2xl text-pretty text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">Practical tools in one consistent workspace.</p>
               <div className="mt-7 flex flex-wrap gap-3" aria-busy={Boolean(busyProvider) || loading}>
-                {user ? <Button className="h-11 px-5" onClick={openWorkspace} disabled={loading}>Open workspace <ArrowRight className="h-4 w-4" /></Button> : <><Button className="h-11 px-5" onClick={() => void login('google')} disabled={Boolean(busyProvider) || loading}><Google className="h-4 w-4" />{loading ? 'Checking session…' : busyProvider === 'google' ? 'Opening Google…' : 'Continue with Google'}</Button><Button variant="secondary" className="h-11 px-5" onClick={() => void login('github')} disabled={Boolean(busyProvider) || loading}><Github className="h-4 w-4" />{busyProvider === 'github' ? 'Opening GitHub…' : 'Continue with GitHub'}</Button></>}
+                {user ? <Button className="h-11 px-5" onClick={() => navigate('/')} disabled={loading}>Open workspace <ArrowRight className="h-4 w-4" /></Button> : <><Button className="h-11 px-5" onClick={() => void login('google')} disabled={Boolean(busyProvider) || loading}><Google className="h-4 w-4" />{loading ? 'Checking session…' : busyProvider === 'google' ? 'Opening Google…' : 'Continue with Google'}</Button><Button variant="secondary" className="h-11 px-5" onClick={() => void login('github')} disabled={Boolean(busyProvider) || loading}><Github className="h-4 w-4" />{busyProvider === 'github' ? 'Opening GitHub…' : 'Continue with GitHub'}</Button></>}
               </div>
               {error && <div role="alert" aria-live="polite" className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
-              <p className="mt-8 border-t border-border/60 pt-5 text-xs text-muted-foreground"><strong className="font-semibold text-foreground">{apps.length}</strong> registered apps · open source · documented for reuse</p>
+              <p className="mt-8 border-t border-border/60 pt-5 text-xs text-muted-foreground"><strong className="font-semibold text-foreground">{apps.length}</strong> active apps · open source</p>
             </section>
 
-            <section className="relative mx-auto w-full max-w-xl lg:max-w-none" aria-label="AppForge public tools and workspace access">
+            <section className="relative mx-auto w-full max-w-xl lg:max-w-none" aria-label="Public tools and workspace access">
               <div aria-hidden="true" className="absolute inset-8 -z-10 rounded-[3rem] border border-border/50 bg-accent/25 blur-2xl" />
               <div className="rounded-[2rem] border border-border/70 bg-background/80 p-4 shadow-2xl shadow-foreground/5 backdrop-blur-xl sm:p-5">
-                <div className="flex items-center justify-between gap-4 border-b border-border/60 pb-4"><div className="flex items-center gap-3"><div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-background"><img src={APPFORGE_MARK} alt="" className="h-9 w-9 rounded-lg" decoding="async" /></div><div><div className="text-sm font-semibold">One workshop, many tools</div><div className="text-xs text-muted-foreground">Public first · workspace when you need it</div></div></div><ShieldCheck className="h-5 w-5 shrink-0 text-muted-foreground" /></div>
+                <div className="flex items-center justify-between gap-4 border-b border-border/60 pb-4"><div className="flex items-center gap-3"><div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-background"><img src={APPFORGE_MARK} alt="" className="h-9 w-9 rounded-lg" decoding="async" /></div><div><div className="text-sm font-semibold">AppForge</div><div className="text-xs text-muted-foreground">Public tools + private workspace</div></div></div><ShieldCheck className="h-5 w-5 shrink-0 text-muted-foreground" /></div>
                 <div className="grid gap-2 py-4">{publicTools.map(({ label, description, path, icon: Icon }) => <Link key={path} to={path} className="group flex min-h-14 items-center gap-3 rounded-xl border border-transparent px-3 py-3 transition-colors hover:border-border/70 hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border/70 bg-background"><Icon className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-medium">{label}</span><span className="block text-xs text-muted-foreground">{description}</span></span><ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" /></Link>)}</div>
-                <Link to="/huggingface" className="group flex min-h-14 items-center gap-3 rounded-xl border border-border/70 bg-background/65 px-3 py-3 transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/50 bg-background text-base" aria-hidden="true"><img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="" className="h-9 w-9 object-contain" loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; event.currentTarget.nextElementSibling?.classList.remove('hidden') }} /><span className="hidden">🤗</span></span><span className="min-w-0 flex-1"><span className="block text-sm font-medium">Hugging Face</span><span className="block text-xs text-muted-foreground">Models, providers and selected scenes</span></span><ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" /></Link>
+                <Link to="/explore" className="group flex min-h-12 items-center justify-between rounded-xl border border-border/70 bg-background/65 px-3 py-3 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span>Browse all public apps</span><ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" /></Link>
               </div>
             </section>
           </div>
 
           <section className="border-t border-border/60 py-8 sm:py-10" aria-labelledby="walkthrough-title">
             <div className="grid gap-5 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
-              <div className="lg:pr-3"><div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"><PlayCircle className="h-4 w-4" /> Product walkthrough</div><h2 id="walkthrough-title" className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{videoTitle}</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{videoSummary} The privacy-enhanced YouTube embed loads lazily.</p><a href={videoUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Open video <ArrowRight className="h-4 w-4" /></a></div>
+              <div className="lg:pr-3"><div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"><PlayCircle className="h-4 w-4" /> Walkthrough</div><h2 id="walkthrough-title" className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{videoTitle}</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{videoSummary}</p><a href={videoUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Open video <ArrowRight className="h-4 w-4" /></a></div>
               <div className="overflow-hidden rounded-2xl border border-border/70 bg-black shadow-xl shadow-foreground/5"><iframe src={videoEmbedUrl} title="AppForge product walkthrough" className="aspect-video w-full border-0" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /></div>
             </div>
           </section>
         </main>
 
-        <footer className="mx-auto flex w-full max-w-7xl shrink-0 flex-col gap-3 border-t border-border/60 px-4 py-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"><span className="inline-flex items-center gap-2"><img src={APPFORGE_MARK} alt="" className="h-5 w-5 rounded-md" decoding="async" /> AppForge · v{BUILD_INFO.version}</span><span className="flex flex-wrap items-center gap-x-4 gap-y-2"><Link to="/blog" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Blog</Link><Link to="/changelog" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Changelog</Link><Link to="/privacy" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Privacy</Link><Link to="/terms" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Terms</Link><a href="https://paypal.me/dracorisz" target="_blank" rel="noopener noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Support</a><a href="https://www.youtube.com/@AppForgeDragon" target="_blank" rel="noopener noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">YouTube</a><a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Docs</a></span></footer>
+        <footer className="mx-auto flex w-full max-w-7xl shrink-0 flex-col gap-3 border-t border-border/60 px-4 py-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"><span className="inline-flex items-center gap-2"><img src={APPFORGE_MARK} alt="" className="h-5 w-5 rounded-md" decoding="async" /> AppForge · v{BUILD_INFO.version}</span><span className="flex flex-wrap items-center gap-x-4 gap-y-2"><Link to="/blog" className="hover:text-foreground">Blog</Link><Link to="/changelog" className="hover:text-foreground">Changelog</Link><Link to="/privacy" className="hover:text-foreground">Privacy</Link><Link to="/terms" className="hover:text-foreground">Terms</Link><a href="https://paypal.me/dracorisz" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">Support</a><a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="hover:text-foreground">Docs</a></span></footer>
       </div>
     </div>
   )
