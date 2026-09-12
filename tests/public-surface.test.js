@@ -21,41 +21,28 @@ test('public sitemap contains only current canonical public AppForge routes', as
     'https://www.sstoken.space/explore',
     ...blogRoutes.map((route) => `https://www.sstoken.space${route}`),
     'https://www.sstoken.space/changelog',
-    'https://www.sstoken.space/apps/getter-pro',
     'https://www.sstoken.space/apps/weather-now',
     'https://www.sstoken.space/apps/crypto-track',
-    'https://www.sstoken.space/apps/any-converter',
+    'https://www.sstoken.space/apps/data-converter',
     'https://www.sstoken.space/apps/favicon-studio',
     'https://www.sstoken.space/apps/svg-icons',
     'https://www.sstoken.space/apps/landing-builder',
-    'https://www.sstoken.space/apps/ai-dragon-arena',
-    'https://www.sstoken.space/huggingface',
     'https://www.sstoken.space/privacy',
     'https://www.sstoken.space/terms',
   ]
   assert.deepEqual(locations, expected)
   assert.doesNotMatch(sitemap, /pariflow/i)
-  assert.doesNotMatch(sitemap, /scrapper-pro/i)
-  assert.doesNotMatch(sitemap, /\/settings|\/workspace|\/people|\/apps\/desktop-buddy/)
+  assert.doesNotMatch(sitemap, /scrapper-pro|getter-pro|ai-dragon-arena|\/huggingface/i)
+  assert.doesNotMatch(sitemap, /\/settings|\/workspace|\/people|\/apps\/desktop-buddy|\/apps\/media-vault/)
 })
 
-test('SEO allowlist and canonical aliases match the public release surface', async () => {
+test('SEO public routes derive from the registry and preserve canonical aliases', async () => {
   const seo = await read('src/lib/seo.ts')
-  for (const route of [
-    '/explore',
-    '/apps/getter-pro',
-    '/apps/weather-now',
-    '/apps/crypto-track',
-    '/apps/any-converter',
-    '/apps/favicon-studio',
-    '/apps/svg-icons',
-    '/apps/landing-builder',
-    '/apps/ai-dragon-arena',
-  ]) {
-    assert.match(seo, new RegExp(`['"]${route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`))
-  }
+  assert.match(seo, /\.\.\.getPublicApps\(\)\.map\(\(app\) => app\.route\)/)
   assert.match(seo, /'\/apps\/scrapper-pro': '\/apps\/getter-pro'/)
   assert.match(seo, /'\/pf-scrapper-pro': '\/apps\/getter-pro'/)
+  assert.match(seo, /'\/apps\/any-converter': '\/apps\/data-converter'/)
+  assert.doesNotMatch(seo, /'\/huggingface'/)
 })
 
 test('blog and changelog stay public while legacy content admin redirects into the protected admin console', async () => {
@@ -80,6 +67,14 @@ test('public Apps directory is permanent at explore while signed-in apps remains
   assert.match(landing, /<PublicHeader/)
   assert.match(publicHeader, /to="\/explore"[^>]*>Apps<\/Link>/)
   assert.match(landing, /https:\/\/docs\.sstoken\.space\//)
+})
+
+test('private registry apps remain behind authenticated routes and outside the public catalog', async () => {
+  const registry = await read('src/lib/registry.ts')
+  const app = await read('src/App.tsx')
+  assert.match(registry, /PRIVATE_APP_IDS = new Set\(\['scrapper-pro', 'media-vault', 'desktop-buddy', 'ai-dragon-arena'\]\)/)
+  assert.match(app, /privatePaths = new Set\(\['\/apps\/getter-pro','\/apps\/scrapper-pro','\/apps\/media-vault','\/apps\/desktop-buddy','\/apps\/ai-dragon-arena'\]\)/)
+  assert.match(app, /privatePaths\.has\(location\.pathname\) \|\| location\.pathname === '\/huggingface'/)
 })
 
 test('only durable repository workflows remain', async () => {
