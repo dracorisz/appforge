@@ -2,6 +2,7 @@ import React from 'react'
 import { Copy, Download, Image as ImageIcon, RotateCcw, Upload } from 'lucide-react'
 
 const PREVIEW_SIZES = [16, 32, 180, 192, 512] as const
+const MAX_UPLOAD_BYTES = 5_000_000
 
 const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob)
@@ -100,16 +101,28 @@ export default function FaviconStudio() {
   const htmlLinks = `<link rel="icon" href="/favicon.ico" sizes="any">\n<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n<link rel="apple-touch-icon" href="/apple-touch-icon.png">\n<link rel="manifest" href="/site.webmanifest">`
 
   const onUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+    const input = event.currentTarget
+    const file = input.files?.[0]
     if (!file) return
     if (!file.type.startsWith('image/')) {
       setMessage('Choose an image file.')
+      input.value = ''
+      return
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setMessage('Choose an image under 5 MB so the browser can render and export it reliably.')
+      input.value = ''
       return
     }
     const reader = new FileReader()
     reader.onload = () => {
       setImageData(typeof reader.result === 'string' ? reader.result : null)
       setMessage('Image loaded locally. It is not uploaded anywhere.')
+      input.value = ''
+    }
+    reader.onerror = () => {
+      setMessage('Could not read that image. Try another local file.')
+      input.value = ''
     }
     reader.readAsDataURL(file)
   }
@@ -118,6 +131,15 @@ export default function FaviconStudio() {
     const blob = await svgToPngBlob(svg, size)
     const name = size === 180 ? 'apple-touch-icon.png' : `favicon-${size}.png`
     downloadBlob(blob, name)
+  }
+
+  const exportPreview = async (size: number) => {
+    try {
+      await exportOne(size)
+      setMessage(`Downloaded ${size}×${size} PNG.`)
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'PNG export failed.')
+    }
   }
 
   const exportSet = async () => {
@@ -136,8 +158,12 @@ export default function FaviconStudio() {
   }
 
   const copy = async (value: string, label: string) => {
-    await navigator.clipboard.writeText(value)
-    setMessage(`${label} copied.`)
+    try {
+      await navigator.clipboard.writeText(value)
+      setMessage(`${label} copied.`)
+    } catch {
+      setMessage(`Could not copy ${label.toLowerCase()}. Your browser may block clipboard access here.`)
+    }
   }
 
   return (
@@ -182,7 +208,7 @@ export default function FaviconStudio() {
           <div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="font-semibold">Live previews</h2><p className="text-xs text-muted-foreground">Actual target sizes, enlarged where needed for inspection.</p></div><ImageIcon className="h-5 w-5 text-muted-foreground" /></div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
             {PREVIEW_SIZES.map((size) => (
-              <button key={size} type="button" onClick={() => void exportOne(size)} className="group grid min-h-28 place-items-center gap-2 rounded-xl border bg-background p-3 text-xs text-muted-foreground hover:bg-accent" title={`Download ${size}×${size} PNG`}>
+              <button key={size} type="button" onClick={() => void exportPreview(size)} className="group grid min-h-28 place-items-center gap-2 rounded-xl border bg-background p-3 text-xs text-muted-foreground hover:bg-accent" title={`Download ${size}×${size} PNG`}>
                 <img src={svgDataUrl} alt={`${size} by ${size} favicon preview`} width={Math.min(size, 72)} height={Math.min(size, 72)} className="rounded-md shadow-sm" />
                 <span>{size}×{size}</span>
               </button>
