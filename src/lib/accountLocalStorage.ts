@@ -47,7 +47,9 @@ function restoreAccount(userId: string) {
 
 export function activateAccountLocalStorage(userId: string | null) {
   if (typeof window === 'undefined') return
-  const activeUserId = safeGet(sessionStorage, ACTIVE_ACCOUNT_KEY)
+  // localStorage is intentional here: all tabs share the same Supabase auth account and
+  // must agree which account owns the live compatibility keys used by existing apps.
+  const activeUserId = safeGet(localStorage, ACTIVE_ACCOUNT_KEY)
   if (activeUserId === userId) return
 
   if (activeUserId) parkAccount(activeUserId)
@@ -55,9 +57,9 @@ export function activateAccountLocalStorage(userId: string | null) {
 
   if (userId) {
     restoreAccount(userId)
-    safeSet(sessionStorage, ACTIVE_ACCOUNT_KEY, userId)
+    safeSet(localStorage, ACTIVE_ACCOUNT_KEY, userId)
   } else {
-    safeRemove(sessionStorage, ACTIVE_ACCOUNT_KEY)
+    safeRemove(localStorage, ACTIVE_ACCOUNT_KEY)
   }
 
   window.dispatchEvent(new CustomEvent('appforge:account-local-storage', { detail: { userId } }))
