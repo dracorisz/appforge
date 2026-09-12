@@ -1,6 +1,7 @@
 import React from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { activateAccountLocalStorage } from '@/lib/accountLocalStorage'
 import { rememberReturnPath } from './returnPath'
 
 type OAuthProvider = 'google' | 'github'
@@ -25,11 +26,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return
+      activateAccountLocalStorage(data.session?.user.id || null)
       setSession(data.session)
       setLoading(false)
     })
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      activateAccountLocalStorage(nextSession?.user.id || null)
       setSession(nextSession)
       setLoading(false)
     })
