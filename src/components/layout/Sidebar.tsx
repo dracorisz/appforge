@@ -22,12 +22,13 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
   const [internalCollapsed, setInternalCollapsed] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState('')
   const [signingOut, setSigningOut] = React.useState(false)
+  const [signOutError, setSignOutError] = React.useState('')
   const [profileAvatar, setProfileAvatar] = React.useState<string | null>(null)
   const [profileName, setProfileName] = React.useState<string | null>(null)
   const [, refreshWorkspace] = React.useReducer((value) => value + 1, 0)
 
   React.useEffect(() => subscribeCategoryOverrides(refreshWorkspace), [])
-  React.useEffect(() => { setSearchQuery('') }, [location.pathname])
+  React.useEffect(() => { setSearchQuery(''); setSignOutError('') }, [location.pathname])
   React.useEffect(() => {
     let cancelled = false
     if (!user) { setProfileAvatar(null); setProfileName(null); return undefined }
@@ -44,9 +45,20 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
   const displayName = profileName || user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || 'Account'
   const initial = String(displayName).trim().charAt(0).toUpperCase() || 'A'
   const toggleCollapse = () => { if (onToggleCollapse) onToggleCollapse(); else setInternalCollapsed((value) => !value) }
-  const handleSignOut = async () => { setSigningOut(true); try { await signOut(); onClose?.() } finally { setSigningOut(false) } }
+  const handleSignOut = async () => {
+    if (signingOut) return
+    setSigningOut(true)
+    setSignOutError('')
+    try {
+      await signOut()
+      onClose?.()
+    } catch (error) {
+      setSignOutError(error instanceof Error ? error.message : 'Could not sign out. Try again.')
+    } finally { setSigningOut(false) }
+  }
   const closeSearchAndSidebar = () => { setSearchQuery(''); onClose?.() }
   const asideWidth = onClose ? 'w-screen max-w-none border-r-0' : isCollapsed ? 'w-16 border-r border-border' : 'w-64 border-r border-border'
+  const isCoreActive = (path: string) => path === '/settings' ? location.pathname.startsWith('/settings') : location.pathname === path
 
   return <aside className={`flex h-full flex-col bg-background/92 backdrop-blur-xl transition-[width,transform,opacity] duration-200 ease-out ${asideWidth}`}>
     <div className={`flex items-center gap-2 py-4 ${isCollapsed ? 'flex-col px-2' : 'px-4'}`}>
@@ -56,11 +68,11 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
     {!isCollapsed && <div className="px-3 pb-2"><div className="relative"><Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input type="search" placeholder="Search apps…" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} className="h-9 w-full rounded-lg border border-input bg-background/55 pl-8 pr-9 text-sm outline-none backdrop-blur-md placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/20 [&::-webkit-search-cancel-button]:hidden" />{searchQuery && <button type="button" onClick={() => setSearchQuery('')} aria-label="Clear search" className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"><X className="h-3.5 w-3.5" /></button>}</div>{searchResults.length > 0 && <div className="surface-card mt-2 max-h-52 space-y-1 overflow-y-auto rounded-xl border p-1.5">{searchResults.slice(0, 8).map((app) => { const Icon = iconMap[app.id === 'ai-dragon-arena' ? 'DragonArena' : app.icon] || Wrench; return <NavLink key={app.id} to={app.route} onClick={closeSearchAndSidebar} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"><Icon className="h-4 w-4 shrink-0" /><span className="truncate">{app.name}</span></NavLink> })}</div>}</div>}
     <nav className="scrollbar-hide flex-1 overflow-y-auto overflow-x-hidden px-3 py-2">
       {!isCollapsed && <h3 className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">System</h3>}
-      <div className="space-y-0.5">{coreItems.map((item) => { const Icon = item.icon; return <NavLink key={item.id} to={item.path} onClick={onClose} title={isCollapsed ? item.label : undefined} className={navClass(location.pathname === item.path)}><Icon className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">{item.label}</span>}</NavLink> })}</div>
+      <div className="space-y-0.5">{coreItems.map((item) => { const Icon = item.icon; return <NavLink key={item.id} to={item.path} onClick={onClose} title={isCollapsed ? item.label : undefined} className={navClass(isCoreActive(item.path))}><Icon className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">{item.label}</span>}</NavLink> })}</div>
       {(sidebarCategories.length > 0 || sidebarApps.length > 0) && <div className="mt-5">{!isCollapsed && <div className="mb-1 flex items-center justify-between px-3"><h3 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Workspace</h3><NavLink to="/workspace" onClick={onClose} className="text-[10px] text-muted-foreground hover:text-foreground">Customize</NavLink></div>}<div className="space-y-0.5">{sidebarCategories.map((category) => { const Icon = iconMap[category.icon] || Wrench; const path = `/category/${category.id}`; return <NavLink key={category.id} to={path} onClick={onClose} title={isCollapsed ? category.name : undefined} className={navClass(location.pathname === path)}><Icon className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">{category.name}</span>}</NavLink> })}</div>{sidebarApps.length > 0 && <div className={`${sidebarCategories.length > 0 ? 'mt-2 ' : ''}space-y-0.5`}>{sidebarApps.map((app) => { const Icon = iconMap[app.id === 'ai-dragon-arena' ? 'DragonArena' : app.icon] || Wrench; return <NavLink key={app.id} to={app.route} onClick={onClose} title={isCollapsed ? app.name : undefined} className={navClass(location.pathname === app.route)}><Icon className="h-4 w-4 shrink-0" />{!isCollapsed && <span className="truncate">{app.name}</span>}</NavLink> })}</div>}</div>}
     </nav>
     <div className="px-3 pb-2"><SidebarWeather collapsed={isCollapsed} /></div>
-    <div className="space-y-1 border-t border-border p-3">{user && <NavLink to="/settings" onClick={onClose} className={`mb-2 flex items-center gap-2 rounded-xl border border-border/60 bg-background/35 p-2 hover:border-foreground/15 ${isCollapsed ? 'justify-center' : ''}`} title={isCollapsed ? String(displayName) : undefined}><div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-accent text-xs font-semibold text-foreground">{avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : initial}</div>{!isCollapsed && <div className="min-w-0 flex-1"><div className="truncate text-xs font-medium text-foreground">{String(displayName)}</div>{user.email && <div className="truncate text-[10px] text-muted-foreground">{user.email}</div>}</div>}</NavLink>}<button onClick={() => void handleSignOut()} disabled={signingOut} title={isCollapsed ? 'Sign out' : undefined} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-60"><LogOut className="h-4 w-4 shrink-0" />{!isCollapsed && <span>{signingOut ? 'Signing out…' : 'Sign out'}</span>}</button></div>
+    <div className="space-y-1 border-t border-border p-3">{user && <NavLink to="/settings" onClick={onClose} className={`mb-2 flex items-center gap-2 rounded-xl border border-border/60 bg-background/35 p-2 hover:border-foreground/15 ${isCollapsed ? 'justify-center' : ''}`} title={isCollapsed ? String(displayName) : undefined}><div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-accent text-xs font-semibold text-foreground">{avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : initial}</div>{!isCollapsed && <div className="min-w-0 flex-1"><div className="truncate text-xs font-medium text-foreground">{String(displayName)}</div>{user.email && <div className="truncate text-[10px] text-muted-foreground">{user.email}</div>}</div>}</NavLink>}{signOutError && !isCollapsed && <div role="alert" className="rounded-lg border border-destructive/25 bg-destructive/5 px-2.5 py-2 text-[11px] leading-4 text-destructive">{signOutError}</div>}<button onClick={() => void handleSignOut()} disabled={signingOut} title={isCollapsed ? 'Sign out' : undefined} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-60"><LogOut className="h-4 w-4 shrink-0" />{!isCollapsed && <span>{signingOut ? 'Signing out…' : 'Sign out'}</span>}</button></div>
   </aside>
 }
 
