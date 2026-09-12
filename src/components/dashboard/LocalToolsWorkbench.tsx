@@ -7,6 +7,13 @@ import { findConverter } from '@/lib/converters'
 
 type Mode = 'csv' | 'timestamp' | 'regex'
 
+type RegexWorkerResult = { output?: string; error?: string }
+
+const MAX_CSV_CHARS = 2_000_000
+const MAX_REGEX_TEXT_CHARS = 1_000_000
+const MAX_REGEX_PATTERN_CHARS = 2_000
+const REGEX_TIMEOUT_MS = 1500
+
 const ROUTES: Record<string, { mode: Mode; title: string; description: string }> = {
   '/apps/csv-converter': { mode: 'csv', title: 'CSV Converter', description: 'Convert standards-friendly CSV to JSON, Markdown tables, or SQL INSERT statements locally.' },
   '/apps/timestamp-converter': { mode: 'timestamp', title: 'Timestamp Converter', description: 'Convert Unix seconds, Unix milliseconds, ISO dates, and human-readable date strings.' },
@@ -39,6 +46,7 @@ const sqlValue = (value: unknown) => {
 }
 
 const csvToRows = async (input: string) => {
+  if (input.length > MAX_CSV_CHARS) throw new Error('CSV input is too large for this browser-local converter. Keep it under 2 million characters.')
   const converter = findConverter('csv', 'json')
   if (!converter) throw new Error('CSV parser is unavailable.')
   const json = await converter.convert(input)
@@ -78,6 +86,64 @@ const parseDateInput = (value: string) => {
   if (Number.isNaN(date.getTime())) throw new Error('Could not parse that date. Try ISO 8601 or a Unix timestamp.')
   return date
 }
+
+const runRegexWorker = (args: { pattern: string; flags: string; input: string; operation: string; replacement: string }) => new Promise<string>((resolve, reject) => {
+  if (args.pattern.length > MAX_REGEX_PATTERN_CHARS) return reject(new Error('Regex pattern is too long. Keep it under 2,000 characters.'))
+  if (args.input.length > MAX_REGEX_TEXT_CHARS) return reject(new Error('Regex test text is too large. Keep it under 1 million characters.'))
+  const workerSource = `
+    self.onmessage = (event) => {
+      try {
+        const { pattern, flags, input, operation, replacement } = event.data;
+        const safeFlags = Array.from(new Set(String(flags).split(''))).join('');
+        if (!/^[dgimsuvy]*$/.test(safeFlags)) throw new Error('Flags may only contain d, g, i, m, s, u, v, or y.');
+        const globalFlags = safeFlags.includes('g') ? safeFlags : safeFlags + 'g';
+        if (operation === 'replace') {
+          const regex = new RegExp(pattern, globalFlags);
+          self.postMessage({ output: input.replace(regex, replacement) });
+          return;
+        }
+        const regex = new RegExp(pattern, globalFlags);
+        const matches = [];
+        let match;
+        let guard = 0;
+        while ((match = regex.exec(input)) !== null && guard < 1000) {
+          matches.push({ match: match[0], index: match.index, groups: match.slice(1), namedGroups: match.groups || undefined });
+          guard += 1;
+          if (match[0] === '') regex.lastIndex += 1;
+        }
+        self.postMessage({ output: JSON.stringify({ count: matches.length, truncated: guard >= 1000, matches }, null, 2) });
+      } catch (error) {
+        self.postMessage({ error: error instanceof Error ? error.message : 'Regex operation failed.' });
+      }
+    };
+  `
+  const url = URL.createObjectURL(new Blob([workerSource], { type: 'text/javascript' }))
+  const worker = new Worker(url)
+  let settled = false
+  const cleanup = () => { worker.terminate(); URL.revokeObjectURL(url) }
+  const timer = window.setTimeout(() => {
+    if (settled) return
+    settled = true
+    cleanup()
+    reject(new Error('Regex execution exceeded 1.5 seconds and was stopped. Try a simpler pattern or smaller input.'))
+  }, REGEX_TIMEOUT_MS)
+  worker.onmessage = (event: MessageEvent<RegexWorkerResult>) => {
+    if (settled) return
+    settled = true
+    window.clearTimeout(timer)
+    cleanup()
+    if (event.data.error) reject(new Error(event.data.error))
+    else resolve(event.data.output || '')
+  }
+  worker.onerror = () => {
+    if (settled) return
+    settled = true
+    window.clearTimeout(timer)
+    cleanup()
+    reject(new Error('Regex worker failed to execute.'))
+  }
+  worker.postMessage(args)
+})
 
 export function LocalToolsWorkbench() {
   const location = useLocation()
@@ -124,23 +190,7 @@ export function LocalToolsWorkbench() {
         }, null, 2))
       } else {
         if (!pattern) throw new Error('Enter a regular expression pattern.')
-        const safeFlags = Array.from(new Set(flags.split(''))).join('')
-        if (!/^[dgimsuvy]*$/.test(safeFlags)) throw new Error('Flags may only contain d, g, i, m, s, u, v, or y.')
-        const regex = new RegExp(pattern, safeFlags.includes('g') ? safeFlags : `${safeFlags}g`)
-        const matches = [] as Array<Record<string, unknown>>
-        let match: RegExpExecArray | null
-        let guard = 0
-        while ((match = regex.exec(input)) !== null && guard < 1000) {
-          matches.push({ match: match[0], index: match.index, groups: match.slice(1), namedGroups: match.groups || undefined })
-          guard += 1
-          if (match[0] === '') regex.lastIndex += 1
-        }
-        if (operation === 'replace') {
-          const replacementRegex = new RegExp(pattern, safeFlags.includes('g') ? safeFlags : `${safeFlags}g`)
-          setOutput(input.replace(replacementRegex, replacement))
-        } else {
-          setOutput(JSON.stringify({ count: matches.length, matches }, null, 2))
-        }
+        setOutput(await runRegexWorker({ pattern, flags, input, operation, replacement }))
       }
     } catch (runError) {
       setOutput('')
@@ -170,8 +220,8 @@ export function LocalToolsWorkbench() {
       <Card className="p-4 sm:p-5">
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-3">
-            {definition.mode === 'csv' && <><Select label="Output" value={operation} onChange={(event) => setOperation(event.target.value)}><option value="json">JSON</option><option value="markdown">Markdown table</option><option value="sql">SQL INSERT</option></Select>{operation === 'sql' && <Input label="SQL table name" value={tableName} onChange={(event) => setTableName(event.target.value)} />}</>}
-            {definition.mode === 'regex' && <><div className="grid gap-3 sm:grid-cols-[1fr_8rem]"><Input label="Pattern" value={pattern} onChange={(event) => setPattern(event.target.value)} placeholder="(https?)://([^/]+)" /><Input label="Flags" value={flags} onChange={(event) => setFlags(event.target.value)} placeholder="gi" /></div><Select label="Result" value={operation} onChange={(event) => setOperation(event.target.value)}><option value="matches">Match details</option><option value="replace">Replacement preview</option></Select>{operation === 'replace' && <Input label="Replacement" value={replacement} onChange={(event) => setReplacement(event.target.value)} placeholder="$2" />}</>}
+            {definition.mode === 'csv' && <><Select label="Output" value={operation} onChange={(event) => setOperation(event.target.value)}><option value="json">JSON</option><option value="markdown">Markdown table</option><option value="sql">SQL INSERT</option></Select>{operation === 'sql' && <Input label="SQL table name" value={tableName} onChange={(event) => setTableName(event.target.value.slice(0, 120))} />}</>}
+            {definition.mode === 'regex' && <><div className="grid gap-3 sm:grid-cols-[1fr_8rem]"><Input label="Pattern" value={pattern} onChange={(event) => setPattern(event.target.value.slice(0, MAX_REGEX_PATTERN_CHARS))} placeholder="(https?)://([^/]+)" /><Input label="Flags" value={flags} onChange={(event) => setFlags(event.target.value.slice(0, 8))} placeholder="gi" /></div><Select label="Result" value={operation} onChange={(event) => setOperation(event.target.value)}><option value="matches">Match details</option><option value="replace">Replacement preview</option></Select>{operation === 'replace' && <Input label="Replacement" value={replacement} onChange={(event) => setReplacement(event.target.value.slice(0, 20_000))} placeholder="$2" />}<p className="text-xs text-muted-foreground">Regex evaluation runs in an isolated worker and is stopped after 1.5 seconds to protect the app from pathological patterns.</p></>}
             <Textarea label={definition.mode === 'csv' ? 'CSV input' : definition.mode === 'regex' ? 'Test text' : 'Timestamp or date'} value={input} onChange={(event) => setInput(event.target.value)} rows={definition.mode === 'timestamp' ? 4 : 15} className="font-mono text-xs" placeholder={definition.mode === 'csv' ? 'name,email\nAda,ada@example.com' : definition.mode === 'regex' ? 'Paste text to test…' : '1757376000 or 2026-09-08T12:00:00Z'} />
             {error && <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
             <Button onClick={() => void run()} disabled={working || !input.trim()}>{working ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />} Run</Button>
