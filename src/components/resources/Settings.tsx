@@ -58,8 +58,11 @@ import {
 
 const LIVE_URL_KEY = 'appforge-live-url'
 const PAYPAL_URL = 'https://www.paypal.com/paypalme/dracorisz'
+const PROFILE_IMAGE_ACCEPT = 'image/png,image/jpeg,image/webp,image/gif'
+const MAX_WORKSPACE_IMPORT_BYTES = 5 * 1024 * 1024
 type ThemeMode = 'light' | 'dark' | 'system'
 type TabId = 'profile' | 'appearance' | 'security' | 'data' | 'integrations' | 'deployment' | 'about' | 'admin'
+const TAB_IDS = new Set<TabId>(['profile', 'appearance', 'security', 'data', 'integrations', 'deployment', 'about', 'admin'])
 
 const imageFromLink = (link: ProfileImageLink) => {
   const value = link.user_images
@@ -67,11 +70,21 @@ const imageFromLink = (link: ProfileImageLink) => {
 }
 
 const splitSkills = (value: string) => value.split(',').map((item) => item.trim()).filter(Boolean).slice(0, 16)
+const tabFromParams = (params: URLSearchParams): TabId => {
+  const value = params.get('tab')
+  return value && TAB_IDS.has(value as TabId) ? value as TabId : 'profile'
+}
+const safeHttpUrl = (value: string) => {
+  try {
+    const url = new URL(value)
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : null
+  } catch { return null }
+}
 
 export function SettingsPage({ state, setState }: { state: AppState; setState: (s: AppState) => void }) {
   const { user, signOut } = useAuth()
-  const [searchParams] = useSearchParams()
-  const [activeTab, setActiveTab] = React.useState<TabId>(() => searchParams.get('tab') === 'integrations' ? 'integrations' : 'profile')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [activeTab, setActiveTab] = React.useState<TabId>(() => tabFromParams(searchParams))
   const [themeMode, setThemeMode] = React.useState<ThemeMode>(() => {
     try {
       const mode = JSON.parse(localStorage.getItem('appforge-theme') || '{}')?.mode
@@ -100,6 +113,19 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
   const [hfToken, setHfToken] = React.useState(() => localStorage.getItem('dragon-arena-hf-key') || '')
   const [importPreview, setImportPreview] = React.useState<WorkspaceImportPreview | null>(null)
   const [importFileName, setImportFileName] = React.useState('')
+
+  const selectTab = React.useCallback((tab: TabId, replace = false) => {
+    setActiveTab(tab)
+    const next = new URLSearchParams(searchParams)
+    if (tab === 'profile') next.delete('tab')
+    else next.set('tab', tab)
+    setSearchParams(next, { replace })
+  }, [searchParams, setSearchParams])
+
+  React.useEffect(() => {
+    const requested = tabFromParams(searchParams)
+    if (requested !== activeTab) setActiveTab(requested)
+  }, [searchParams, activeTab])
 
   const refreshAccount = React.useCallback(async () => {
     if (!user) return
@@ -131,6 +157,10 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
   React.useEffect(() => { void refreshAccount() }, [refreshAccount])
 
   React.useEffect(() => {
+    if (!loading && activeTab === 'admin' && role !== 'admin') selectTab('profile', true)
+  }, [activeTab, loading, role, selectTab])
+
+  React.useEffect(() => {
     const root = document.documentElement
     const media = window.matchMedia('(prefers-color-scheme: dark)')
     const apply = () => {
@@ -140,7 +170,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
     }
     apply()
     if (themeMode === 'system') media.addEventListener('change', apply)
-    localStorage.setItem('appforge-theme', JSON.stringify({ mode: themeMode }))
+    try { localStorage.setItem('appforge-theme', JSON.stringify({ mode: themeMode })) } catch { /* AppState still retains the theme */ }
     if (state.settings.theme !== themeMode) {
       const nextSettings = { ...state.settings, theme: themeMode } as Settings
       setState({ ...state, settings: nextSettings })
@@ -178,17 +208,22 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
     } finally { setBusy('') }
   }
 
-  const saveOpenRouterKey = () => {
-    const trimmed = openRouterKey.trim()
-    localStorage.setItem('dragon-arena-openrouter-key', trimmed)
-    flash('OpenRouter key saved.')
+  const saveLocalSecret = (key: string, value: string, label: string) => {
+    try {
+      localStorage.setItem(key, value.trim())
+      flash(`${label} saved.`)
+    } catch { setError(`Could not save ${label.toLowerCase()} in browser storage.`) }
+  }
+  const removeLocalSecret = (key: string, clear: () => void, label: string) => {
+    try {
+      localStorage.removeItem(key)
+      clear()
+      flash(`${label} removed.`)
+    } catch { setError(`Could not remove ${label.toLowerCase()} from browser storage.`) }
   }
 
-  const saveHfToken = () => {
-    const trimmed = hfToken.trim()
-    localStorage.setItem('dragon-arena-hf-key', trimmed)
-    flash('Hugging Face token saved.')
-  }
+  const saveOpenRouterKey = () => saveLocalSecret('dragon-arena-openrouter-key', openRouterKey, 'OpenRouter key')
+  const saveHfToken = () => saveLocalSecret('dragon-arena-hf-key', hfToken, 'Hugging Face token')
 
   const uploadImage = async (file: File, kind: 'avatar' | 'gallery' | 'cover') => {
     if (!user) return
@@ -282,7 +317,14 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
   }
 
   const importWorkspace = (file: File) => {
+    if (file.size > MAX_WORKSPACE_IMPORT_BYTES) {
+      setImportPreview(null)
+      setImportFileName('')
+      setError('Workspace backup is too large. Choose a JSON file under 5 MB.')
+      return
+    }
     const reader = new FileReader()
+    reader.onerror = () => setError('Could not read that workspace backup.')
     reader.onload = () => {
       try {
         const preview = parseWorkspaceBackup(String(reader.result || '{}'), state)
@@ -308,8 +350,22 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
     flash('Workspace backup imported.')
   }
 
+  const handleSignOut = async () => {
+    setBusy('signout')
+    setError('')
+    try { await signOut() }
+    catch (signOutError) { setError(signOutError instanceof Error ? signOutError.message : 'Could not sign out.') }
+    finally { setBusy('') }
+  }
+
+  const updateLiveUrl = (value: string) => {
+    setLiveUrl(value)
+    try { localStorage.setItem(LIVE_URL_KEY, value) } catch { /* deployment URL remains in component state */ }
+  }
+
   const gallery = images.filter((link) => link.kind === 'gallery').map(imageFromLink).filter((image): image is UserImage => Boolean(image))
   const verifiedTotp = totpFactors.filter((factor) => factor.status === 'verified')
+  const deploymentUrl = safeHttpUrl(liveUrl)
   const tabs: { id: TabId; label: string }[] = [
     { id: 'profile', label: 'Profile' },
     { id: 'appearance', label: 'Appearance' },
@@ -328,7 +384,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
         <BuildBadge />
       </div>
 
-      <div className="flex flex-wrap gap-1 border-b border-border/70 pb-2">{tabs.map((tab) => <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${activeTab === tab.id ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{tab.label}</button>)}</div>
+      <div className="flex flex-wrap gap-1 border-b border-border/70 pb-2" role="tablist" aria-label="Settings sections">{tabs.map((tab) => <button key={tab.id} type="button" role="tab" aria-selected={activeTab === tab.id} onClick={() => selectTab(tab.id)} className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${activeTab === tab.id ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{tab.label}</button>)}</div>
       {message && <Card className="border-emerald-500/25 bg-emerald-500/5 p-3 text-sm text-emerald-600 dark:text-emerald-400"><Check className="mr-2 inline h-4 w-4" />{message}</Card>}
       {error && <Card className="border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</Card>}
 
@@ -339,8 +395,8 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
               <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-muted text-muted-foreground">{profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : <UserRound className="h-7 w-7" />}</div>
               <div className="min-w-0"><div className="truncate text-sm font-semibold text-foreground">{profile?.display_name || user?.email || 'AppForge user'}</div><div className="truncate text-xs text-muted-foreground">{user?.email}</div><div className="mt-2 flex flex-wrap gap-1"><Badge color={role === 'admin' ? 'blue' : 'slate'}>{role}</Badge>{profile?.open_to_collaboration && <Badge color="green">Open to collaborate</Badge>}</div></div>
             </div>
-            <label className="mt-4 block"><input type="file" accept="image/*" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, 'avatar'); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 bg-background/45 px-3 py-2 text-xs font-medium text-foreground hover:bg-accent"><ImagePlus className="h-4 w-4" />{busy === 'avatar' ? 'Uploading…' : 'Change avatar'}</span></label>
-            <label className="mt-2 block"><input type="file" accept="image/*" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, 'cover'); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 bg-background/45 px-3 py-2 text-xs font-medium text-foreground hover:bg-accent"><ImagePlus className="h-4 w-4" />{busy === 'cover' ? 'Uploading…' : 'Upload cover photo'}</span></label>
+            <label className="mt-4 block"><input type="file" accept={PROFILE_IMAGE_ACCEPT} className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, 'avatar'); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 bg-background/45 px-3 py-2 text-xs font-medium text-foreground hover:bg-accent"><ImagePlus className="h-4 w-4" />{busy === 'avatar' ? 'Uploading…' : 'Change avatar'}</span></label>
+            <label className="mt-2 block"><input type="file" accept={PROFILE_IMAGE_ACCEPT} className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, 'cover'); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 bg-background/45 px-3 py-2 text-xs font-medium text-foreground hover:bg-accent"><ImagePlus className="h-4 w-4" />{busy === 'cover' ? 'Uploading…' : 'Upload cover photo'}</span></label>
             <p className="mt-3 text-xs leading-5 text-muted-foreground">Choose exactly which collaboration fields appear in People. Account email remains private unless you explicitly enable and save a public email below.</p>
           </Card>
 
@@ -414,7 +470,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
           </Card>
 
           <Card className="p-4 lg:col-span-2">
-            <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-foreground">Profile gallery</h2><p className="mt-0.5 text-xs text-muted-foreground">Add images that represent your work or profile. Gallery images are related to your public profile.</p></div><label><input type="file" accept="image/*" multiple className="hidden" onChange={(event) => { const files = Array.from(event.target.files || []); void (async () => { for (const file of files) await uploadImage(file, 'gallery') })(); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-xs font-medium hover:bg-accent"><Upload className="h-4 w-4" /> Add images</span></label></div>
+            <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-foreground">Profile gallery</h2><p className="mt-0.5 text-xs text-muted-foreground">Add images that represent your work or profile. Gallery images are related to your public profile.</p></div><label><input type="file" accept={PROFILE_IMAGE_ACCEPT} multiple className="hidden" onChange={(event) => { const files = Array.from(event.target.files || []); void (async () => { for (const file of files) await uploadImage(file, 'gallery') })(); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-xs font-medium hover:bg-accent"><Upload className="h-4 w-4" /> Add images</span></label></div>
             {gallery.length ? <div className="mt-4 grid gap-3 sm:grid-cols-2">{gallery.map((image) => <div key={image.id} className="group relative overflow-hidden rounded-xl border border-border/70 bg-muted"><img src={image.source_url || ''} alt={image.title || ''} className="aspect-[4/3] w-full object-cover" /><button onClick={() => void removeImage(image)} className="absolute right-2 top-2 rounded-lg border border-white/15 bg-black/45 p-2 text-white opacity-0 backdrop-blur-md transition-opacity group-hover:opacity-100" aria-label="Remove image"><Trash2 className="h-4 w-4" /></button></div>)}</div> : <div className="mt-4 rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">No gallery images yet.</div>}
           </Card>
         </div>
@@ -431,7 +487,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
 
       {activeTab === 'security' && (
         <div className="grid gap-4 lg:grid-cols-2">
-          <Card className="p-4"><div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-foreground">Authentication</h2><p className="mt-1 text-xs text-muted-foreground">Identity is handled through Supabase Auth. Google is the first enabled provider.</p></div><Badge color="green">Connected</Badge></div><div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-3 text-sm"><div className="font-medium text-foreground">{user?.email}</div><div className="mt-1 text-xs text-muted-foreground">Session assurance: {currentLevel || 'checking…'} · next: {nextLevel || 'checking…'}</div></div>{role === 'user' && <div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-3"><div className="text-sm font-medium text-foreground">Initial administrator</div><p className="mt-1 text-xs leading-5 text-muted-foreground">If this is the first and only AppForge account, initialize the first administrator once. No email is hardcoded into the client.</p><Button className="mt-3" variant="secondary" onClick={() => void bootstrapAdmin()} disabled={busy === 'bootstrap-admin'}>{busy === 'bootstrap-admin' ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />} Initialize admin</Button></div>}<Button variant="secondary" className="mt-4" onClick={() => void signOut()}>Sign out</Button></Card>
+          <Card className="p-4"><div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-foreground">Authentication</h2><p className="mt-1 text-xs text-muted-foreground">Identity is handled through Supabase Auth. Google is the first enabled provider.</p></div><Badge color="green">Connected</Badge></div><div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-3 text-sm"><div className="font-medium text-foreground">{user?.email}</div><div className="mt-1 text-xs text-muted-foreground">Session assurance: {currentLevel || 'checking…'} · next: {nextLevel || 'checking…'}</div></div>{role === 'user' && <div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-3"><div className="text-sm font-medium text-foreground">Initial administrator</div><p className="mt-1 text-xs leading-5 text-muted-foreground">If this is the first and only AppForge account, initialize the first administrator once. No email is hardcoded into the client.</p><Button className="mt-3" variant="secondary" onClick={() => void bootstrapAdmin()} disabled={busy === 'bootstrap-admin'}>{busy === 'bootstrap-admin' ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />} Initialize admin</Button></div>}<Button variant="secondary" className="mt-4" onClick={() => void handleSignOut()} disabled={busy === 'signout'}>{busy === 'signout' ? <Loader2 className="h-4 w-4 animate-spin" /> : null}Sign out</Button></Card>
 
           <Card className="p-4"><div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-foreground">Authenticator app (TOTP)</h2><p className="mt-1 text-xs text-muted-foreground">Admin mutations require an AAL2 session verified with TOTP.</p></div><ShieldCheck className="h-5 w-5 text-muted-foreground" /></div>{verifiedTotp.length === 0 && !enrollment && <Button className="mt-4" onClick={() => void beginTotp()} disabled={busy === 'enroll'}><KeyRound className="h-4 w-4" /> Set up TOTP</Button>}{enrollment && <div className="mt-4 space-y-3"><div className="rounded-xl border border-border/70 bg-white p-3"><img src={enrollment.qr} alt="TOTP QR code" className="mx-auto max-h-52 max-w-full" /></div><div className="rounded-lg bg-muted p-2 font-mono text-xs break-all">{enrollment.secret}</div><Input label="Authenticator code" inputMode="numeric" value={totpCode} onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 8))} /><Button onClick={() => void verifyFactor(enrollment.id)} disabled={busy === 'verify' || !totpCode}><ShieldCheck className="h-4 w-4" /> Verify and enable</Button></div>}{verifiedTotp.length > 0 && <div className="mt-4 space-y-3"><div className="rounded-xl border border-border/70 p-3"><div className="text-sm font-medium text-foreground">{verifiedTotp[0].friendly_name || 'Authenticator app'}</div><div className="mt-1 text-xs text-muted-foreground">Verified factor · {currentLevel === 'aal2' ? 'this session is elevated' : 'verification required for admin actions'}</div></div>{currentLevel !== 'aal2' && <><Input label="Authenticator code" inputMode="numeric" value={totpCode} onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 8))} /><Button onClick={() => void verifyFactor(verifiedTotp[0].id)} disabled={!totpCode || busy === 'verify'}><LockKeyhole className="h-4 w-4" /> Verify this session</Button></>}{currentLevel === 'aal2' && <Button variant="secondary" onClick={async () => { setBusy('unenroll'); try { await unenrollTotp(verifiedTotp[0].id); await refreshAccount(); flash('TOTP factor removed.') } catch (mfaError) { setError(mfaError instanceof Error ? mfaError.message : 'Could not remove TOTP factor.') } finally { setBusy('') } }} disabled={busy === 'unenroll'}>Remove factor</Button>}</div>}</Card>
         </div>
@@ -463,8 +519,8 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
                 <label htmlFor="gemini-key" className="block text-xs font-medium text-foreground mb-1.5">Google Gemini API key</label>
                 <div className="flex gap-2">
                   <Input id="gemini-key" type="password" autoComplete="off" value={geminiKey} onChange={(e) => setGeminiKey(e.target.value)} placeholder="Gemini API key" className="flex-1" />
-                  <Button aria-label="Save Gemini key" disabled={!geminiKey.trim()} onClick={() => { localStorage.setItem(GEMINI_KEY_STORAGE, geminiKey.trim()); flash('Gemini key saved.') }}><Check className="h-4 w-4" /></Button>
-                  <Button aria-label="Remove Gemini key" variant="destructive" onClick={() => { setGeminiKey(''); localStorage.removeItem(GEMINI_KEY_STORAGE); flash('Gemini key removed.') }}><Trash2 className="h-4 w-4" /></Button>
+                  <Button aria-label="Save Gemini key" disabled={!geminiKey.trim()} onClick={() => saveLocalSecret(GEMINI_KEY_STORAGE, geminiKey, 'Gemini key')}><Check className="h-4 w-4" /></Button>
+                  <Button aria-label="Remove Gemini key" variant="destructive" onClick={() => removeLocalSecret(GEMINI_KEY_STORAGE, () => setGeminiKey(''), 'Gemini key')}><Trash2 className="h-4 w-4" /></Button>
                 </div>
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">Text fallback for Story Studio (Dragon Arena), available for future apps. Uses Gemini 2.5 Flash-Lite by default. Free usage depends on your Google project’s tier and quotas; a paid-project key can incur charges. Free-tier content may be used by Google to improve its products.</p>
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">The standard $300 Google Cloud welcome credit does not cover Gemini API in AI Studio costs. <a className="underline" href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">Create a key in AI Studio</a> and check its project is on the Free tier.</p>
@@ -474,7 +530,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
                 <div className="flex gap-2">
                   <Input type="password" value={openRouterKey} onChange={(e) => setOpenRouterKey(e.target.value)} placeholder="sk-or-..." className="flex-1" />
                   <Button onClick={saveOpenRouterKey} disabled={!openRouterKey.startsWith('sk-or-')}><Check className="h-4 w-4" /></Button>
-                  {openRouterKey && <Button variant="destructive" onClick={() => { setOpenRouterKey(''); localStorage.removeItem('dragon-arena-openrouter-key') }}><Trash2 className="h-4 w-4" /></Button>}
+                  {openRouterKey && <Button variant="destructive" onClick={() => removeLocalSecret('dragon-arena-openrouter-key', () => setOpenRouterKey(''), 'OpenRouter key')}><Trash2 className="h-4 w-4" /></Button>}
                 </div>
               </div>
               <div>
@@ -482,7 +538,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
                 <div className="flex gap-2">
                   <Input type="password" value={hfToken} onChange={(e) => setHfToken(e.target.value)} placeholder="hf_..." className="flex-1" />
                   <Button onClick={saveHfToken} disabled={!hfToken.startsWith('hf_')}><Check className="h-4 w-4" /></Button>
-                  {hfToken && <Button variant="destructive" onClick={() => { setHfToken(''); localStorage.removeItem('dragon-arena-hf-key') }}><Trash2 className="h-4 w-4" /></Button>}
+                  {hfToken && <Button variant="destructive" onClick={() => removeLocalSecret('dragon-arena-hf-key', () => setHfToken(''), 'Hugging Face token')}><Trash2 className="h-4 w-4" /></Button>}
                 </div>
               </div>
             </div>
@@ -491,11 +547,11 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
         </div>
       )}
 
-      {activeTab === 'deployment' && <Card className="p-4"><div className="flex flex-wrap items-start justify-between gap-4"><div><h2 className="text-sm font-semibold text-foreground">Deployment</h2><p className="mt-1 text-xs text-muted-foreground">One AppForge project deploys the Vite frontend and colocated `/api/*` functions.</p></div><BuildBadge /></div><div className="mt-4 grid gap-3 sm:grid-cols-2"><Input label="Live URL" value={liveUrl} onChange={(e) => { setLiveUrl(e.target.value); localStorage.setItem(LIVE_URL_KEY, e.target.value) }} /><Input label="Product version" value={BUILD_INFO.version} disabled /><Input label="Commit" value={BUILD_INFO.shortSha} disabled /><Input label="Built" value={BUILD_INFO.builtAtLabel} disabled /></div><a href={liveUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"><ExternalLink className="h-3.5 w-3.5" /> Open production</a></Card>}
+      {activeTab === 'deployment' && <Card className="p-4"><div className="flex flex-wrap items-start justify-between gap-4"><div><h2 className="text-sm font-semibold text-foreground">Deployment</h2><p className="mt-1 text-xs text-muted-foreground">One AppForge project deploys the Vite frontend and colocated `/api/*` functions.</p></div><BuildBadge /></div><div className="mt-4 grid gap-3 sm:grid-cols-2"><Input label="Live URL" value={liveUrl} onChange={(e) => updateLiveUrl(e.target.value)} /><Input label="Product version" value={BUILD_INFO.version} disabled /><Input label="Commit" value={BUILD_INFO.shortSha} disabled /><Input label="Built" value={BUILD_INFO.builtAtLabel} disabled /></div>{deploymentUrl ? <a href={deploymentUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"><ExternalLink className="h-3.5 w-3.5" /> Open production</a> : <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">Enter a valid http:// or https:// deployment URL to enable the production link.</p>}</Card>}
 
       {activeTab === 'about' && <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]"><Card className="p-5"><h2 className="text-lg font-semibold text-foreground">About AppForge</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">AppForge is an open-source toolbox with a public development model and an authenticated personal workspace. Local tools stay in-browser where practical; account state and features that need persistence or network access use Supabase and Vercel transparently.</p><p className="mt-3 text-sm leading-6 text-muted-foreground">No advertising analytics are built into AppForge. Public profile fields are opt-in; private personal information is stored separately under owner-only RLS.</p><div className="mt-4 flex flex-wrap gap-2"><Badge color="green">MIT open source</Badge><Badge color="blue">Authenticated workspace</Badge><Badge color="slate">Supabase RLS</Badge><Badge color="slate">PWA</Badge></div><div className="mt-5 flex flex-wrap gap-2"><a href="https://github.com/dracorisz/appforge" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm font-medium hover:bg-accent"><Github className="h-4 w-4" /> Contribute on GitHub</a><a href={PAYPAL_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm font-medium hover:bg-accent"><HeartHandshake className="h-4 w-4" /> Support any amount</a></div></Card><Card className="p-5"><h2 className="text-sm font-semibold text-foreground">Project principles</h2><ul className="mt-3 space-y-2 text-sm text-muted-foreground"><li>• Small tools with consistent interaction patterns.</li><li>• Public development and contributor-friendly documentation.</li><li>• No fake data presented as live data.</li><li>• Shared version/build identity across every app.</li><li>• Authentication and RLS around personal data.</li><li>• Test → report build fingerprint → contribute a focused PR.</li></ul></Card></div>}
 
-      {activeTab === 'admin' && role === 'admin' && <div className="space-y-4">{currentLevel !== 'aal2' ? <Card className="p-6 text-center"><LockKeyhole className="mx-auto h-7 w-7 text-muted-foreground" /><h2 className="mt-3 text-sm font-semibold text-foreground">Admin is TOTP protected</h2><p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">Verify your authenticator in Security before AppForge will read or mutate administrative data.</p><Button className="mt-4" onClick={() => setActiveTab('security')}>Open Security</Button></Card> : <><div className="flex items-center justify-between"><div><h2 className="text-sm font-semibold text-foreground">Users</h2><p className="mt-1 text-xs text-muted-foreground">Role, public-profile visibility and destructive account actions are enforced with admin + AAL2 checks. Private personal information is not exposed here.</p></div><Button variant="secondary" size="sm" onClick={() => void loadAdmin()} disabled={busy === 'admin-load'}><RefreshCw className={`h-4 w-4 ${busy === 'admin-load' ? 'animate-spin' : ''}`} /> Refresh</Button></div><div className="space-y-2">{adminUsers.map((item) => <Card key={item.id} className="p-3"><div className="flex flex-col gap-3 lg:flex-row lg:items-center"><div className="flex min-w-0 flex-1 items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-muted">{item.avatar_url ? <img src={item.avatar_url} alt="" className="h-full w-full object-cover" /> : <UserRound className="h-4 w-4" />}</div><div className="min-w-0"><div className="truncate text-sm font-medium text-foreground">{item.display_name || item.email || item.id}</div><div className="truncate text-xs text-muted-foreground">{item.email} · {item.username ? `@${item.username}` : 'no username'}</div></div></div><div className="flex flex-wrap items-center gap-2"><select value={item.role} onChange={async (e) => { const nextRole = e.target.value as 'user' | 'admin'; try { await adminSetRole(item.id, nextRole); setAdminUsers((rows) => rows.map((row) => row.id === item.id ? { ...row, role: nextRole } : row)); flash('Role updated.') } catch (roleError) { setError(roleError instanceof Error ? roleError.message : 'Role update failed.') } }} className="h-9 rounded-lg border border-input bg-background/55 px-2 text-xs"><option value="user">user</option><option value="admin">admin</option></select><button onClick={async () => { try { await adminUpdateProfile(item.id, { display_name: item.display_name, username: item.username, is_public: !item.is_public }); setAdminUsers((rows) => rows.map((row) => row.id === item.id ? { ...row, is_public: !row.is_public } : row)); flash('Profile visibility updated.') } catch (profileError) { setError(profileError instanceof Error ? profileError.message : 'Profile update failed.') } }} className="rounded-lg border border-border/70 px-2.5 py-2 text-xs hover:bg-accent">{item.is_public ? 'Public' : 'Private'}</button>{item.id !== user?.id && <Button variant="ghost" size="sm" onClick={async () => { if (!confirm(`Delete ${item.email || 'this user'}?`)) return; try { await adminDeleteUser(item.id); setAdminUsers((rows) => rows.filter((row) => row.id !== item.id)); flash('User deleted.') } catch (deleteError) { setError(deleteError instanceof Error ? deleteError.message : 'Delete failed.') } }}><Trash2 className="h-4 w-4" /></Button>}</div></div></Card>)}</div></>}</div>}
+      {activeTab === 'admin' && role === 'admin' && <div className="space-y-4">{currentLevel !== 'aal2' ? <Card className="p-6 text-center"><LockKeyhole className="mx-auto h-7 w-7 text-muted-foreground" /><h2 className="mt-3 text-sm font-semibold text-foreground">Admin is TOTP protected</h2><p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">Verify your authenticator in Security before AppForge will read or mutate administrative data.</p><Button className="mt-4" onClick={() => selectTab('security')}>Open Security</Button></Card> : <><div className="flex items-center justify-between"><div><h2 className="text-sm font-semibold text-foreground">Users</h2><p className="mt-1 text-xs text-muted-foreground">Role, public-profile visibility and destructive account actions are enforced with admin + AAL2 checks. Private personal information is not exposed here.</p></div><Button variant="secondary" size="sm" onClick={() => void loadAdmin()} disabled={busy === 'admin-load'}><RefreshCw className={`h-4 w-4 ${busy === 'admin-load' ? 'animate-spin' : ''}`} /> Refresh</Button></div><div className="space-y-2">{adminUsers.map((item) => <Card key={item.id} className="p-3"><div className="flex flex-col gap-3 lg:flex-row lg:items-center"><div className="flex min-w-0 flex-1 items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-muted">{item.avatar_url ? <img src={item.avatar_url} alt="" className="h-full w-full object-cover" /> : <UserRound className="h-4 w-4" />}</div><div className="min-w-0"><div className="truncate text-sm font-medium text-foreground">{item.display_name || item.email || item.id}</div><div className="truncate text-xs text-muted-foreground">{item.email} · {item.username ? `@${item.username}` : 'no username'}</div></div></div><div className="flex flex-wrap items-center gap-2"><select value={item.role} onChange={async (e) => { const nextRole = e.target.value as 'user' | 'admin'; try { await adminSetRole(item.id, nextRole); setAdminUsers((rows) => rows.map((row) => row.id === item.id ? { ...row, role: nextRole } : row)); flash('Role updated.') } catch (roleError) { setError(roleError instanceof Error ? roleError.message : 'Role update failed.') } }} className="h-9 rounded-lg border border-input bg-background/55 px-2 text-xs"><option value="user">user</option><option value="admin">admin</option></select><button onClick={async () => { try { await adminUpdateProfile(item.id, { display_name: item.display_name, username: item.username, is_public: !item.is_public }); setAdminUsers((rows) => rows.map((row) => row.id === item.id ? { ...row, is_public: !row.is_public } : row)); flash('Profile visibility updated.') } catch (profileError) { setError(profileError instanceof Error ? profileError.message : 'Profile update failed.') } }} className="rounded-lg border border-border/70 px-2.5 py-2 text-xs hover:bg-accent">{item.is_public ? 'Public' : 'Private'}</button>{item.id !== user?.id && <Button variant="ghost" size="sm" onClick={async () => { if (!confirm(`Delete ${item.email || 'this user'}?`)) return; try { await adminDeleteUser(item.id); setAdminUsers((rows) => rows.filter((row) => row.id !== item.id)); flash('User deleted.') } catch (deleteError) { setError(deleteError instanceof Error ? deleteError.message : 'Delete failed.') } }}><Trash2 className="h-4 w-4" /></Button>}</div></div></Card>)}</div></>}</div>}
     </div>
   )
 }
