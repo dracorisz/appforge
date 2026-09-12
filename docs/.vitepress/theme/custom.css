@@ -30,7 +30,11 @@
 }
 
 .dark .VPNavBarMenuLink:hover,
+.dark .VPNavBarMenuGroup .button:hover,
 .dark .VPMenuLink:hover,
+.dark .VPMenuLink:hover .text,
+.dark .VPSidebarItem .link:hover,
+.dark .VPSidebarItem .link:hover .text,
 .dark .vp-doc a:hover {
   color: #fff !important;
 }
