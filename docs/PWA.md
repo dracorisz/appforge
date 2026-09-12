@@ -4,21 +4,19 @@ AppForge is delivered as one installable Progressive Web App using `vite-plugin-
 
 > The PWA boundary is **AppForge as a whole**. Individual tools inside AppForge do not have a standalone-PWA readiness, extraction, or forkability track in this repository.
 
-If an app category later becomes an independent commercial or open-source product, that work should start in a separate project with its own architecture, branding, deployment, and lifecycle.
-
 ## Install and update behavior
 
-AppForge uses a prompt-based service-worker update flow. When a newer build is available, the application can tell the user that an update is ready and reload after the user accepts it. This keeps the visible build fingerprint aligned with the code actually running in the browser.
+AppForge uses an explicit prompt-based lifecycle. When a newer service-worker build is ready, the user can choose **Update now** or defer it. When the browser exposes `beforeinstallprompt`, AppForge can offer **Install** without replacing the browser's own installation controls.
 
-Supported browsers may offer AppForge through their normal install or Add to Home Screen flow. The installed application starts at `/` and uses standalone display mode.
+The lifecycle prompt uses a deliberately high-contrast dark surface with white primary actions and clearly separated secondary actions. It does not rely on the current app theme for readable foreground/background combinations, so update and install controls remain legible in light, dark, and system appearance modes.
+
+Supported browsers may also offer AppForge through their own Install / Add to Home Screen flow. The installed application starts at `/` and uses standalone display mode.
 
 ## Offline expectations
 
 AppForge is not fully offline by design. Once the shell is cached, static UI and browser-local utilities can continue to work where their own dependencies permit it.
 
-Network-dependent capabilities still require connectivity, including authentication, Supabase synchronization/storage, Getter Pro aggregation, Weather Now, Crypto Track, AI/provider endpoints, and other server-backed workflows.
-
-Never present stale provider or API data as current live data.
+Network-dependent capabilities still require connectivity, including authentication, Supabase synchronization/storage, Getter Pro aggregation, Weather Now, Crypto Track, AI/provider endpoints, and other server-backed workflows. Never present stale provider or API data as current live data.
 
 ## Navigation and API boundaries
 
@@ -33,14 +31,15 @@ npm run build
 npm run preview
 ```
 
-Then inspect the browser's Manifest and Service Worker panels and verify:
+Verify the following before release:
 
 1. AppForge is installable where the browser supports installation.
-2. A nested client route survives direct navigation and refresh.
-3. `/api/*` requests are not replaced by the SPA shell.
-4. Static shell behavior is sensible offline.
-5. A newer production build produces the expected update flow.
-6. The visible build/version fingerprint matches the running deployment.
+2. Install, Update, Later, Not now, and close controls remain readable in both light and dark application themes.
+3. Keyboard focus is visible on lifecycle-prompt actions.
+4. A nested client route survives direct navigation and refresh.
+5. `/api/*` requests are not replaced by the SPA shell.
+6. Static shell behavior is sensible offline.
+7. A newer production build produces the expected update flow and matching visible build fingerprint.
 
 ## Production responsibility
 
