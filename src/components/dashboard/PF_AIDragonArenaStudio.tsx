@@ -42,13 +42,29 @@ const STORY_THEME_KEY = 'appforge-story-theme'
 
 const MODEL = 'huggingface-rotation'
 
+const loadBuilderMode = (): BuilderMode => {
+  try { return localStorage.getItem('dragon-builder-mode') === 'comics' ? 'comics' : 'novel' } catch { return 'novel' }
+}
+
 const loadHfTokens = () => {
   try {
     const parsed = JSON.parse(localStorage.getItem('dragon-arena-hf-keys') || '[]')
     if (Array.isArray(parsed)) return [0, 1, 2].map((index) => String(parsed[index] || ''))
-  } catch { /* migrate legacy value below */ }
-  return [localStorage.getItem('dragon-arena-hf-key') || '', '', '']
+    return [localStorage.getItem('dragon-arena-hf-key') || '', '', '']
+  } catch {
+    return ['', '', '']
+  }
 }
+
+const safeHttpUrl = (value: string | null | undefined) => {
+  if (!value) return ''
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : ''
+  } catch { return '' }
+}
+
+const sceneAssetUrl = (asset: DragonAsset | null | undefined) => asset ? assetUrl(asset.storage_path) || safeHttpUrl(asset.external_url) : ''
 
 const resolveOpening = (metadata: unknown): OpeningScenario => {
   if (metadata && typeof metadata === 'object') {
@@ -93,7 +109,7 @@ const downloadText = (name: string, content: string, type: string) => {
 const escapeHtml = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 export function PF_AIDragonArenaStudio() {
-  const [mode, setMode] = React.useState<BuilderMode>(() => (localStorage.getItem('dragon-builder-mode') === 'comics' ? 'comics' : 'novel'))
+  const [mode, setMode] = React.useState<BuilderMode>(loadBuilderMode)
   const [opening, setOpening] = React.useState<OpeningScenario>(() => randomOpening())
   const [history, setHistory] = React.useState<Turn[]>([{ role: 'gm', text: opening.narrative }])
   const [choices, setChoices] = React.useState<string[]>([...opening.choices])
@@ -127,12 +143,18 @@ export function PF_AIDragonArenaStudio() {
   const [hfTokens, setHfTokens] = React.useState<string[]>(loadHfTokens)
   const [showProviderSettings, setShowProviderSettings] = React.useState(false)
 
-  React.useEffect(() => { localStorage.setItem('dragon-builder-mode', mode) }, [mode])
   React.useEffect(() => {
-    localStorage.setItem('dragon-arena-hf-keys', JSON.stringify(hfTokens))
-    const primary = hfTokens.find((token) => token.startsWith('hf_')) || ''
-    if (primary) localStorage.setItem('dragon-arena-hf-key', primary)
-    else localStorage.removeItem('dragon-arena-hf-key')
+    try { localStorage.setItem('dragon-builder-mode', mode) } catch { /* mode remains active for this session */ }
+  }, [mode])
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('dragon-arena-hf-keys', JSON.stringify(hfTokens))
+      const primary = hfTokens.find((token) => token.startsWith('hf_')) || ''
+      if (primary) localStorage.setItem('dragon-arena-hf-key', primary)
+      else localStorage.removeItem('dragon-arena-hf-key')
+    } catch {
+      setError('Provider keys could not be saved in browser storage. They remain available only for this tab session.')
+    }
   }, [hfTokens])
 
   const personalHfTokens = React.useMemo(() => hfTokens.map((token) => token.trim()).filter((token) => token.startsWith('hf_')), [hfTokens])
@@ -179,20 +201,27 @@ export function PF_AIDragonArenaStudio() {
       setCompletedTurns(nextCompleted)
       setChoices(nextCompleted.length ? nextCompleted[nextCompleted.length - 1].choices : [...sessionOpening.choices])
       setTurn(nextCompleted.length ? nextCompleted[nextCompleted.length - 1].turnNumber + 1 : 1)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not load this saved story.')
     } finally { setLoading(false) }
   }, [refreshAssets, userId])
 
   React.useEffect(() => {
     let cancelled = false
     const restore = async () => {
-      const { data: auth } = await supabase.auth.getUser()
-      if (!auth.user || cancelled) return
-      const uid = auth.user.id
-      setUserId(uid)
-      await Promise.all([refreshSessions(uid), refreshPoints(uid)])
-      const { data: session } = await supabase.from('dragon_arena_sessions').select('*').eq('user_id', uid).order('updated_at', { ascending: false }).limit(1).maybeSingle()
-      if (!session?.id || cancelled) return
-      await loadSession(session as DragonSession, uid)
+      try {
+        const { data: auth } = await supabase.auth.getUser()
+        if (!auth.user || cancelled) return
+        const uid = auth.user.id
+        setUserId(uid)
+        await Promise.all([refreshSessions(uid), refreshPoints(uid)])
+        const { data: session, error: sessionError } = await supabase.from('dragon_arena_sessions').select('*').eq('user_id', uid).order('updated_at', { ascending: false }).limit(1).maybeSingle()
+        if (sessionError) throw sessionError
+        if (!session?.id || cancelled) return
+        await loadSession(session as DragonSession, uid)
+      } catch (cause) {
+        if (!cancelled) setError(cause instanceof Error ? cause.message : 'Could not restore the latest saved story.')
+      }
     }
     void restore()
     return () => { cancelled = true }
@@ -216,7 +245,7 @@ export function PF_AIDragonArenaStudio() {
   const persistTurn = async (nextTurns: CompletedTurn[]) => {
     const { data: auth } = await supabase.auth.getUser()
     const uid = auth.user?.id
-    if (!uid) return
+    if (!uid) throw new Error('Sign in again to save this story turn.')
     let sid = sessionId
 
     if (!sid) {
@@ -243,7 +272,8 @@ export function PF_AIDragonArenaStudio() {
       model: latest.model,
     })
     if (turnError) throw turnError
-    await supabase.from('dragon_arena_sessions').update({ turn_count: nextTurns.length, updated_at: new Date().toISOString(), metadata: { source: 'story-studio', builder_mode: mode, model: MODEL, opening_id: opening.id, opening } }).eq('id', sid)
+    const { error: sessionUpdateError } = await supabase.from('dragon_arena_sessions').update({ turn_count: nextTurns.length, updated_at: new Date().toISOString(), metadata: { source: 'story-studio', builder_mode: mode, model: MODEL, opening_id: opening.id, opening } }).eq('id', sid)
+    if (sessionUpdateError) throw sessionUpdateError
     await refreshSessions(uid)
   }
 
@@ -275,7 +305,11 @@ export function PF_AIDragonArenaStudio() {
       const nextCompleted = [...completedTurns, { turnNumber: turn, playerAction, narrative, choices: nextChoices, model: payload.model || MODEL }]
       setCompletedTurns(nextCompleted)
       setTurn((value) => value + 1)
-      void persistTurn(nextCompleted).catch((cause) => console.error('[StoryStudio] persist', cause))
+      try {
+        await persistTurn(nextCompleted)
+      } catch (saveError) {
+        setError(`This turn was generated but could not be saved: ${saveError instanceof Error ? saveError.message : 'unknown persistence error'}. Keep this page open or export your story before leaving.`)
+      }
       const uid = sessionData.session?.user.id
       if (uid) void awardPoints(10, 1, 0).then(() => refreshPoints(uid)).catch(() => undefined)
     } catch (cause) {
@@ -341,7 +375,7 @@ export function PF_AIDragonArenaStudio() {
 
     const panels = completedTurns.map((item) => {
       const scene = storyScenes.find((asset) => sceneTurn(asset) === item.turnNumber)
-      const src = scene ? assetUrl(scene.storage_path) || scene.external_url || '' : ''
+      const src = sceneAssetUrl(scene)
       return `<section class="panel">${src ? `<img src="${escapeHtml(src)}" alt="Panel ${item.turnNumber}">` : ''}<div><small>Turn ${item.turnNumber} · ${escapeHtml(item.playerAction)}</small><p>${escapeHtml(item.narrative).replace(/\n/g, '<br>')}</p></div></section>`
     }).join('')
     const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escapeHtml(opening.label)} comic</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:40px auto;padding:0 20px;background:#111;color:#eee}.panel{display:grid;grid-template-columns:minmax(180px,36%) 1fr;gap:20px;border-bottom:1px solid #333;padding:22px 0}.panel img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px}.panel p{line-height:1.65}small{color:#aaa}@media(max-width:620px){.panel{grid-template-columns:1fr}}</style></head><body><h1>${escapeHtml(opening.label)}</h1><p>${escapeHtml(opening.narrative)}</p>${panels}</body></html>`
@@ -392,7 +426,7 @@ export function PF_AIDragonArenaStudio() {
         {showProviderSettings && <div className="border-b border-border/70 bg-background/55 p-3"><div className="mb-2"><div className="text-xs font-semibold">Personal Hugging Face tokens</div><div className="mt-1 text-[11px] leading-4 text-muted-foreground">Optional. Add up to three tokens with Inference Providers access. Story Studio rotates them before server-funded keys. Manage Gemini and OpenRouter keys in Settings → Integrations. Gemini is a text fallback; scene generation uses Hugging Face.</div></div><div className="grid gap-2 md:grid-cols-3">{hfTokens.map((value, index) => <Input type="password" autoComplete="off" aria-label={`Hugging Face token ${index + 1}`} key={index} value={value} onChange={(event) => setHfTokens((current) => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={`HF token ${index + 1} · hf_…`} />)}</div><Link to="/settings?tab=integrations" className="mt-3 inline-flex rounded-lg border border-border px-3 py-2 text-xs font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Manage AI provider keys</Link></div>}
 
         {panel && <div className="border-b border-border/70 bg-background/70 p-3">
-          {panel === 'assets' && <div className="flex gap-2 overflow-x-auto pb-1">{assets.length === 0 ? <div className="text-xs text-muted-foreground">No generated scenes yet.</div> : assets.map((asset) => { const src = assetUrl(asset.storage_path) || asset.external_url || ''; return <div key={asset.id} className="w-28 shrink-0"><button type="button" onClick={() => src && setLightbox(src)} className="w-full text-left"><div className="h-16 overflow-hidden rounded-lg border border-border bg-muted">{src && <img src={src} alt="" className="h-full w-full object-cover" />}</div><div className="mt-1 truncate text-[10px] text-muted-foreground">{sceneModel(asset)}</div></button><button type="button" disabled={sharingAsset === asset.id} onClick={() => void togglePublic(asset)} className={`mt-1 inline-flex w-full items-center justify-center gap-1 rounded-md border px-1.5 py-1 text-[10px] ${asset.is_public ? 'border-primary/30 bg-accent text-foreground' : 'border-border text-muted-foreground hover:text-foreground'}`}>{asset.is_public ? <><Globe2 className="h-3 w-3" /> Public</> : <><LockKeyhole className="h-3 w-3" /> Private</>}</button></div> })}</div>}
+          {panel === 'assets' && <div className="flex gap-2 overflow-x-auto pb-1">{assets.length === 0 ? <div className="text-xs text-muted-foreground">No generated scenes yet.</div> : assets.map((asset) => { const src = sceneAssetUrl(asset); return <div key={asset.id} className="w-28 shrink-0"><button type="button" onClick={() => src && setLightbox(src)} className="w-full text-left"><div className="h-16 overflow-hidden rounded-lg border border-border bg-muted">{src && <img src={src} alt="" className="h-full w-full object-cover" />}</div><div className="mt-1 truncate text-[10px] text-muted-foreground">{sceneModel(asset)}</div></button><button type="button" disabled={sharingAsset === asset.id} onClick={() => void togglePublic(asset)} className={`mt-1 inline-flex w-full items-center justify-center gap-1 rounded-md border px-1.5 py-1 text-[10px] ${asset.is_public ? 'border-primary/30 bg-accent text-foreground' : 'border-border text-muted-foreground hover:text-foreground'}`}>{asset.is_public ? <><Globe2 className="h-3 w-3" /> Public</> : <><LockKeyhole className="h-3 w-3" /> Private</>}</button></div> })}</div>}
           {panel === 'sessions' && <div className="flex gap-2 overflow-x-auto pb-1">{sessions.length === 0 ? <div className="text-xs text-muted-foreground">No saved stories yet.</div> : sessions.map((session) => <button key={session.id} type="button" onClick={() => void loadSession(session)} className={`min-w-44 rounded-lg border px-3 py-2 text-left text-xs ${session.id === sessionId ? 'border-primary/50 bg-accent' : 'border-border hover:bg-accent/60'}`}><div className="truncate font-medium">{session.title || 'Untitled story'}</div><div className="mt-1 text-muted-foreground">{session.turn_count} turns</div></button>)}</div>}
           {panel === 'leaderboard' && <div className="grid gap-1 sm:grid-cols-2 lg:grid-cols-4">{leaderboardRows.slice(0, 8).map((row, index) => <div key={row.user_id} className="flex items-center justify-between rounded-lg border border-border/70 px-3 py-2 text-xs"><span>#{index + 1} {row.display_name || 'Writer'}</span><span className="text-muted-foreground">{row.points}</span></div>)}</div>}
         </div>}
@@ -401,7 +435,7 @@ export function PF_AIDragonArenaStudio() {
           <div className="max-h-[570px] min-h-[430px] space-y-3 overflow-y-auto p-4 sm:p-5">
             {history.map((item, index) => {
               const attachedScene = item.role === 'gm' ? sceneForHistoryIndex(index) : null
-              const attachedSrc = attachedScene ? assetUrl(attachedScene.storage_path) || attachedScene.external_url || '' : ''
+              const attachedSrc = attachedScene ? sceneAssetUrl(attachedScene) : ''
               return <div key={`${item.role}-${index}`} className={`flex ${item.role === 'player' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`flex max-w-[92%] items-start gap-2 ${item.role === 'player' ? 'flex-row-reverse' : ''}`}>
                   <div className={`rounded-xl px-3.5 py-2.5 text-sm leading-5 ${item.role === 'player' ? 'bg-primary text-primary-foreground' : 'border border-border/65 bg-card/90 shadow-sm'}`}>
