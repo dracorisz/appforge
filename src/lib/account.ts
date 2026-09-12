@@ -117,6 +117,27 @@ const trimOrNull = (value: unknown) => {
   return text || null
 }
 
+const normalizeHttpUrl = (value: unknown) => {
+  const text = trimOrNull(value)
+  if (!text) return null
+  const candidate = /^[a-z][a-z0-9+.-]*:/i.test(text) ? text : `https://${text}`
+  try {
+    const url = new URL(candidate)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error('Website must use http:// or https://.')
+    return url.toString()
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Website must use http:// or https://.') throw error
+    throw new Error('Website must be a valid web address.')
+  }
+}
+
+const normalizeEmail = (value: unknown) => {
+  const text = trimOrNull(value)?.toLowerCase() || null
+  if (!text) return null
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) throw new Error('Public email must be a valid email address.')
+  return text
+}
+
 export async function ensureProfile(user: User): Promise<AppProfile> {
   const existing = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
   if (existing.error) throw existing.error
@@ -133,7 +154,7 @@ export async function saveProfile(userId: string, patch: Partial<AppProfile>): P
     username: trimOrNull(patch.username),
     avatar_url: trimOrNull(patch.avatar_url),
     bio: trimOrNull(patch.bio),
-    website: trimOrNull(patch.website),
+    website: normalizeHttpUrl(patch.website),
     location: trimOrNull(patch.location),
     github_username: trimOrNull(patch.github_username)?.replace(/^@/, '') || null,
     headline: trimOrNull(patch.headline),
@@ -144,7 +165,7 @@ export async function saveProfile(userId: string, patch: Partial<AppProfile>): P
     show_website: patch.show_website ?? true,
     show_github: patch.show_github ?? true,
     show_email: patch.show_email ?? false,
-    public_email: patch.show_email ? trimOrNull(patch.public_email) : null,
+    public_email: patch.show_email ? normalizeEmail(patch.public_email) : null,
     updated_at: new Date().toISOString(),
   }
   const result = await supabase.from('profiles').update(payload).eq('id', userId).select('*').single()
@@ -167,7 +188,7 @@ export async function savePrivateProfileInfo(userId: string, patch: Partial<Priv
 
 export async function getRole(userId: string): Promise<'user' | 'admin'> { const result = await supabase.from('app_roles').select('role').eq('user_id', userId).maybeSingle(); if (result.error) throw result.error; return result.data?.role === 'admin' ? 'admin' : 'user' }
 export async function claimFirstAdmin(): Promise<boolean> { const result = await supabase.rpc('claim_first_admin'); if (result.error) throw result.error; return Boolean(result.data) }
-export async function listVisibleProfiles(): Promise<AppProfile[]> { const result = await supabase.from('profiles').select('*').order('created_at', { ascending: true }); if (result.error) throw result.error; return (result.data || []) as AppProfile[] }
+export async function listVisibleProfiles(): Promise<AppProfile[]> { const result = await supabase.from('profiles').select('*').eq('is_public', true).order('created_at', { ascending: true }); if (result.error) throw result.error; return (result.data || []) as AppProfile[] }
 export async function listProfileImages(profileId?: string): Promise<ProfileImageLink[]> { let query = supabase.from('profile_images').select('profile_id,image_id,kind,sort_order,user_images(*)').order('sort_order', { ascending: true }); if (profileId) query = query.eq('profile_id', profileId); const result = await query; if (result.error) throw result.error; return (result.data || []) as unknown as ProfileImageLink[] }
 
 const safeFileName = (name: string) => name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(-90) || 'image'
@@ -180,14 +201,55 @@ export async function uploadProfileImage(userId: string, file: File, kind: 'avat
   const { data: publicUrl } = supabase.storage.from('profile-media').getPublicUrl(path)
   const image = await supabase.from('user_images').insert({ owner_id: userId, title: file.name, source_url: publicUrl.publicUrl, storage_path: path, mime_type: file.type, metadata: { size: file.size } }).select('*').single()
   if (image.error) { await supabase.storage.from('profile-media').remove([path]); throw image.error }
-  if (kind === 'avatar') await supabase.from('profile_images').delete().eq('profile_id', userId).eq('kind', 'avatar')
+
+  const previousAvatar = kind === 'avatar'
+    ? await supabase.from('profile_images').select('image_id').eq('profile_id', userId).eq('kind', 'avatar')
+    : null
+  if (previousAvatar?.error) {
+    await supabase.from('user_images').delete().eq('id', image.data.id).eq('owner_id', userId)
+    await supabase.storage.from('profile-media').remove([path])
+    throw previousAvatar.error
+  }
+
   const link = await supabase.from('profile_images').insert({ profile_id: userId, image_id: image.data.id, kind, sort_order: kind === 'gallery' ? Date.now() : 0 })
-  if (link.error) throw link.error
-  if (kind === 'avatar') { const profile = await supabase.from('profiles').update({ avatar_url: publicUrl.publicUrl, updated_at: new Date().toISOString() }).eq('id', userId); if (profile.error) throw profile.error }
+  if (link.error) {
+    await supabase.from('user_images').delete().eq('id', image.data.id).eq('owner_id', userId)
+    await supabase.storage.from('profile-media').remove([path])
+    throw link.error
+  }
+
+  if (kind === 'avatar') {
+    const profile = await supabase.from('profiles').update({ avatar_url: publicUrl.publicUrl, updated_at: new Date().toISOString() }).eq('id', userId)
+    if (profile.error) {
+      await supabase.from('profile_images').delete().eq('profile_id', userId).eq('image_id', image.data.id).eq('kind', 'avatar')
+      await supabase.from('user_images').delete().eq('id', image.data.id).eq('owner_id', userId)
+      await supabase.storage.from('profile-media').remove([path])
+      throw profile.error
+    }
+    const oldIds = (previousAvatar?.data || []).map((row) => row.image_id).filter((id): id is string => Boolean(id))
+    if (oldIds.length) await supabase.from('profile_images').delete().eq('profile_id', userId).eq('kind', 'avatar').in('image_id', oldIds)
+  }
   return image.data as UserImage
 }
 
-export async function removeProfileImage(userId: string, image: UserImage) { if (image.owner_id !== userId) throw new Error('You can only remove your own image.'); const links = await supabase.from('profile_images').delete().eq('profile_id', userId).eq('image_id', image.id); if (links.error) throw links.error; const row = await supabase.from('user_images').delete().eq('id', image.id).eq('owner_id', userId); if (row.error) throw row.error; if (image.storage_path) await supabase.storage.from('profile-media').remove([image.storage_path]) }
+export async function removeProfileImage(userId: string, image: UserImage) {
+  if (image.owner_id !== userId) throw new Error('You can only remove your own image.')
+  const linked = await supabase.from('profile_images').select('kind').eq('profile_id', userId).eq('image_id', image.id)
+  if (linked.error) throw linked.error
+  const wasAvatar = (linked.data || []).some((link) => link.kind === 'avatar')
+  const links = await supabase.from('profile_images').delete().eq('profile_id', userId).eq('image_id', image.id)
+  if (links.error) throw links.error
+  const row = await supabase.from('user_images').delete().eq('id', image.id).eq('owner_id', userId)
+  if (row.error) throw row.error
+  if (wasAvatar) {
+    const profile = await supabase.from('profiles').update({ avatar_url: null, updated_at: new Date().toISOString() }).eq('id', userId)
+    if (profile.error) throw profile.error
+  }
+  if (image.storage_path) {
+    const storage = await supabase.storage.from('profile-media').remove([image.storage_path])
+    if (storage.error) throw storage.error
+  }
+}
 export async function getSecurityState(): Promise<{ currentLevel: AssuranceLevel; nextLevel: AssuranceLevel; totp: any[] }> { const [aal, factors] = await Promise.all([supabase.auth.mfa.getAuthenticatorAssuranceLevel(), supabase.auth.mfa.listFactors()]); if (aal.error) throw aal.error; if (factors.error) throw factors.error; return { currentLevel: normalizeAssuranceLevel(aal.data.currentLevel), nextLevel: normalizeAssuranceLevel(aal.data.nextLevel), totp: factors.data?.totp ?? [] } }
 export async function enrollTotp() { const result = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'AppForge' }); if (result.error) throw result.error; return result.data }
 export async function verifyTotpFactor(factorId: string, code: string) { const challenge = await supabase.auth.mfa.challenge({ factorId }); if (challenge.error) throw challenge.error; const verified = await supabase.auth.mfa.verify({ factorId, challengeId: challenge.data.id, code: code.trim() }); if (verified.error) throw verified.error; return verified.data }
