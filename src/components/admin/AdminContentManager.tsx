@@ -14,16 +14,19 @@ import {
   type FrontendContentType,
 } from '@/lib/frontendContent'
 
+const LANDING_SLUG = 'appforge-walkthrough'
+const MANAGED_TYPES: FrontendContentType[] = ['blog_article', 'video_teaser']
+
 const makeDraft = (contentType: FrontendContentType = 'blog_article'): FrontendContentDraft => ({
   content_type: contentType,
-  slug: '',
-  title: '',
-  summary: '',
+  slug: contentType === 'video_teaser' ? LANDING_SLUG : '',
+  title: contentType === 'video_teaser' ? 'See AppForge in action' : '',
+  summary: contentType === 'video_teaser' ? 'A short walkthrough of the current AppForge experience.' : '',
   body: '',
   image_url: '',
   video_url: '',
   app_route: '',
-  published: false,
+  published: contentType === 'video_teaser',
   sort_order: 0,
   metadata: {},
 })
@@ -113,16 +116,22 @@ export function AdminContentManager({ embedded = false, adminVerified = false }:
     finally { setBusy('') }
   }
 
-  const landingTeaser = items.find((item) => item.content_type === 'video_teaser' && item.published)
+  const landingTeaser = items.find((item) => item.content_type === 'video_teaser' && item.slug === LANDING_SLUG)
+    || items.find((item) => item.content_type === 'video_teaser' && item.published)
+
   const saveLandingCount = async (show: boolean) => {
     if (!user || !aal2 || !isAdmin) return
     setBusy('landing'); setError(''); setMessage('')
     try {
       if (landingTeaser) {
-        await updateFrontendContent(landingTeaser.id, { metadata: { ...landingTeaser.metadata, show_active_app_count: show } })
-        if (selectedId === landingTeaser.id) setDraft((current) => ({ ...current, metadata: { ...current.metadata, show_active_app_count: show } }))
+        const saved = await updateFrontendContent(landingTeaser.id, {
+          slug: LANDING_SLUG,
+          published: true,
+          metadata: { ...landingTeaser.metadata, show_active_app_count: show },
+        })
+        if (selectedId === landingTeaser.id) setDraft(toDraft(saved))
       } else {
-        await createFrontendContent({ ...makeDraft('video_teaser'), slug: 'appforge-walkthrough', title: 'See AppForge in action', published: true, metadata: { show_active_app_count: show } }, user.id)
+        await createFrontendContent({ ...makeDraft('video_teaser'), metadata: { show_active_app_count: show } }, user.id)
       }
       await refreshItems()
       setMessage('Landing page updated.')
@@ -130,29 +139,59 @@ export function AdminContentManager({ embedded = false, adminVerified = false }:
     finally { setBusy('') }
   }
 
-  const visible = items.filter((item) => item.content_type === filterType)
+  const visible = items.filter((item) => item.content_type === filterType && (filterType !== 'video_teaser' || item.slug === LANDING_SLUG || item === landingTeaser))
   const flash = (text: string) => { setMessage(text); window.setTimeout(() => setMessage(''), 1800) }
   const selectItem = (item: FrontendContentRecord) => { setSelectedId(item.id); setDraft(toDraft(item)); setFilterType(item.content_type); setError('') }
-  const newItem = () => { setSelectedId(null); setDraft(makeDraft(filterType)); setError('') }
+  const newItem = () => {
+    if (filterType === 'video_teaser' && landingTeaser) { selectItem(landingTeaser); return }
+    setSelectedId(null); setDraft(makeDraft(filterType)); setError('')
+  }
+
+  const persistDraft = async (publishOverride?: boolean) => {
+    if (!user || !aal2) return null
+    const isLanding = draft.content_type === 'video_teaser'
+    const slug = isLanding ? LANDING_SLUG : cleanSlug(draft.slug || draft.title)
+    if (!slug || !draft.title.trim()) { setError('Title and slug are required.'); return null }
+    const cleanDraft: FrontendContentDraft = {
+      ...draft,
+      slug,
+      title: draft.title.trim(),
+      summary: draft.summary?.trim() || null,
+      body: draft.body?.trim() || null,
+      image_url: draft.image_url?.trim() || null,
+      video_url: draft.video_url?.trim() || null,
+      app_route: draft.app_route?.trim() || null,
+      published: isLanding ? true : publishOverride ?? draft.published,
+      sort_order: Number(draft.sort_order) || 0,
+    }
+    const targetId = selectedId || (isLanding ? landingTeaser?.id || null : null)
+    const saved = targetId ? await updateFrontendContent(targetId, cleanDraft) : await createFrontendContent(cleanDraft, user.id)
+    await refreshItems()
+    setSelectedId(saved.id)
+    setDraft(toDraft(saved))
+    return saved
+  }
 
   const save = async (event: React.FormEvent) => {
     event.preventDefault()
-    if (!user || !aal2) return
-    const slug = cleanSlug(draft.slug || draft.title)
-    if (!slug || !draft.title.trim()) { setError('Title and slug are required.'); return }
     setBusy('save'); setError('')
-    try {
-      const cleanDraft: FrontendContentDraft = { ...draft, slug, title: draft.title.trim(), summary: draft.summary?.trim() || null, body: draft.body?.trim() || null, image_url: draft.image_url?.trim() || null, video_url: draft.video_url?.trim() || null, app_route: draft.app_route?.trim() || null, sort_order: Number(draft.sort_order) || 0 }
-      const saved = selectedId ? await updateFrontendContent(selectedId, cleanDraft) : await createFrontendContent(cleanDraft, user.id)
-      await refreshItems(); setSelectedId(saved.id); setDraft(toDraft(saved)); flash('Saved.')
-    } catch (saveError) { setError(saveError instanceof Error ? saveError.message : 'Could not save content.') }
+    try { const saved = await persistDraft(); if (saved) flash(draft.content_type === 'video_teaser' ? 'Landing walkthrough saved and published.' : 'Saved.') }
+    catch (saveError) { setError(saveError instanceof Error ? saveError.message : 'Could not save content.') }
+    finally { setBusy('') }
+  }
+
+  const publishBlog = async () => {
+    if (draft.content_type !== 'blog_article') return
+    setBusy('publish'); setError('')
+    try { const saved = await persistDraft(true); if (saved) flash('Blog article published.') }
+    catch (publishError) { setError(publishError instanceof Error ? publishError.message : 'Could not publish article.') }
     finally { setBusy('') }
   }
 
   const remove = async () => {
     if (!selectedId || !confirm('Delete this content item?')) return
     setBusy('delete')
-    try { await deleteFrontendContent(selectedId); await refreshItems(); newItem(); flash('Deleted.') }
+    try { await deleteFrontendContent(selectedId); await refreshItems(); setSelectedId(null); setDraft(makeDraft(filterType)); flash('Deleted.') }
     catch (deleteError) { setError(deleteError instanceof Error ? deleteError.message : 'Could not delete content.') }
     finally { setBusy('') }
   }
@@ -198,25 +237,24 @@ export function AdminContentManager({ embedded = false, adminVerified = false }:
   if (!aal2) return <div className="rounded-2xl border border-border/70 p-6"><KeyRound className="h-7 w-7" /><h2 className="mt-3 text-lg font-semibold">Verify TOTP</h2>{factorId ? <form onSubmit={verifyTotp} className="mt-4 flex max-w-md gap-2"><input value={totpCode} onChange={(event) => setTotpCode(event.target.value.replace(/\D/g, '').slice(0, 8))} inputMode="numeric" className="h-10 min-w-0 flex-1 rounded-lg border border-input bg-background px-3" placeholder="Authenticator code" /><button disabled={busy === 'totp' || !totpCode} className="rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground">Verify</button></form> : <p className="mt-2 text-sm text-muted-foreground">Enroll TOTP in Settings → Security first.</p>}</div>
 
   return <div className="w-full space-y-4">
-    <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-sm font-semibold">Content</h2><p className="mt-1 text-xs text-muted-foreground">Blog, homepage media, gallery and Docs drafts.</p></div><div className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400"><CheckCircle2 className="h-3.5 w-3.5" /> Admin · TOTP</div></div>
-    <div className="flex flex-wrap gap-1">{(['blog_article','video_teaser','gallery_image','docs_page'] as FrontendContentType[]).map((type) => <button key={type} onClick={() => { setFilterType(type); setSelectedId(null); setDraft(makeDraft(type)) }} className={`rounded-lg px-3 py-1.5 text-xs font-medium ${filterType === type ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{type === 'blog_article' ? 'Blog' : type === 'video_teaser' ? 'Video' : type === 'gallery_image' ? 'Gallery' : 'Docs'}</button>)}</div>
+    <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-sm font-semibold">Content</h2><p className="mt-1 text-xs text-muted-foreground">Publish blog articles and manage the homepage walkthrough.</p></div><div className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400"><CheckCircle2 className="h-3.5 w-3.5" /> Admin · TOTP</div></div>
+    <div className="flex flex-wrap gap-1">{MANAGED_TYPES.map((type) => <button key={type} onClick={() => { setFilterType(type); setSelectedId(null); setDraft(type === 'video_teaser' && landingTeaser ? toDraft(landingTeaser) : makeDraft(type)); if (type === 'video_teaser' && landingTeaser) setSelectedId(landingTeaser.id) }} className={`rounded-lg px-3 py-1.5 text-xs font-medium ${filterType === type ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{type === 'blog_article' ? 'Blog' : 'Video'}</button>)}</div>
     {message && <div className="rounded-lg border border-emerald-500/25 bg-emerald-500/5 p-2 text-xs text-emerald-600 dark:text-emerald-400">{message}</div>}
     {error && <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive">{error}</div>}
 
     <section className="rounded-xl border border-border/70 p-4" aria-label="Landing page presentation"><h3 className="text-sm font-semibold">Landing page</h3><label className="mt-3 flex items-center gap-3 text-sm"><input type="checkbox" checked={landingTeaser?.metadata.show_active_app_count !== false} disabled={Boolean(busy)} onChange={(event) => void saveLandingCount(event.target.checked)} />Show active app count and open-source row</label><p className="mt-2 text-xs text-muted-foreground">Applies to the public landing and sign-in pages. Changes save immediately.</p></section>
     <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
-      <aside className="rounded-2xl border border-border/70 bg-background/40 p-3"><button onClick={newItem} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-border/70 text-sm font-semibold hover:bg-accent"><Plus className="h-4 w-4" /> New</button><div className="mt-3 space-y-2">{visible.map((item) => <button key={item.id} onClick={() => selectItem(item)} className={`w-full rounded-xl border p-3 text-left ${selectedId === item.id ? 'border-foreground/30 bg-accent/50' : 'border-border/60 hover:bg-accent/25'}`}><div className="truncate text-sm font-medium">{item.title}</div><div className="mt-1 truncate text-[11px] text-muted-foreground">{item.slug}</div></button>)}{!visible.length && <div className="p-4 text-center text-xs text-muted-foreground">No items.</div>}</div></aside>
+      <aside className="rounded-2xl border border-border/70 bg-background/40 p-3"><button onClick={newItem} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-border/70 text-sm font-semibold hover:bg-accent"><Plus className="h-4 w-4" /> {filterType === 'video_teaser' && landingTeaser ? 'Open walkthrough' : 'New'}</button><div className="mt-3 space-y-2">{visible.map((item) => <button key={item.id} onClick={() => selectItem(item)} className={`w-full rounded-xl border p-3 text-left ${selectedId === item.id ? 'border-foreground/30 bg-accent/50' : 'border-border/60 hover:bg-accent/25'}`}><div className="truncate text-sm font-medium">{item.title}</div><div className="mt-1 truncate text-[11px] text-muted-foreground">{item.slug}</div></button>)}{!visible.length && <div className="p-4 text-center text-xs text-muted-foreground">No items.</div>}</div></aside>
 
       <section className="rounded-2xl border border-border/70 bg-background/40 p-4 sm:p-5">
-        {(draft.content_type === 'blog_article' || draft.content_type === 'docs_page') && <div className="mb-4 rounded-xl border border-border/70 p-3"><div className="flex items-center gap-2 text-sm font-semibold"><Sparkles className="h-4 w-4" /> Vertex writing</div><div className="mt-3 flex flex-col gap-2 sm:flex-row"><input value={vertexTopic} onChange={(event) => setVertexTopic(event.target.value)} className="h-10 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 text-sm" placeholder="Topic" /><button type="button" onClick={() => void draftWithVertex(false)} disabled={busy === 'vertex'} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border px-3 text-sm font-semibold hover:bg-accent">{busy === 'vertex' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Generate draft</button>{draft.content_type === 'blog_article' && <button type="button" onClick={() => void draftWithVertex(true)} disabled={busy === 'vertex'} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground"><CheckCircle2 className="h-4 w-4" /> Generate & publish</button>}</div></div>}
+        {draft.content_type === 'blog_article' && <div className="mb-4 rounded-xl border border-border/70 p-3"><div className="flex items-center gap-2 text-sm font-semibold"><Sparkles className="h-4 w-4" /> Vertex writing</div><div className="mt-3 flex flex-col gap-2 sm:flex-row"><input value={vertexTopic} onChange={(event) => setVertexTopic(event.target.value)} className="h-10 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 text-sm" placeholder="Topic" /><button type="button" onClick={() => void draftWithVertex(false)} disabled={busy === 'vertex'} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border px-3 text-sm font-semibold hover:bg-accent">{busy === 'vertex' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Generate draft</button><button type="button" onClick={() => void draftWithVertex(true)} disabled={busy === 'vertex'} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground"><CheckCircle2 className="h-4 w-4" /> Generate & publish</button></div></div>}
         <form onSubmit={save} className="space-y-4">
-          <div className="flex items-center justify-between"><h3 className="text-lg font-semibold">{selectedId ? 'Edit' : 'New'} {draft.content_type === 'docs_page' ? 'Docs page' : 'content'}</h3>{selectedId && <button type="button" onClick={newItem} className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent"><X className="h-4 w-4" /></button>}</div>
-          <div className="grid gap-3 md:grid-cols-2"><label className="text-xs font-medium text-muted-foreground">Title<input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground" /></label><label className="text-xs font-medium text-muted-foreground">Slug<input value={draft.slug} onChange={(event) => setDraft((current) => ({ ...current, slug: event.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground" placeholder={draft.content_type === 'docs_page' ? 'GETTING_STARTED' : 'article-slug'} /></label></div>
-          <label className="block text-xs font-medium text-muted-foreground"><span className="flex items-center justify-between"><span>Summary</span><button type="button" onClick={() => setDraft((current) => ({ ...current, summary: generateSummary(current.body, current.title) }))} className="text-[11px] text-foreground hover:underline">Generate</button></span><textarea value={draft.summary || ''} onChange={(event) => setDraft((current) => ({ ...current, summary: event.target.value }))} rows={2} className="mt-1 w-full rounded-lg border border-input bg-background p-3 text-sm text-foreground" /></label>
-          {(draft.content_type === 'blog_article' || draft.content_type === 'docs_page') && <label className="block text-xs font-medium text-muted-foreground">Body (Markdown)<textarea value={draft.body || ''} onChange={(event) => setDraft((current) => ({ ...current, body: event.target.value }))} rows={14} className="mt-1 w-full rounded-lg border border-input bg-background p-3 text-sm leading-6 text-foreground" /></label>}
+          <div className="flex items-center justify-between"><h3 className="text-lg font-semibold">{draft.content_type === 'video_teaser' ? 'Landing walkthrough' : selectedId ? 'Edit article' : 'New article'}</h3>{selectedId && draft.content_type === 'blog_article' && <button type="button" onClick={newItem} className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent"><X className="h-4 w-4" /></button>}</div>
+          <div className="grid gap-3 md:grid-cols-2"><label className="text-xs font-medium text-muted-foreground">Title<input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground" /></label><label className="text-xs font-medium text-muted-foreground">Slug<input value={draft.slug} disabled={draft.content_type === 'video_teaser'} onChange={(event) => setDraft((current) => ({ ...current, slug: event.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground disabled:opacity-60" placeholder="article-slug" /></label></div>
+          <label className="block text-xs font-medium text-muted-foreground"><span className="flex items-center justify-between"><span>Summary</span>{draft.content_type === 'blog_article' && <button type="button" onClick={() => setDraft((current) => ({ ...current, summary: generateSummary(current.body, current.title) }))} className="text-[11px] text-foreground hover:underline">Generate</button>}</span><textarea value={draft.summary || ''} onChange={(event) => setDraft((current) => ({ ...current, summary: event.target.value }))} rows={2} className="mt-1 w-full rounded-lg border border-input bg-background p-3 text-sm text-foreground" /></label>
+          {draft.content_type === 'blog_article' && <label className="block text-xs font-medium text-muted-foreground">Body (Markdown)<textarea value={draft.body || ''} onChange={(event) => setDraft((current) => ({ ...current, body: event.target.value }))} rows={14} className="mt-1 w-full rounded-lg border border-input bg-background p-3 text-sm leading-6 text-foreground" /></label>}
           <div className="grid gap-3 md:grid-cols-2"><label className="text-xs font-medium text-muted-foreground">Image URL<input value={draft.image_url || ''} onChange={(event) => setDraft((current) => ({ ...current, image_url: event.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground" /></label><label className="text-xs font-medium text-muted-foreground">Video URL<input value={draft.video_url || ''} onChange={(event) => setDraft((current) => ({ ...current, video_url: event.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground" /></label></div>
-          <div className="flex flex-wrap items-center gap-2"><label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-xs font-medium hover:bg-accent"><Upload className="h-4 w-4" /><input type="file" className="hidden" accept="image/*,video/*" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadMedia(file); event.currentTarget.value = '' }} />{busy === 'upload' ? 'Uploading…' : 'Upload media'}</label><label className="inline-flex items-center gap-2 text-xs"><input type="checkbox" checked={draft.published} onChange={(event) => setDraft((current) => ({ ...current, published: event.target.checked }))} /> Published</label><button type="submit" disabled={busy === 'save'} className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground"><Save className="h-4 w-4" /> Save</button>{selectedId && <button type="button" onClick={() => void remove()} className="inline-flex items-center gap-2 rounded-lg border border-destructive/30 px-3 py-2 text-xs font-semibold text-destructive hover:bg-destructive/5"><Trash2 className="h-4 w-4" /> Delete</button>}</div>
-          {draft.content_type === 'docs_page' && <p className="text-xs leading-5 text-muted-foreground">Docs drafts are stored in Supabase under admin + TOTP protection. Because docs.sstoken.space is a static VitePress build, a Docs release still syncs approved copy into the repository before GitHub Pages publishes it.</p>}
+          <div className="flex flex-wrap items-center gap-2"><label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-xs font-medium hover:bg-accent"><Upload className="h-4 w-4" /><input type="file" className="hidden" accept="image/*,video/*" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadMedia(file); event.currentTarget.value = '' }} />{busy === 'upload' ? 'Uploading…' : 'Upload media'}</label>{draft.content_type === 'blog_article' && <label className="inline-flex items-center gap-2 text-xs"><input type="checkbox" checked={draft.published} onChange={(event) => setDraft((current) => ({ ...current, published: event.target.checked }))} /> Published</label>}<button type="submit" disabled={busy === 'save'} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs font-semibold hover:bg-accent"><Save className="h-4 w-4" /> {draft.content_type === 'video_teaser' ? 'Save landing video' : 'Save draft'}</button>{draft.content_type === 'blog_article' && <button type="button" onClick={() => void publishBlog()} disabled={busy === 'publish'} className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground"><CheckCircle2 className="h-4 w-4" /> Publish</button>}{selectedId && draft.content_type === 'blog_article' && <button type="button" onClick={() => void remove()} className="inline-flex items-center gap-2 rounded-lg border border-destructive/30 px-3 py-2 text-xs font-semibold text-destructive hover:bg-destructive/5"><Trash2 className="h-4 w-4" /> Delete</button>}</div>
         </form>
       </section>
     </div>
