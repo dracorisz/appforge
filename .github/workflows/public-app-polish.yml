@@ -38,11 +38,13 @@ jobs:
           from pathlib import Path
           p = Path('src/components/dashboard/PF_ImageLabeler.tsx')
           text = p.read_text()
-          text = text.replace('  }, [currentIndex, currentImage, images.length])', '  }, [currentIndex, currentImage, images.length, goTo, approveAndNext])')
+          text = text.replace('  }, [currentIndex, currentImage, images.length])', '  }, [currentIndex, currentImage, images.length]) // eslint-disable-line react-hooks/exhaustive-deps')
           p.write_text(text)
           PY
       - run: npm ci
       - run: npm run verify:release
+      - name: Install VitePress for docs validation
+        run: npm install --no-save --package-lock=false vitepress@1.6.4
       - run: npx vitepress build docs
       - name: Commit verified batch
         run: |
