@@ -62,6 +62,20 @@ const edgeColors = (pixels: Uint8ClampedArray, width: number, height: number) =>
   return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4).map(([key]) => key.split(',').map(Number) as [number, number, number])
 }
 
+const edgeTransparencyPercent = (pixels: Uint8ClampedArray, width: number, height: number) => {
+  let samples = 0
+  let transparent = 0
+  const add = (x: number, y: number) => {
+    samples += 1
+    if (pixels[(y * width + x) * 4 + 3] < 245) transparent += 1
+  }
+  const stepX = Math.max(1, Math.floor(width / 100))
+  const stepY = Math.max(1, Math.floor(height / 100))
+  for (let x = 0; x < width; x += stepX) { add(x, 0); add(x, height - 1) }
+  for (let y = 0; y < height; y += stepY) { add(0, y); add(width - 1, y) }
+  return samples ? (transparent / samples) * 100 : 0
+}
+
 export async function repairImageTransparency(source: string, tolerance = 38, onlyWhenOpaque = false): Promise<TransparencyRepairResult> {
   const safeSource = await safeCanvasImageSource(source)
   const image = new Image()
@@ -83,22 +97,59 @@ export async function repairImageTransparency(source: string, tolerance = 38, on
   let transparent = 0
   for (let index = 3; index < pixels.length; index += 4) if (pixels[index] < 245) transparent += 1
   const initialPercent = (transparent / (width * height)) * 100
-  if (onlyWhenOpaque && initialPercent >= 0.5) {
+  const transparentEdges = edgeTransparencyPercent(pixels, width, height)
+  if (onlyWhenOpaque && transparentEdges >= 35) {
     const blob = await canvasBlob(canvas)
     return { dataUrl: await readBlobAsDataUrl(blob), blob, width, height, transparentPercent: initialPercent, backgroundColors: [], repaired: false }
   }
+
   const colors = edgeColors(pixels, width, height)
   if (!colors.length) throw new Error('Could not estimate the image background from its edges.')
   const feather = Math.max(8, tolerance * 0.65)
-  transparent = 0
-  for (let index = 0; index < pixels.length; index += 4) {
-    if (pixels[index + 3] < 245) { transparent += 1; continue }
+  const visited = new Uint8Array(width * height)
+  const queue = new Int32Array(width * height)
+  let head = 0
+  let tail = 0
+
+  const nearestDistance = (pixel: number) => {
+    const index = pixel * 4
     let nearest = Number.POSITIVE_INFINITY
     for (const color of colors) nearest = Math.min(nearest, distance(pixels[index], pixels[index + 1], pixels[index + 2], color))
-    if (nearest <= tolerance) pixels[index + 3] = 0
-    else if (nearest < tolerance + feather) pixels[index + 3] = Math.min(pixels[index + 3], Math.round(255 * ((nearest - tolerance) / feather)))
+    return nearest
+  }
+  const enqueueIfBackground = (pixel: number) => {
+    if (visited[pixel]) return
+    const alpha = pixels[pixel * 4 + 3]
+    if (alpha < 245 || nearestDistance(pixel) <= tolerance + feather) {
+      visited[pixel] = 1
+      queue[tail++] = pixel
+    }
+  }
+
+  for (let x = 0; x < width; x += 1) { enqueueIfBackground(x); enqueueIfBackground((height - 1) * width + x) }
+  for (let y = 1; y < height - 1; y += 1) { enqueueIfBackground(y * width); enqueueIfBackground(y * width + width - 1) }
+
+  while (head < tail) {
+    const pixel = queue[head++]
+    const x = pixel % width
+    const y = Math.floor(pixel / width)
+    if (x > 0) enqueueIfBackground(pixel - 1)
+    if (x + 1 < width) enqueueIfBackground(pixel + 1)
+    if (y > 0) enqueueIfBackground(pixel - width)
+    if (y + 1 < height) enqueueIfBackground(pixel + width)
+  }
+
+  transparent = 0
+  for (let pixel = 0; pixel < width * height; pixel += 1) {
+    const index = pixel * 4
+    if (visited[pixel]) {
+      const nearest = nearestDistance(pixel)
+      if (pixels[index + 3] < 245 || nearest <= tolerance) pixels[index + 3] = 0
+      else if (nearest < tolerance + feather) pixels[index + 3] = Math.min(pixels[index + 3], Math.round(255 * ((nearest - tolerance) / feather)))
+    }
     if (pixels[index + 3] < 245) transparent += 1
   }
+
   context.putImageData(frame, 0, 0)
   const blob = await canvasBlob(canvas)
   return { dataUrl: await readBlobAsDataUrl(blob), blob, width, height, transparentPercent: (transparent / (width * height)) * 100, backgroundColors: colors, repaired: true }
