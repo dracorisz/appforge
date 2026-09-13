@@ -27,11 +27,20 @@ jobs:
           from pathlib import Path
           p = Path('.github/scripts/public-apps-polish.py')
           text = p.read_text()
-          text = text.replace("'''type ViewMode = 'list' | 'grid' ''',", "'''type ViewMode = 'list' | 'grid''',")
-          text = text.replace("'''type Filter = 'all' | 'active' | 'completed' ''',", "'''type Filter = 'all' | 'active' | 'completed''',")
+          text = text.replace("'''type ViewMode = 'list' | 'grid' ''',", '"""type ViewMode = \'list\' | \'grid\'""",')
+          text = text.replace("'''type Filter = 'all' | 'active' | 'completed' ''',", '"""type Filter = \'all\' | \'active\' | \'completed\'""",')
           p.write_text(text)
           PY
       - run: python .github/scripts/public-apps-polish.py
+      - name: Clean generated lint warning
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/components/dashboard/PF_ImageLabeler.tsx')
+          text = p.read_text()
+          text = text.replace('  }, [currentIndex, currentImage, images.length])', '  }, [currentIndex, currentImage, images.length, goTo, approveAndNext])')
+          p.write_text(text)
+          PY
       - run: npm ci
       - run: npm run verify:release
       - run: npx vitepress build docs
