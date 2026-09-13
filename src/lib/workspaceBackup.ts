@@ -1,5 +1,6 @@
 import type { AppState } from '@/types'
 import type { CategoryOverride } from './categories'
+import { canonicalAppId } from './registry'
 
 export const WORKSPACE_BACKUP_FORMAT = 'appforge-workspace'
 export const WORKSPACE_BACKUP_VERSION = 3
@@ -36,9 +37,10 @@ export type WorkspaceImportPreview = {
 }
 
 const isRecord = (value: unknown): value is UnknownRecord => Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+const normalizeAppIds = (items: string[]) => [...new Set(items.map(canonicalAppId))]
 const stringArray = (value: unknown, fallback: string[], max = MAX_COLLECTION_ITEMS) => Array.isArray(value)
-  ? [...new Set(value.filter((item): item is string => typeof item === 'string').map((item) => item.slice(0, 240)))].slice(0, max)
-  : fallback
+  ? normalizeAppIds(value.filter((item): item is string => typeof item === 'string').map((item) => item.slice(0, 240))).slice(0, max)
+  : normalizeAppIds(fallback).slice(0, max)
 const recordArray = <T>(value: unknown, fallback: T[], max = MAX_COLLECTION_ITEMS) => Array.isArray(value)
   ? value.filter((item) => isRecord(item) && typeof item.id === 'string' && item.id.length > 0).slice(0, max) as T[]
   : fallback
@@ -104,7 +106,11 @@ export const createWorkspaceBackup = (params: {
   version: WORKSPACE_BACKUP_VERSION,
   exportedAt: params.exportedAt,
   accountId: params.accountId,
-  workspace: { settings: params.workspace.settings, favorites: params.workspace.favorites, recentApps: params.workspace.recentApps },
+  workspace: {
+    settings: params.workspace.settings,
+    favorites: normalizeAppIds(params.workspace.favorites),
+    recentApps: normalizeAppIds(params.workspace.recentApps).slice(0, 20),
+  },
   categoryOverrides: params.categoryOverrides || {},
   widgets: params.widgets || {},
 })
