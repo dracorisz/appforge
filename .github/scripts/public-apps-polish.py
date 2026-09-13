@@ -57,7 +57,7 @@ patch('src/components/public/SvgIconsBrowser.tsx',
 
 # Crypto Track: quick market-move lenses.
 patch('src/components/dashboard/PF_CryptoTrack.tsx',
-'''type ViewMode = 'list' | 'grid' ''',
+"""type ViewMode = 'list' | 'grid'""",
 '''type ViewMode = 'list' | 'grid'\ntype MarketView = 'all' | 'gainers' | 'losers' ''')
 patch('src/components/dashboard/PF_CryptoTrack.tsx',
 '''  const [watchlistOnly, setWatchlistOnly] = React.useState(false)''',
@@ -85,7 +85,7 @@ patch('src/components/dashboard/PF_WeatherNow.tsx',
 
 # Task List: useful display sorting without schema changes.
 patch('src/components/dashboard/TaskList.tsx',
-'''type Filter = 'all' | 'active' | 'completed' ''',
+"""type Filter = 'all' | 'active' | 'completed'""",
 '''type Filter = 'all' | 'active' | 'completed'\ntype SortMode = 'newest' | 'oldest' | 'active-first' ''')
 patch('src/components/dashboard/TaskList.tsx',
 '''  const [filter, setFilter] = React.useState<Filter>('all')''',

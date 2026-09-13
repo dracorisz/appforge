@@ -14,6 +14,7 @@ type Task = {
 }
 
 type Filter = 'all' | 'active' | 'completed'
+type SortMode = 'newest' | 'oldest' | 'active-first' 
 
 const STORAGE_KEY = 'appforge-task-list-v1'
 const DELETED_KEY = 'appforge-task-list-deleted-v1'
@@ -63,6 +64,7 @@ export function TaskList() {
   const [title, setTitle] = React.useState('')
   const [query, setQuery] = React.useState('')
   const [filter, setFilter] = React.useState<Filter>('all')
+  const [sortMode, setSortMode] = React.useState<SortMode>('newest')
   const [editingId, setEditingId] = React.useState<string | null>(null)
   const [editingTitle, setEditingTitle] = React.useState('')
   const [syncing, setSyncing] = React.useState(false)
@@ -227,6 +229,10 @@ export function TaskList() {
     if (filter === 'active' && task.completed) return false
     if (filter === 'completed' && !task.completed) return false
     return !normalizedQuery || task.title.toLowerCase().includes(normalizedQuery)
+  }).sort((a, b) => {
+    if (sortMode === 'active-first' && a.completed !== b.completed) return Number(a.completed) - Number(b.completed)
+    const delta = (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0)
+    return sortMode === 'oldest' ? -delta : delta
   })
 
   return (
@@ -241,7 +247,7 @@ export function TaskList() {
       <Card className="p-4 sm:p-5">
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"><div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">New task</label><Input value={title} maxLength={MAX_TITLE} onChange={(event) => setTitle(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') addTask() }} placeholder="Add the next concrete task…" aria-label="New task" /></div><Button onClick={addTask} disabled={!title.trim()} className="w-full sm:w-auto"><Plus className="h-4 w-4" /> Add task</Button></div>
         {error && <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">{error}</div>}
-        <div className="mt-4 grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center"><label className="relative block"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search tasks…" className="pl-9" aria-label="Search tasks" /></label><div className="flex flex-wrap items-center gap-2">{(['all', 'active', 'completed'] as Filter[]).map((value) => <button key={value} type="button" onClick={() => setFilter(value)} className={`rounded-xl border px-3 py-2 text-xs font-medium capitalize transition-colors ${filter === value ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'}`}>{value}</button>)}<Button variant="ghost" size="sm" onClick={() => void completeAll()} disabled={!active}><Check className="h-4 w-4" /> Complete all</Button><Button variant="ghost" size="sm" onClick={() => void clearCompleted()} disabled={!completed}><Trash2 className="h-4 w-4" /> Clear completed</Button></div></div>
+        <div className="mt-4 grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center"><label className="relative block"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search tasks…" className="pl-9" aria-label="Search tasks" /></label><div className="flex flex-wrap items-center gap-2">{(['all', 'active', 'completed'] as Filter[]).map((value) => <button key={value} type="button" onClick={() => setFilter(value)} className={`rounded-xl border px-3 py-2 text-xs font-medium capitalize transition-colors ${filter === value ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'}`}>{value}</button>)}<Button variant="ghost" size="sm" onClick={() => void completeAll()} disabled={!active}><Check className="h-4 w-4" /> Complete all</Button><Button variant="ghost" size="sm" onClick={() => void clearCompleted()} disabled={!completed}><Trash2 className="h-4 w-4" /> Clear completed</Button><select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)} className="min-h-9 rounded-xl border border-input bg-background px-2 text-xs"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="active-first">Active first</option></select></div></div>
         <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><span>{active} active</span><span>·</span><span>{completed} completed</span><span>·</span><span>{tasks.length} total</span><span>·</span><span>{visibleTasks.length} shown</span></div>
       </Card>
 

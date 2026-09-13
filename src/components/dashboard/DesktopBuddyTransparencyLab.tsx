@@ -228,8 +228,8 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
 
       <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_260px]">
         <div className="rounded-xl border bg-background/45 p-3">
-          <div className="text-xs font-medium text-foreground">Background tolerance: {tolerance}</div>
-          <input type="range" min="14" max="78" step="2" value={tolerance} onChange={(event) => setTolerance(Number(event.target.value))} className="mt-2 w-full" />
+          <div className="flex flex-wrap items-center justify-between gap-2"><div className="text-xs font-medium text-foreground">Background tolerance: {tolerance}</div><div className="flex flex-wrap gap-1">{[[24, 'Preserve'], [38, 'Balanced'], [56, 'Aggressive']].map(([value, label]) => <button key={String(label)} type="button" onClick={() => { setTolerance(Number(value)); setResult(null) }} className={`rounded-xl border px-2 py-1 text-[11px] ${tolerance === Number(value) ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{String(label)}</button>)}</div></div>
+          <input type="range" min="14" max="78" step="2" value={tolerance} onChange={(event) => { setTolerance(Number(event.target.value)); setResult(null) }} className="mt-2 w-full" />
           <p className="mt-1 text-[11px] leading-5 text-muted-foreground">Lower values preserve more of the character; higher values remove more checkerboard/flat background. Re-run repair after changing this value.</p>
         </div>
         <button type="button" disabled={!source || processing} onClick={() => void runRepair()} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eraser className="h-4 w-4" />} Repair background</button>

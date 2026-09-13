@@ -188,6 +188,13 @@ export function PF_CreatorSVG() {
     setConfig(prev => ({ ...prev, ...patch }))
   }
 
+  const applyPreset = (preset: 'portfolio' | 'consulting' | 'open-source') => {
+    if (preset === 'portfolio') setConfig({ ...defaultConfig, tagline: 'BUILD • SHIP • ITERATE • LEARN', available: 'Open to selected projects', milestone: 'Product-focused delivery' })
+    if (preset === 'consulting') setConfig({ ...defaultConfig, title: 'Independent Product Engineer', tagline: 'WEB APPS • AUTOMATION • AI • CLOUD', available: 'Available for consulting', milestone: 'Scoped milestones' })
+    if (preset === 'open-source') setConfig({ ...defaultConfig, title: 'Open-source Builder', tagline: 'TOOLS • LIBRARIES • COMMUNITY • AI', available: 'Open to collaboration', milestone: 'Public roadmap' })
+    hidePreview()
+  }
+
   React.useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl)
@@ -200,6 +207,7 @@ export function PF_CreatorSVG() {
         <Card>
           <AppHeading />
           <h2 className="text-lg font-semibold text-foreground dark:text-foreground">Configuration</h2>
+          <div className="mt-3 flex flex-wrap gap-2"><Button variant="secondary" size="sm" onClick={() => applyPreset('portfolio')}>Portfolio</Button><Button variant="secondary" size="sm" onClick={() => applyPreset('consulting')}>Consulting</Button><Button variant="secondary" size="sm" onClick={() => applyPreset('open-source')}>Open source</Button></div>
           <div className="mt-4 space-y-3">
             <Input label="Name" value={config.name} onChange={(e) => update({ name: e.target.value })} />
             <Input label="Title" value={config.title} onChange={(e) => update({ title: e.target.value })} />

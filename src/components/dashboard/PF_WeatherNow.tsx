@@ -140,6 +140,26 @@ export function PF_WeatherNow() {
     finally { setRefreshing(null) }
   }
 
+  const refreshAll = async () => {
+    if (!cities.length || loading) return
+    setLoading(true); setError('')
+    try {
+      const refreshed = await Promise.allSettled(cities.map((weather) => {
+        const latitude = Number(weather.latitude); const longitude = Number(weather.longitude)
+        return Number.isFinite(latitude) && Number.isFinite(longitude) ? requestWeatherAtCoordinates(latitude, longitude) : requestWeather(weather.location)
+      }))
+      const successful = refreshed.filter((result): result is PromiseFulfilledResult<WeatherData> => result.status === 'fulfilled').map((result) => result.value)
+      setCities(successful.length ? successful : cities)
+      if (successful.length !== cities.length) setError(`Refreshed ${successful.length} of ${cities.length} saved locations.`)
+    } finally { setLoading(false) }
+  }
+
+  const copySummary = async () => {
+    if (!sortedCities.length) return
+    const summary = sortedCities.map((weather) => `${weather.location}: ${displayTemp(weather.temp_c)}, ${weather.condition}, humidity ${weather.humidity}%, wind ${weather.wind_kph.toFixed(1)} km/h`).join('\n')
+    try { await navigator.clipboard.writeText(summary) } catch { setError('Clipboard access was blocked by the browser.') }
+  }
+
   const addPresetSet = async (preset: string[]) => {
     if (loading) return
     setLoading(true); setError('')
@@ -204,6 +224,7 @@ export function PF_WeatherNow() {
         </div>
 
         <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto_auto] md:items-center"><label className="min-w-0 text-xs text-muted-foreground"><span className="mb-1 block font-medium text-foreground">Sidebar weather city</span><select value={sidebarLocation} onChange={(event) => chooseSidebarCity(event.target.value)} className="w-full rounded-xl border border-input bg-background px-2 py-2 text-xs text-foreground"><option value="">First saved city</option>{cities.map((weather) => <option key={weather.location} value={weather.location}>{weather.location}</option>)}</select></label><div className="flex items-center gap-2"><ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" /><select value={sortBy} onChange={(event) => setSortBy(event.target.value as SortBy)} className="rounded-xl border border-input bg-background px-2 py-2 text-xs text-foreground"><option value="name">Name</option><option value="temp">Temperature</option><option value="humidity">Humidity</option><option value="wind">Wind</option></select></div><div className="flex items-center gap-1 rounded-xl border border-border p-1">{(['c', 'f'] as Unit[]).map((value) => <button key={value} onClick={() => setUnit(value)} className={`rounded-xl px-2.5 py-1 text-xs font-medium ${unit === value ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>°{value.toUpperCase()}</button>)}</div><div className="flex items-center gap-1 rounded-xl border border-border p-1"><button onClick={() => setViewMode('grid')} aria-label="Grid view" className={`rounded-xl p-1 ${viewMode === 'grid' ? 'bg-accent' : 'text-muted-foreground hover:text-foreground'}`}><LayoutGrid className="h-3.5 w-3.5" /></button><button onClick={() => setViewMode('list')} aria-label="List view" className={`rounded-xl p-1 ${viewMode === 'list' ? 'bg-accent' : 'text-muted-foreground hover:text-foreground'}`}><List className="h-3.5 w-3.5" /></button></div></div>
+        <div className="mt-3 flex flex-wrap gap-2"><Button variant="secondary" size="sm" onClick={() => void refreshAll()} disabled={!cities.length || loading}><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh all</Button><Button variant="secondary" size="sm" onClick={() => void copySummary()} disabled={!cities.length}>Copy weather summary</Button></div>
         {error && <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">{error}</div>}
       </Card>
 

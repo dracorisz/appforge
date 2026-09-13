@@ -82,4 +82,11 @@ When architecture, routes, app identity, authentication, database schema, provid
 ## UI contribution baseline
 
 Use existing AppForge primitives before adding one-off wrappers. Keep page sections on the standard 16px rhythm, use `rounded-xl`, avoid translate/offset hover motion, and keep textareas/upload/output surfaces compact unless the content genuinely needs a larger editor.
+## Admin session assurance
+
+Admin CRUD requires an AAL2 session. Having a verified authenticator enrolled does not automatically mean the current session is AAL2. When an admin session needs elevation, Admin now asks for the current authenticator code inline; Security is only needed when no verified TOTP factor exists.
+
+## Public tools
+
+The visible public catalog currently contains 29 apps (Landing Builder remains hidden by the live app override). The 1.28 pass adds practical second-step workflows across converters, image tools, generators, DNS/QR/color utilities, weather/crypto/task tools, and creator/icon utilities without changing their public routes.
 

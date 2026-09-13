@@ -264,6 +264,24 @@ export function PF_ImageLabeler() {
     }
   }
 
+  const approveAndNext = () => {
+    if (!currentImage) return
+    updateLabel({ approved: true })
+    if (currentIndex < images.length - 1) goTo(currentIndex + 1)
+  }
+
+  React.useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null
+      if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') return
+      if (event.key === 'ArrowLeft') goTo(currentIndex - 1)
+      if (event.key === 'ArrowRight') goTo(currentIndex + 1)
+      if (event.key.toLowerCase() === 'a' && currentImage) approveAndNext()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [currentIndex, currentImage, images.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const clearFolderLabels = () => {
     if (!images.length) return
     const ids = new Set(images.map((image) => image.id))
@@ -318,7 +336,7 @@ export function PF_ImageLabeler() {
               <label className="mt-4 block text-sm font-medium text-foreground">Tags</label>
               <div className="mt-2 flex gap-2"><Input value={tagInput} onChange={(event) => setTagInput(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); addTag() } }} placeholder="Add tag" /><Button variant="secondary" onClick={addTag}><Tag className="h-4 w-4" /></Button></div>
               <div className="mt-2 flex flex-wrap gap-1.5">{(currentLabel?.tags || []).map((tag) => <button key={tag} onClick={() => removeTag(tag)} className="inline-flex items-center gap-1 rounded-xl bg-muted px-2 py-1 text-xs text-foreground hover:bg-accent">{tag}<X className="h-3 w-3 text-muted-foreground" /></button>)}</div>
-              <Button className="mt-5 w-full" variant={currentLabel?.approved ? 'secondary' : 'primary'} onClick={() => updateLabel({ approved: !currentLabel?.approved })}><Check className="h-4 w-4" /> {currentLabel?.approved ? 'Approved' : 'Approve image'}</Button>
+              <div className="mt-5 grid gap-2 sm:grid-cols-2"><Button variant={currentLabel?.approved ? 'secondary' : 'primary'} onClick={() => updateLabel({ approved: !currentLabel?.approved })}><Check className="h-4 w-4" /> {currentLabel?.approved ? 'Approved' : 'Approve image'}</Button><Button variant="secondary" onClick={approveAndNext} disabled={currentIndex >= images.length - 1 && Boolean(currentLabel?.approved)}>Approve & next</Button></div><p className="mt-2 text-[11px] text-muted-foreground">Keyboard: ← / → navigate · A approves and advances.</p>
             </Card>
 
             <Card>

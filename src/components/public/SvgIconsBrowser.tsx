@@ -62,6 +62,7 @@ export default function SvgIconsBrowser() {
   const [loading, setLoading] = React.useState(false)
   const [visible, setVisible] = React.useState(120)
   const [size, setSize] = React.useState(28)
+  const [scope, setScope] = React.useState<'all' | 'favorites' | 'recent'>('all')
   const [favorites, setFavorites] = React.useState<string[]>(() => loadStored(FAVORITES_KEY))
   const [recents, setRecents] = React.useState<string[]>(() => loadStored(RECENTS_KEY))
   const [message, setMessage] = React.useState('')
@@ -94,9 +95,13 @@ export default function SvgIconsBrowser() {
 
   const filtered = React.useMemo(() => {
     const needle = query.trim().toLowerCase()
-    if (!needle) return icons
-    return icons.filter((icon) => icon.name.toLowerCase().includes(needle))
-  }, [icons, query])
+    return icons.filter((icon) => {
+      const id = iconId(icon.pack, icon.name)
+      if (scope === 'favorites' && !favorites.includes(id)) return false
+      if (scope === 'recent' && !recents.includes(id)) return false
+      return !needle || icon.name.toLowerCase().includes(needle)
+    }).sort((a, b) => scope === 'recent' ? recents.indexOf(iconId(a.pack, a.name)) - recents.indexOf(iconId(b.pack, b.name)) : a.name.localeCompare(b.name))
+  }, [favorites, icons, query, recents, scope])
 
   const remember = React.useCallback((icon: IconRecord) => {
     const id = iconId(icon.pack, icon.name)
@@ -159,6 +164,7 @@ export default function SvgIconsBrowser() {
           <label className="grid gap-1.5 text-sm font-medium">Search component name<span className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input value={query} maxLength={100} onChange={(event) => { setQuery(event.target.value); setVisible(120) }} placeholder="Search e.g. arrow, github, cloud…" className="h-11 w-full rounded-xl border bg-background pl-10 pr-3" /></span></label>
           <label className="grid gap-1.5 text-sm font-medium">Preview size <span className="text-xs font-normal text-muted-foreground">{size}px</span><input type="range" min="18" max="64" value={size} onChange={(event) => setSize(Number(event.target.value))} /></label>
         </div>
+        <div className="mt-3 flex flex-wrap gap-2">{(['all', 'favorites', 'recent'] as const).map((value) => <button key={value} type="button" onClick={() => { setScope(value); setVisible(120) }} className={`rounded-xl border px-3 py-1.5 text-xs font-medium capitalize ${scope === value ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{value === 'favorites' ? `Favorites (${favorites.length})` : value === 'recent' ? `Recent (${recents.length})` : 'All icons'}</button>)}</div>
       </section>
 
       <div aria-live="polite" className="min-h-8 px-1 pt-3 text-xs text-muted-foreground">{loading ? `Loading ${PACKS[pack].label}…` : message}</div>

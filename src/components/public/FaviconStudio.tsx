@@ -69,6 +69,8 @@ const escapeXml = (value: string) => value
   .replaceAll("'", '&apos;')
 
 export default function FaviconStudio() {
+  const [appName, setAppName] = React.useState('My App')
+  const [shortName, setShortName] = React.useState('My App')
   const [text, setText] = React.useState('▲')
   const [background, setBackground] = React.useState('#0f172a')
   const [foreground, setForeground] = React.useState('#ffffff')
@@ -88,8 +90,8 @@ export default function FaviconStudio() {
   const svgDataUrl = React.useMemo(() => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`, [svg])
 
   const manifest = React.useMemo(() => JSON.stringify({
-    name: 'My App',
-    short_name: 'My App',
+    name: appName.trim() || 'My App',
+    short_name: shortName.trim() || appName.trim() || 'My App',
     icons: [
       { src: '/favicon-192.png', sizes: '192x192', type: 'image/png' },
       { src: '/favicon-512.png', sizes: '512x512', type: 'image/png' },
@@ -97,7 +99,7 @@ export default function FaviconStudio() {
     theme_color: background,
     background_color: background,
     display: 'standalone',
-  }, null, 2), [background])
+  }, null, 2), [appName, background, shortName])
 
   const htmlLinks = `<link rel="icon" href="/favicon.ico" sizes="any">\n<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n<link rel="apple-touch-icon" href="/apple-touch-icon.png">\n<link rel="manifest" href="/site.webmanifest">`
 
@@ -177,6 +179,7 @@ export default function FaviconStudio() {
         </div>
 
         <div className="grid gap-4">
+          <div className="grid gap-3 sm:grid-cols-2"><label className="grid gap-1.5 text-sm font-medium">App name<input value={appName} maxLength={80} onChange={(event) => setAppName(event.target.value)} className="h-11 rounded-xl border bg-background px-3 text-sm" /></label><label className="grid gap-1.5 text-sm font-medium">Short name<input value={shortName} maxLength={30} onChange={(event) => setShortName(event.target.value)} className="h-11 rounded-xl border bg-background px-3 text-sm" /></label></div>
           <label className="grid gap-1.5 text-sm font-medium">
             Text or emoji
             <input value={text} onChange={(event) => { setText(event.target.value.slice(0, 4)); setImageData(null) }} className="h-11 rounded-xl border bg-background px-3 text-base" aria-label="Favicon text or emoji" />

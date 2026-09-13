@@ -2,6 +2,20 @@
 
 This file tracks user-visible AppForge product changes. The canonical source is the `main` branch.
 
+## 1.28.0 — September 13, 2026
+
+### Fixed
+- Reverted the global 24px button/input/select cap and the related textarea, upload-target, image and output-area height overrides; shared controls are back to normal accessible sizing.
+- Admin now challenges an already-enrolled TOTP factor inline when the current session still needs AAL2 instead of sending users back to Security in a loop.
+
+### Improved
+- Changelog release cards now group their sections into compact accordions.
+- Advanced all 29 currently visible public apps: richer conversion workflows, image presets/metadata, color eyedropper/shades/contrast, QR density controls, DNS history, labeling shortcuts, background-removal presets, SVG/favicon/icon workflows, crypto market lenses, weather batch actions and Task List sorting.
+- Kept the hidden Landing Builder out of the public-app sweep.
+
+### Documentation
+- Documented the public-app improvement baseline, control-sizing rollback and admin AAL2 behavior in the docs.
+
 ## 1.27.3 — September 13, 2026
 
 ### Fixed

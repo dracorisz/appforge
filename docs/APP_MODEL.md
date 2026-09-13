@@ -117,4 +117,9 @@ Current AppForge pages should compose shared `Card`, `Button`, `Input`, `Textare
 Avoid layout animation that moves cards vertically on hover. Prefer border/background/focus feedback. Empty results should not leave invisible grid wrappers that create extra vertical gaps. Account/popover surfaces must support explicit dismissal and outside-click dismissal.
 
 Settings uses the same component contract as apps: Profile is arranged to use wide-screen space efficiently, Integrations is a compact mosaic rather than equal-height stretched cards, and Admin Console is embedded as a first-class Settings surface.
+## Public app quality baseline (1.28)
+
+Public apps should add workflow leverage, not just wrap one primitive operation. Prefer reversible handoffs, presets, summaries, copy/export actions, safe local history, and route-specific controls where they materially reduce steps. Shared workbenches are the preferred place to improve related apps together.
+
+Do **not** impose a global fixed/max height on native controls, previews, upload areas, textareas, images, or output regions. Shared `Button`, `Input`, `Select`, and `Textarea` own their normal accessible sizing; compactness must be local and intentional.
 

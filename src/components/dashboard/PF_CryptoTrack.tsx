@@ -28,6 +28,7 @@ export interface CryptoCoin {
 type Provider = 'auto' | 'coingecko' | 'coinpaprika'
 type SortBy = 'marketCap' | 'price' | 'change24h' | 'name'
 type ViewMode = 'list' | 'grid'
+type MarketView = 'all' | 'gainers' | 'losers' 
 
 interface CryptoResponse {
   ok: boolean
@@ -73,6 +74,7 @@ export function PF_CryptoTrack() {
   const [sortDir, setSortDir] = React.useState<'asc' | 'desc'>('desc')
   const [page, setPage] = React.useState(1)
   const [watchlistOnly, setWatchlistOnly] = React.useState(false)
+  const [marketView, setMarketView] = React.useState<MarketView>('all')
   const [watchlist, setWatchlist] = React.useState<Set<string>>(() => {
     try {
       const raw = localStorage.getItem(WATCHLIST_KEY)
@@ -126,10 +128,12 @@ export function PF_CryptoTrack() {
     const needle = query.trim().toLowerCase()
     return coins.filter((coin) => {
       if (watchlistOnly && !watchlist.has(coin.id)) return false
+      if (marketView === 'gainers' && coin.change24h <= 0) return false
+      if (marketView === 'losers' && coin.change24h >= 0) return false
       if (!needle) return true
       return coin.name.toLowerCase().includes(needle) || coin.symbol.toLowerCase().includes(needle)
     })
-  }, [coins, query, watchlistOnly, watchlist])
+  }, [coins, marketView, query, watchlistOnly, watchlist])
 
   const sorted = React.useMemo(() => {
     const next = [...filtered]
@@ -146,7 +150,7 @@ export function PF_CryptoTrack() {
 
   React.useEffect(() => {
     setPage(1)
-  }, [query, watchlistOnly, sortBy, sortDir])
+  }, [marketView, query, watchlistOnly, sortBy, sortDir])
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
   const visible = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
@@ -235,6 +239,7 @@ export function PF_CryptoTrack() {
           >
             <Star className={`h-3.5 w-3.5 ${watchlistOnly ? 'fill-current' : ''}`} /> Watchlist {watchlist.size}
           </button>
+          <div className="flex items-center gap-1 rounded-xl border border-border p-1">{(['all', 'gainers', 'losers'] as MarketView[]).map((value) => <button key={value} type="button" onClick={() => setMarketView(value)} className={`rounded-xl px-2 py-1 text-xs font-medium capitalize ${marketView === value ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{value}</button>)}</div>
           <span className="ml-1 text-xs text-muted-foreground">Sort:</span>
           <select value={sortBy} onChange={(event) => setSortBy(event.target.value as SortBy)} className="rounded-xl border border-input bg-background px-2 py-1.5 text-xs text-foreground">
             <option value="marketCap">Market cap</option>
