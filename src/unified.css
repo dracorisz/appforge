@@ -8,6 +8,11 @@
  display: none !important;
 }
 
+/* Legacy app components sometimes wrap their own heading in a first child. The shared shell already renders the heading, so collapse the empty wrapper too. */
+.app-unified-shell .app-content > :where(.space-y-3, .space-y-4, .space-y-5, .space-y-6) > :first-child:has(.app-heading) {
+ display: none !important;
+}
+
 .surface-card:hover,
 .app-page-header:hover {
  transform: none !important;
@@ -46,11 +51,6 @@
 .app-unified-shell :where(pre, [data-output-area]) {
  max-height: 224px;
  overflow: auto;
-}
-
-/* The moved action buttons in these two apps should not create an oversized first-to-second-card gap. */
-[data-compact-app-stack] .space-y-4 > :not([hidden]) ~ :not([hidden]) {
- margin-top: 0.75rem !important;
 }
 
 /* Normalize legacy clickable surfaces to the same border language. */
