@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui'
 import { getAllApps } from '@/lib/registry'
 import { PublicFooter } from '@/components/public/PublicFooter'
-import { loadPublishedFrontendContent } from '@/lib/frontendContent'
+import { FRONTEND_CONTENT_UPDATED_EVENT, loadPublishedFrontendContent } from '@/lib/frontendContent'
 import { PublicHeader } from '@/components/public/PublicHeader'
 import { useAuth } from './AuthProvider'
 import { consumeReturnPath, normalizeReturnPath } from './returnPath'
@@ -51,32 +51,59 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
   const [showAppCount, setShowAppCount] = React.useState(true)
   const [videoTitle, setVideoTitle] = React.useState('See AppForge in action')
   const [videoSummary, setVideoSummary] = React.useState('A short walkthrough of the current AppForge experience.')
-  const apps = React.useMemo(() => getAllApps(), [])
+  const [appCount, setAppCount] = React.useState(() => getAllApps().length)
 
   React.useEffect(() => {
     if (landingOnly || loading || !user) return
     navigate(consumeReturnPath(returnTo), { replace: true })
   }, [landingOnly, loading, navigate, returnTo, user])
 
-  React.useEffect(() => {
-    let active = true
-    loadPublishedFrontendContent('video_teaser').then((records) => {
-      if (!active) return
+  const refreshLandingContent = React.useCallback(async () => {
+    try {
+      const records = await loadPublishedFrontendContent('video_teaser')
       const teaser = records.find((record) => record.slug === LANDING_SLUG) || records[0]
-      if (!teaser) return
-      setShowAppCount(teaser.metadata?.show_active_app_count !== false)
-      if (teaser.title) setVideoTitle(teaser.title)
-      if (teaser.summary) setVideoSummary(teaser.summary)
-      if (teaser.video_url) {
-        const safeUrl = safeExternalUrl(teaser.video_url)
-        if (safeUrl) {
-          setVideoUrl(safeUrl)
-          setVideoEmbedUrl(youtubeEmbed(safeUrl))
-        }
+      if (!teaser) {
+        setShowAppCount(true)
+        setVideoTitle('See AppForge in action')
+        setVideoSummary('A short walkthrough of the current AppForge experience.')
+        setVideoUrl(DEFAULT_VIDEO_URL)
+        setVideoEmbedUrl(DEFAULT_VIDEO_EMBED_URL)
+        return
       }
-    }).catch((teaserError) => console.warn('AppForge video teaser unavailable; using bundled walkthrough.', teaserError))
-    return () => { active = false }
+      setShowAppCount(teaser.metadata?.show_active_app_count !== false)
+      setVideoTitle(teaser.title || 'See AppForge in action')
+      setVideoSummary(teaser.summary || 'A short walkthrough of the current AppForge experience.')
+      const safeUrl = teaser.video_url ? safeExternalUrl(teaser.video_url) : ''
+      if (safeUrl) {
+        setVideoUrl(safeUrl)
+        setVideoEmbedUrl(youtubeEmbed(safeUrl))
+      } else {
+        setVideoUrl(DEFAULT_VIDEO_URL)
+        setVideoEmbedUrl(DEFAULT_VIDEO_EMBED_URL)
+      }
+    } catch (teaserError) {
+      console.warn('AppForge video teaser unavailable; using bundled walkthrough.', teaserError)
+    }
   }, [])
+
+  React.useEffect(() => {
+    const refresh = () => { setAppCount(getAllApps().length); void refreshLandingContent() }
+    const onStorage = (event: StorageEvent) => { if (event.key === 'appforge-frontend-content-updated-at') refresh() }
+    const onVisibility = () => { if (document.visibilityState === 'visible') refresh() }
+    refresh()
+    window.addEventListener(FRONTEND_CONTENT_UPDATED_EVENT, refresh)
+    window.addEventListener('appforge:app-overrides-updated', refresh)
+    window.addEventListener('focus', refresh)
+    window.addEventListener('storage', onStorage)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener(FRONTEND_CONTENT_UPDATED_EVENT, refresh)
+      window.removeEventListener('appforge:app-overrides-updated', refresh)
+      window.removeEventListener('focus', refresh)
+      window.removeEventListener('storage', onStorage)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [refreshLandingContent])
 
   const login = async (provider: AuthProviderName) => {
     if (user) { navigate('/'); return }
@@ -111,7 +138,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
                 {user ? <Button className="h-11 px-5" onClick={() => navigate('/')} disabled={loading}>Open workspace <ArrowRight className="h-4 w-4" /></Button> : <><Button className="h-11 px-5" onClick={() => void login('google')} disabled={Boolean(busyProvider) || loading}><Google className="h-4 w-4" />{loading ? 'Checking session…' : busyProvider === 'google' ? 'Opening Google…' : 'Continue with Google'}</Button><Button variant="secondary" className="h-11 px-5" onClick={() => void login('github')} disabled={Boolean(busyProvider) || loading}><Github className="h-4 w-4" />{busyProvider === 'github' ? 'Opening GitHub…' : 'Continue with GitHub'}</Button></>}
               </div>
               {error && <div role="alert" aria-live="polite" className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
-              {showAppCount && <p className="mt-8 border-t border-border/60 pt-5 text-xs text-muted-foreground"><strong className="font-semibold text-foreground">{apps.length}</strong> active apps · open source</p>}
+              {showAppCount && <p className="mt-8 border-t border-border/60 pt-5 text-xs text-muted-foreground"><strong className="font-semibold text-foreground">{appCount}</strong> active apps · open source</p>}
             </section>
 
             <section className="relative mx-auto w-full max-w-xl lg:max-w-none" aria-label="Public tools and workspace access">
@@ -127,7 +154,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
           <section className="border-t border-border/60 py-8 sm:py-10" aria-labelledby="walkthrough-title">
             <div className="grid gap-5 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
               <div className="lg:pr-3"><div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"><PlayCircle className="h-4 w-4" /> Walkthrough</div><h2 id="walkthrough-title" className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{videoTitle}</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{videoSummary}</p><a href={videoUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Open video <ArrowRight className="h-4 w-4" /></a></div>
-              <div className="overflow-hidden rounded-2xl border border-border/70 bg-black shadow-xl shadow-foreground/5">{videoEmbedUrl ? <iframe src={videoEmbedUrl} title="AppForge product walkthrough" className="aspect-video w-full border-0" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <video src={videoUrl} title="AppForge product walkthrough" className="aspect-video w-full bg-black object-contain" controls preload="metadata" playsInline />}</div>
+              <div className="overflow-hidden rounded-2xl border border-border/70 bg-black shadow-xl shadow-foreground/5">{videoEmbedUrl ? <iframe key={videoEmbedUrl} src={videoEmbedUrl} title="AppForge product walkthrough" className="aspect-video w-full border-0" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <video key={videoUrl} src={videoUrl} title="AppForge product walkthrough" className="aspect-video w-full bg-black object-contain" controls preload="metadata" playsInline />}</div>
             </div>
           </section>
         </main>
