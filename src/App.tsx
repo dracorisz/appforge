@@ -44,7 +44,7 @@ import { loadUserPreferences, saveUserPreferences } from './lib/preferences'
 import { loadCategoryOverrides, saveCategoryOverrides, setCategoryOverrideScope, subscribeCategoryOverrides } from './lib/categories'
 import { stripLegacyMiniAppCommerce } from './lib/legacyMiniApps'
 import { updateSeo } from './lib/seo'
-import { getApp, getManageableApps } from './lib/registry'
+import { canonicalAppId, getApp, getManageableApps } from './lib/registry'
 import { loadAppOverrides } from './lib/appOverrides'
 
 const SettingsPage = React.lazy(() => import('./components/resources/Settings').then((module) => ({ default: module.SettingsPage })))
@@ -53,6 +53,9 @@ const AdminConsolePage = React.lazy(() => import('./components/admin/AdminConsol
 const HuggingFaceGalleryPage = React.lazy(() => import('./components/public/HuggingFaceGalleryPage').then((module) => ({ default: module.HuggingFaceGalleryPage })))
 const PrivacyPolicyPage = React.lazy(() => import('./components/public/LegalPages').then((module) => ({ default: module.PrivacyPolicyPage })))
 const TermsOfServicePage = React.lazy(() => import('./components/public/LegalPages').then((module) => ({ default: module.TermsOfServicePage })))
+const PublicBlogPage = React.lazy(() => import('./components/public/PublicContentPages').then((module) => ({ default: module.PublicBlogPage })))
+const PublicBlogArticlePage = React.lazy(() => import('./components/public/PublicContentPages').then((module) => ({ default: module.PublicBlogArticlePage })))
+const ChangelogPage = React.lazy(() => import('./components/public/ChangelogPage').then((module) => ({ default: module.ChangelogPage })))
 const FaviconStudio = React.lazy(() => import('./components/public/FaviconStudio'))
 const SvgIconsBrowser = React.lazy(() => import('./components/public/SvgIconsBrowser'))
 const LandingBuilder = React.lazy(() => import('./components/public/LandingBuilder'))
@@ -76,20 +79,26 @@ const defaultState: AppState = {
   recentApps: [],
 }
 
+const normalizeAppIds = (items: unknown, max?: number) => {
+  if (!Array.isArray(items)) return []
+  const normalized = [...new Set(items.filter((item): item is string => typeof item === 'string').map(canonicalAppId))]
+  return typeof max === 'number' ? normalized.slice(0, max) : normalized
+}
+
 const normalizeState = (parsed: Partial<AppState>, base: AppState = defaultState): AppState => ({
   ...base,
   ...parsed,
   settings: { ...base.settings, ...(parsed.settings || {}) },
   miniApps: stripLegacyMiniAppCommerce(Array.isArray(parsed.miniApps) ? parsed.miniApps : base.miniApps),
-  favorites: Array.isArray(parsed.favorites) ? parsed.favorites : base.favorites,
-  recentApps: Array.isArray(parsed.recentApps) ? parsed.recentApps : base.recentApps,
+  favorites: normalizeAppIds(parsed.favorites ?? base.favorites),
+  recentApps: normalizeAppIds(parsed.recentApps ?? base.recentApps, 20),
   documentReadiness: Array.isArray(parsed.documentReadiness) ? parsed.documentReadiness : base.documentReadiness,
   messages: Array.isArray(parsed.messages) ? parsed.messages : base.messages,
 })
 
 const hydrateStoredState = (raw: string, base: AppState = defaultState): AppState => normalizeState(JSON.parse(raw) as Partial<AppState>, base)
 const workspaceStorageKey = (userId: string) => `appforge-workplan-v1:${userId}`
-const persistedWorkspace = (state: AppState) => ({ ...state, miniApps: stripLegacyMiniAppCommerce(state.miniApps) })
+const persistedWorkspace = (state: AppState) => ({ ...state, favorites: normalizeAppIds(state.favorites), recentApps: normalizeAppIds(state.recentApps, 20), miniApps: stripLegacyMiniAppCommerce(state.miniApps) })
 
 const loadScopedWorkspace = (userId: string): AppState => {
   try {
@@ -195,8 +204,12 @@ function App() {
     return subscribeCategoryOverrides(() => { void saveUserPreferences(user.id, { categoryOverrides: loadCategoryOverrides() }).catch((error) => console.error('AppForge category sync failed', error)) })
   }, [user, remoteReady])
 
-  const addToRecent = (appId: string) => setState((prev) => ({ ...prev, recentApps: [appId, ...(prev.recentApps || []).filter((id) => id !== appId)].slice(0, 20) }))
-  const toggleFavorite = (appId: string) => setState((prev) => ({ ...prev, favorites: (prev.favorites || []).includes(appId) ? (prev.favorites || []).filter((id) => id !== appId) : [...(prev.favorites || []), appId] }))
+  const addToRecent = (appId: string) => setState((prev) => ({ ...prev, recentApps: [canonicalAppId(appId), ...(prev.recentApps || []).map(canonicalAppId).filter((id) => id !== canonicalAppId(appId))].slice(0, 20) }))
+  const toggleFavorite = (appId: string) => setState((prev) => {
+    const id = canonicalAppId(appId)
+    const current = normalizeAppIds(prev.favorites)
+    return { ...prev, favorites: current.includes(id) ? current.filter((item) => item !== id) : [...current, id] }
+  })
   const dashboard = <PublicDashboard state={state} onOpenApp={addToRecent} onToggleFavorite={toggleFavorite} />
   const requestedPath = `${location.pathname}${location.search}${location.hash}`
 
@@ -205,6 +218,9 @@ function App() {
   if (routeApp?.visible === false) return <Navigate to={user ? '/' : '/explore'} replace />
   if (location.pathname === '/privacy') return lazyPage(<PrivacyPolicyPage />)
   if (location.pathname === '/terms') return lazyPage(<TermsOfServicePage />)
+  if (location.pathname === '/blog') return lazyPage(<PublicBlogPage />)
+  if (location.pathname.startsWith('/blog/')) return lazyPage(<PublicBlogArticlePage slug={decodeURIComponent(location.pathname.slice('/blog/'.length))} />)
+  if (location.pathname === '/changelog') return lazyPage(<ChangelogPage />)
   if (location.pathname === '/landing') return <LoginPage landingOnly />
   if (location.pathname === '/explore') return lazyPage(<PublicAppsPage />)
   if (location.pathname === '/login') return <LoginPage />
