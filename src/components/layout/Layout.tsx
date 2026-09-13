@@ -4,6 +4,7 @@ import { Sidebar, MobileHeader } from './Sidebar'
 import { Footer } from './Footer'
 import { BackToTop } from './BackToTop'
 import { ProjectPulse } from './ProjectPulse'
+import { AppHeading } from './AppHeading'
 import { DesktopBuddyOverlay } from '@/components/dashboard/DesktopBuddyOverlay'
 
 export function Layout({ children, currentVersion }: { children: React.ReactNode; currentVersion?: string }) {
@@ -11,6 +12,7 @@ export function Layout({ children, currentVersion }: { children: React.ReactNode
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)
   const menuTriggerRef = React.useRef<HTMLButtonElement | null>(null)
   const location = useLocation()
+  const isAppRoute = location.pathname.startsWith('/apps/')
   const showProjectPulse = location.pathname === '/' || location.pathname === '/recent'
   const showDesktopBuddy = location.pathname !== '/apps/desktop-buddy'
 
@@ -48,10 +50,17 @@ export function Layout({ children, currentVersion }: { children: React.ReactNode
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <MobileHeader onOpen={() => setMobileOpen(true)} triggerRef={menuTriggerRef} />
         <main className="flex-1 overflow-y-auto p-4 lg:p-8">
-          <div className="mx-auto min-w-0 w-full max-w-[1500px]">
+          <div className="mx-auto min-w-0 w-full max-w-7xl">
             {showProjectPulse && <ProjectPulse />}
-            <div className="app-content w-full [&>div:first-child]:!mx-0 [&>div:first-child]:!w-full [&>div:first-child]:!max-w-none [&>div:first-child]:!p-0">
-              {children}
+            <div className={isAppRoute ? 'app-unified-shell w-full' : 'w-full'}>
+              {isAppRoute && (
+                <section className="app-page-header surface-card mb-5 rounded-xl border border-border/80 p-4 sm:p-5">
+                  <AppHeading />
+                </section>
+              )}
+              <div className={`app-content w-full [&>div:first-child]:!mx-0 [&>div:first-child]:!w-full [&>div:first-child]:!max-w-none [&>div:first-child]:!p-0 ${isAppRoute ? '[&_.app-heading]:hidden' : ''}`}>
+                {children}
+              </div>
             </div>
           </div>
         </main>
