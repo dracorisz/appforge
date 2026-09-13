@@ -216,7 +216,7 @@ export function ImageWorkbench() {
               <div className="flex flex-wrap gap-2">
                 {definition.mode !== 'metadata' && <Button onClick={() => void process()} disabled={working}>{working ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />} Process</Button>}
                 {outputBlob && <Button variant="secondary" onClick={download}><Download className="h-4 w-4" /> Download</Button>}
-                <label><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="hidden" onChange={(event) => { void acceptFile(event.target.files?.[0]); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm font-medium hover:bg-accent"><ImageIcon className="h-4 w-4" /> Replace image</span></label>
+                <label><input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="hidden" onChange={(event) => { void acceptFile(event.target.files?.[0]); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border/70 px-3 py-2 text-sm font-medium hover:bg-accent"><ImageIcon className="h-4 w-4" /> Replace image</span></label>
               </div>
             </div>
           </div>

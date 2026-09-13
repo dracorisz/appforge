@@ -1,25 +1,42 @@
 import React, { useState } from 'react'
 import { Copy, Check, X } from 'lucide-react'
 
-export function Tabs({ tabs, active, onChange }: { tabs: { id: string; label: string }[]; active: string; onChange: (id: string) => void }) {
+export type TabItem = {
+  id: string
+  label: React.ReactNode
+  icon?: React.ComponentType<{ className?: string }>
+  disabled?: boolean
+}
+
+export function Tabs({ tabs, active, onChange, ariaLabel = 'Sections', className = '' }: {
+  tabs: TabItem[]
+  active: string
+  onChange: (id: string) => void
+  ariaLabel?: string
+  className?: string
+}) {
   return (
-    <div className="flex min-h-11 gap-1 overflow-x-auto rounded-xl border border-border/70 bg-card/70 p-1" role="tablist" aria-label="Sections">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          type="button"
-          role="tab"
-          aria-selected={active === tab.id}
-          onClick={() => onChange(tab.id)}
-          className={`min-h-9 shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-[background-color,color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-            active === tab.id
-              ? 'bg-background text-foreground'
-              : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'
-          }`}
-        >
-          {tab.label}
-        </button>
-      ))}
+    <div className={`flex min-h-11 gap-1 overflow-x-auto rounded-xl border border-border/70 bg-card/70 p-1 ${className}`} role="tablist" aria-label={ariaLabel}>
+      {tabs.map((tab) => {
+        const Icon = tab.icon
+        const selected = active === tab.id
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={selected}
+            disabled={tab.disabled}
+            onClick={() => onChange(tab.id)}
+            className={`inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl px-3 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 ${
+              selected ? 'bg-background text-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'
+            }`}
+          >
+            {Icon && <Icon className="h-3.5 w-3.5" />}
+            {tab.label}
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -35,7 +52,7 @@ export function EmptyState({ title, description }: { title: string; description?
 
 export function Toast({ message, onClose }: { message: string; onClose: () => void }) {
   return (
-    <div role="status" aria-live="polite" className="fixed bottom-4 right-4 z-50 flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground">
+    <div role="status" aria-live="polite" className="fixed bottom-4 right-4 z-50 flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm text-primary-foreground">
       <span className="min-w-0 flex-1">{message}</span>
       <button type="button" onClick={onClose} className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl hover:bg-primary-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground" aria-label="Dismiss notification">
         <X className="h-4 w-4" aria-hidden="true" />
@@ -47,8 +64,8 @@ export function Toast({ message, onClose }: { message: string; onClose: () => vo
 export function Progress({ value, max, className = '' }: { value: number; max: number; className?: string }) {
   const pct = max > 0 ? Math.min(100, Math.max(0, Math.round((value / max) * 100))) : 0
   return (
-    <div className={`h-2 w-full overflow-hidden rounded-full bg-secondary ${className}`} role="progressbar" aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.min(max, Math.max(0, value))}>
-      <div className="h-full rounded-full bg-primary transition-all duration-300" style={{ width: `${pct}%` }} />
+    <div className={`h-2 w-full overflow-hidden rounded-xl bg-secondary ${className}`} role="progressbar" aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.min(max, Math.max(0, value))}>
+      <div className="h-full rounded-xl bg-primary transition-all duration-300" style={{ width: `${pct}%` }} />
     </div>
   )
 }

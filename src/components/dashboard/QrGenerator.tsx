@@ -78,20 +78,17 @@ export function QrGenerator() {
 
   return (
     <div className="w-full space-y-5 pb-10">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <AppHeading />
-        <div className="flex flex-wrap gap-2 sm:justify-end"><Button variant="secondary" onClick={() => { setNonce((current) => current + 1); setError('') }} disabled={!url || busy}><RefreshCw className="h-4 w-4" /> Refresh</Button><Button onClick={() => void download()} disabled={!url || busy}><Download className="h-4 w-4" /> {busy ? 'Downloading…' : 'Download'}</Button></div>
-      </div>
+      <AppHeading />
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
         <Card className="p-5">
-          <Tabs tabs={[{ id: 'text', label: 'Text / URL' }, { id: 'wifi', label: 'Wi-Fi' }]} active={mode} onChange={(id) => changeMode(id as Mode)} />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center"><Tabs className="min-w-0 flex-1" tabs={[{ id: 'text', label: 'Text / URL' }, { id: 'wifi', label: 'Wi-Fi' }]} active={mode} onChange={(id) => changeMode(id as Mode)} ariaLabel="QR content type" /><div className="flex flex-wrap gap-2 sm:ml-auto"><Button variant="secondary" onClick={() => { setNonce((current) => current + 1); setError('') }} disabled={!url || busy}><RefreshCw className="h-4 w-4" /> Refresh</Button><Button onClick={() => void download()} disabled={!url || busy}><Download className="h-4 w-4" /> {busy ? 'Downloading…' : 'Download'}</Button></div></div>
 
           {mode === 'text' ? <div className="mt-5"><Textarea label="Content" value={value} onChange={(event) => { setValue(event.target.value); setError('') }} rows={6} placeholder="URL or text" /></div> : <div className="mt-5 grid gap-4 sm:grid-cols-2"><Input label="Network name" value={ssid} onChange={(event) => { setSsid(event.target.value); setError('') }} /><Input label="Password" type="password" value={password} onChange={(event) => { setPassword(event.target.value); setError('') }} disabled={security === 'nopass'} /><Select label="Security" value={security} onChange={(event) => { setSecurity(event.target.value as typeof security); setError('') }}><option value="WPA">WPA / WPA2</option><option value="WEP">WEP</option><option value="nopass">Open network</option></Select><div className="flex min-h-10 items-end pb-2"><Checkbox checked={hidden} onChange={setHidden} label="Hidden network" /></div></div>}
 
           <div className="mt-5 grid gap-4 sm:grid-cols-3"><Select label="Size" value={size} onChange={(event) => setSize(Number(event.target.value))}>{[192,256,320,512,768].map((option) => <option key={option} value={option}>{option}px</option>)}</Select><Select label="Margin" value={margin} onChange={(event) => setMargin(Number(event.target.value))}>{[0,1,2,4,8].map((option) => <option key={option} value={option}>{option}</option>)}</Select><Select label="Format" value={format} onChange={(event) => setFormat(event.target.value as Format)}><option value="png">PNG</option><option value="svg">SVG</option></Select></div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-2"><Button variant="secondary" onClick={() => void copyPayload()} disabled={!payload}><Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy encoded value'}</Button>{url && <a href={url} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border/70 bg-background px-3 py-2 text-sm font-medium transition-[background-color,box-shadow] hover:bg-accent"><ExternalLink className="h-4 w-4" /> Open image</a>}</div>
+          <div className="mt-5 flex flex-wrap items-center gap-2"><Button variant="secondary" onClick={() => void copyPayload()} disabled={!payload}><Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy encoded value'}</Button>{url && <a href={url} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border/70 bg-background px-3 py-2 text-sm font-medium transition-[background-color,box-shadow] hover:bg-accent"><ExternalLink className="h-4 w-4" /> Open image</a>}</div>
           {error && <div role="alert" className="mt-4 flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />{error}</div>}
         </Card>
 

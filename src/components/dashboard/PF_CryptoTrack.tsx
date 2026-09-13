@@ -154,7 +154,7 @@ export function PF_CryptoTrack() {
   const renderLogo = (coin: CryptoCoin) => {
     if (failedImages.has(coin.id)) {
       return (
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-xs font-bold text-foreground">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted text-xs font-bold text-foreground">
           {coin.symbol.slice(0, 3)}
         </div>
       )
@@ -165,7 +165,7 @@ export function PF_CryptoTrack() {
         src={coin.image || localLogo(coin)}
         alt=""
         loading="lazy"
-        className="h-9 w-9 rounded-full object-contain"
+        className="h-9 w-9 rounded-xl object-contain"
         onError={(event) => {
           if (coin.image && event.currentTarget.src !== new URL(localLogo(coin), window.location.origin).href) {
             event.currentTarget.src = localLogo(coin)
@@ -193,7 +193,6 @@ export function PF_CryptoTrack() {
         </Button>
       </div>
 
-      {resolvedProvider && <p className="text-xs text-muted-foreground">Market data source: {resolvedProvider}</p>}
       <Card>
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-end">
           <div>
@@ -224,9 +223,9 @@ export function PF_CryptoTrack() {
               <option value="coinpaprika">CoinPaprika</option>
             </select>
           </div>
-          <div className="flex items-center gap-1 rounded-lg border border-border p-1">
-            <button onClick={() => setViewMode('list')} aria-label="List view" className={`rounded-xlp-1.5 ${viewMode === 'list' ? 'bg-accent' : 'text-muted-foreground hover:text-foreground'}`}><List className="h-4 w-4" /></button>
-            <button onClick={() => setViewMode('grid')} aria-label="Grid view" className={`rounded-xlp-1.5 ${viewMode === 'grid' ? 'bg-accent' : 'text-muted-foreground hover:text-foreground'}`}><LayoutGrid className="h-4 w-4" /></button>
+          <div className="flex items-center gap-1 rounded-xl border border-border p-1">
+            <button onClick={() => setViewMode('list')} aria-label="List view" className={`rounded-xl p-1.5 ${viewMode === 'list' ? 'bg-accent' : 'text-muted-foreground hover:text-foreground'}`}><List className="h-4 w-4" /></button>
+            <button onClick={() => setViewMode('grid')} aria-label="Grid view" className={`rounded-xl p-1.5 ${viewMode === 'grid' ? 'bg-accent' : 'text-muted-foreground hover:text-foreground'}`}><LayoutGrid className="h-4 w-4" /></button>
           </div>
         </div>
 
@@ -248,11 +247,11 @@ export function PF_CryptoTrack() {
           <button onClick={() => setSortDir((value) => value === 'asc' ? 'desc' : 'asc')} className="rounded-xl border border-border px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground">
             {sortDir === 'desc' ? 'Descending' : 'Ascending'}
           </button>
-          {updatedAt && <span className="ml-auto text-xs text-muted-foreground">Updated {new Date(updatedAt).toLocaleTimeString()}</span>}
+          <div className="ml-auto flex flex-wrap items-center gap-3 text-xs text-muted-foreground">{resolvedProvider && <span>Source: {resolvedProvider}</span>}{updatedAt && <span>Updated {new Date(updatedAt).toLocaleTimeString()}</span>}</div>
         </div>
 
         {error && (
-          <div className="mt-4 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">
+          <div className="mt-4 flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>

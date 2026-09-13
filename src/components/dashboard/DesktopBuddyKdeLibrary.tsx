@@ -77,7 +77,7 @@ export function DesktopBuddyKdeLibrary() {
           <h2 className="text-lg font-semibold">KDE Community library</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Choose verified Konqi and Katie artwork from the KDE Community Wiki. Source, author and license metadata stay attached to the selected character.</p>
         </div>
-        <a href="https://community.kde.org/Promo/Material/Mascots" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium hover:bg-accent">KDE mascot catalog <ExternalLink className="h-3.5 w-3.5" /></a>
+        <a href="https://community.kde.org/Promo/Material/Mascots" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium hover:bg-accent">KDE mascot catalog <ExternalLink className="h-3.5 w-3.5" /></a>
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -94,8 +94,8 @@ export function DesktopBuddyKdeLibrary() {
                 <p className="mt-1 min-h-10 text-[11px] leading-5 text-muted-foreground">{starter.note}</p>
                 <p className="mt-2 min-h-10 text-[10px] leading-4 text-muted-foreground">{starter.author}<br />{starter.license}</p>
                 <div className="mt-auto flex gap-2 pt-3">
-                  <button type="button" onClick={() => selectStarter(starter)} className="flex-1 rounded-lg border px-2 py-2 text-xs font-semibold hover:bg-accent">{active ? 'Active' : 'Use character'}</button>
-                  <a href={source} target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-lg border text-muted-foreground hover:bg-accent hover:text-foreground" aria-label={`Open source page for ${starter.name}`}><ExternalLink className="h-3.5 w-3.5" /></a>
+                  <button type="button" onClick={() => selectStarter(starter)} className="flex-1 rounded-xl border px-2 py-2 text-xs font-semibold hover:bg-accent">{active ? 'Active' : 'Use character'}</button>
+                  <a href={source} target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-xl border text-muted-foreground hover:bg-accent hover:text-foreground" aria-label={`Open source page for ${starter.name}`}><ExternalLink className="h-3.5 w-3.5" /></a>
                 </div>
               </div>
             </article>

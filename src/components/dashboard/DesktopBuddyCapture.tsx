@@ -175,9 +175,9 @@ export function DesktopBuddyCapture() {
           <div className="flex flex-col gap-3 border-t p-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-xs text-muted-foreground"><span className="font-medium text-foreground">{capture.width} × {capture.height}</span> · {capture.source === 'screen' ? 'browser capture' : 'imported fallback'}</div>
             <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={() => downloadCapture(capture)} className="inline-flex min-h-9 items-center gap-2 rounded-lg border px-3 text-xs font-semibold hover:bg-accent"><Download className="h-3.5 w-3.5" /> Download PNG</button>
-              <button type="button" disabled={Boolean(busy)} onClick={() => void saveToVault()} className="inline-flex min-h-9 items-center gap-2 rounded-lg border px-3 text-xs font-semibold hover:bg-accent disabled:opacity-50">{busy === 'save' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} Save to Media Vault</button>
-              <span className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-emerald-500/25 bg-emerald-500/5 px-3 text-xs text-emerald-600 dark:text-emerald-400"><Check className="h-3.5 w-3.5" /> Local preview</span>
+              <button type="button" onClick={() => downloadCapture(capture)} className="inline-flex min-h-9 items-center gap-2 rounded-xl border px-3 text-xs font-semibold hover:bg-accent"><Download className="h-3.5 w-3.5" /> Download PNG</button>
+              <button type="button" disabled={Boolean(busy)} onClick={() => void saveToVault()} className="inline-flex min-h-9 items-center gap-2 rounded-xl border px-3 text-xs font-semibold hover:bg-accent disabled:opacity-50">{busy === 'save' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} Save to Media Vault</button>
+              <span className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-emerald-500/25 bg-emerald-500/5 px-3 text-xs text-emerald-600 dark:text-emerald-400"><Check className="h-3.5 w-3.5" /> Local preview</span>
             </div>
           </div>
         </div>

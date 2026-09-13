@@ -223,7 +223,7 @@ export function PF_CreatorSVG() {
         {previewUrl && (
           <Card>
             <h2 className="text-lg font-semibold text-foreground dark:text-foreground">Live Preview</h2>
-            <div className="mt-4 overflow-hidden rounded-lg border border-border dark:border-border">
+            <div className="mt-4 overflow-hidden rounded-xl border border-border dark:border-border">
               <img src={previewUrl} alt="Header preview" className="h-auto w-full" />
             </div>
             <div className="mt-4">

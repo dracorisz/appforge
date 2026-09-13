@@ -22,13 +22,13 @@ export function StoryStudioTeaserCard() {
           <h3 className="text-base font-semibold tracking-tight text-white sm:text-lg">Dragon Arena teaser</h3>
           <p className="mt-1 text-[11px] text-white/55">Visual storytelling showcase</p>
         </div>
-        <div className="pointer-events-none absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/55 px-2.5 py-1 text-[10px] font-medium text-white backdrop-blur-sm">
+        <div className="pointer-events-none absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-black/55 px-2.5 py-1 text-[10px] font-medium text-white backdrop-blur-sm">
           <Sparkles className="h-3 w-3" /> Teaser
         </div>
       </div>
       <div className="flex items-center justify-between gap-3 border-t border-white/10 px-4 py-3">
         <p className="line-clamp-1 text-[11px] text-white/50">A short look at Story Studio’s visual direction.</p>
-        <a href={TEASER_WATCH_URL} target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-white/10 bg-black/35 px-2.5 py-2 text-[11px] font-medium text-white/75 backdrop-blur hover:bg-white/10 hover:text-white">
+        <a href={TEASER_WATCH_URL} target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-white/10 bg-black/35 px-2.5 py-2 text-[11px] font-medium text-white/75 backdrop-blur hover:bg-white/10 hover:text-white">
           Watch <ExternalLink className="h-3.5 w-3.5" />
         </a>
       </div>

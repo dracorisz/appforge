@@ -258,8 +258,8 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-background/45 p-3">
           <div className="text-xs text-muted-foreground"><span className="font-medium text-foreground">{result.width} × {result.height}</span> · {result.transparentPercent.toFixed(1)}% transparent/feathered pixels</div>
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => downloadResult(result, source.name)} className="inline-flex min-h-9 items-center gap-2 rounded-lg border px-3 text-xs font-semibold hover:bg-accent"><Download className="h-3.5 w-3.5" /> Download PNG</button>
-            {!standalone && <button type="button" onClick={applyToBuddy} className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground"><Check className="h-3.5 w-3.5" /> Use in Buddy</button>}
+            <button type="button" onClick={() => downloadResult(result, source.name)} className="inline-flex min-h-9 items-center gap-2 rounded-xl border px-3 text-xs font-semibold hover:bg-accent"><Download className="h-3.5 w-3.5" /> Download PNG</button>
+            {!standalone && <button type="button" onClick={applyToBuddy} className="inline-flex min-h-9 items-center gap-2 rounded-xl bg-primary px-3 text-xs font-semibold text-primary-foreground"><Check className="h-3.5 w-3.5" /> Use in Buddy</button>}
           </div>
         </div>
       )}

@@ -11,7 +11,7 @@ export function Footer({ version: _version }: { version?: string }) {
         <span className="truncate">AppForge — Simple, powerful tools</span>
         <button
           onClick={() => navigate('/')}
-          className="w-fit shrink-0 rounded-full transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-ring/30"
+          className="w-fit shrink-0 rounded-xl transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-ring/30"
           aria-label="Open AppForge dashboard"
         >
           <BuildBadge />

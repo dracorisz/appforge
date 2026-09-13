@@ -11,7 +11,7 @@ function LegalShell({ title, intro, children }: { title: string; intro: string; 
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <main className="py-8">
           <div className="mb-8">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/55 px-3 py-1.5 text-xs font-medium text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5" /> Public beta policy</div>
+            <div className="mb-3 inline-flex items-center gap-2 rounded-xl border border-border/70 bg-background/55 px-3 py-1.5 text-xs font-medium text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5" /> Public beta policy</div>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">{intro}</p>
             <p className="mt-2 text-xs text-muted-foreground">Last updated: {LAST_UPDATED}</p>

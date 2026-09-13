@@ -77,7 +77,7 @@ export function MediaShowbox({
             <h2 className="truncate text-sm font-semibold text-foreground">{title}</h2>
             <p className="truncate text-xs text-muted-foreground">{source}</p>
           </div>
-          <button onClick={onClose} className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close preview"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close preview"><X className="h-4 w-4" /></button>
         </header>
 
         <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-black p-2 sm:p-4">

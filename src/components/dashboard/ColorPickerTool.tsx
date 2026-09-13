@@ -1,4 +1,3 @@
-import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 import { Check, Copy, ImagePlus, Palette, Upload } from 'lucide-react'
 import { Button, Card, Input } from '@/components/ui'
@@ -132,8 +131,6 @@ export function ColorPickerTool() {
 
   return (
     <div className="space-y-5 pb-8">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><AppHeading /></div></div>
-
       <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
         <Card className="p-4">
           <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-foreground">Image sampling</h2><p className="mt-0.5 text-xs text-muted-foreground">Click anywhere on the image to sample that pixel.</p></div><Button variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()}><Upload className="h-4 w-4" /> {imageUrl ? 'Replace image' : 'Load image'}</Button></div>
@@ -143,14 +140,14 @@ export function ColorPickerTool() {
             {!imageUrl && <button type="button" onClick={() => fileInputRef.current?.click()} className="flex min-h-72 w-full flex-col items-center justify-center p-8 text-center text-muted-foreground hover:bg-accent/30"><ImagePlus className="h-6 w-6" /><span className="mt-3 text-sm font-medium text-foreground">Choose an image</span><span className="mt-1 text-xs">PNG, JPEG, WebP, GIF, or AVIF · max 25 MB / 50 MP</span></button>}
           </div>
           {fileName && <p className="mt-2 truncate text-xs text-muted-foreground">{fileName}</p>}
-          {palette.length > 0 && <div className="mt-4"><div className="mb-2 flex items-center gap-2 text-xs font-medium text-muted-foreground"><Palette className="h-3.5 w-3.5" /> Extracted palette</div><div className="grid grid-cols-4 gap-2 sm:grid-cols-8">{palette.map((color) => <button key={color} type="button" onClick={() => setHex(color)} title={color} className="aspect-square rounded-lg border border-border/70 transition-colors hover:border-foreground/25" style={{ backgroundColor: color }} />)}</div></div>}
+          {palette.length > 0 && <div className="mt-4"><div className="mb-2 flex items-center gap-2 text-xs font-medium text-muted-foreground"><Palette className="h-3.5 w-3.5" /> Extracted palette</div><div className="grid grid-cols-4 gap-2 sm:grid-cols-8">{palette.map((color) => <button key={color} type="button" onClick={() => setHex(color)} title={color} className="aspect-square rounded-xl border border-border/70 transition-colors hover:border-foreground/25" style={{ backgroundColor: color }} />)}</div></div>}
         </Card>
 
         <Card className="p-4">
           <h2 className="text-sm font-semibold text-foreground">Selected color</h2>
           <div className="mt-4 aspect-[16/8] rounded-xl border border-border/70" style={{ backgroundColor: /^#[0-9A-F]{6}$/i.test(hex) ? hex : '#5B6CFF' }} />
-          <div className="mt-4 grid gap-3 sm:grid-cols-[5rem_1fr]"><input type="color" value={/^#[0-9A-F]{6}$/i.test(hex) ? hex : '#5B6CFF'} onChange={(event) => setHex(event.target.value.toUpperCase())} className="h-10 w-full cursor-pointer rounded-lg border border-border bg-transparent p-1" /><Input value={hex} onChange={(event) => updateHex(event.target.value)} aria-label="HEX color" /></div>
-          <div className="mt-4 space-y-2">{values.map(([label, value]) => <div key={label} className="flex items-center gap-2 rounded-xl border border-border/70 bg-background/35 p-3"><div className="w-10 text-[11px] font-medium text-muted-foreground">{label}</div><code className="min-w-0 flex-1 truncate text-xs text-foreground">{value}</code><button onClick={() => void copy(label, value)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label={`Copy ${label}`}>{copied === label ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}</button></div>)}</div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-[5rem_1fr]"><input type="color" value={/^#[0-9A-F]{6}$/i.test(hex) ? hex : '#5B6CFF'} onChange={(event) => setHex(event.target.value.toUpperCase())} className="h-10 w-full cursor-pointer rounded-xl border border-border bg-transparent p-1" /><Input value={hex} onChange={(event) => updateHex(event.target.value)} aria-label="HEX color" /></div>
+          <div className="mt-4 space-y-2">{values.map(([label, value]) => <div key={label} className="flex items-center gap-2 rounded-xl border border-border/70 bg-background/35 p-3"><div className="w-10 text-[11px] font-medium text-muted-foreground">{label}</div><code className="min-w-0 flex-1 truncate text-xs text-foreground">{value}</code><button onClick={() => void copy(label, value)} className="rounded-xl p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label={`Copy ${label}`}>{copied === label ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}</button></div>)}</div>
           <div className="mt-4 rounded-xl border border-border/70 p-3" style={{ backgroundColor: /^#[0-9A-F]{6}$/i.test(hex) ? hex : '#5B6CFF', color: contrastColor(rgb) }}><div className="text-sm font-semibold">Contrast preview</div><div className="mt-1 text-xs opacity-80">Automatic black/white foreground preview for quick UI checks.</div></div>
           {error && <div className="mt-4 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
         </Card>

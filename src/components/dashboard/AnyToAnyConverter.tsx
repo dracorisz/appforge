@@ -167,7 +167,7 @@ export function AnyToAnyConverter() {
         </div>
 
         {converter && <p className="mt-2 text-xs text-muted-foreground">Converter: <span className="font-medium text-foreground">{converter.name}</span>{converter.description ? ` — ${converter.description}` : ''}</p>}
-        {error && <div className="mt-3 flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3"><AlertCircle className="mt-0.5 h-4 w-4 text-destructive" /><p className="text-sm text-destructive">{error}</p></div>}
+        {error && <div className="mt-3 flex items-start gap-2 rounded-xl border border-destructive/50 bg-destructive/10 p-3"><AlertCircle className="mt-0.5 h-4 w-4 text-destructive" /><p className="text-sm text-destructive">{error}</p></div>}
       </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -185,7 +185,7 @@ export function AnyToAnyConverter() {
       <div className="space-y-3">
         <div><h3 className="text-sm font-medium text-foreground">Available conversions</h3></div>
         <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-          {availableConversions.map(c => <button key={`${c.input}-${c.output}-${c.label}`} onClick={() => { setInputFormat(c.input); setOutputFormat(c.output); setOutput(''); setError('') }} className={`rounded-lg border px-3 py-2 text-left text-sm transition-colors ${inputFormat === c.input && outputFormat === c.output ? 'border-primary bg-accent text-accent-foreground' : 'border-border bg-background hover:bg-accent hover:text-foreground'}`}><div className="flex items-center gap-2"><ArrowLeftRight className="h-3.5 w-3.5 text-muted-foreground" /><span className="font-medium">{c.label}</span></div></button>)}
+          {availableConversions.map(c => <button key={`${c.input}-${c.output}-${c.label}`} onClick={() => { setInputFormat(c.input); setOutputFormat(c.output); setOutput(''); setError('') }} className={`rounded-xl border px-3 py-2 text-left text-sm transition-colors ${inputFormat === c.input && outputFormat === c.output ? 'border-primary bg-accent text-accent-foreground' : 'border-border bg-background hover:bg-accent hover:text-foreground'}`}><div className="flex items-center gap-2"><ArrowLeftRight className="h-3.5 w-3.5 text-muted-foreground" /><span className="font-medium">{c.label}</span></div></button>)}
         </div>
       </div>
     </div>

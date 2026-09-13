@@ -121,7 +121,7 @@ export function SidebarWeather({ collapsed }: { collapsed: boolean }) {
 
   if (collapsed) {
     return (
-      <Link to="/apps/weather-now" title={weather ? `${weather.location} · ${Math.round(weather.temp_c)}°C · ${weather.condition}` : 'Weather Now'} className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 bg-background/45 text-muted-foreground hover:bg-accent hover:text-foreground">
+      <Link to="/apps/weather-now" title={weather ? `${weather.location} · ${Math.round(weather.temp_c)}°C · ${weather.condition}` : 'Weather Now'} className="mx-auto flex h-9 w-9 items-center justify-center rounded-xl border border-border/60 bg-background/45 text-muted-foreground hover:bg-accent hover:text-foreground">
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CloudSun className="h-4 w-4" />}
       </Link>
     )

@@ -28,7 +28,7 @@ export function ProjectPulse() {
         aria-expanded={expanded}
       >
         <div className="flex min-w-0 items-center gap-2">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/45">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-muted/45">
             <Activity className="h-3.5 w-3.5" />
           </span>
           <div className="min-w-0">
@@ -37,7 +37,7 @@ export function ProjectPulse() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/45 px-2 py-1">
+          <span className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/45 px-2 py-1">
             <Boxes className="h-3 w-3" />
             {apps.length} tools · {active} active · {building} building
           </span>
@@ -58,7 +58,7 @@ export function ProjectPulse() {
                 {apps.map((app) => {
                   const score = readinessScore[app.status]
                   return (
-                    <a key={app.id} href={app.route} className="rounded-lg border border-border/60 bg-background/50 p-2.5 transition hover:bg-muted/45">
+                    <a key={app.id} href={app.route} className="rounded-xl border border-border/60 bg-background/50 p-2.5 transition hover:bg-muted/45">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <div className="truncate font-medium text-foreground">{app.name}</div>
@@ -66,8 +66,8 @@ export function ProjectPulse() {
                         </div>
                         <span className="shrink-0 font-medium text-foreground">{score}%</span>
                       </div>
-                      <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
-                        <div className="h-full rounded-full bg-foreground/65" style={{ width: `${score}%` }} />
+                      <div className="mt-2 h-1 overflow-hidden rounded-xl bg-muted">
+                        <div className="h-full rounded-xl bg-foreground/65" style={{ width: `${score}%` }} />
                       </div>
                     </a>
                   )
@@ -75,7 +75,7 @@ export function ProjectPulse() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-border/60 bg-background/50 p-3">
+            <div className="rounded-xl border border-border/60 bg-background/50 p-3">
               <div className="flex items-center gap-2 font-medium text-foreground"><Rocket className="h-3.5 w-3.5" /> Shared release gates</div>
               <div className="mt-2 space-y-1.5">
                 {['Installable manifest + icons', 'Service-worker app shell', 'Responsive tool routes', 'GitHub Pages path-safe build', 'Registry-backed release status'].map((item) => (

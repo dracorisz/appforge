@@ -191,8 +191,8 @@ export function DesktopBuddyAssetLab() {
                 <div className="space-y-3 p-3">
                   <div><div className="text-sm font-semibold">{variant.size} × {variant.size}</div><div className="mt-0.5 text-[11px] text-muted-foreground">PNG {formatBytes(variant.pngBytes)} · WebP {formatBytes(variant.webpBytes)}</div></div>
                   <div className="grid grid-cols-2 gap-2">
-                    <button type="button" onClick={() => downloadUrl(variant.pngUrl, `${safeStem(sourceName)}-${variant.size}.png`)} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border text-xs font-semibold hover:bg-accent"><Download className="h-3.5 w-3.5" /> PNG</button>
-                    <button type="button" disabled={!variant.webpUrl} onClick={() => variant.webpUrl && downloadUrl(variant.webpUrl, `${safeStem(sourceName)}-${variant.size}.webp`)} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border text-xs font-semibold hover:bg-accent disabled:opacity-40"><Download className="h-3.5 w-3.5" /> WebP</button>
+                    <button type="button" onClick={() => downloadUrl(variant.pngUrl, `${safeStem(sourceName)}-${variant.size}.png`)} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border text-xs font-semibold hover:bg-accent"><Download className="h-3.5 w-3.5" /> PNG</button>
+                    <button type="button" disabled={!variant.webpUrl} onClick={() => variant.webpUrl && downloadUrl(variant.webpUrl, `${safeStem(sourceName)}-${variant.size}.webp`)} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border text-xs font-semibold hover:bg-accent disabled:opacity-40"><Download className="h-3.5 w-3.5" /> WebP</button>
                   </div>
                 </div>
               </article>

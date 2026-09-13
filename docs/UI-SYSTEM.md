@@ -45,3 +45,13 @@ toast.info('Refresh complete.')
 ## Seek & Destroy rule
 
 Cleanup is evidence-based. A wrapper or compatibility file is removed only when routes, barrel exports, imports and build references prove it is unused. Thin files are not automatically obsolete; for example, route adapters that remain exported by `src/components/dashboard/index.ts` are still part of the runtime graph.
+
+## Visual and interaction invariants
+
+These rules are project-wide contracts, not per-page preferences:
+
+- **Radius:** `rounded-xl` is the only Tailwind rounding utility allowed in application source. Do not introduce `rounded-sm`, `rounded-md`, `rounded-lg`, `rounded-2xl`, `rounded-full`, directional radius utilities, or arbitrary radius utilities.
+- **Shadows:** static surfaces are shadowless. `shadow-xl` is the only Tailwind shadow utility allowed, and it is reserved for genuinely elevated/transient layers where depth improves hierarchy, such as search-result dropdowns, menus, popovers, and modal-like overlays.
+- **Pointers:** every enabled interactive control must advertise clickability with the pointer cursor. Disabled controls must not appear clickable. Shared controls and the global interaction contract enforce this by default.
+- **Tabs:** every tabbed interface must use the shared `Tabs` component from `@/components/ui`. Do not build page-specific rows of tab buttons. The component owns tab height, radius, focus states, icons, overflow, and active-state styling.
+- **Movement:** avoid decorative hover translation/scale for ordinary application controls and cards. Use color/border changes instead unless motion is intrinsic to the feature itself.

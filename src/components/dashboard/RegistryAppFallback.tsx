@@ -14,7 +14,7 @@ export function RegistryAppFallback() {
         <Construction className="mx-auto h-8 w-8 text-muted-foreground" />
         <h1 className="mt-3 text-xl font-semibold">App route not found</h1>
         <p className="mt-2 text-sm text-muted-foreground">This route is not registered in the AppForge app registry.</p>
-        <Link to="/apps" className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg px-3 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><ArrowLeft className="h-4 w-4" /> Back to apps</Link>
+        <Link to="/apps" className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><ArrowLeft className="h-4 w-4" /> Back to apps</Link>
       </Card>
     )
   }
@@ -30,8 +30,8 @@ export function RegistryAppFallback() {
           <p className="mt-2 leading-6">This route does not currently have a dedicated implementation.</p>
         </div>
         <div className="mt-5 flex flex-wrap gap-3">
-          <Link to="/apps" className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><ArrowLeft className="h-4 w-4" /> All apps</Link>
-          <a href="https://docs.sstoken.space/PROJECT-PULSE" target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Project status <ExternalLink className="h-4 w-4" /></a>
+          <Link to="/apps" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><ArrowLeft className="h-4 w-4" /> All apps</Link>
+          <a href="https://docs.sstoken.space/PROJECT-PULSE" target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Project status <ExternalLink className="h-4 w-4" /></a>
         </div>
       </Card>
     </div>

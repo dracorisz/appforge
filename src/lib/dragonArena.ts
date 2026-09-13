@@ -98,7 +98,7 @@ export const DRAGON_ARENA_OPENINGS: OpeningScenario[] = [
     id: 'roads-of-diamat',
     label: 'Roads of Diamat',
     narrative: 'You arrive at a crossroads where caravans from the far cities of Diamat exchange coins, rumors, maps, and impossible stories. Every city keeps its own laws and loyalties, but the same dragons circle above them all, watching a new alliance begin to form.',
-    choices: ['Join the caravan bound for the mountain cities', 'Trade for a map of the southern river kingdoms', 'Follow the dragon shadow leaving the road'],
+    choices: ['Join the caravan bound for the mountain cities', 'Trade for a map of the southern river kingdoms', 'Follow the dragon  leaving the road'],
   },
 ]
 

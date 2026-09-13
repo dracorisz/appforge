@@ -1,16 +1,16 @@
 /* Canonical cross-app visual contract. Keep interaction feedback subtle and stationary. */
 .app-unified-shell .app-page-header,
 .app-unified-shell .surface-card {
-  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+ transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
 }
 
 .app-unified-shell .app-content .app-heading {
-  display: none !important;
+ display: none !important;
 }
 
 .surface-card:hover,
 .app-page-header:hover {
-  transform: none !important;
+ transform: none !important;
 }
 
 .preview-card,
@@ -19,29 +19,29 @@
 .preview-card img,
 .preview-card:hover img,
 .preview-card:focus-within img {
-  transform: none !important;
+ transform: none !important;
 }
 
 .preview-card:hover img,
 .preview-card:focus-within img {
-  filter: saturate(1.02) contrast(1.01);
+ filter: saturate(1.02) contrast(1.01);
 }
 
-/* Normalize legacy clickable surfaces to the same border/shadow language. */
+/* Normalize legacy clickable surfaces to the same border/ language. */
 .app-unified-shell :where(button, a)[class*="border"] {
-  transition-property: border-color, box-shadow, background-color, color;
-  transition-duration: 180ms;
+ transition-property: border-color, box-shadow, background-color, color;
+ transition-duration: 180ms;
 }
 
 .app-unified-shell :where(button, a)[class*="border"]:hover {
-  /* box-shadow: 0 6px 20px hsl(var(--glass-shadow) / 0.055); */
+ /* box-shadow: 0 6px 20px hsl(var(--glass-shadow) / 0.055); */
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .app-unified-shell *,
-  .preview-card,
-  .preview-card * {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-  }
+ .app-unified-shell *,
+ .preview-card,
+ .preview-card * {
+ transition-duration: 0.01ms !important;
+ animation-duration: 0.01ms !important;
+ }
 }

@@ -218,7 +218,7 @@ export default function FaviconStudio() {
         </div>
 
         <div className="surface-card rounded-xl border p-5 sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold">Manifest & SVG</h2><p className="text-xs text-muted-foreground">Copy-ready project assets.</p></div><div className="flex gap-2"><button type="button" onClick={() => void copy(svg, 'SVG')} className="rounded-lg border px-3 py-2 text-xs font-medium hover:bg-accent">Copy SVG</button><button type="button" onClick={() => void copy(manifest, 'Manifest')} className="rounded-lg border px-3 py-2 text-xs font-medium hover:bg-accent">Copy manifest</button></div></div>
+          <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold">Manifest & SVG</h2><p className="text-xs text-muted-foreground">Copy-ready project assets.</p></div><div className="flex gap-2"><button type="button" onClick={() => void copy(svg, 'SVG')} className="rounded-xl border px-3 py-2 text-xs font-medium hover:bg-accent">Copy SVG</button><button type="button" onClick={() => void copy(manifest, 'Manifest')} className="rounded-xl border px-3 py-2 text-xs font-medium hover:bg-accent">Copy manifest</button></div></div>
           <pre className="mt-4 max-h-64 overflow-auto rounded-xl border bg-background p-3 text-xs leading-5">{manifest}</pre>
         </div>
       </section>

@@ -86,7 +86,7 @@ test('private registry apps remain behind authenticated routes and outside the p
   assert.match(registry, /PRIVATE_APP_IDS = new Set\(\['getter-pro', 'media-vault', 'desktop-buddy', 'ai-dragon-arena'\]\)/)
   assert.match(registry, /canonicalAppId = \(id: string\) => id === 'scrapper-pro' \? 'getter-pro' : id/)
   assert.match(app, /privatePaths = new Set\(\['\/apps\/getter-pro','\/apps\/scrapper-pro','\/apps\/media-vault','\/apps\/desktop-buddy','\/apps\/ai-dragon-arena'\]\)/)
-  assert.match(app, /privatePaths\.has\(location\.pathname\) \|\| location\.pathname === '\/huggingface'/)
+  assert.match(app, /location\.pathname === '\/huggingface'.*HuggingFaceGalleryPage/)
 })
 
 test('only durable repository workflows remain', async () => {
