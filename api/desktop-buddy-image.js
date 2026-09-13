@@ -38,7 +38,7 @@ const refundImageRequest = async (token) => {
   await supabaseRequest('/rest/v1/rpc/refund_dragon_arena_image_request', token, { method: 'POST', body: '{}' }).catch(() => undefined)
 }
 
-const BUDDY_SUFFIX = 'MANDATORY OUTPUT REQUIREMENT: generate exactly one original cute desktop assistant character as a PNG image with a fully transparent alpha background. The background MUST be transparent, not white, not colored, not a checkerboard, and not a scene. Full body, centered, clean silhouette, generous transparent padding around the character, no words, captions, logos, UI, watermark, border, shadow box, floor, scenery, or text. Output MUST be suitable for direct use as a transparent PNG sprite without background-removal cleanup.'
+const BUDDY_SUFFIX = 'MANDATORY OUTPUT REQUIREMENT: generate exactly one original cute desktop assistant character as a PNG image with a genuinely transparent alpha background. The background outside the silhouette MUST be transparent, not white, colored, checkerboard, or scenery. The character itself MUST be fully colored and visually opaque: solid filled body, face, clothing and accessories; no transparent holes, ghosted patches, semi-transparent body parts, cutout textures, checkerboard painted inside the design, or background pattern visible through the character. Keep transparency only outside the silhouette and in natural empty gaps such as between separated limbs. Full body, centered, clean silhouette, generous transparent padding, no words, captions, logos, UI, watermark, border, shadow box, floor or scenery. Output must be suitable for direct use as a polished transparent PNG sprite.'
 
 export default async function handler(req, res) {
   const startedAt = Date.now()
@@ -112,7 +112,7 @@ export default async function handler(req, res) {
         model: generated.model,
         providerModel: generated.providerModel,
         prompt: prompt.slice(0, 900),
-        outputRequirement: 'PNG with fully transparent alpha background',
+        outputRequirement: 'PNG with transparent exterior and fully colored opaque character artwork',
         generatedAt: new Date().toISOString(),
       },
     })
