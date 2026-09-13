@@ -3,7 +3,7 @@ import { Copy, Check, X } from 'lucide-react'
 
 export function Tabs({ tabs, active, onChange }: { tabs: { id: string; label: string }[]; active: string; onChange: (id: string) => void }) {
   return (
-    <div className="flex gap-1 overflow-x-auto border-b border-border" role="tablist" aria-label="Sections">
+    <div className="flex min-h-11 gap-1 overflow-x-auto rounded-xl border border-border/70 bg-card/70 p-1 shadow-sm" role="tablist" aria-label="Sections">
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -11,10 +11,10 @@ export function Tabs({ tabs, active, onChange }: { tabs: { id: string; label: st
           role="tab"
           aria-selected={active === tab.id}
           onClick={() => onChange(tab.id)}
-          className={`-mb-px min-h-10 shrink-0 border-b-2 px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+          className={`min-h-9 shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-[background-color,color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
             active === tab.id
-              ? 'border-primary text-foreground'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
+              ? 'bg-background text-foreground shadow-sm'
+              : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground hover:shadow-sm'
           }`}
         >
           {tab.label}
