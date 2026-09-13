@@ -1,0 +1,31 @@
+name: Apply UI review 1.27.1
+
+on:
+  push:
+    branches: [ui-review-1-27-1]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ui-review-1-27-1
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Apply reviewed UI changes
+        run: python .github/scripts/apply-ui-review-1271.py
+      - name: Remove one-shot automation
+        run: git rm .github/scripts/apply-ui-review-1271.py .github/workflows/apply-ui-review-1271.yml
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "refactor: apply 1.27.1 UI review"
+          git push origin HEAD:ui-review-1-27-1
