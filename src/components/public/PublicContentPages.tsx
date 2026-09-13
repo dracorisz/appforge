@@ -2,7 +2,7 @@ import { PublicFooter } from './PublicFooter'
 import React from 'react'
 import { ArrowLeft, ArrowRight, CalendarDays, Clapperboard, Image as ImageIcon, Loader2, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { loadPublishedFrontendContent, type FrontendContentRecord } from '@/lib/frontendContent'
+import { FRONTEND_CONTENT_UPDATED_EVENT, loadPublishedFrontendContent, type FrontendContentRecord } from '@/lib/frontendContent'
 import { PublicHeader } from './PublicHeader'
 
 type BlogSection = { heading: string; body: string }
@@ -55,11 +55,32 @@ const recordToArticle = (record: FrontendContentRecord): BlogArticle => ({
 function useBlogArticles() {
   const [articles, setArticles] = React.useState<BlogArticle[]>(FALLBACK_ARTICLES)
   const [loading, setLoading] = React.useState(true)
-  React.useEffect(() => {
-    let active = true
-    loadPublishedFrontendContent('blog_article').then((records) => { if (active && records.length) setArticles(records.map(recordToArticle)) }).catch((error) => console.warn('AppForge blog CMS unavailable; using bundled articles.', error)).finally(() => { if (active) setLoading(false) })
-    return () => { active = false }
+  const refresh = React.useCallback(async () => {
+    setLoading(true)
+    try {
+      const records = await loadPublishedFrontendContent('blog_article')
+      setArticles(records.length ? records.map(recordToArticle) : FALLBACK_ARTICLES)
+    } catch (error) {
+      console.warn('AppForge blog CMS unavailable; using bundled articles.', error)
+      setArticles(FALLBACK_ARTICLES)
+    } finally { setLoading(false) }
   }, [])
+
+  React.useEffect(() => {
+    const onStorage = (event: StorageEvent) => { if (event.key === 'appforge-frontend-content-updated-at') void refresh() }
+    const onVisibility = () => { if (document.visibilityState === 'visible') void refresh() }
+    void refresh()
+    window.addEventListener(FRONTEND_CONTENT_UPDATED_EVENT, refresh)
+    window.addEventListener('focus', refresh)
+    window.addEventListener('storage', onStorage)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener(FRONTEND_CONTENT_UPDATED_EVENT, refresh)
+      window.removeEventListener('focus', refresh)
+      window.removeEventListener('storage', onStorage)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [refresh])
   return { articles, loading }
 }
 
@@ -68,13 +89,13 @@ const youtubeEmbed = (url: string) => { try { const parsed = new URL(url); const
 function VideoBlock({ url }: { url?: string }) {
   if (!url) return <div className="mt-8 rounded-2xl border border-dashed border-border/80 bg-background/45 p-6"><div className="flex items-center gap-2 font-semibold"><Clapperboard className="h-4 w-4" /> Video walkthrough</div><p className="mt-2 text-sm leading-6 text-muted-foreground">No walkthrough has been published yet.</p></div>
   const embed = youtubeEmbed(url)
-  return <div className="mt-8 overflow-hidden rounded-2xl border border-border/80 bg-black">{embed ? <iframe src={embed} title="Article video walkthrough" className="aspect-video w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen /> : <video src={url} title="Article video walkthrough" className="aspect-video w-full object-contain" controls preload="metadata" playsInline />}</div>
+  return <div className="mt-8 overflow-hidden rounded-2xl border border-border/80 bg-black">{embed ? <iframe key={embed} src={embed} title="Article video walkthrough" className="aspect-video w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen /> : <video key={url} src={url} title="Article video walkthrough" className="aspect-video w-full object-contain" controls preload="metadata" playsInline />}</div>
 }
 
 export function PublicBlogPage() {
   const { articles, loading } = useBlogArticles()
   React.useEffect(() => { document.title = 'AppForge Blog' }, [])
-  return <div className="dark flex min-h-dvh flex-col bg-black text-foreground" style={{ colorScheme: 'dark', '--background': '0 0% 0%' } as React.CSSProperties}><PublicHeader /><main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8"><section className="border-b border-border/60 pb-8"><div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground"><Sparkles className="h-4 w-4" /> App stories</div><h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">Practical looks inside AppForge.</h1><p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">Product articles covering how AppForge tools are designed, what they solve, and how they fit into the wider platform.</p>{loading && <div className="mt-4 inline-flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking latest published content…</div>}</section><section className="grid gap-4 py-8 md:grid-cols-2">{articles.map((article) => <Link key={article.slug} to={`/blog/${article.slug}`} className="group flex min-h-64 flex-col overflow-hidden rounded-2xl border border-border/70 bg-background/55 transition-colors hover:border-foreground/20 hover:bg-accent/35">{article.imageUrl ? <img src={article.imageUrl} alt="" className="h-40 w-full object-cover" loading="lazy" /> : null}<div className="flex flex-1 flex-col p-5"><div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{article.appName}</div><h2 className="mt-3 text-2xl font-semibold tracking-[-0.025em]">{article.title}</h2><p className="mt-3 text-sm leading-6 text-muted-foreground">{article.description}</p><div className="mt-auto flex items-center justify-between gap-3 pt-6 text-xs text-muted-foreground"><span className="inline-flex items-center gap-2"><CalendarDays className="h-3.5 w-3.5" /> {article.publishedAt} · {article.readTime}</span><span className="inline-flex items-center gap-1 font-semibold text-foreground">Read <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" /></span></div></div></Link>)}</section></main><PublicFooter /></div>
+  return <div className="dark flex min-h-dvh flex-col bg-black text-foreground" style={{ colorScheme: 'dark', '--background': '0 0% 0%' } as React.CSSProperties}><PublicHeader /><main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8"><section className="border-b border-border/60 pb-8"><div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground"><Sparkles className="h-4 w-4" /> App stories</div><h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">Practical looks inside AppForge.</h1><p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">Product articles covering how AppForge tools are designed, what they solve, and how they fit into the wider platform.</p>{loading && <div className="mt-4 inline-flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking latest published content…</div>}</section><section className="grid gap-4 py-8 md:grid-cols-2">{articles.map((article) => <Link key={article.slug} to={`/blog/${article.slug}`} className="group flex min-h-64 flex-col overflow-hidden rounded-2xl border border-border/70 bg-background/55 shadow-sm transition-[border-color,background-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-foreground/20 hover:bg-accent/35 hover:shadow-lg">{article.imageUrl ? <img src={article.imageUrl} alt="" className="h-40 w-full object-cover" loading="lazy" /> : null}<div className="flex flex-1 flex-col p-5"><div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{article.appName}</div><h2 className="mt-3 text-2xl font-semibold tracking-[-0.025em]">{article.title}</h2><p className="mt-3 text-sm leading-6 text-muted-foreground">{article.description}</p><div className="mt-auto flex items-center justify-between gap-3 pt-6 text-xs text-muted-foreground"><span className="inline-flex items-center gap-2"><CalendarDays className="h-3.5 w-3.5" /> {article.publishedAt} · {article.readTime}</span><span className="inline-flex items-center gap-1 font-semibold text-foreground">Read <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" /></span></div></div></Link>)}</section></main><PublicFooter /></div>
 }
 
 export function PublicBlogArticlePage({ slug }: { slug: string }) {
