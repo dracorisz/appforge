@@ -7,7 +7,7 @@ const TEASER_EMBED_URL = `https://www.youtube.com/embed/${TEASER_VIDEO_ID}?rel=0
 
 export function StoryStudioTeaserCard() {
   return (
-    <article className="group overflow-hidden rounded-2xl border border-white/10 bg-[#080d16] shadow-[0_18px_70px_rgba(0,0,0,.28)] transition-transform duration-200 hover:-translate-y-0.5">
+    <article className="group overflow-hidden rounded-xl border border-white/10 bg-[#080d16] transition-transform duration-200 hover:-translate-y-0.5">
       <div className="relative aspect-[16/10] overflow-hidden bg-slate-950">
         <iframe
           src={TEASER_EMBED_URL}

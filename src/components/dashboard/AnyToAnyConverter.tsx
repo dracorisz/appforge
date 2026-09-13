@@ -173,12 +173,12 @@ export function AnyToAnyConverter() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <div className="flex items-center justify-between"><label className="text-sm font-medium text-foreground">Input</label><Badge color="slate">{inputFormat}</Badge></div>
-          <textarea value={input} onChange={(e) => { setInput(e.target.value); if (error) setError('') }} placeholder={`Paste ${inputFormat} content here or load a local file...`} className="mt-2 h-72 w-full rounded-md border border-input bg-background p-3 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring" />
+          <textarea value={input} onChange={(e) => { setInput(e.target.value); if (error) setError('') }} placeholder={`Paste ${inputFormat} content here or load a local file...`} className="mt-2 h-72 w-full rounded-xl border border-input bg-background p-3 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring" />
         </Card>
 
         <Card>
           <div className="flex items-center justify-between"><label className="text-sm font-medium text-foreground">Output</label><Badge color="green">{outputFormat}</Badge></div>
-          <textarea value={output} readOnly placeholder="Converted output will appear here..." className="mt-2 h-72 w-full rounded-md border border-input bg-background p-3 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring" />
+          <textarea value={output} readOnly placeholder="Converted output will appear here..." className="mt-2 h-72 w-full rounded-xl border border-input bg-background p-3 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring" />
         </Card>
       </div>
 

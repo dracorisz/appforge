@@ -71,7 +71,7 @@ export function MediaShowbox({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-3 sm:p-6" onMouseDown={onClose}>
-      <section role="dialog" aria-modal="true" aria-label={title} onMouseDown={(event) => event.stopPropagation()} className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-white/10 bg-background shadow-2xl">
+      <section role="dialog" aria-modal="true" aria-label={title} onMouseDown={(event) => event.stopPropagation()} className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-white/10 bg-background">
         <header className="flex min-h-12 items-center gap-3 border-b border-border/70 px-4">
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-sm font-semibold text-foreground">{title}</h2>

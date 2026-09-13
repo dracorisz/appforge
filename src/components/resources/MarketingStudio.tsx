@@ -77,7 +77,7 @@ export default function MarketingStudio() {
 
   return (
     <div className="w-full">
-      <section className="surface-card rounded-2xl border p-5 sm:p-6">
+      <section className="surface-card rounded-xl border p-5 sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Demo package + publication ledger</p>
@@ -95,13 +95,13 @@ export default function MarketingStudio() {
       </section>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="surface-card self-start rounded-2xl border p-3 xl:sticky xl:top-4">
+        <aside className="surface-card self-start rounded-xl border p-3 xl:sticky xl:top-4">
           <div className="px-2 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Demo packages</div>
           <div className="grid max-h-[70dvh] gap-2 overflow-auto">{demos.map((demo) => <button key={demo.id} type="button" onClick={() => setSelectedDemoId(demo.id)} className={`rounded-xl border p-3 text-left ${selectedDemo?.id === demo.id ? 'bg-accent' : 'bg-background/50 hover:bg-accent/60'}`}><div className="text-sm font-semibold">{demo.appName}</div><div className="mt-1 text-xs text-muted-foreground">{demo.status} · {demo.appVersion}</div></button>)}{demos.length === 0 && <div className="p-4 text-sm text-muted-foreground">Generate the first package from the registry.</div>}</div>
         </aside>
 
         {selectedDemo ? <main className="grid gap-5">
-          <section className="surface-card rounded-2xl border p-5 sm:p-6">
+          <section className="surface-card rounded-xl border p-5 sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4"><div><h2 className="text-xl font-semibold">{selectedDemo.title}</h2><p className="mt-1 text-xs text-muted-foreground">{selectedDemo.buildFingerprint}</p></div><label className="grid gap-1 text-xs font-medium text-muted-foreground">Recording status<select value={selectedDemo.status} onChange={(event) => updateDemo(selectedDemo.id, { status: event.target.value as DemoStatus })} className="h-10 rounded-lg border bg-background px-3 text-sm text-foreground"><option value="planned">Planned</option><option value="recorded">Recorded</option><option value="edited">Edited</option><option value="published">Published</option></select></label></div>
 
             <div className="mt-5 grid gap-5 lg:grid-cols-2">
@@ -116,19 +116,19 @@ export default function MarketingStudio() {
           </section>
 
           <section className="grid gap-4">
-            {selectedPublications.map((record) => <article key={record.id} className="surface-card rounded-2xl border p-5 sm:p-6">
+            {selectedPublications.map((record) => <article key={record.id} className="surface-card rounded-xl border p-5 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-4"><div><div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{record.channel} · {record.format}</div><h3 className="mt-2 font-semibold">{record.title}</h3></div><select value={record.status} onChange={(event) => updatePublication(record.id, { status: event.target.value as PublicationStatus })} className="h-10 rounded-lg border bg-background px-3 text-sm"><option value="draft">Draft</option><option value="ready">Ready</option><option value="publishing">Publishing</option><option value="published">Published</option><option value="failed">Failed</option></select></div>
               <label className="mt-4 grid gap-1.5 text-sm font-medium">Title<input value={record.title} onChange={(event) => updatePublication(record.id, { title: event.target.value })} className="h-11 rounded-xl border bg-background px-3" /></label>
               <label className="mt-3 grid gap-1.5 text-sm font-medium">Description<textarea value={record.description} onChange={(event) => updatePublication(record.id, { description: event.target.value })} rows={8} className="rounded-xl border bg-background p-3 text-sm leading-6" /></label>
               <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]"><label className="grid gap-1.5 text-sm font-medium">Published URL<input value={record.remoteUrl || ''} onChange={(event) => updatePublication(record.id, { remoteUrl: event.target.value })} placeholder="https://youtu.be/…" className="h-11 rounded-xl border bg-background px-3" /></label><button type="button" onClick={() => markPublished(record)} className="inline-flex min-h-11 items-center justify-center gap-2 self-end rounded-xl border px-4 text-sm font-semibold hover:bg-accent"><CheckCircle2 className="h-4 w-4" /> Mark published</button></div>
               <div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={() => void copy(`${record.title}\n\n${record.description}\n\nTags: ${record.tags.join(', ')}`)} className="inline-flex min-h-10 items-center gap-2 rounded-xl border px-3 text-xs font-semibold hover:bg-accent"><Clipboard className="h-3.5 w-3.5" /> Copy publication package</button><button type="button" disabled title="Enable only after Google approves the narrow delegated YouTube upload scope" className="inline-flex min-h-10 cursor-not-allowed items-center gap-2 rounded-xl border px-3 text-xs font-semibold opacity-50"><Send className="h-3.5 w-3.5" /> Upload via YouTube OAuth · approval required</button></div>
             </article>)}
-            {selectedPublications.length === 0 && <div className="surface-card rounded-2xl border p-8 text-center text-sm text-muted-foreground">Create a 16:9 or Short publication draft from this demo package.</div>}
+            {selectedPublications.length === 0 && <div className="surface-card rounded-xl border p-8 text-center text-sm text-muted-foreground">Create a 16:9 or Short publication draft from this demo package.</div>}
           </section>
-        </main> : <div className="surface-card rounded-2xl border p-10 text-center text-sm text-muted-foreground">Generate a demo package to begin.</div>}
+        </main> : <div className="surface-card rounded-xl border p-10 text-center text-sm text-muted-foreground">Generate a demo package to begin.</div>}
       </div>
 
-      <section className="mt-5 rounded-2xl border border-border/70 bg-background/60 p-4 text-xs leading-5 text-muted-foreground"><strong className="text-foreground">Publishing boundary:</strong> Marketing Studio prepares, reviews, and records publication metadata today. It does not request broad YouTube account access and does not upload until the production delegated upload feature exists and the minimum necessary OAuth scope is approved. TikTok remains metadata-ready only until its developer product/scopes are approved.</section>
+      <section className="mt-5 rounded-xl border border-border/70 bg-background/60 p-4 text-xs leading-5 text-muted-foreground"><strong className="text-foreground">Publishing boundary:</strong> Marketing Studio prepares, reviews, and records publication metadata today. It does not request broad YouTube account access and does not upload until the production delegated upload feature exists and the minimum necessary OAuth scope is approved. TikTok remains metadata-ready only until its developer product/scopes are approved.</section>
     </div>
   )
 }

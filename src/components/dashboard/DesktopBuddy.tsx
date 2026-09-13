@@ -289,7 +289,7 @@ export function DesktopBuddy() {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 p-4 md:p-6">
-      <section className="overflow-hidden rounded-3xl border bg-card shadow-sm">
+      <section className="overflow-hidden rounded-xl border bg-card">
         <div className="grid gap-0 lg:grid-cols-[1.05fr_.95fr]">
           <div className="space-y-5 p-6 md:p-8">
             <div className="space-y-2">
@@ -299,11 +299,11 @@ export function DesktopBuddy() {
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
-              <label className="rounded-2xl border p-4">
+              <label className="rounded-xl border p-4">
                 <span className="text-xs font-medium text-muted-foreground">Name</span>
                 <input className="mt-2 w-full bg-transparent text-sm outline-none" value={config.name} maxLength={64} onChange={(e) => setConfig((c) => ({ ...c, name: e.target.value }))} />
               </label>
-              <label className="rounded-2xl border p-4">
+              <label className="rounded-xl border p-4">
                 <span className="text-xs font-medium text-muted-foreground">Pack provider preference</span>
                 <select className="mt-2 w-full bg-transparent text-sm outline-none" value={config.provider} onChange={(e) => setConfig((c) => ({ ...c, provider: e.target.value as Provider }))}>
                   <option value="huggingface">Hugging Face</option>
@@ -311,7 +311,7 @@ export function DesktopBuddy() {
                   <option value="browser">Local/browser</option>
                 </select>
               </label>
-              <div className="rounded-2xl border p-4">
+              <div className="rounded-xl border p-4">
                 <span className="text-xs font-medium text-muted-foreground">State</span>
                 <p className="mt-2 text-sm capitalize">{activity}</p>
               </div>
@@ -338,31 +338,31 @@ export function DesktopBuddy() {
               <img
                 src={config.imageDataUrl}
                 alt={`${config.name || 'Desktop Buddy'} character`}
-                className="max-h-[350px] max-w-[92%] select-none object-contain drop-shadow-2xl"
+                className="max-h-[350px] max-w-[92%] select-none object-contain"
                 style={{ transform: `translate(${config.offsetX}px, ${config.offsetY}px) scale(${config.scale / 100})` }}
               />
             </div>
-            <div className="absolute left-4 top-4 rounded-2xl border bg-background/90 px-3 py-2 text-xs shadow-sm backdrop-blur">
+            <div className="absolute left-4 top-4 rounded-xl border bg-background/90 px-3 py-2 text-xs backdrop-blur">
               <span className="font-semibold">{config.name || 'Buddy'}</span> · {activity}
             </div>
           </div>
         </div>
       </section>
 
-      <section className="space-y-4 rounded-3xl border bg-card p-5 md:p-6">
+      <section className="space-y-4 rounded-xl border bg-card p-5 md:p-6">
         <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="font-semibold">KDE dragon starters</h2><p className="mt-1 text-xs leading-5 text-muted-foreground">These are linked from the KDE Community Wiki rather than copied without provenance. Each starter keeps its source and license metadata in the buddy pack.</p></div><a href="https://community.kde.org/Promo/Material/Mascots" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground">KDE mascot wiki <ExternalLink className="h-3.5 w-3.5" /></a></div>
         <div className="grid gap-3 sm:grid-cols-3">{KDE_STARTERS.map((starter) => {
           const active = config.assetSourceUrl === starter.sourceUrl
-          return <button key={starter.id} type="button" onClick={() => chooseStarter(starter)} className={`flex h-full min-h-80 flex-col overflow-hidden rounded-2xl border text-left transition-colors hover:border-foreground/25 ${active ? 'ring-2 ring-primary/35' : ''}`}>
+          return <button key={starter.id} type="button" onClick={() => chooseStarter(starter)} className={`flex h-full min-h-80 flex-col overflow-hidden rounded-xl border text-left transition-colors hover:border-foreground/25 ${active ? 'ring-2 ring-primary/35' : ''}`}>
             <div className="grid aspect-[4/3] place-items-center bg-muted/35 p-3"><img src={starter.imageUrl} alt={starter.name} className="max-h-full max-w-full object-contain" loading="lazy" /></div>
             <div className="flex flex-1 flex-col space-y-1 p-3"><div className="text-sm font-semibold">{starter.name}</div><p className="text-[11px] leading-4 text-muted-foreground">{starter.note}</p><p className="mt-auto pt-2 text-[10px] leading-4 text-muted-foreground">{starter.license}</p></div>
           </button>
         })}</div>
-        <div className="rounded-2xl border bg-background/45 p-3 text-xs leading-5 text-muted-foreground"><strong className="text-foreground">Current asset:</strong> {config.assetLabel || 'Custom character'} · {config.assetLicense || 'No license metadata recorded'}{config.assetSourceUrl && <> · <a href={config.assetSourceUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2">source</a></>}</div>
+        <div className="rounded-xl border bg-background/45 p-3 text-xs leading-5 text-muted-foreground"><strong className="text-foreground">Current asset:</strong> {config.assetLabel || 'Custom character'} · {config.assetLicense || 'No license metadata recorded'}{config.assetSourceUrl && <> · <a href={config.assetSourceUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2">source</a></>}</div>
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="space-y-4 rounded-3xl border bg-card p-5 md:p-6">
+        <section className="space-y-4 rounded-xl border bg-card p-5 md:p-6">
           <div className="flex items-center gap-2"><ImagePlus className="h-5 w-5" /><h2 className="font-semibold">Character framing</h2></div>
           <label className="block space-y-2 text-sm"><span>Scale · {config.scale}%</span><input className="w-full" type="range" min="45" max="145" value={config.scale} onChange={(e) => setConfig((c) => ({ ...c, scale: Number(e.target.value) }))} /></label>
           <label className="block space-y-2 text-sm"><span>Horizontal · {config.offsetX}px</span><input className="w-full" type="range" min="-120" max="120" value={config.offsetX} onChange={(e) => setConfig((c) => ({ ...c, offsetX: Number(e.target.value) }))} /></label>
@@ -370,23 +370,23 @@ export function DesktopBuddy() {
           <p className="text-xs leading-5 text-muted-foreground">Uploads stay browser-local and are limited to 2.5 MB. Export PNG creates a transparent 512 × 512 character asset when the image source allows canvas access.</p>
         </section>
 
-        <section className="space-y-4 rounded-3xl border bg-card p-5 md:p-6">
+        <section className="space-y-4 rounded-xl border bg-card p-5 md:p-6">
           <div className="flex items-center gap-2"><MessageCircle className="h-5 w-5" /><h2 className="font-semibold">Agent response + voice</h2></div>
-          <textarea className="min-h-28 w-full rounded-2xl border bg-background p-3 text-sm outline-none" value={message} onChange={(e) => setMessage(e.target.value)} />
+          <textarea className="min-h-28 w-full rounded-xl border bg-background p-3 text-sm outline-none" value={message} onChange={(e) => setMessage(e.target.value)} />
           <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
-            <label className="rounded-2xl border p-3 text-sm">
+            <label className="rounded-xl border p-3 text-sm">
               <span className="text-xs text-muted-foreground">Voice</span>
               <select className="mt-1 w-full bg-transparent outline-none" value={config.voiceName} onChange={(e) => setConfig((c) => ({ ...c, voiceName: e.target.value }))}>
                 <option value="">System default</option>
                 {voices.map((voice) => <option key={`${voice.name}-${voice.lang}`} value={voice.name}>{voice.name} · {voice.lang}</option>)}
               </select>
             </label>
-            <button type="button" onClick={speak} className="inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium hover:bg-muted"><Mic2 className="h-4 w-4" /> Speak</button>
-            <button type="button" onClick={stopSpeaking} className="inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium hover:bg-muted"><Pause className="h-4 w-4" /> Stop</button>
+            <button type="button" onClick={speak} className="inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium hover:bg-muted"><Mic2 className="h-4 w-4" /> Speak</button>
+            <button type="button" onClick={stopSpeaking} className="inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium hover:bg-muted"><Pause className="h-4 w-4" /> Stop</button>
           </div>
-          <label className="flex items-center gap-3 rounded-2xl border p-3 text-sm">
+          <label className="flex items-center gap-3 rounded-xl border p-3 text-sm">
             <input type="checkbox" checked={config.voiceEnabled} onChange={(e) => setConfig((c) => ({ ...c, voiceEnabled: e.target.checked }))} />
-            Auto-speak AppForge <code className="rounded bg-muted px-1 text-[11px]">appforge:agent-response</code> events
+            Auto-speak AppForge <code className="rounded-xl bg-muted px-1 text-[11px]">appforge:agent-response</code> events
           </label>
           <button type="button" onClick={testReaction} className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium hover:bg-muted"><Play className="h-4 w-4" /> Test agent reaction</button>
         </section>

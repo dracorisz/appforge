@@ -34,7 +34,7 @@
 }
 
 .app-unified-shell :where(button, a)[class*="border"]:hover {
-  box-shadow: 0 6px 20px hsl(var(--glass-shadow) / 0.055);
+  /* box-shadow: 0 6px 20px hsl(var(--glass-shadow) / 0.055); */
 }
 
 @media (prefers-reduced-motion: reduce) {

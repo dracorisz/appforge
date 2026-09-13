@@ -187,7 +187,7 @@ export function DesktopBuddyOverlay() {
       aria-label="Movable Desktop Buddy widget"
     >
       {showMessage && (
-        <button type="button" onClick={() => setShowMessage(false)} className="mb-1 block w-48 rounded-2xl border border-border bg-card/95 px-3 py-2 text-left text-[11px] leading-4 text-muted-foreground shadow-xl backdrop-blur-xl">
+        <button type="button" onClick={() => setShowMessage(false)} className="mb-1 block w-48 rounded-xl border border-border bg-card/95 px-3 py-2 text-left text-[11px] leading-4 text-muted-foreground backdrop-blur-xl">
           <span className="font-semibold text-foreground">{buddy.name || 'Konqi Buddy'}</span>
           <span className="mt-1 line-clamp-3 block">{message}</span>
         </button>
@@ -205,12 +205,12 @@ export function DesktopBuddyOverlay() {
           src={buddy.imageDataUrl || FALLBACK_IMAGE}
           alt=""
           draggable={false}
-          className={`pointer-events-none max-h-36 max-w-40 object-contain drop-shadow-2xl transition-transform ${speaking ? 'scale-105' : ''} ${jumping ? '-translate-y-10 rotate-3' : ''}`}
+          className={`pointer-events-none max-h-36 max-w-40 object-contain drop-transition-transform ${speaking ? 'scale-105' : ''} ${jumping ? '-translate-y-10 rotate-3' : ''}`}
         />
-        <span className="pointer-events-none absolute right-0 top-0 rounded-full border border-border/70 bg-card/90 p-1 text-muted-foreground shadow-sm"><Move className="h-3 w-3" /></span>
+        <span className="pointer-events-none absolute right-0 top-0 rounded-full border border-border/70 bg-card/90 p-1 text-muted-foreground"><Move className="h-3 w-3" /></span>
       </div>
 
-      <div className="mx-auto mt-1 flex w-fit items-center gap-1 rounded-xl border border-border bg-card/95 p-1 shadow-xl backdrop-blur-xl">
+      <div className="mx-auto mt-1 flex w-fit items-center gap-1 rounded-xl border border-border bg-card/95 p-1 backdrop-blur-xl">
         <button type="button" onClick={() => speakText(message)} className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground" title="Speak last response" aria-label="Speak last response"><Volume2 className={`h-4 w-4 ${speaking ? 'animate-pulse' : ''}`} /></button>
         <button type="button" onClick={jump} className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground" title="Jump" aria-label="Make Desktop Buddy jump"><span className="text-base leading-none">↥</span></button>
         <button type="button" onClick={() => void screenshot()} disabled={savingScreenshot} className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-50" title="Save viewport screenshot to Media Vault / Screenshots" aria-label="Save screenshot"><Camera className={`h-4 w-4 ${savingScreenshot ? 'animate-pulse' : ''}`} /></button>

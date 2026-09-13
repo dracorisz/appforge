@@ -28,10 +28,10 @@ export function ToastViewport() {
             ? 'border-destructive/40 bg-red-950/90 text-red-50'
             : 'border-border/80 bg-popover/95 text-popover-foreground'
         return (
-          <div key={item.id} className={`pointer-events-auto flex items-start gap-3 rounded-xl border px-3.5 py-3 shadow-lg backdrop-blur ${tone}`}>
+          <div key={item.id} className={`pointer-events-auto flex items-start gap-3 rounded-xl border px-3.5 py-3 backdrop-blur ${tone}`}>
             <Icon className="mt-0.5 h-4 w-4 shrink-0" />
             <div className="min-w-0 flex-1 text-sm leading-5">{item.message}</div>
-            <button type="button" onClick={() => setToasts((current) => current.filter((toast) => toast.id !== item.id))} className="rounded-md p-1 opacity-70 hover:bg-white/10 hover:opacity-100" aria-label="Dismiss notification"><X className="h-3.5 w-3.5" /></button>
+            <button type="button" onClick={() => setToasts((current) => current.filter((toast) => toast.id !== item.id))} className="rounded-xl p-1 opacity-70 hover:bg-white/10 hover:opacity-100" aria-label="Dismiss notification"><X className="h-3.5 w-3.5" /></button>
           </div>
         )
       })}

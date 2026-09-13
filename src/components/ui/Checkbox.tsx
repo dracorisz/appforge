@@ -8,7 +8,7 @@ export function Checkbox({ label, checked, onChange, disabled = false }: { label
         checked={checked}
         disabled={disabled}
         onChange={(event) => onChange(event.target.checked)}
-        className="h-4 w-4 rounded border-input bg-background text-primary shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20"
+        className="h-4 w-4 rounded-xl border-input bg-background text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20"
       />
       {label && <span className="text-foreground">{label}</span>}
     </label>

@@ -169,7 +169,7 @@ export default function FaviconStudio() {
 
   return (
     <div className="mx-auto grid w-full max-w-6xl gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-      <section className="surface-card rounded-2xl border p-5 sm:p-6">
+      <section className="surface-card rounded-xl border p-5 sm:p-6">
         <div>
 
           <AppHeading />
@@ -205,19 +205,19 @@ export default function FaviconStudio() {
       </section>
 
       <section className="grid gap-5">
-        <div className="surface-card rounded-2xl border p-5 sm:p-6">
+        <div className="surface-card rounded-xl border p-5 sm:p-6">
           <div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="font-semibold">Live previews</h2><p className="text-xs text-muted-foreground">Actual target sizes, enlarged where needed for inspection.</p></div><ImageIcon className="h-5 w-5 text-muted-foreground" /></div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
             {PREVIEW_SIZES.map((size) => (
               <button key={size} type="button" onClick={() => void exportPreview(size)} className="group grid min-h-28 place-items-center gap-2 rounded-xl border bg-background p-3 text-xs text-muted-foreground hover:bg-accent" title={`Download ${size}×${size} PNG`}>
-                <img src={svgDataUrl} alt={`${size} by ${size} favicon preview`} width={Math.min(size, 72)} height={Math.min(size, 72)} className="rounded-md shadow-sm" />
+                <img src={svgDataUrl} alt={`${size} by ${size} favicon preview`} width={Math.min(size, 72)} height={Math.min(size, 72)} className="rounded-xl" />
                 <span>{size}×{size}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="surface-card rounded-2xl border p-5 sm:p-6">
+        <div className="surface-card rounded-xl border p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold">Manifest & SVG</h2><p className="text-xs text-muted-foreground">Copy-ready project assets.</p></div><div className="flex gap-2"><button type="button" onClick={() => void copy(svg, 'SVG')} className="rounded-lg border px-3 py-2 text-xs font-medium hover:bg-accent">Copy SVG</button><button type="button" onClick={() => void copy(manifest, 'Manifest')} className="rounded-lg border px-3 py-2 text-xs font-medium hover:bg-accent">Copy manifest</button></div></div>
           <pre className="mt-4 max-h-64 overflow-auto rounded-xl border bg-background p-3 text-xs leading-5">{manifest}</pre>
         </div>

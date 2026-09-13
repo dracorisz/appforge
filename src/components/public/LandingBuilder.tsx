@@ -202,7 +202,7 @@ export default function LandingBuilder() {
 
   return (
     <div className="mx-auto grid w-full max-w-[1500px] gap-5 p-4 sm:p-6 xl:grid-cols-[420px_minmax(0,1fr)]">
-      <aside className="surface-card self-start rounded-2xl border p-4 xl:sticky xl:top-4 xl:max-h-[calc(100dvh-2rem)] xl:overflow-auto">
+      <aside className="surface-card self-start rounded-xl border p-4 xl:sticky xl:top-4 xl:max-h-[calc(100dvh-2rem)] xl:overflow-auto">
         <div><AppHeading /></div>
 
         <div className="mt-5 grid gap-3">
@@ -229,11 +229,11 @@ export default function LandingBuilder() {
 
       <section className="min-w-0">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><div className="text-sm font-semibold">Responsive preview</div><div className="flex rounded-xl border bg-background p-1">{(['phone','tablet','desktop'] as const).map((item) => <button key={item} type="button" onClick={() => setViewport(item)} className={`rounded-lg px-3 py-2 text-xs font-medium capitalize ${viewport === item ? 'bg-accent text-foreground' : 'text-muted-foreground'}`}>{item}</button>)}</div></div>
-        <div className="overflow-auto rounded-2xl border bg-muted/20 p-3 sm:p-5"><div className="mx-auto min-h-[720px] overflow-hidden rounded-2xl border shadow-2xl transition-[width] duration-200" style={{ width: previewWidth, maxWidth: '100%', background: palette.bg, color: palette.text }}>
+        <div className="overflow-auto rounded-xl border bg-muted/20 p-3 sm:p-5"><div className="mx-auto min-h-[720px] overflow-hidden rounded-xl border transition-[width] duration-200" style={{ width: previewWidth, maxWidth: '100%', background: palette.bg, color: palette.text }}>
           <main className="grid gap-4 p-4 sm:p-6">
             {project.sections.map((section) => {
               const href = safeHref(section.linkUrl)
-              return <section key={section.id} id={`preview-${sectionDomId(section)}`} className="rounded-2xl border p-6 sm:p-8" style={{ background: palette.card, borderColor: palette.border }}><div className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: palette.muted }}>{section.kind}</div><h2 className={`${section.kind === 'hero' ? 'text-3xl sm:text-5xl' : 'text-2xl sm:text-3xl'} mt-2 font-semibold tracking-tight`}>{section.title}</h2><p className="mt-3 whitespace-pre-wrap text-sm leading-6 sm:text-base" style={{ color: palette.muted }}>{section.body}</p>{safeImageData(section.image) && <img src={section.image} alt="Local project visual" className="mt-5 max-h-96 w-full rounded-xl border object-contain" style={{ borderColor: palette.border }} />}{section.linkLabel && href && <a href={href} onClick={(event) => event.preventDefault()} className="mt-5 inline-flex rounded-xl px-4 py-2.5 text-sm font-semibold text-white" style={{ background: project.accent }}>{section.linkLabel}</a>}</section>
+              return <section key={section.id} id={`preview-${sectionDomId(section)}`} className="rounded-xl border p-6 sm:p-8" style={{ background: palette.card, borderColor: palette.border }}><div className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: palette.muted }}>{section.kind}</div><h2 className={`${section.kind === 'hero' ? 'text-3xl sm:text-5xl' : 'text-2xl sm:text-3xl'} mt-2 font-semibold tracking-tight`}>{section.title}</h2><p className="mt-3 whitespace-pre-wrap text-sm leading-6 sm:text-base" style={{ color: palette.muted }}>{section.body}</p>{safeImageData(section.image) && <img src={section.image} alt="Local project visual" className="mt-5 max-h-96 w-full rounded-xl border object-contain" style={{ borderColor: palette.border }} />}{section.linkLabel && href && <a href={href} onClick={(event) => event.preventDefault()} className="mt-5 inline-flex rounded-xl px-4 py-2.5 text-sm font-semibold text-white" style={{ background: project.accent }}>{section.linkLabel}</a>}</section>
             })}
           </main>
         </div></div>

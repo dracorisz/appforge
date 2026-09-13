@@ -148,7 +148,7 @@ export function DesktopBuddyCapture() {
   }
 
   return (
-    <section className="mx-auto mt-6 w-full max-w-6xl rounded-3xl border bg-card p-5 shadow-sm md:p-6" aria-label="Desktop Buddy screenshot capture">
+    <section className="mx-auto mt-6 w-full max-w-6xl rounded-xl border bg-card p-5 md:p-6" aria-label="Desktop Buddy screenshot capture">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <div className="flex items-center gap-2"><Camera className="h-5 w-5" /><h2 className="font-semibold">Screen capture</h2></div>
@@ -168,7 +168,7 @@ export function DesktopBuddyCapture() {
       <div aria-live="polite" className="mt-3 text-xs text-muted-foreground">{message}</div>
 
       {capture && (
-        <div className="mt-5 overflow-hidden rounded-2xl border bg-background/45">
+        <div className="mt-5 overflow-hidden rounded-xl border bg-background/45">
           <div className="grid max-h-[520px] place-items-center overflow-auto bg-black/90 p-3">
             <img src={capture.url} alt="Screenshot preview" className="max-h-[480px] max-w-full object-contain" />
           </div>

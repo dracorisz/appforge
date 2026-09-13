@@ -12,11 +12,11 @@ export function Button({ children, variant = 'primary', size = 'md', className =
 } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'className' | 'disabled' | 'onClick' | 'type' | 'title'>) {
   const base = 'inline-flex shrink-0 items-center justify-center gap-2 rounded-lg font-medium transition-[background-color,border-color,color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:ring-offset-1 focus-visible:ring-offset-background active:translate-y-px disabled:pointer-events-none disabled:opacity-50'
   const variants = {
-    default: 'border border-primary/90 bg-primary text-primary-foreground shadow-sm hover:bg-primary/92 hover:shadow-md',
-    primary: 'border border-primary/90 bg-primary text-primary-foreground shadow-sm hover:bg-primary/92 hover:shadow-md',
-    secondary: 'border border-border/70 bg-secondary/72 text-secondary-foreground shadow-sm backdrop-blur-md hover:border-foreground/15 hover:bg-secondary/88 hover:shadow-md',
-    ghost: 'border border-transparent text-foreground hover:border-border/60 hover:bg-accent/70 hover:text-accent-foreground hover:shadow-sm',
-    destructive: 'border border-destructive/90 bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 hover:shadow-md'
+    default: 'border border-primary/90 bg-primary text-primary-foreground hover:bg-primary/92',
+    primary: 'border border-primary/90 bg-primary text-primary-foreground hover:bg-primary/92',
+    secondary: 'border border-border/70 bg-secondary/72 text-secondary-foreground backdrop-blur-md hover:border-foreground/15 hover:bg-secondary/88',
+    ghost: 'border border-transparent text-foreground hover:border-border/60 hover:bg-accent/70 hover:text-accent-foreground',
+    destructive: 'border border-destructive/90 bg-destructive text-destructive-foreground hover:bg-destructive/90'
   }
   const sizes = {
     sm: 'min-h-9 px-2.5 py-1.5 text-xs',

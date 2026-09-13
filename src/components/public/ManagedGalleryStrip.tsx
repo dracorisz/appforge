@@ -6,7 +6,7 @@ const wrap = (value: number, length: number) => length ? (value + length) % leng
 
 function ManagedSlide({ item, active, onSelect }: { item: FrontendContentRecord; active: boolean; onSelect: () => void }) {
   return (
-    <button type="button" onClick={onSelect} className={`group relative shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-[#080d16] text-left transition-all duration-500 ${active ? 'z-10 w-[78vw] max-w-3xl scale-100 opacity-100 md:w-[58vw]' : 'w-[52vw] max-w-xl scale-[.82] opacity-45 md:w-[34vw]'}`} aria-current={active ? 'true' : undefined}>
+    <button type="button" onClick={onSelect} className={`group relative shrink-0 overflow-hidden rounded-xl border border-white/10 bg-[#080d16] text-left transition-all duration-500 ${active ? 'z-10 w-[78vw] max-w-3xl scale-100 opacity-100 md:w-[58vw]' : 'w-[52vw] max-w-xl scale-[.82] opacity-45 md:w-[34vw]'}`} aria-current={active ? 'true' : undefined}>
       <div className="relative aspect-[16/10] overflow-hidden bg-slate-950">
         {item.image_url ? <img src={item.image_url} alt={item.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]" loading="lazy" /> : <div className="flex h-full items-center justify-center text-white/35"><ImageIcon className="h-10 w-10" /></div>}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/95 via-black/15 to-transparent" />
@@ -43,7 +43,7 @@ export function ManagedGalleryStrip() {
 
   React.useEffect(() => setIndex((value) => wrap(value, items.length)), [items.length])
 
-  if (loading) return <div className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.035] p-8 text-sm text-white/45"><Loader2 className="h-4 w-4 animate-spin" /> Loading curated slider…</div>
+  if (loading) return <div className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] p-8 text-sm text-white/45"><Loader2 className="h-4 w-4 animate-spin" /> Loading curated slider…</div>
   if (!items.length) return null
 
   const positions = items.length === 1 ? [0] : [-1, 0, 1]

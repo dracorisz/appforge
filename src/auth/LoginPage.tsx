@@ -9,6 +9,7 @@ import { FRONTEND_CONTENT_UPDATED_EVENT, loadPublishedFrontendContent } from '@/
 import { PublicHeader } from '@/components/public/PublicHeader'
 import { useAuth } from './AuthProvider'
 import { consumeReturnPath, normalizeReturnPath } from './returnPath'
+import { SiHuggingface as HuggingFaceLogo } from 'react-icons/si'
 
 const DEFAULT_VIDEO_URL = 'https://www.youtube.com/watch?v=5dAQXJXbvhI'
 const DEFAULT_VIDEO_EMBED_URL = 'https://www.youtube-nocookie.com/embed/5dAQXJXbvhI?rel=0&modestbranding=1'
@@ -142,11 +143,16 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
             </section>
 
             <section className="relative mx-auto w-full max-w-xl lg:max-w-none" aria-label="Public tools and workspace access">
-              <div aria-hidden="true" className="absolute inset-8 -z-10 rounded-[3rem] border border-border/50 bg-accent/25 blur-2xl" />
-              <div className="rounded-[2rem] border border-border/70 bg-background/80 p-4 shadow-2xl shadow-foreground/5 backdrop-blur-xl sm:p-5">
-                <div className="flex items-center justify-between gap-4 border-b border-border/60 pb-4"><div className="flex items-center gap-3"><div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-background"><img src={APPFORGE_MARK} alt="" className="h-9 w-9 rounded-lg" decoding="async" /></div><div><div className="text-sm font-semibold">AppForge</div><div className="text-xs text-muted-foreground">Public tools + private workspace</div></div></div><ShieldCheck className="h-5 w-5 shrink-0 text-muted-foreground" /></div>
-                <div className="grid gap-2 py-4">{publicTools.map(({ label, description, path, icon: Icon }) => <Link key={path} to={path} className="group flex min-h-14 items-center gap-3 rounded-xl border border-transparent px-3 py-3 transition-colors hover:border-border/70 hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border/70 bg-background"><Icon className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-medium">{label}</span><span className="block text-xs text-muted-foreground">{description}</span></span><ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" /></Link>)}</div>
+              <div aria-hidden="true" className="absolute inset-8 -z-10 rounded-xl border border-border/50 bg-accent/25 blur-2xl" />
+              <div className="rounded-xl border border-border/70 bg-background/80 p-4 backdrop-blur-xl sm:p-5">
+                <div className="flex items-center justify-between gap-4 border-b border-border/60 pb-4"><div className="flex items-center gap-3"><div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-background"><img src={APPFORGE_MARK} alt="" className="h-9 w-9 rounded-lg" decoding="async" /></div><div><div className="text-sm font-semibold">AppForge</div><div className="text-xs text-muted-foreground">Public tools + private workspace</div></div></div><ShieldCheck className="h-5 w-5 shrink-0 text-muted-foreground" /></div>
+                <div className="grid gap-2 py-4">{publicTools.map(({ label, description, path, icon: Icon }) => <Link key={path} to={path} className="group flex min-h-14 items-center gap-3 rounded-xl border border-border/70 px-3 py-3 transition-colors hover:border-border/70 hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border/70 bg-background"><Icon className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-medium">{label}</span><span className="block text-xs text-muted-foreground">{description}</span></span><ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" /></Link>)}</div>
                 <Link to="/explore" className="group flex min-h-12 items-center justify-between rounded-xl border border-border/70 bg-background/65 px-3 py-3 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span>Browse all public apps</span><ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" /></Link>
+                <Link to="/huggingface" className="group flex min-h-12 items-center justify-between rounded-xl border border-border/70 bg-background/65 px-3 py-3 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <span className="flex items-center gap-2"><HuggingFaceLogo className="h-4 w-4 text-[#FF9D00]" /> Hugging Face integration</span>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                </Link>
+
               </div>
             </section>
           </div>
@@ -154,7 +160,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
           <section className="border-t border-border/60 py-8 sm:py-10" aria-labelledby="walkthrough-title">
             <div className="grid gap-5 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
               <div className="lg:pr-3"><div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"><PlayCircle className="h-4 w-4" /> Walkthrough</div><h2 id="walkthrough-title" className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{videoTitle}</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{videoSummary}</p><a href={videoUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Open video <ArrowRight className="h-4 w-4" /></a></div>
-              <div className="overflow-hidden rounded-2xl border border-border/70 bg-black shadow-xl shadow-foreground/5">{videoEmbedUrl ? <iframe key={videoEmbedUrl} src={videoEmbedUrl} title="AppForge product walkthrough" className="aspect-video w-full border-0" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <video key={videoUrl} src={videoUrl} title="AppForge product walkthrough" className="aspect-video w-full bg-black object-contain" controls preload="metadata" playsInline />}</div>
+              <div className="overflow-hidden rounded-xl border border-border/70 bg-black">{videoEmbedUrl ? <iframe key={videoEmbedUrl} src={videoEmbedUrl} title="AppForge product walkthrough" className="aspect-video w-full border-0" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <video key={videoUrl} src={videoUrl} title="AppForge product walkthrough" className="aspect-video w-full bg-black object-contain" controls preload="metadata" playsInline />}</div>
             </div>
           </section>
         </main>

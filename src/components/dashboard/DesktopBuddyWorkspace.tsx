@@ -43,7 +43,7 @@ export function DesktopBuddyWorkspace() {
   return (
     <div className="w-full space-y-4 pb-8">
       <WidgetPreferencePanel kind="desktop-buddy" />
-      <nav className="sticky top-0 z-20 -mx-1 overflow-x-auto rounded-xl border border-border/70 bg-background/90 p-1 shadow-sm backdrop-blur" aria-label="Desktop Buddy workspace" role="tablist">
+      <nav className="sticky top-0 z-20 -mx-1 overflow-x-auto rounded-xl border border-border/70 bg-background/90 p-1 backdrop-blur" aria-label="Desktop Buddy workspace" role="tablist">
         <div className="flex min-w-max gap-1">
           {tabs.map(({ id, label, icon: Icon }) => (
             <button

@@ -71,7 +71,7 @@ export function DesktopBuddyKdeLibrary() {
   }
 
   return (
-    <section className="w-full rounded-2xl border bg-card p-5 md:p-6">
+    <section className="w-full rounded-xl border bg-card p-5 md:p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold">KDE Community library</h2>

@@ -214,7 +214,7 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
   }
 
   return (
-    <section className={`mx-auto w-full max-w-6xl rounded-2xl border bg-card p-5 shadow-sm md:p-6 ${standalone ? '' : 'mt-6'}`} aria-label={standalone ? 'Background Remover' : 'Desktop Buddy transparency repair'}>
+    <section className={`mx-auto w-full rounded-xl border bg-card p-5 md:p-6 ${standalone ? '' : 'mt-6'}`} aria-label={standalone ? 'Background Remover' : 'Desktop Buddy transparency repair'}>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex items-center gap-2"><Eraser className="h-5 w-5" /><h2 className="font-semibold">{standalone ? 'Remove image background' : 'Transparency repair'}</h2></div>
@@ -227,25 +227,25 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_260px]">
-        <div className="rounded-2xl border bg-background/45 p-3">
+        <div className="rounded-xl border bg-background/45 p-3">
           <div className="text-xs font-medium text-foreground">Background tolerance: {tolerance}</div>
           <input type="range" min="14" max="78" step="2" value={tolerance} onChange={(event) => setTolerance(Number(event.target.value))} className="mt-2 w-full" />
           <p className="mt-1 text-[11px] leading-5 text-muted-foreground">Lower values preserve more of the character; higher values remove more checkerboard/flat background. Re-run repair after changing this value.</p>
         </div>
-        <button type="button" disabled={!source || processing} onClick={() => void runRepair()} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eraser className="h-4 w-4" />} Repair background</button>
+        <button type="button" disabled={!source || processing} onClick={() => void runRepair()} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eraser className="h-4 w-4" />} Repair background</button>
       </div>
 
       <div aria-live="polite" className="mt-3 text-xs text-muted-foreground">{message}</div>
 
       {(source || result) && (
         <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <div className="overflow-hidden rounded-2xl border bg-background/45">
+          <div className="overflow-hidden rounded-xl border bg-background/45">
             <div className="border-b px-3 py-2 text-xs font-medium">Source</div>
             <div className="grid aspect-square place-items-center bg-[linear-gradient(45deg,#d4d4d8_25%,transparent_25%),linear-gradient(-45deg,#d4d4d8_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#d4d4d8_75%),linear-gradient(-45deg,transparent_75%,#d4d4d8_75%)] bg-[length:20px_20px] bg-[position:0_0,0_10px,10px_-10px,-10px_0px] p-3 dark:bg-[linear-gradient(45deg,#27272a_25%,transparent_25%),linear-gradient(-45deg,#27272a_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#27272a_75%),linear-gradient(-45deg,transparent_75%,#27272a_75%)]">
               {source ? <img src={source.dataUrl} alt="Transparency repair source" className="max-h-full max-w-full object-contain" /> : <span className="text-xs text-muted-foreground">Choose an image</span>}
             </div>
           </div>
-          <div className="overflow-hidden rounded-2xl border bg-background/45">
+          <div className="overflow-hidden rounded-xl border bg-background/45">
             <div className="border-b px-3 py-2 text-xs font-medium">Real-alpha preview</div>
             <div className="grid aspect-square place-items-center bg-[linear-gradient(45deg,#d4d4d8_25%,transparent_25%),linear-gradient(-45deg,#d4d4d8_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#d4d4d8_75%),linear-gradient(-45deg,transparent_75%,#d4d4d8_75%)] bg-[length:20px_20px] bg-[position:0_0,0_10px,10px_-10px,-10px_0px] p-3 dark:bg-[linear-gradient(45deg,#27272a_25%,transparent_25%),linear-gradient(-45deg,#27272a_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#27272a_75%),linear-gradient(-45deg,transparent_75%,#27272a_75%)]">
               {result ? <img src={result.dataUrl} alt="Transparency repaired preview" className="max-h-full max-w-full object-contain" /> : <span className="text-xs text-muted-foreground">Run repair to preview alpha</span>}
@@ -255,7 +255,7 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
       )}
 
       {result && source && (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-background/45 p-3">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-background/45 p-3">
           <div className="text-xs text-muted-foreground"><span className="font-medium text-foreground">{result.width} × {result.height}</span> · {result.transparentPercent.toFixed(1)}% transparent/feathered pixels</div>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => downloadResult(result, source.name)} className="inline-flex min-h-9 items-center gap-2 rounded-lg border px-3 text-xs font-semibold hover:bg-accent"><Download className="h-3.5 w-3.5" /> Download PNG</button>

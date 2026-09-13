@@ -228,13 +228,13 @@ function App() {
   if (!user && !loading && location.pathname === '/apps') return <Navigate to="/explore" replace />
 
   if (!user && !loading) {
-    if (privatePaths.has(location.pathname) || location.pathname === '/huggingface') return <LoginPage returnTo={requestedPath} />
+    if (privatePaths.has(location.pathname)) return <LoginPage returnTo={requestedPath} />
     const publicPage = publicAppPage(location.pathname)
     if (publicPage) return publicPage
   }
 
-  if (loading || !user) return <LoginPage returnTo={requestedPath} />
   if (location.pathname === '/huggingface') return lazyPage(<HuggingFaceGalleryPage />)
+if (loading || !user) return <LoginPage returnTo={requestedPath} />
 
   return (
     <Layout currentVersion={BUILD_INFO.version}>

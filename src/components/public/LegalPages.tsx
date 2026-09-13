@@ -16,7 +16,7 @@ function LegalShell({ title, intro, children }: { title: string; intro: string; 
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">{intro}</p>
             <p className="mt-2 text-xs text-muted-foreground">Last updated: {LAST_UPDATED}</p>
           </div>
-          <div className="surface-card space-y-7 rounded-2xl border p-5 text-sm leading-7 sm:p-7 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_p]:text-muted-foreground [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:text-muted-foreground">{children}</div>
+          <div className="surface-card space-y-7 rounded-xl border p-5 text-sm leading-7 sm:p-7 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_p]:text-muted-foreground [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:text-muted-foreground">{children}</div>
         </main>
       </div>
       <PublicFooter />
