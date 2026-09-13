@@ -2,6 +2,31 @@
 
 This file tracks user-visible AppForge product changes. The canonical source is the `main` branch.
 
+## 1.27.1 — September 13, 2026
+
+### Added
+- One canonical app-page shell for authenticated and public apps, with shared `AppHeading`, width, border, spacing and surface treatment instead of per-app header variants.
+- Global top-right themed toast notifications for transient success, error and informational feedback.
+- Admin → Content Manager image management for Supabase-backed `gallery_image` records, including upload, preview, placement, ordering, publish state and deletion.
+- Public navigation access to the Hugging Face page from the landing/public header.
+
+### Improved
+- Background Remover now uses the same full app width as the rest of the workspace instead of its previous narrow standalone wrapper.
+- Task List, Crypto Track, Base64 Tool, Getter Pro and every `/apps/*` route now receive the same canonical shell/header regardless of their internal implementation.
+- Legacy nested app headings are suppressed by the shared shell so a tool cannot visually introduce a second header family.
+- Shared cards and app controls use stationary, subtle border/shadow hover feedback; translate/scale hover motion is removed from the canonical surface system.
+- Public Blog preview cards no longer scale or shift their images on hover/focus.
+- Admin user-management and image-management actions now report transient outcomes through the shared toast system.
+- Public and authenticated app containers now share the same `max-w-7xl` presentation contract.
+
+### Maintenance
+- Seek & Destroy audit checked wrapper/alias candidates before deletion; files still exported or routed are retained rather than removed speculatively.
+- UI architecture is documented so new apps inherit the shared shell instead of recreating headers, widths and hover styles.
+- Global application version advanced to `1.27.1`; use `npm run version:set -- 1.27.1` when regenerating package-manager metadata locally.
+
+### Release note
+- This release intentionally does not deploy Vercel production. Production remains a separate deliberate release step after the current `main` validation gate passes.
+
 ## 1.27.0 — September 2026 release candidate
 
 ### Added
