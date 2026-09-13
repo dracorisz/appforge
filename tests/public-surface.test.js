@@ -83,7 +83,8 @@ test('public Apps directory is permanent at explore while signed-in apps remains
 test('private registry apps remain behind authenticated routes and outside the public catalog', async () => {
   const registry = await read('src/lib/registry.ts')
   const app = await read('src/App.tsx')
-  assert.match(registry, /PRIVATE_APP_IDS = new Set\(\['scrapper-pro', 'media-vault', 'desktop-buddy', 'ai-dragon-arena'\]\)/)
+  assert.match(registry, /PRIVATE_APP_IDS = new Set\(\['getter-pro', 'media-vault', 'desktop-buddy', 'ai-dragon-arena'\]\)/)
+  assert.match(registry, /canonicalAppId = \(id: string\) => id === 'scrapper-pro' \? 'getter-pro' : id/)
   assert.match(app, /privatePaths = new Set\(\['\/apps\/getter-pro','\/apps\/scrapper-pro','\/apps\/media-vault','\/apps\/desktop-buddy','\/apps\/ai-dragon-arena'\]\)/)
   assert.match(app, /privatePaths\.has\(location\.pathname\) \|\| location\.pathname === '\/huggingface'/)
 })
