@@ -230,7 +230,7 @@ export function TaskList() {
   })
 
   return (
-    <div className="w-full space-y-5">
+    <div className="w-full space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><AppHeading /></div></div>
       </div>

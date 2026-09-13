@@ -233,7 +233,7 @@ function App() {
   }
 
   if (location.pathname === '/huggingface') return lazyPage(<HuggingFaceGalleryPage />)
-if (loading || !user) return <LoginPage returnTo={requestedPath} />
+if (loading || !user) return <LoginPage returnTo={requestedPath} landingOnly />
 
   return (
     <Layout currentVersion={BUILD_INFO.version}>

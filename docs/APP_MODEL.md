@@ -109,3 +109,12 @@ Workspace backup format v3 contains only account workspace preferences: theme, f
 ## DNS Checker
 
 `/apps/dns-checker` replaces the TXT-only tool. The old `/apps/dns-txt-checker` route remains compatible and the internal app ID remains stable for existing favorites. Google Public DNS provides keyless DNS-over-HTTPS queries. Common records checks 12 types; the type selector and numeric type input support other resource records. The record map shows one resolver’s answers and their relationships, not geographic propagation. Zone transfers are excluded. SRV/DKIM/DMARC and reverse PTR queries require the appropriate complete DNS owner name.
+
+## Shared surface rules
+
+Current AppForge pages should compose shared `Card`, `Button`, `Input`, `Textarea`, `Tabs`, badges, empty/loading/error states, and the canonical app heading/shell instead of recreating their own control systems. Page-level groups use a compact, predictable spacing rhythm; action buttons belong with the controls they affect rather than floating in headings.
+
+Avoid layout animation that moves cards vertically on hover. Prefer border/background/focus feedback. Empty results should not leave invisible grid wrappers that create extra vertical gaps. Account/popover surfaces must support explicit dismissal and outside-click dismissal.
+
+Settings uses the same component contract as apps: Profile is arranged to use wide-screen space efficiently, Integrations is a compact mosaic rather than equal-height stretched cards, and Admin Console is embedded as a first-class Settings surface.
+

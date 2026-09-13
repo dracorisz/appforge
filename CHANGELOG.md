@@ -2,6 +2,16 @@
 
 This file tracks user-visible AppForge product changes. The canonical source is the `main` branch.
 
+## 1.27.3 — September 13, 2026
+
+### Fixed
+- Corrected public authentication modal lifecycle and dismissal, Getter Pro empty-state spacing, Crypto Track/Task List section rhythm, and sidebar account-menu dismissal.
+- Reworked Settings Profile/Integrations density, added secure email-password setup, refreshed People, and aligned Admin Console more closely with shared UI components.
+
+### Documentation
+- Expanded getting-started, database, UI architecture, GitHub OAuth, and documentation-maintenance guidance, including Supabase migration-preview and security practices.
+- Re-ran cleanup with emphasis on stale docs and compact shared input patterns.
+
 ## 1.27.2 — September 13, 2026
 
 ### Added

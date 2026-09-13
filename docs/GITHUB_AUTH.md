@@ -74,3 +74,10 @@ If Google and GitHub identities need account linking, treat that as an explicit 
 - Tracking issue: GitHub issue #32
 
 The Supabase provider dashboard remains the operational source of truth for provider credentials. Repository code must never contain the GitHub client secret.
+
+## OAuth verification evidence
+
+When Google OAuth consent-screen verification requests scope evidence, record an unlisted YouTube demonstration showing the exact sign-in flow and each requested scope in the product context where it is used. Keep the recording aligned with the currently configured scopes; do not demonstrate permissions the application does not request. Retain the final video URL and the verification correspondence/email as release evidence.
+
+GitHub and Google provider buttons are entry points to one shared sign-in dialog. The public landing page must not display that dialog until the visitor requests authentication.
+

@@ -107,3 +107,19 @@ For schema changes:
 6. run application CI before the next production deployment.
 
 Use `npm run verify:release` for the application pre-release validation path when available in the current package scripts.
+
+## Migration and Supabase preview discipline
+
+The repository migration directory is the reproducible source of schema history. A migration recorded remotely but missing from `supabase/migrations` will make Supabase Preview fail with “Remote migration versions not found in local migrations directory.” Never delete or rename an applied migration. Add a new forward migration instead.
+
+After every DDL/security change:
+
+1. confirm local and remote migration versions match;
+2. run Supabase Security Advisor;
+3. review Storage policies separately from public object URL behavior;
+4. keep privileged implementations out of exposed API schemas where practical;
+5. preserve explicit authorization checks for any privileged RPC wrapper; and
+6. verify GitHub Supabase Preview is green before release.
+
+Public Storage buckets do not need a broad `SELECT` policy merely to serve public object URLs. Listing policies should be narrower than object delivery. `SECURITY DEFINER` functions require deliberate grants and should not become an accidental public Data API.
+

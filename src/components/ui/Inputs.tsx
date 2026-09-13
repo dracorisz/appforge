@@ -37,7 +37,7 @@ export function Textarea({ label, ...props }: React.TextareaHTMLAttributes<HTMLT
   return (
     <div className="w-full">
       {label && <label className="mb-1.5 block text-sm font-medium text-foreground">{label}</label>}
-      <textarea {...props} className={`${controlClass} min-h-20 resize-y ${props.className || ''}`} />
+      <textarea {...props} className={`${controlClass} min-h-16 resize-y ${props.className || ''}`} />
     </div>
   )
 }

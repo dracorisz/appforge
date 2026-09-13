@@ -71,3 +71,15 @@ Documentation under `docs/` is published separately through the GitHub Pages wor
 The docs are intentionally compact. App-specific user and developer information is consolidated in **[Apps](./apps/index.md)** rather than maintained as dozens of separate pages. Deep implementation details should live close to source, APIs, migrations, or focused operational docs.
 
 When architecture, routes, app identity, authentication, database schema, providers, PWA behavior, security posture, or release expectations change, update the relevant documentation in the same pass.
+
+## Current account and navigation behavior
+
+- The public landing page stays unobstructed until a user explicitly chooses **Sign in**. The auth dialog supports Google, GitHub, and email/password and is dismissible by its close control or backdrop.
+- Authenticated users can set an email/password credential from **Settings → Profile → Security**. AppForge validates at least 8 characters with lowercase, uppercase, a digit, and a symbol before asking Supabase Auth to update the credential.
+- Appearance is controlled from the sidebar account menu. Account menus must dismiss after an action and on outside click.
+- Public Blog article routes scroll to the document top, render media only when media exists, and show up to three related articles.
+
+## UI contribution baseline
+
+Use existing AppForge primitives before adding one-off wrappers. Keep page sections on the standard 16px rhythm, use `rounded-xl`, avoid translate/offset hover motion, and keep textareas/upload/output surfaces compact unless the content genuinely needs a larger editor.
+

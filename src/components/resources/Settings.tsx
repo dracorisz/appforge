@@ -21,6 +21,7 @@ import { SiGithub as Github, SiGoogle as Google, SiSupabase as SupabaseIcon, SiV
 import { Badge, BuildBadge, Button, Card, Input, Tabs, Textarea } from '@/components/ui'
 import type { AppState } from '@/types'
 import { useAuth } from '@/auth/AuthProvider'
+import { supabase } from '@/lib/supabase'
 import { loadCategoryOverrides, saveCategoryOverrides } from '@/lib/categories'
 import { createWorkspaceBackup, parseWorkspaceBackup, type WorkspaceImportPreview } from '@/lib/workspaceBackup'
 import { isWidgetEnabled, setWidgetEnabled } from '@/lib/widgetPreferences'
@@ -85,6 +86,8 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
   const [hfToken, setHfToken] = React.useState(() => localStorage.getItem('dragon-arena-hf-key') || '')
   const [importPreview, setImportPreview] = React.useState<WorkspaceImportPreview | null>(null)
   const [importFileName, setImportFileName] = React.useState('')
+  const [newPassword, setNewPassword] = React.useState('')
+  const [confirmPassword, setConfirmPassword] = React.useState('')
 
   const selectTab = React.useCallback((tab: TabId, replace = false) => {
     setActiveTab(tab)
@@ -175,6 +178,19 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
       clear()
       flash(`${label} removed.`)
     } catch { setError(`Could not remove ${label.toLowerCase()} from browser storage.`) }
+  }
+
+  const saveLoginPassword = async () => {
+    const password = newPassword
+    const valid = password.length >= 8 && /[a-z]/.test(password) && /[A-Z]/.test(password) && /\d/.test(password) && /[^A-Za-z0-9]/.test(password)
+    if (!valid) { setError('Password must be at least 8 characters and include lowercase, uppercase, a digit and a symbol.'); return }
+    if (password !== confirmPassword) { setError('Password confirmation does not match.'); return }
+    setBusy('password')
+    setError('')
+    const { error: passwordError } = await supabase.auth.updateUser({ password })
+    if (passwordError) setError(passwordError.message)
+    else { setNewPassword(''); setConfirmPassword(''); flash('Email/password login password updated.') }
+    setBusy('')
   }
 
   const saveOpenRouterKey = () => saveLocalSecret('dragon-arena-openrouter-key', openRouterKey, 'OpenRouter key')
@@ -327,7 +343,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
       {error && <Card className="border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</Card>}
 
       {activeTab === 'profile' && (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(260px,.72fr)_minmax(0,1.28fr)]">
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted text-muted-foreground">{profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : <UserRound className="h-7 w-7" />}</div>
@@ -343,7 +359,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
             {loading || !profile ? <div className="py-8 text-center text-sm text-muted-foreground">Loading profile…</div> : <div className="mt-4 space-y-3">
               <div className="grid gap-3 sm:grid-cols-2"><Input label="Display name" value={profile.display_name || ''} onChange={(e) => setProfile({ ...profile, display_name: e.target.value })} /><Input label="Username" value={profile.username || ''} onChange={(e) => setProfile({ ...profile, username: e.target.value })} placeholder="your-handle" /><Input label="Headline" value={profile.headline || ''} onChange={(e) => setProfile({ ...profile, headline: e.target.value })} placeholder="Frontend engineer · tool builder" /><Input label="GitHub username" value={profile.github_username || ''} onChange={(e) => setProfile({ ...profile, github_username: e.target.value })} placeholder="github-handle" /><Input label="Public location" value={profile.location || ''} onChange={(e) => setProfile({ ...profile, location: e.target.value })} placeholder="City / country only if you want" /><Input label="Website" value={profile.website || ''} onChange={(e) => setProfile({ ...profile, website: e.target.value })} placeholder="https://…" /></div>
               <Input label="Skills (comma separated)" value={skillsDraft} onChange={(e) => setSkillsDraft(e.target.value)} placeholder="React, TypeScript, Supabase" />
-              <Textarea label="Bio" value={profile.bio || ''} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} rows={4} />
+              <Textarea label="Bio" value={profile.bio || ''} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} rows={2} />
 
               <div className="rounded-xl border border-border/70 bg-background/35 p-3">
                 <div className="text-xs font-semibold text-foreground">Visible profile fields</div>
@@ -402,7 +418,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
             {!privateInfo ? <div className="py-8 text-center text-sm text-muted-foreground">Loading private information…</div> : <div className="mt-4 space-y-3">
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"><Input label="Sex" value={privateInfo.sex || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, sex: e.target.value })} /><Input label="Birth date" type="date" value={privateInfo.birth_date || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, birth_date: e.target.value })} /><Input label="Phone" value={privateInfo.phone || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, phone: e.target.value })} /><Input label="Organization" value={privateInfo.organization || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, organization: e.target.value })} /><Input label="Job title" value={privateInfo.job_title || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, job_title: e.target.value })} /><Input label="Country" value={privateInfo.country || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, country: e.target.value })} /></div>
               <div className="grid gap-3 sm:grid-cols-2"><Input label="Address line 1" value={privateInfo.address_line1 || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, address_line1: e.target.value })} /><Input label="Address line 2" value={privateInfo.address_line2 || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, address_line2: e.target.value })} /><Input label="City" value={privateInfo.city || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, city: e.target.value })} /><Input label="Region / state" value={privateInfo.region || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, region: e.target.value })} /><Input label="Postal code" value={privateInfo.postal_code || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, postal_code: e.target.value })} /></div>
-              <Textarea label="Private notes" value={privateInfo.notes || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, notes: e.target.value })} rows={3} />
+              <Textarea label="Private notes" value={privateInfo.notes || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, notes: e.target.value })} rows={2} />
               <Button variant="secondary" onClick={() => void savePrivateInfo()} disabled={busy === 'private'}>{busy === 'private' ? <Loader2 className="h-4 w-4 animate-spin" /> : <LockKeyhole className="h-4 w-4" />} Save private information</Button>
             </div>}
           </Card>
@@ -417,7 +433,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
 
       {activeTab === 'profile' && (
         <div className="grid gap-4 lg:grid-cols-2">
-          <Card className="p-4"><div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-foreground">Authentication</h2><p className="mt-1 text-xs text-muted-foreground">Identity is handled through Supabase Auth. Google is the first enabled provider.</p></div><Badge color="green">Connected</Badge></div><div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-3 text-sm"><div className="font-medium text-foreground">{user?.email}</div><div className="mt-1 text-xs text-muted-foreground">Session assurance: {currentLevel || 'checking…'} · next: {nextLevel || 'checking…'}</div></div>{role === 'user' && <div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-3"><div className="text-sm font-medium text-foreground">Initial administrator</div><p className="mt-1 text-xs leading-5 text-muted-foreground">If this is the first and only AppForge account, initialize the first administrator once. No email is hardcoded into the client.</p><Button className="mt-3" variant="secondary" onClick={() => void bootstrapAdmin()} disabled={busy === 'bootstrap-admin'}>{busy === 'bootstrap-admin' ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />} Initialize admin</Button></div>}<Button variant="secondary" className="mt-4" onClick={() => void handleSignOut()} disabled={busy === 'signout'}>{busy === 'signout' ? <Loader2 className="h-4 w-4 animate-spin" /> : null}Sign out</Button></Card>
+          <Card className="p-4"><div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-foreground">Authentication</h2><p className="mt-1 text-xs text-muted-foreground">Identity is handled through Supabase Auth. Google is the first enabled provider.</p></div><Badge color="green">Connected</Badge></div><div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-3 text-sm"><div className="font-medium text-foreground">{user?.email}</div><div className="mt-1 text-xs text-muted-foreground">Session assurance: {currentLevel || 'checking…'} · next: {nextLevel || 'checking…'}</div></div><div className="mt-3 rounded-xl border border-border/70 bg-background/35 p-3"><div className="flex items-start gap-2"><KeyRound className="mt-0.5 h-4 w-4 text-muted-foreground" /><div><div className="text-xs font-semibold text-foreground">Set email login password</div><p className="mt-1 text-xs leading-5 text-muted-foreground">Minimum 8 characters with lowercase, uppercase, a digit and a symbol. The credential is updated through Supabase Auth for this signed-in account.</p></div></div><div className="mt-3 grid gap-2 sm:grid-cols-2"><Input type="password" label="New password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" /><Input type="password" label="Confirm password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="new-password" /></div><Button className="mt-3" size="sm" variant="secondary" onClick={() => void saveLoginPassword()} disabled={busy === 'password' || !newPassword || !confirmPassword}>{busy === 'password' ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />} Save password</Button></div>{role === 'user' && <div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-3"><div className="text-sm font-medium text-foreground">Initial administrator</div><p className="mt-1 text-xs leading-5 text-muted-foreground">If this is the first and only AppForge account, initialize the first administrator once. No email is hardcoded into the client.</p><Button className="mt-3" variant="secondary" onClick={() => void bootstrapAdmin()} disabled={busy === 'bootstrap-admin'}>{busy === 'bootstrap-admin' ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />} Initialize admin</Button></div>}<Button variant="secondary" className="mt-4" onClick={() => void handleSignOut()} disabled={busy === 'signout'}>{busy === 'signout' ? <Loader2 className="h-4 w-4 animate-spin" /> : null}Sign out</Button></Card>
 
           <Card className="p-4"><div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-foreground">Authenticator app (TOTP)</h2><p className="mt-1 text-xs text-muted-foreground">Admin mutations require an AAL2 session verified with TOTP.</p></div><ShieldCheck className="h-5 w-5 text-muted-foreground" /></div>{verifiedTotp.length === 0 && !enrollment && <Button className="mt-4" onClick={() => void beginTotp()} disabled={busy === 'enroll'}><KeyRound className="h-4 w-4" /> Set up TOTP</Button>}{enrollment && <div className="mt-4 space-y-3"><div className="rounded-xl border border-border/70 bg-white p-3"><img src={enrollment.qr} alt="TOTP QR code" className="mx-auto max-h-52 max-w-full" /></div><div className="rounded-xl bg-muted p-2 font-mono text-xs break-all">{enrollment.secret}</div><Input label="Authenticator code" inputMode="numeric" value={totpCode} onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 8))} /><Button onClick={() => void verifyFactor(enrollment.id)} disabled={busy === 'verify' || !totpCode}><ShieldCheck className="h-4 w-4" /> Verify and enable</Button></div>}{verifiedTotp.length > 0 && <div className="mt-4 space-y-3"><div className="rounded-xl border border-border/70 p-3"><div className="text-sm font-medium text-foreground">{verifiedTotp[0].friendly_name || 'Authenticator app'}</div><div className="mt-1 text-xs text-muted-foreground">Verified factor · {currentLevel === 'aal2' ? 'this session is elevated' : 'verification required for admin actions'}</div></div>{currentLevel !== 'aal2' && <><Input label="Authenticator code" inputMode="numeric" value={totpCode} onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 8))} /><Button onClick={() => void verifyFactor(verifiedTotp[0].id)} disabled={!totpCode || busy === 'verify'}><LockKeyhole className="h-4 w-4" /> Verify this session</Button></>}{currentLevel === 'aal2' && <Button variant="secondary" onClick={async () => { setBusy('unenroll'); try { await unenrollTotp(verifiedTotp[0].id); await refreshAccount(); flash('TOTP factor removed.') } catch (mfaError) { setError(mfaError instanceof Error ? mfaError.message : 'Could not remove TOTP factor.') } finally { setBusy('') } }} disabled={busy === 'unenroll'}>Remove factor</Button>}</div>}</Card>
         </div>
@@ -439,41 +455,22 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
       )}
 
       {activeTab === 'integrations' && (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <div className="grid gap-3 sm:grid-cols-2">{[['Supabase', 'Authentication, profiles, private personal data, preferences, roles, TOTP and profile media.', SupabaseIcon], ['Vercel', 'Vite frontend plus same-origin serverless APIs for network-backed tools.', Vercel], ['GitHub', 'Public source, contributors, issues, pull requests and CI.', Github], ['Google', 'OAuth identity provider; basic identity scopes only.', Google]].map(([name, description, Icon]: any) => <Card key={name} className="p-3"><Icon className="h-4 w-4 text-muted-foreground" /><h2 className="mt-2 text-sm font-semibold text-foreground">{name}</h2><p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p></Card>)}</div>
-          <Card className="p-4">
+        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,.9fr)_minmax(360px,1.1fr)]">
+          <div className="space-y-4">
+            <Card className="p-3 sm:p-4">
+              <div className="grid gap-2 sm:grid-cols-2">{[['Supabase', 'Auth, profiles, preferences, roles and private data.', SupabaseIcon], ['Vercel', 'Frontend and same-origin serverless APIs.', Vercel], ['GitHub', 'Source, issues, pull requests and CI.', Github], ['Google', 'OAuth identity and approved Google integrations.', Google]].map(([name, description, Icon]: any) => <div key={name} className="rounded-xl border border-border/70 bg-background/35 p-3"><div className="flex items-center gap-2"><Icon className="h-4 w-4 text-muted-foreground" /><h2 className="text-sm font-semibold text-foreground">{name}</h2></div><p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p></div>)}</div>
+            </Card>
+            <div className="[&>div]:h-auto [&>div]:min-h-0"><VertexBridgeStatus /></div>
+          </div>
+          <Card className="self-start p-4">
             <h2 className="text-sm font-semibold text-foreground">AI provider keys</h2>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">Personal keys are saved in this browser and sent through AppForge’s server to the selected provider when used. They are excluded from workspace backups. Provider limits still apply.</p>
-            <div className="mt-4 space-y-4">
-              <div>
-                <label htmlFor="gemini-key" className="block text-xs font-medium text-foreground mb-1.5">Google Gemini API key</label>
-                <div className="flex gap-2">
-                  <Input id="gemini-key" type="password" autoComplete="off" value={geminiKey} onChange={(e) => setGeminiKey(e.target.value)} placeholder="Gemini API key" className="flex-1" />
-                  <Button aria-label="Save Gemini key" disabled={!geminiKey.trim()} onClick={() => saveLocalSecret(GEMINI_KEY_STORAGE, geminiKey, 'Gemini key')}><Check className="h-4 w-4" /></Button>
-                  <Button aria-label="Remove Gemini key" variant="destructive" onClick={() => removeLocalSecret(GEMINI_KEY_STORAGE, () => setGeminiKey(''), 'Gemini key')}><Trash2 className="h-4 w-4" /></Button>
-                </div>
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">Text fallback for Story Studio (Dragon Arena), available for future apps. Uses Gemini 2.5 Flash-Lite by default. Free usage depends on your Google project’s tier and quotas; a paid-project key can incur charges. Free-tier content may be used by Google to improve its products.</p>
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">The standard $300 Google Cloud welcome credit does not cover Gemini API in AI Studio costs. <a className="underline" href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">Create a key in AI Studio</a> and check its project is on the Free tier.</p>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-foreground mb-1.5">OpenRouter personal key</label>
-                <div className="flex gap-2">
-                  <Input type="password" value={openRouterKey} onChange={(e) => setOpenRouterKey(e.target.value)} placeholder="sk-or-..." className="flex-1" />
-                  <Button onClick={saveOpenRouterKey} disabled={!openRouterKey.startsWith('sk-or-')}><Check className="h-4 w-4" /></Button>
-                  {openRouterKey && <Button variant="destructive" onClick={() => removeLocalSecret('dragon-arena-openrouter-key', () => setOpenRouterKey(''), 'OpenRouter key')}><Trash2 className="h-4 w-4" /></Button>}
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-foreground mb-1.5">Hugging Face personal token</label>
-                <div className="flex gap-2">
-                  <Input type="password" value={hfToken} onChange={(e) => setHfToken(e.target.value)} placeholder="hf_..." className="flex-1" />
-                  <Button onClick={saveHfToken} disabled={!hfToken.startsWith('hf_')}><Check className="h-4 w-4" /></Button>
-                  {hfToken && <Button variant="destructive" onClick={() => removeLocalSecret('dragon-arena-hf-key', () => setHfToken(''), 'Hugging Face token')}><Trash2 className="h-4 w-4" /></Button>}
-                </div>
-              </div>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">Personal keys stay in this browser and are excluded from workspace backups. They are sent only when you invoke the selected provider.</p>
+            <div className="mt-3 space-y-3">
+              <div><label htmlFor="gemini-key" className="mb-1 block text-xs font-medium text-foreground">Google Gemini API key</label><div className="flex gap-2"><Input id="gemini-key" type="password" autoComplete="off" value={geminiKey} onChange={(e) => setGeminiKey(e.target.value)} placeholder="Gemini API key" className="flex-1" /><Button size="sm" aria-label="Save Gemini key" disabled={!geminiKey.trim()} onClick={() => saveLocalSecret(GEMINI_KEY_STORAGE, geminiKey, 'Gemini key')}><Check className="h-4 w-4" /></Button><Button size="sm" aria-label="Remove Gemini key" variant="destructive" onClick={() => removeLocalSecret(GEMINI_KEY_STORAGE, () => setGeminiKey(''), 'Gemini key')}><Trash2 className="h-4 w-4" /></Button></div></div>
+              <div><label className="mb-1 block text-xs font-medium text-foreground">OpenRouter personal key</label><div className="flex gap-2"><Input type="password" value={openRouterKey} onChange={(e) => setOpenRouterKey(e.target.value)} placeholder="sk-or-..." className="flex-1" /><Button size="sm" onClick={saveOpenRouterKey} disabled={!openRouterKey.startsWith('sk-or-')}><Check className="h-4 w-4" /></Button>{openRouterKey && <Button size="sm" variant="destructive" onClick={() => removeLocalSecret('dragon-arena-openrouter-key', () => setOpenRouterKey(''), 'OpenRouter key')}><Trash2 className="h-4 w-4" /></Button>}</div></div>
+              <div><label className="mb-1 block text-xs font-medium text-foreground">Hugging Face personal token</label><div className="flex gap-2"><Input type="password" value={hfToken} onChange={(e) => setHfToken(e.target.value)} placeholder="hf_..." className="flex-1" /><Button size="sm" onClick={saveHfToken} disabled={!hfToken.startsWith('hf_')}><Check className="h-4 w-4" /></Button>{hfToken && <Button size="sm" variant="destructive" onClick={() => removeLocalSecret('dragon-arena-hf-key', () => setHfToken(''), 'Hugging Face token')}><Trash2 className="h-4 w-4" /></Button>}</div></div>
             </div>
           </Card>
-          <VertexBridgeStatus />
         </div>
       )}
 
