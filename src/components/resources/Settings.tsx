@@ -1,23 +1,6 @@
 import * as React from 'react'
 import { useSearchParams } from 'react-router-dom'
-// @code-scanning/ignore js/xss-through-dom: Deployment URL is rendered via React JSX (auto-escaped) and used as href with rel="noopener noreferrer"; no DOM text reinterpretation as HTML occurs.
-import { GEMINI_KEY_STORAGE } from '@/lib/aiProviders'
-import {
-  Check,
-  Download,
-  ExternalLink,
-  ImagePlus,
-  KeyRound,
-  Loader2,
-  LockKeyhole,
-  Mail,
-  MapPin,
-  ShieldCheck,
-  Trash2,
-  Upload,
-  UserRound,
-} from 'lucide-react'
-import { SiGithub as Github, SiGoogle as Google, SiSupabase as SupabaseIcon, SiVercel as Vercel } from 'react-icons/si'
+import { Check, Download, ImagePlus, KeyRound, Loader2, LockKeyhole, ShieldCheck, Trash2, Upload, UserRound } from 'lucide-react'
 import { Badge, BuildBadge, Button, Card, Input, Tabs, Textarea } from '@/components/ui'
 import type { AppState } from '@/types'
 import { useAuth } from '@/auth/AuthProvider'
@@ -34,8 +17,6 @@ import {
   getPrivateProfileInfo,
   getRole,
   getSecurityState,
-  listProfileImages,
-  removeProfileImage,
   savePrivateProfileInfo,
   saveProfile,
   unenrollTotp,
@@ -43,24 +24,25 @@ import {
   verifyTotpFactor,
   type AppProfile,
   type PrivateProfileInfo,
-  type ProfileImageLink,
-  type UserImage,
 } from '@/lib/account'
 
 const PROFILE_IMAGE_ACCEPT = 'image/png,image/jpeg,image/webp,image/gif'
 const MAX_WORKSPACE_IMPORT_BYTES = 5 * 1024 * 1024
-type TabId = 'profile' | 'data' | 'integrations' | 'admin'
-const TAB_IDS = new Set<TabId>(['profile', 'data', 'integrations', 'admin'])
-
-const imageFromLink = (link: ProfileImageLink) => {
-  const value = link.user_images
-  return Array.isArray(value) ? value[0] || null : value || null
-}
-
+const HF_KEYS_STORAGE = 'dragon-arena-hf-keys'
+const HF_LEGACY_STORAGE = 'dragon-arena-hf-key'
+type TabId = 'profile' | 'security' | 'data' | 'integrations' | 'admin'
+const TAB_IDS = new Set<TabId>(['profile', 'security', 'data', 'integrations', 'admin'])
 const splitSkills = (value: string) => value.split(',').map((item) => item.trim()).filter(Boolean).slice(0, 16)
 const tabFromParams = (params: URLSearchParams): TabId => {
   const value = params.get('tab')
   return value && TAB_IDS.has(value as TabId) ? value as TabId : 'profile'
+}
+const loadHfTokens = () => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(HF_KEYS_STORAGE) || '[]')
+    if (Array.isArray(parsed)) return [0, 1, 2].map((index) => String(parsed[index] || ''))
+    return [localStorage.getItem(HF_LEGACY_STORAGE) || '', '', '']
+  } catch { return ['', '', ''] }
 }
 
 export function SettingsPage({ state, setState }: { state: AppState; setState: (s: AppState) => void }) {
@@ -69,25 +51,22 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
   const [activeTab, setActiveTab] = React.useState<TabId>(() => tabFromParams(searchParams))
   const [profile, setProfile] = React.useState<AppProfile | null>(null)
   const [privateInfo, setPrivateInfo] = React.useState<PrivateProfileInfo | null>(null)
-  const [images, setImages] = React.useState<ProfileImageLink[]>([])
   const [role, setRole] = React.useState<'user' | 'admin'>('user')
   const [currentLevel, setCurrentLevel] = React.useState<'aal1' | 'aal2' | null>(null)
-  const [nextLevel, setNextLevel] = React.useState<'aal1' | 'aal2' | null>(null)
   const [totpFactors, setTotpFactors] = React.useState<any[]>([])
   const [enrollment, setEnrollment] = React.useState<{ id: string; qr: string; secret: string } | null>(null)
   const [totpCode, setTotpCode] = React.useState('')
+  const [skillsDraft, setSkillsDraft] = React.useState('')
+  const [hfTokens, setHfTokens] = React.useState<string[]>(loadHfTokens)
   const [loading, setLoading] = React.useState(true)
   const [busy, setBusy] = React.useState('')
   const [message, setMessage] = React.useState('')
   const [error, setError] = React.useState('')
-  const [skillsDraft, setSkillsDraft] = React.useState('')
-  const [geminiKey, setGeminiKey] = React.useState(() => localStorage.getItem(GEMINI_KEY_STORAGE) || '')
-  const [openRouterKey, setOpenRouterKey] = React.useState(() => localStorage.getItem('dragon-arena-openrouter-key') || '')
-  const [hfToken, setHfToken] = React.useState(() => localStorage.getItem('dragon-arena-hf-key') || '')
-  const [importPreview, setImportPreview] = React.useState<WorkspaceImportPreview | null>(null)
-  const [importFileName, setImportFileName] = React.useState('')
   const [newPassword, setNewPassword] = React.useState('')
   const [confirmPassword, setConfirmPassword] = React.useState('')
+  const [deleteConfirm, setDeleteConfirm] = React.useState('')
+  const [importPreview, setImportPreview] = React.useState<WorkspaceImportPreview | null>(null)
+  const [importFileName, setImportFileName] = React.useState('')
 
   const selectTab = React.useCallback((tab: TabId, replace = false) => {
     setActiveTab(tab)
@@ -102,82 +81,68 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
     if (requested !== activeTab) setActiveTab(requested)
   }, [searchParams, activeTab])
 
-  const refreshAccount = React.useCallback(async () => {
-    if (!user) return
-    setLoading(true)
-    setError('')
-    try {
-      const [nextProfile, nextPrivate, nextRole, security, nextImages] = await Promise.all([
-        ensureProfile(user),
-        getPrivateProfileInfo(user.id),
-        getRole(user.id),
-        getSecurityState(),
-        listProfileImages(user.id),
-      ])
-      setProfile(nextProfile)
-      setSkillsDraft((nextProfile.skills || []).join(', '))
-      setPrivateInfo(nextPrivate)
-      setRole(nextRole)
-      setCurrentLevel(security.currentLevel)
-      setNextLevel(security.nextLevel)
-      setTotpFactors(security.totp || [])
-      setImages(nextImages)
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'Could not load account settings.')
-    } finally {
-      setLoading(false)
-    }
-  }, [user])
-
-  React.useEffect(() => { void refreshAccount() }, [refreshAccount])
-
-  React.useEffect(() => {
-    if (!loading && activeTab === 'admin' && role !== 'admin') selectTab('profile', true)
-  }, [activeTab, loading, role, selectTab])
-
-
   const flash = (text: string) => {
     setMessage(text)
     setError('')
     window.setTimeout(() => setMessage(''), 2200)
   }
 
+  const refreshAccount = React.useCallback(async () => {
+    if (!user) return
+    setLoading(true)
+    setError('')
+    try {
+      const [nextProfile, nextPrivate, nextRole, security] = await Promise.all([
+        ensureProfile(user),
+        getPrivateProfileInfo(user.id),
+        getRole(user.id),
+        getSecurityState(),
+      ])
+      setProfile(nextProfile)
+      setPrivateInfo(nextPrivate)
+      setRole(nextRole)
+      setSkillsDraft((nextProfile.skills || []).join(', '))
+      setCurrentLevel(security.currentLevel)
+      setTotpFactors(security.totp || [])
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not load account settings.')
+    } finally { setLoading(false) }
+  }, [user])
+
+  React.useEffect(() => { void refreshAccount() }, [refreshAccount])
+  React.useEffect(() => {
+    if (!loading && activeTab === 'admin' && role !== 'admin') selectTab('profile', true)
+  }, [activeTab, loading, role, selectTab])
+
   const savePublicProfile = async () => {
     if (!user || !profile) return
     setBusy('profile')
+    setError('')
     try {
       const saved = await saveProfile(user.id, { ...profile, skills: splitSkills(skillsDraft) })
       setProfile(saved)
       setSkillsDraft((saved.skills || []).join(', '))
-      flash('Public profile saved.')
-    } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : 'Could not save profile.')
-    } finally { setBusy('') }
+      flash('Profile saved.')
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not save profile.') }
+    finally { setBusy('') }
   }
 
   const savePrivateInfo = async () => {
     if (!user || !privateInfo) return
     setBusy('private')
-    try {
-      setPrivateInfo(await savePrivateProfileInfo(user.id, privateInfo))
-      flash('Private personal information saved.')
-    } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : 'Could not save private information.')
-    } finally { setBusy('') }
+    setError('')
+    try { setPrivateInfo(await savePrivateProfileInfo(user.id, privateInfo)); flash('Private information saved.') }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not save private information.') }
+    finally { setBusy('') }
   }
 
-  const saveLocalSecret = (key: string, value: string, label: string) => {
-    try {
-      localStorage.setItem(key, value.trim())
-      flash(`${label} saved.`)
-    } catch { setError(`Could not save ${label.toLowerCase()} in browser storage.`) }
-  }
-  const removeLocalSecret = (key: string, clear: () => void, label: string) => {
-    try {
-      localStorage.removeItem(key)
-      clear()
-      flash(`${label} removed.`)
-    } catch { setError(`Could not remove ${label.toLowerCase()} from browser storage.`) }
+  const uploadAvatar = async (file: File) => {
+    if (!user) return
+    setBusy('avatar')
+    setError('')
+    try { await uploadProfileImage(user.id, file, 'avatar'); await refreshAccount(); flash('Avatar updated.') }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'Avatar upload failed.') }
+    finally { setBusy('') }
   }
 
   const saveLoginPassword = async () => {
@@ -193,57 +158,40 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
     setBusy('')
   }
 
-  const saveOpenRouterKey = () => saveLocalSecret('dragon-arena-openrouter-key', openRouterKey, 'OpenRouter key')
-  const saveHfToken = () => saveLocalSecret('dragon-arena-hf-key', hfToken, 'Hugging Face token')
-
-  const uploadImage = async (file: File, kind: 'avatar' | 'gallery' | 'cover') => {
-    if (!user) return
-    setBusy(kind)
+  const saveHfTokens = () => {
     try {
-      await uploadProfileImage(user.id, file, kind)
-      await refreshAccount()
-      flash(kind === 'avatar' ? 'Profile photo updated.' : kind === 'cover' ? 'Cover photo updated.' : 'Image added to your profile.')
-    } catch (uploadError) {
-      setError(uploadError instanceof Error ? uploadError.message : 'Upload failed.')
-    } finally { setBusy('') }
-  }
-
-  const removeImage = async (image: UserImage) => {
-    if (!user) return
-    setBusy(image.id)
-    try {
-      await removeProfileImage(user.id, image)
-      await refreshAccount()
-      flash('Image removed.')
-    } catch (removeError) {
-      setError(removeError instanceof Error ? removeError.message : 'Could not remove image.')
-    } finally { setBusy('') }
+      const normalized = hfTokens.map((token) => token.trim()).slice(0, 3)
+      localStorage.setItem(HF_KEYS_STORAGE, JSON.stringify(normalized))
+      const primary = normalized.find((token) => token.startsWith('hf_')) || ''
+      if (primary) localStorage.setItem(HF_LEGACY_STORAGE, primary)
+      else localStorage.removeItem(HF_LEGACY_STORAGE)
+      setHfTokens(normalized)
+      flash('Hugging Face token rotation saved in this browser.')
+    } catch { setError('Could not save Hugging Face tokens in browser storage.') }
   }
 
   const beginTotp = async () => {
     setBusy('enroll')
     setError('')
-    try {
-      const data = await enrollTotp()
-      setEnrollment({ id: data.id, qr: data.totp.qr_code, secret: data.totp.secret })
-    } catch (mfaError) {
-      setError(mfaError instanceof Error ? mfaError.message : 'Could not start TOTP enrollment.')
-    } finally { setBusy('') }
+    try { const data = await enrollTotp(); setEnrollment({ id: data.id, qr: data.totp.qr_code, secret: data.totp.secret }) }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not start TOTP enrollment.') }
+    finally { setBusy('') }
   }
 
   const verifyFactor = async (factorId: string) => {
     if (!totpCode.trim()) return
     setBusy('verify')
     setError('')
-    try {
-      await verifyTotpFactor(factorId, totpCode)
-      setTotpCode('')
-      setEnrollment(null)
-      await refreshAccount()
-      flash('TOTP verified. This session is AAL2.')
-    } catch (mfaError) {
-      setError(mfaError instanceof Error ? mfaError.message : 'TOTP verification failed.')
-    } finally { setBusy('') }
+    try { await verifyTotpFactor(factorId, totpCode); setTotpCode(''); setEnrollment(null); await refreshAccount(); flash('TOTP verified.') }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'TOTP verification failed.') }
+    finally { setBusy('') }
+  }
+
+  const removeFactor = async (factorId: string) => {
+    setBusy('factor')
+    try { await unenrollTotp(factorId); await refreshAccount(); flash('TOTP factor removed.') }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not remove TOTP factor.') }
+    finally { setBusy('') }
   }
 
   const bootstrapAdmin = async () => {
@@ -252,21 +200,27 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
       const claimed = await claimFirstAdmin()
       if (!claimed) throw new Error('Initial admin can only be claimed while you are the sole AppForge account and no admin exists yet.')
       await refreshAccount()
-      flash('Initial admin role claimed. Set up TOTP before using Admin CRUD.')
-    } catch (adminError) {
-      setError(adminError instanceof Error ? adminError.message : 'Could not initialize admin.')
-    } finally { setBusy('') }
+      flash('Initial admin role claimed. Verify TOTP before Admin CRUD.')
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not initialize admin.') }
+    finally { setBusy('') }
   }
 
+  const deleteAccount = async () => {
+    if (deleteConfirm !== 'DELETE') { setError('Type DELETE exactly before permanently deleting the account.'); return }
+    if (!window.confirm('Permanently delete this AppForge account? This cannot be undone.')) return
+    setBusy('delete-account')
+    setError('')
+    try {
+      const { error: invokeError } = await supabase.functions.invoke('delete-account', { body: { confirm: 'DELETE' } })
+      if (invokeError) throw invokeError
+      await signOut().catch(() => undefined)
+      window.location.assign('/')
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not delete the account.') }
+    finally { setBusy('') }
+  }
 
   const exportWorkspace = () => {
-    const payload = createWorkspaceBackup({
-      exportedAt: new Date().toISOString(),
-      accountId: user?.id,
-      workspace: state,
-      categoryOverrides: loadCategoryOverrides(),
-      widgets: { 'weather-sidebar': isWidgetEnabled('weather-sidebar'), 'desktop-buddy': isWidgetEnabled('desktop-buddy') },
-    })
+    const payload = createWorkspaceBackup({ exportedAt: new Date().toISOString(), accountId: user?.id, workspace: state, categoryOverrides: loadCategoryOverrides(), widgets: { 'weather-sidebar': isWidgetEnabled('weather-sidebar'), 'desktop-buddy': isWidgetEnabled('desktop-buddy') } })
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -277,25 +231,12 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
   }
 
   const importWorkspace = (file: File) => {
-    if (file.size > MAX_WORKSPACE_IMPORT_BYTES) {
-      setImportPreview(null)
-      setImportFileName('')
-      setError('Workspace backup is too large. Choose a JSON file under 5 MB.')
-      return
-    }
+    if (file.size > MAX_WORKSPACE_IMPORT_BYTES) { setError('Workspace backup is too large. Choose a JSON file under 5 MB.'); return }
     const reader = new FileReader()
     reader.onerror = () => setError('Could not read that workspace backup.')
     reader.onload = () => {
-      try {
-        const preview = parseWorkspaceBackup(String(reader.result || '{}'), state, user?.id)
-        setImportPreview(preview)
-        setImportFileName(file.name)
-        setError('')
-      } catch (importError) {
-        setImportPreview(null)
-        setImportFileName('')
-        setError(importError instanceof Error ? importError.message : 'That file is not a valid AppForge workspace export.')
-      }
+      try { setImportPreview(parseWorkspaceBackup(String(reader.result || '{}'), state, user?.id)); setImportFileName(file.name); setError('') }
+      catch (cause) { setImportPreview(null); setImportFileName(''); setError(cause instanceof Error ? cause.message : 'That file is not a valid AppForge workspace export.') }
     }
     reader.readAsText(file)
   }
@@ -313,167 +254,41 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
     flash('Workspace backup imported.')
   }
 
-  const handleSignOut = async () => {
-    setBusy('signout')
-    setError('')
-    try { await signOut() }
-    catch (signOutError) { setError(signOutError instanceof Error ? signOutError.message : 'Could not sign out.') }
-    finally { setBusy('') }
-  }
-
-
-  const gallery = images.filter((link) => link.kind === 'gallery').map(imageFromLink).filter((image): image is UserImage => Boolean(image))
   const verifiedTotp = totpFactors.filter((factor) => factor.status === 'verified')
   const tabs: { id: TabId; label: string }[] = [
     { id: 'profile', label: 'Profile' },
-    { id: 'data', label: 'Data' },
+    { id: 'security', label: 'Security' },
     { id: 'integrations', label: 'Integrations' },
+    { id: 'data', label: 'Data' },
     ...(role === 'admin' ? [{ id: 'admin' as TabId, label: 'Admin' }] : []),
   ]
 
   return (
-    <div className="space-y-5 pb-8">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div><h1 className="text-2xl font-semibold tracking-tight text-foreground">Settings</h1><p className="mt-1 text-sm text-muted-foreground">Profile, privacy, security, integrations and workspace settings.</p></div>
-        <BuildBadge />
-      </div>
-
+    <div className="space-y-4 pb-8">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><h1 className="text-2xl font-semibold tracking-tight text-foreground">Settings</h1><p className="mt-1 text-xs text-muted-foreground">Profile, security, integrations and workspace data.</p></div><BuildBadge /></div>
       <Tabs tabs={tabs} active={activeTab} onChange={(id) => selectTab(id as TabId)} ariaLabel="Settings sections" />
-      {message && <Card className="border-emerald-500/25 bg-emerald-500/5 p-3 text-sm text-emerald-600 dark:text-emerald-400"><Check className="mr-2 inline h-4 w-4" />{message}</Card>}
-      {error && <Card className="border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</Card>}
+      {message && <Card className="border-emerald-500/25 bg-emerald-500/5 p-2 text-xs text-emerald-600 dark:text-emerald-400"><Check className="mr-1.5 inline h-3.5 w-3.5" />{message}</Card>}
+      {error && <Card className="border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive">{error}</Card>}
 
-      {activeTab === 'profile' && (
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(260px,.72fr)_minmax(0,1.28fr)]">
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted text-muted-foreground">{profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : <UserRound className="h-7 w-7" />}</div>
-              <div className="min-w-0"><div className="truncate text-sm font-semibold text-foreground">{profile?.display_name || user?.email || 'AppForge user'}</div><div className="truncate text-xs text-muted-foreground">{user?.email}</div><div className="mt-2 flex flex-wrap gap-1"><Badge color={role === 'admin' ? 'blue' : 'slate'}>{role}</Badge>{profile?.open_to_collaboration && <Badge color="green">Open to collaborate</Badge>}</div></div>
-            </div>
-            <label className="mt-4 block"><input type="file" accept={PROFILE_IMAGE_ACCEPT} className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, 'avatar'); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border/70 bg-background/45 px-3 py-2 text-xs font-medium text-foreground hover:bg-accent"><ImagePlus className="h-4 w-4" />{busy === 'avatar' ? 'Uploading…' : 'Change avatar'}</span></label>
-            <label className="mt-2 block"><input type="file" accept={PROFILE_IMAGE_ACCEPT} className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadImage(file, 'cover'); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border/70 bg-background/45 px-3 py-2 text-xs font-medium text-foreground hover:bg-accent"><ImagePlus className="h-4 w-4" />{busy === 'cover' ? 'Uploading…' : 'Upload cover photo'}</span></label>
-            <p className="mt-3 text-xs leading-5 text-muted-foreground">Choose exactly which collaboration fields appear in People. Account email remains private unless you explicitly enable and save a public email below.</p>
-          </Card>
+      {activeTab === 'profile' && <div className="columns-1 gap-3 md:columns-2 xl:columns-3 [&>*]:mb-3 [&>*]:break-inside-avoid">
+        <Card className="p-3"><div className="flex items-center gap-3"><div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted">{profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : <UserRound className="h-6 w-6 text-muted-foreground" />}</div><div className="min-w-0"><div className="truncate text-sm font-semibold">{profile?.display_name || user?.email || 'AppForge user'}</div><div className="truncate text-[11px] text-muted-foreground">{user?.email}</div><div className="mt-1"><Badge color={role === 'admin' ? 'blue' : 'slate'}>{role}</Badge></div></div></div><label className="mt-3 inline-flex cursor-pointer"><input type="file" accept={PROFILE_IMAGE_ACCEPT} className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadAvatar(file); event.currentTarget.value = '' }} /><span className="inline-flex h-6 items-center gap-1.5 rounded-xl border border-border px-2 text-[11px] font-medium hover:bg-accent"><ImagePlus className="h-3.5 w-3.5" />{busy === 'avatar' ? 'Uploading…' : 'Change avatar'}</span></label></Card>
+        <Card className="p-3"><h2 className="text-sm font-semibold">Identity</h2>{loading || !profile ? <div className="py-4 text-xs text-muted-foreground">Loading…</div> : <div className="mt-3 grid gap-2"><Input label="Display name" value={profile.display_name || ''} onChange={(e) => setProfile({ ...profile, display_name: e.target.value })} /><Input label="Username" value={profile.username || ''} onChange={(e) => setProfile({ ...profile, username: e.target.value })} /><Input label="Headline" value={profile.headline || ''} onChange={(e) => setProfile({ ...profile, headline: e.target.value })} /><Textarea label="Bio" value={profile.bio || ''} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} rows={2} /></div>}</Card>
+        <Card className="p-3"><h2 className="text-sm font-semibold">Links & skills</h2>{profile && <div className="mt-3 grid gap-2"><Input label="GitHub username" value={profile.github_username || ''} onChange={(e) => setProfile({ ...profile, github_username: e.target.value })} /><Input label="Website" value={profile.website || ''} onChange={(e) => setProfile({ ...profile, website: e.target.value })} /><Input label="Public location" value={profile.location || ''} onChange={(e) => setProfile({ ...profile, location: e.target.value })} /><Input label="Skills" value={skillsDraft} onChange={(e) => setSkillsDraft(e.target.value)} placeholder="React, TypeScript, Supabase" /></div>}</Card>
+        <Card className="p-3"><h2 className="text-sm font-semibold">People visibility</h2>{profile && <div className="mt-3 grid gap-2 text-xs"><label className="flex items-center gap-2"><input type="checkbox" checked={profile.is_public} onChange={(e) => setProfile({ ...profile, is_public: e.target.checked })} /> Show profile in People</label><label className="flex items-center gap-2"><input type="checkbox" checked={profile.open_to_collaboration} onChange={(e) => setProfile({ ...profile, open_to_collaboration: e.target.checked })} /> Open to collaboration</label><label className="flex items-center gap-2"><input type="checkbox" checked={profile.show_skills !== false} onChange={(e) => setProfile({ ...profile, show_skills: e.target.checked })} /> Show skills</label><label className="flex items-center gap-2"><input type="checkbox" checked={profile.show_github !== false} onChange={(e) => setProfile({ ...profile, show_github: e.target.checked })} /> Show GitHub</label><label className="flex items-center gap-2"><input type="checkbox" checked={profile.show_website !== false} onChange={(e) => setProfile({ ...profile, show_website: e.target.checked })} /> Show website</label><label className="flex items-center gap-2"><input type="checkbox" checked={Boolean(profile.show_email)} onChange={(e) => setProfile({ ...profile, show_email: e.target.checked, public_email: e.target.checked ? (profile.public_email || user?.email || '') : profile.public_email })} /> Show public email</label>{profile.show_email && <Input type="email" label="Public email" value={profile.public_email || ''} onChange={(e) => setProfile({ ...profile, public_email: e.target.value })} />}</div>}</Card>
+        <Card className="p-3"><div className="flex items-start gap-2"><LockKeyhole className="mt-0.5 h-4 w-4 text-muted-foreground" /><div><h2 className="text-sm font-semibold">Private information</h2><p className="mt-1 text-[11px] leading-4 text-muted-foreground">Owner-only profile details. Never shown in People.</p></div></div>{privateInfo && <div className="mt-3 grid gap-2"><div className="grid grid-cols-2 gap-2"><Input label="Sex" value={privateInfo.sex || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, sex: e.target.value })} /><Input label="Birth date" type="date" value={privateInfo.birth_date || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, birth_date: e.target.value })} /><Input label="Phone" value={privateInfo.phone || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, phone: e.target.value })} /><Input label="Country" value={privateInfo.country || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, country: e.target.value })} /></div><Input label="Organization" value={privateInfo.organization || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, organization: e.target.value })} /><Input label="Job title" value={privateInfo.job_title || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, job_title: e.target.value })} /><div className="grid grid-cols-2 gap-2"><Input label="Address" value={privateInfo.address_line1 || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, address_line1: e.target.value })} /><Input label="City" value={privateInfo.city || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, city: e.target.value })} /><Input label="Region" value={privateInfo.region || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, region: e.target.value })} /><Input label="Postal code" value={privateInfo.postal_code || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, postal_code: e.target.value })} /></div><Textarea label="Private notes" value={privateInfo.notes || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, notes: e.target.value })} rows={2} /><Button variant="secondary" onClick={() => void savePrivateInfo()} disabled={busy === 'private'}>Save private info</Button></div>}</Card>
+        <Card className="p-3"><h2 className="text-sm font-semibold">Save profile</h2><p className="mt-1 text-[11px] leading-4 text-muted-foreground">Cards flow independently, so short sections no longer stretch to match tall ones.</p><Button className="mt-3" onClick={() => void savePublicProfile()} disabled={busy === 'profile'}>{busy === 'profile' ? <Loader2 className="animate-spin" /> : <Check />} Save profile</Button></Card>
+      </div>}
 
-          <Card className="p-4">
-            <h2 className="text-sm font-semibold text-foreground">Public collaboration profile</h2>
-            {loading || !profile ? <div className="py-8 text-center text-sm text-muted-foreground">Loading profile…</div> : <div className="mt-4 space-y-3">
-              <div className="grid gap-3 sm:grid-cols-2"><Input label="Display name" value={profile.display_name || ''} onChange={(e) => setProfile({ ...profile, display_name: e.target.value })} /><Input label="Username" value={profile.username || ''} onChange={(e) => setProfile({ ...profile, username: e.target.value })} placeholder="your-handle" /><Input label="Headline" value={profile.headline || ''} onChange={(e) => setProfile({ ...profile, headline: e.target.value })} placeholder="Frontend engineer · tool builder" /><Input label="GitHub username" value={profile.github_username || ''} onChange={(e) => setProfile({ ...profile, github_username: e.target.value })} placeholder="github-handle" /><Input label="Public location" value={profile.location || ''} onChange={(e) => setProfile({ ...profile, location: e.target.value })} placeholder="City / country only if you want" /><Input label="Website" value={profile.website || ''} onChange={(e) => setProfile({ ...profile, website: e.target.value })} placeholder="https://…" /></div>
-              <Input label="Skills (comma separated)" value={skillsDraft} onChange={(e) => setSkillsDraft(e.target.value)} placeholder="React, TypeScript, Supabase" />
-              <Textarea label="Bio" value={profile.bio || ''} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} rows={2} />
+      {activeTab === 'security' && <div className="grid items-start gap-3 lg:grid-cols-2">
+        <Card className="p-3"><div className="flex items-start gap-2"><KeyRound className="h-4 w-4 text-muted-foreground" /><div><h2 className="text-sm font-semibold">Email login password</h2><p className="mt-1 text-[11px] leading-4 text-muted-foreground">Minimum 8 characters with lowercase, uppercase, a digit and a symbol.</p></div></div><div className="mt-3 grid gap-2"><Input type="password" label="New password" autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} /><Input type="password" label="Confirm password" autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} /><Button onClick={() => void saveLoginPassword()} disabled={busy === 'password'}>Update password</Button></div></Card>
+        <Card className="p-3"><div className="flex items-start gap-2"><ShieldCheck className="h-4 w-4 text-muted-foreground" /><div><h2 className="text-sm font-semibold">Two-factor authentication</h2><p className="mt-1 text-[11px] text-muted-foreground">Session assurance: {currentLevel || 'unknown'}.</p></div></div><div className="mt-3 space-y-2">{verifiedTotp.map((factor) => <div key={factor.id} className="flex items-center justify-between rounded-xl border border-border/70 p-2 text-xs"><span>{factor.friendly_name || 'Authenticator'} · verified</span><Button variant="ghost" onClick={() => void removeFactor(factor.id)} disabled={busy === 'factor'}><Trash2 /></Button></div>)}{!enrollment && <Button variant="secondary" onClick={() => void beginTotp()} disabled={busy === 'enroll'}>Add authenticator</Button>}{enrollment && <div className="rounded-xl border border-border/70 p-2"><img src={enrollment.qr} alt="TOTP QR code" className="mx-auto h-36 w-36 rounded-xl bg-white p-1" /><div className="mt-2 break-all text-[10px] text-muted-foreground">{enrollment.secret}</div><div className="mt-2 flex gap-2"><Input value={totpCode} onChange={(e) => setTotpCode(e.target.value)} placeholder="123456" inputMode="numeric" /><Button onClick={() => void verifyFactor(enrollment.id)} disabled={busy === 'verify'}>Verify</Button></div></div>}</div></Card>
+        {role !== 'admin' && <Card className="p-3"><h2 className="text-sm font-semibold">Admin bootstrap</h2><p className="mt-1 text-[11px] leading-4 text-muted-foreground">Available only for the first/sole account when no admin exists.</p><Button className="mt-3" variant="secondary" onClick={() => void bootstrapAdmin()} disabled={busy === 'bootstrap-admin'}>Claim initial admin</Button></Card>}
+        <Card className="border-destructive/35 bg-destructive/5 p-3 lg:col-span-2"><div className="flex items-start gap-2"><Trash2 className="h-4 w-4 text-destructive" /><div><h2 className="text-sm font-semibold text-destructive">Danger zone</h2><p className="mt-1 text-[11px] leading-4 text-muted-foreground">Permanently delete your Supabase Auth account and account-owned database records. This cannot be undone.</p></div></div><div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,260px)_auto] sm:items-end"><Input label="Type DELETE to confirm" value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} placeholder="DELETE" /><Button variant="destructive" onClick={() => void deleteAccount()} disabled={deleteConfirm !== 'DELETE' || busy === 'delete-account'}>{busy === 'delete-account' ? <Loader2 className="animate-spin" /> : <Trash2 />} Delete account</Button></div></Card>
+      </div>}
 
-              <div className="rounded-xl border border-border/70 bg-background/35 p-3">
-                <div className="text-xs font-semibold text-foreground">Visible profile fields</div>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">These switches affect People search and profile cards. Turning a field off keeps its saved value private from other users.</p>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2 text-sm text-foreground">
-                  <label className="flex items-center gap-2"><input type="checkbox" checked={profile.show_skills !== false} onChange={(e) => setProfile({ ...profile, show_skills: e.target.checked })} /> Show skills</label>
-                  <label className="flex items-center gap-2"><input type="checkbox" checked={profile.show_website !== false} onChange={(e) => setProfile({ ...profile, show_website: e.target.checked })} /> Show website</label>
-                  <label className="flex items-center gap-2"><input type="checkbox" checked={profile.show_github !== false} onChange={(e) => setProfile({ ...profile, show_github: e.target.checked })} /> Show GitHub</label>
-                  <label className="flex items-center gap-2"><input type="checkbox" checked={Boolean(profile.show_email)} onChange={(e) => setProfile({ ...profile, show_email: e.target.checked, public_email: e.target.checked ? (profile.public_email || user?.email || '') : profile.public_email })} /> Show public email</label>
-                </div>
-                {profile.show_email && <div className="mt-3"><Input label="Public email" type="email" value={profile.public_email || ''} onChange={(e) => setProfile({ ...profile, public_email: e.target.value })} placeholder={user?.email || 'you@example.com'} /></div>}
-              </div>
+      {activeTab === 'integrations' && <div className="grid items-start gap-3 lg:grid-cols-2"><Card className="p-3"><h2 className="text-sm font-semibold">Hugging Face rotation</h2><p className="mt-1 text-[11px] leading-4 text-muted-foreground">Optional personal Inference Providers tokens. Story Studio rotates up to three before server-funded tokens. Tokens stay in this browser and are never written to your profile row.</p><div className="mt-3 grid gap-2">{hfTokens.map((value, index) => <Input key={index} type="password" autoComplete="off" label={`Token ${index + 1}`} value={value} onChange={(event) => setHfTokens((current) => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder="hf_…" />)}<Button onClick={saveHfTokens}><KeyRound /> Save token rotation</Button></div></Card><div className="space-y-3"><VertexBridgeStatus /><Card className="p-3"><h2 className="text-sm font-semibold">Provider model</h2><p className="mt-1 text-[11px] leading-4 text-muted-foreground">Story text uses the Hugging Face rotation with a continuity-safe local fallback. Vertex remains the secured cloud image bridge for AppForge features that use it. Gemini/OpenRouter browser-key fields are intentionally removed.</p></Card></div></div>}
 
-              <div className="flex flex-col gap-2 text-sm text-foreground"><label className="flex items-center gap-2"><input type="checkbox" checked={profile.open_to_collaboration} onChange={(e) => setProfile({ ...profile, open_to_collaboration: e.target.checked })} /> Open to open-source collaboration</label><label className="flex items-center gap-2"><input type="checkbox" checked={profile.is_public} onChange={(e) => setProfile({ ...profile, is_public: e.target.checked })} /> Show my profile to other signed-in users</label></div>
-              <Button onClick={() => void savePublicProfile()} disabled={busy === 'profile'}>{busy === 'profile' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Save public profile</Button>
-            </div>}
-          </Card>
-
-          <Card className="p-4 lg:col-span-2">
-            <h2 className="text-sm font-semibold text-foreground">Public profile preview</h2>
-            <p className="mt-1 text-xs text-muted-foreground">This preview follows the same field-visibility rules used on People.</p>
-            {!profile?.is_public && <div className="mt-3 rounded-xl border border-border/70 bg-background/35 p-3 text-xs text-muted-foreground">Your profile is currently private. Turn on “Show my profile to other signed-in users” to make it visible in People.</div>}
-            <div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-4">
-              <div className="flex items-start gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted text-muted-foreground">
-                  {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : <UserRound className="h-5 w-5" />}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="truncate text-sm font-semibold text-foreground">{profile?.display_name || 'AppForge user'}</h2>
-                    {profile?.open_to_collaboration && <Badge color="green">Collaborate</Badge>}
-                  </div>
-                  {profile?.username && <p className="truncate text-xs text-muted-foreground">@{profile.username}</p>}
-                  {profile?.headline && <p className="mt-1 text-xs font-medium text-foreground/80">{profile.headline}</p>}
-                </div>
-              </div>
-              {profile?.bio && <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">{profile.bio}</p>}
-              {profile?.show_skills !== false && (profile?.skills || []).length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{(profile?.skills || []).slice(0, 8).map((skill) => <span key={skill} className="rounded-xl border border-border/70 bg-background/45 px-2 py-0.5 text-[11px] text-muted-foreground">{skill}</span>)}</div>}
-              <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
-                {profile?.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {profile.location}</span>}
-                {profile?.show_github !== false && profile?.github_username && <span className="inline-flex items-center gap-1"><Github className="h-3.5 w-3.5" /> GitHub</span>}
-                {profile?.show_website !== false && profile?.website && <span className="inline-flex items-center gap-1"><ExternalLink className="h-3.5 w-3.5" /> Website</span>}
-                {profile?.show_email && profile?.public_email && <span className="inline-flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> {profile.public_email}</span>}
-              </div>
-            </div>
-            <div className="mt-3 grid gap-2 text-xs text-muted-foreground">
-              <div className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-green-500" /> Display name, username, headline, bio and location follow profile-level visibility.</div>
-              <div className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-green-500" /> Skills, GitHub, website and public email follow the switches above.</div>
-              <div className="flex items-center gap-2"><LockKeyhole className="h-3.5 w-3.5 text-red-500" /> Private personal information (sex, birth date, phone, address, notes) is never shown.</div>
-              <div className="flex items-center gap-2"><LockKeyhole className="h-3.5 w-3.5 text-red-500" /> Account email stays private unless you explicitly publish an email.</div>
-            </div>
-          </Card>
-
-          <Card className="p-4 lg:col-span-2">
-            <div className="flex items-start gap-3"><LockKeyhole className="mt-0.5 h-5 w-5 text-muted-foreground" /><div><h2 className="text-sm font-semibold text-foreground">Private personal information</h2><p className="mt-1 text-xs leading-5 text-muted-foreground">Optional. Stored separately under owner-only Supabase RLS. Other users and the People directory cannot read this row, and admin CRUD does not expose it.</p></div></div>
-            {!privateInfo ? <div className="py-8 text-center text-sm text-muted-foreground">Loading private information…</div> : <div className="mt-4 space-y-3">
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"><Input label="Sex" value={privateInfo.sex || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, sex: e.target.value })} /><Input label="Birth date" type="date" value={privateInfo.birth_date || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, birth_date: e.target.value })} /><Input label="Phone" value={privateInfo.phone || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, phone: e.target.value })} /><Input label="Organization" value={privateInfo.organization || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, organization: e.target.value })} /><Input label="Job title" value={privateInfo.job_title || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, job_title: e.target.value })} /><Input label="Country" value={privateInfo.country || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, country: e.target.value })} /></div>
-              <div className="grid gap-3 sm:grid-cols-2"><Input label="Address line 1" value={privateInfo.address_line1 || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, address_line1: e.target.value })} /><Input label="Address line 2" value={privateInfo.address_line2 || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, address_line2: e.target.value })} /><Input label="City" value={privateInfo.city || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, city: e.target.value })} /><Input label="Region / state" value={privateInfo.region || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, region: e.target.value })} /><Input label="Postal code" value={privateInfo.postal_code || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, postal_code: e.target.value })} /></div>
-              <Textarea label="Private notes" value={privateInfo.notes || ''} onChange={(e) => setPrivateInfo({ ...privateInfo, notes: e.target.value })} rows={2} />
-              <Button variant="secondary" onClick={() => void savePrivateInfo()} disabled={busy === 'private'}>{busy === 'private' ? <Loader2 className="h-4 w-4 animate-spin" /> : <LockKeyhole className="h-4 w-4" />} Save private information</Button>
-            </div>}
-          </Card>
-
-          <Card className="p-4 lg:col-span-2">
-            <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-foreground">Profile gallery</h2><p className="mt-0.5 text-xs text-muted-foreground">Add images that represent your work or profile. Gallery images are related to your public profile.</p></div><label><input type="file" accept={PROFILE_IMAGE_ACCEPT} multiple className="hidden" onChange={(event) => { const files = Array.from(event.target.files || []); void (async () => { for (const file of files) await uploadImage(file, 'gallery') })(); event.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border/70 px-3 py-2 text-xs font-medium hover:bg-accent"><Upload className="h-4 w-4" /> Add images</span></label></div>
-            {gallery.length ? <div className="mt-4 grid gap-3 sm:grid-cols-2">{gallery.map((image) => <div key={image.id} className="group relative overflow-hidden rounded-xl border border-border/70 bg-muted"><img src={image.source_url || ''} alt={image.title || ''} className="aspect-[4/3] w-full object-cover" /><button onClick={() => void removeImage(image)} className="absolute right-2 top-2 rounded-xl border border-white/15 bg-black/45 p-2 text-white opacity-0 backdrop-blur-md transition-opacity group-hover:opacity-100" aria-label="Remove image"><Trash2 className="h-4 w-4" /></button></div>)}</div> : <div className="mt-4 rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">No gallery images yet.</div>}
-          </Card>
-        </div>
-      )}
-
-
-      {activeTab === 'profile' && (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card className="p-4"><div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-foreground">Authentication</h2><p className="mt-1 text-xs text-muted-foreground">Identity is handled through Supabase Auth. Google is the first enabled provider.</p></div><Badge color="green">Connected</Badge></div><div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-3 text-sm"><div className="font-medium text-foreground">{user?.email}</div><div className="mt-1 text-xs text-muted-foreground">Session assurance: {currentLevel || 'checking…'} · next: {nextLevel || 'checking…'}</div></div><div className="mt-3 rounded-xl border border-border/70 bg-background/35 p-3"><div className="flex items-start gap-2"><KeyRound className="mt-0.5 h-4 w-4 text-muted-foreground" /><div><div className="text-xs font-semibold text-foreground">Set email login password</div><p className="mt-1 text-xs leading-5 text-muted-foreground">Minimum 8 characters with lowercase, uppercase, a digit and a symbol. The credential is updated through Supabase Auth for this signed-in account.</p></div></div><div className="mt-3 grid gap-2 sm:grid-cols-2"><Input type="password" label="New password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" /><Input type="password" label="Confirm password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="new-password" /></div><Button className="mt-3" size="sm" variant="secondary" onClick={() => void saveLoginPassword()} disabled={busy === 'password' || !newPassword || !confirmPassword}>{busy === 'password' ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />} Save password</Button></div>{role === 'user' && <div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-3"><div className="text-sm font-medium text-foreground">Initial administrator</div><p className="mt-1 text-xs leading-5 text-muted-foreground">If this is the first and only AppForge account, initialize the first administrator once. No email is hardcoded into the client.</p><Button className="mt-3" variant="secondary" onClick={() => void bootstrapAdmin()} disabled={busy === 'bootstrap-admin'}>{busy === 'bootstrap-admin' ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />} Initialize admin</Button></div>}<Button variant="secondary" className="mt-4" onClick={() => void handleSignOut()} disabled={busy === 'signout'}>{busy === 'signout' ? <Loader2 className="h-4 w-4 animate-spin" /> : null}Sign out</Button></Card>
-
-          <Card className="p-4"><div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-foreground">Authenticator app (TOTP)</h2><p className="mt-1 text-xs text-muted-foreground">Admin mutations require an AAL2 session verified with TOTP.</p></div><ShieldCheck className="h-5 w-5 text-muted-foreground" /></div>{verifiedTotp.length === 0 && !enrollment && <Button className="mt-4" onClick={() => void beginTotp()} disabled={busy === 'enroll'}><KeyRound className="h-4 w-4" /> Set up TOTP</Button>}{enrollment && <div className="mt-4 space-y-3"><div className="rounded-xl border border-border/70 bg-white p-3"><img src={enrollment.qr} alt="TOTP QR code" className="mx-auto max-h-52 max-w-full" /></div><div className="rounded-xl bg-muted p-2 font-mono text-xs break-all">{enrollment.secret}</div><Input label="Authenticator code" inputMode="numeric" value={totpCode} onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 8))} /><Button onClick={() => void verifyFactor(enrollment.id)} disabled={busy === 'verify' || !totpCode}><ShieldCheck className="h-4 w-4" /> Verify and enable</Button></div>}{verifiedTotp.length > 0 && <div className="mt-4 space-y-3"><div className="rounded-xl border border-border/70 p-3"><div className="text-sm font-medium text-foreground">{verifiedTotp[0].friendly_name || 'Authenticator app'}</div><div className="mt-1 text-xs text-muted-foreground">Verified factor · {currentLevel === 'aal2' ? 'this session is elevated' : 'verification required for admin actions'}</div></div>{currentLevel !== 'aal2' && <><Input label="Authenticator code" inputMode="numeric" value={totpCode} onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 8))} /><Button onClick={() => void verifyFactor(verifiedTotp[0].id)} disabled={!totpCode || busy === 'verify'}><LockKeyhole className="h-4 w-4" /> Verify this session</Button></>}{currentLevel === 'aal2' && <Button variant="secondary" onClick={async () => { setBusy('unenroll'); try { await unenrollTotp(verifiedTotp[0].id); await refreshAccount(); flash('TOTP factor removed.') } catch (mfaError) { setError(mfaError instanceof Error ? mfaError.message : 'Could not remove TOTP factor.') } finally { setBusy('') } }} disabled={busy === 'unenroll'}>Remove factor</Button>}</div>}</Card>
-        </div>
-      )}
-
-      {activeTab === 'data' && (
-        <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-          <Card className="p-4">
-            <h2 className="text-sm font-semibold text-foreground">Workspace backup</h2>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">Export the preferences that belong to this account: appearance, favorites, recent apps, sidebar categories and widget switches. Imports are validated before replacement.</p>
-            <div className="mt-4 flex flex-wrap gap-2"><Button onClick={exportWorkspace}><Download className="h-4 w-4" /> Export workspace JSON</Button><label><input type="file" accept="application/json,.json" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) importWorkspace(file); e.currentTarget.value = '' }} /><span className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border/70 px-3 py-2 text-sm font-medium hover:bg-accent"><Upload className="h-4 w-4" /> Review import</span></label></div>
-            {importPreview && <div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-4"><div className="flex flex-wrap items-center justify-between gap-2"><div><div className="text-sm font-semibold text-foreground">Import preview</div><div className="mt-1 text-xs text-muted-foreground">{importFileName} · backup v{importPreview.version}{importPreview.summary.legacy ? ' · legacy format' : ''}{importPreview.exportedAt ? ` · ${new Date(importPreview.exportedAt).toLocaleString()}` : ''}</div></div></div><div className="mt-3 grid grid-cols-2 gap-2 text-xs"><div className="rounded-xl border border-border/60 p-2"><div className="font-semibold text-foreground">{importPreview.summary.favorites}</div><div className="text-muted-foreground">Favorites</div></div><div className="rounded-xl border border-border/60 p-2"><div className="font-semibold text-foreground">{importPreview.summary.recentApps}</div><div className="text-muted-foreground">Recent apps</div></div><div className="rounded-xl border border-border/60 p-2"><div className="font-semibold text-foreground">{importPreview.summary.categoryOverrides}</div><div className="text-muted-foreground">Sidebar preferences</div></div><div className="rounded-xl border border-border/60 p-2"><div className="font-semibold text-foreground">{importPreview.summary.widgets}</div><div className="text-muted-foreground">Widget switches</div></div></div><p className="mt-3 text-xs leading-5 text-muted-foreground">Applying this backup updates only account workspace preferences. Identity, profile records, media, app content and provider secrets are never imported.</p><div className="mt-3 flex flex-wrap gap-2"><Button onClick={applyWorkspaceImport}><Check className="h-4 w-4" /> Apply backup</Button><Button variant="secondary" onClick={() => { setImportPreview(null); setImportFileName('') }}>Cancel</Button></div></div>}
-          </Card>
-          <Card className="p-4">
-            <h2 className="text-sm font-semibold text-foreground">What this backup means</h2>
-            <div className="mt-3 space-y-3 text-xs leading-5 text-muted-foreground"><div><div className="font-medium text-foreground">Included</div><p>Theme, favorites, recent apps, personalized sidebar categories and Weather/Desktop Buddy widget switches.</p></div><div><div className="font-medium text-foreground">Not included</div><p>Auth identity, profile data, admin content, registry definitions, media, generated projects, uploads or API/provider secrets.</p></div></div>
-          </Card>
-        </div>
-      )}
-
-      {activeTab === 'integrations' && (
-        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,.9fr)_minmax(360px,1.1fr)]">
-          <div className="space-y-4">
-            <Card className="p-3 sm:p-4">
-              <div className="grid gap-2 sm:grid-cols-2">{[['Supabase', 'Auth, profiles, preferences, roles and private data.', SupabaseIcon], ['Vercel', 'Frontend and same-origin serverless APIs.', Vercel], ['GitHub', 'Source, issues, pull requests and CI.', Github], ['Google', 'OAuth identity and approved Google integrations.', Google]].map(([name, description, Icon]: any) => <div key={name} className="rounded-xl border border-border/70 bg-background/35 p-3"><div className="flex items-center gap-2"><Icon className="h-4 w-4 text-muted-foreground" /><h2 className="text-sm font-semibold text-foreground">{name}</h2></div><p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p></div>)}</div>
-            </Card>
-            <div className="[&>div]:h-auto [&>div]:min-h-0"><VertexBridgeStatus /></div>
-          </div>
-          <Card className="self-start p-4">
-            <h2 className="text-sm font-semibold text-foreground">AI provider keys</h2>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">Personal keys stay in this browser and are excluded from workspace backups. They are sent only when you invoke the selected provider.</p>
-            <div className="mt-3 space-y-3">
-              <div><label htmlFor="gemini-key" className="mb-1 block text-xs font-medium text-foreground">Google Gemini API key</label><div className="flex gap-2"><Input id="gemini-key" type="password" autoComplete="off" value={geminiKey} onChange={(e) => setGeminiKey(e.target.value)} placeholder="Gemini API key" className="flex-1" /><Button size="sm" aria-label="Save Gemini key" disabled={!geminiKey.trim()} onClick={() => saveLocalSecret(GEMINI_KEY_STORAGE, geminiKey, 'Gemini key')}><Check className="h-4 w-4" /></Button><Button size="sm" aria-label="Remove Gemini key" variant="destructive" onClick={() => removeLocalSecret(GEMINI_KEY_STORAGE, () => setGeminiKey(''), 'Gemini key')}><Trash2 className="h-4 w-4" /></Button></div></div>
-              <div><label className="mb-1 block text-xs font-medium text-foreground">OpenRouter personal key</label><div className="flex gap-2"><Input type="password" value={openRouterKey} onChange={(e) => setOpenRouterKey(e.target.value)} placeholder="sk-or-..." className="flex-1" /><Button size="sm" onClick={saveOpenRouterKey} disabled={!openRouterKey.startsWith('sk-or-')}><Check className="h-4 w-4" /></Button>{openRouterKey && <Button size="sm" variant="destructive" onClick={() => removeLocalSecret('dragon-arena-openrouter-key', () => setOpenRouterKey(''), 'OpenRouter key')}><Trash2 className="h-4 w-4" /></Button>}</div></div>
-              <div><label className="mb-1 block text-xs font-medium text-foreground">Hugging Face personal token</label><div className="flex gap-2"><Input type="password" value={hfToken} onChange={(e) => setHfToken(e.target.value)} placeholder="hf_..." className="flex-1" /><Button size="sm" onClick={saveHfToken} disabled={!hfToken.startsWith('hf_')}><Check className="h-4 w-4" /></Button>{hfToken && <Button size="sm" variant="destructive" onClick={() => removeLocalSecret('dragon-arena-hf-key', () => setHfToken(''), 'Hugging Face token')}><Trash2 className="h-4 w-4" /></Button>}</div></div>
-            </div>
-          </Card>
-        </div>
-      )}
-
+      {activeTab === 'data' && <div className="grid items-start gap-3 lg:grid-cols-2"><Card className="p-3"><h2 className="text-sm font-semibold">Export workspace</h2><p className="mt-1 text-[11px] leading-4 text-muted-foreground">Download workspace state, category overrides and widget preferences as JSON.</p><Button className="mt-3" variant="secondary" onClick={exportWorkspace}><Download /> Export</Button></Card><Card className="p-3"><h2 className="text-sm font-semibold">Import workspace</h2><p className="mt-1 text-[11px] leading-4 text-muted-foreground">Preview a backup before applying it. Maximum 5 MB.</p><label className="mt-3 inline-flex cursor-pointer"><input type="file" accept="application/json,.json" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) importWorkspace(file); event.currentTarget.value = '' }} /><span className="inline-flex h-6 items-center gap-1.5 rounded-xl border border-border px-2 text-[11px] font-medium hover:bg-accent"><Upload className="h-3.5 w-3.5" /> Choose JSON</span></label>{importFileName && <div className="mt-2 text-[11px] text-muted-foreground">{importFileName}</div>}{importPreview && <div className="mt-3 rounded-xl border border-border/70 p-2 text-xs"><div>Workspace backup is ready to apply.</div><Button className="mt-2" onClick={applyWorkspaceImport}>Apply import</Button></div>}</Card></div>}
       {activeTab === 'admin' && role === 'admin' && <AdminConsolePage />}
     </div>
   )
