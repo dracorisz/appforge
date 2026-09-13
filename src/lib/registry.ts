@@ -67,7 +67,7 @@ const APPS: AppDefinition[] = [
   app({ id: 'weather-now', name: 'Weather Now', description: 'Current weather and city lookup.', category: 'utilities', icon: 'CloudSun', route: '/apps/weather-now', tags: ['weather', 'city'], status: 'beta', version: '1.3.0' }),
   app({ id: 'task-list', name: 'Task List', description: 'Local-first tasks with optional signed-in sync.', category: 'utilities', icon: 'FileText', route: '/apps/task-list', tags: ['tasks', 'todo'], status: 'beta', version: '0.1.0' }),
   app({ id: 'desktop-buddy', name: 'Desktop Buddy', description: 'Create and run a personal desktop character.', category: 'ai', icon: 'Sparkles', route: '/apps/desktop-buddy', tags: ['ai', 'character', 'voice'], status: 'beta', version: '0.6.0' }),
-  app({ id: 'ai-dragon-arena', name: 'Story Studio', description: 'AI-assisted story creation and scene generation.', category: 'ai', icon: 'Gamepad2', route: '/apps/ai-dragon-arena', tags: ['ai', 'story', 'image'], status: 'beta', version: '1.6.2', coverImage: '/Dragon Arena.png' }),
+  app({ id: 'ai-dragon-arena', name: 'Story Studio', description: 'AI-assisted story creation and scene generation.', category: 'ai', icon: 'Gamepad2', route: '/apps/ai-dragon-arena', tags: ['ai', 'story', 'image'], status: 'beta', version: '1.6.2' }),
   app({ id: 'json-formatter', name: 'JSON Formatter', description: 'Format, minify and validate JSON.', category: 'json-data', icon: 'Braces', route: '/apps/json-formatter', tags: ['json', 'format'], status: 'beta', version: '0.2.0' }),
   app({ id: 'csv-converter', name: 'CSV Converter', description: 'Convert CSV to JSON, Markdown or SQL.', category: 'converters', icon: 'Table2', route: '/apps/csv-converter', tags: ['csv', 'json'], status: 'beta', version: '0.2.0' }),
   app({ id: 'qr-generator', name: 'QR Generator', description: 'Create downloadable QR codes for text, links and Wi-Fi.', category: 'utilities', icon: 'QrCode', route: '/apps/qr-generator', tags: ['qr', 'download'], status: 'beta', version: '1.0.0' }),
@@ -140,7 +140,7 @@ export function applyAppOverrides(overrides: AppOverride[]): void {
       description: override.description?.trim() || base.description,
       category: override.category?.trim() || base.category,
       status: override.status || base.status,
-      coverImage: override.cover_image?.trim() || base.coverImage,
+      coverImage: override.cover_image == null ? undefined : override.cover_image.trim() || undefined,
       tags: Array.isArray(override.tags) ? override.tags.filter((tag): tag is string => typeof tag === 'string').slice(0, 20) : base.tags,
       visible: override.visible !== false,
     }
