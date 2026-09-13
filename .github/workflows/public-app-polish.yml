@@ -21,6 +21,16 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Correct source patch anchors
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('.github/scripts/public-apps-polish.py')
+          text = p.read_text()
+          text = text.replace("type ViewMode = 'list' | 'grid' ", "type ViewMode = 'list' | 'grid'")
+          text = text.replace("type Filter = 'all' | 'active' | 'completed' ", "type Filter = 'all' | 'active' | 'completed'")
+          p.write_text(text)
+          PY
       - run: python .github/scripts/public-apps-polish.py
       - run: npm ci
       - run: npm run verify:release
