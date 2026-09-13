@@ -12,6 +12,7 @@ import { consumeReturnPath, normalizeReturnPath } from './returnPath'
 
 const DEFAULT_VIDEO_URL = 'https://www.youtube.com/watch?v=5dAQXJXbvhI'
 const DEFAULT_VIDEO_EMBED_URL = 'https://www.youtube-nocookie.com/embed/5dAQXJXbvhI?rel=0&modestbranding=1'
+const LANDING_SLUG = 'appforge-walkthrough'
 const APPFORGE_MARK = '/favicon.svg?v=2'
 
 const publicTools = [
@@ -60,8 +61,9 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
   React.useEffect(() => {
     let active = true
     loadPublishedFrontendContent('video_teaser').then((records) => {
-      if (!active || !records[0]) return
-      const teaser = records[0]
+      if (!active) return
+      const teaser = records.find((record) => record.slug === LANDING_SLUG) || records[0]
+      if (!teaser) return
       setShowAppCount(teaser.metadata?.show_active_app_count !== false)
       if (teaser.title) setVideoTitle(teaser.title)
       if (teaser.summary) setVideoSummary(teaser.summary)
@@ -69,8 +71,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
         const safeUrl = safeExternalUrl(teaser.video_url)
         if (safeUrl) {
           setVideoUrl(safeUrl)
-          const embed = youtubeEmbed(safeUrl)
-          setVideoEmbedUrl(embed)
+          setVideoEmbedUrl(youtubeEmbed(safeUrl))
         }
       }
     }).catch((teaserError) => console.warn('AppForge video teaser unavailable; using bundled walkthrough.', teaserError))
