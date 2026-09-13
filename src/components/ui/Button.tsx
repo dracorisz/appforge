@@ -10,7 +10,7 @@ export function Button({ children, variant = 'primary', size = 'md', className =
   type?: 'button' | 'submit'
   title?: string
 } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'className' | 'disabled' | 'onClick' | 'type' | 'title'>) {
-  const base = 'inline-flex h-6 max-h-6 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl font-medium transition-[background-color,border-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:h-3.5 [&_svg]:w-3.5'
+  const base = 'inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl font-medium transition-[background-color,border-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50'
   const variants = {
     default: 'border border-primary/90 bg-primary text-primary-foreground hover:bg-primary/92',
     primary: 'border border-primary/90 bg-primary text-primary-foreground hover:bg-primary/92',
@@ -19,9 +19,9 @@ export function Button({ children, variant = 'primary', size = 'md', className =
     destructive: 'border border-destructive/90 bg-destructive text-destructive-foreground hover:bg-destructive/90'
   }
   const sizes = {
-    sm: 'px-2 text-[11px]',
-    md: 'px-2.5 text-xs',
-    lg: 'px-3 text-xs'
+    sm: 'min-h-9 px-2.5 py-1.5 text-xs',
+    md: 'min-h-10 px-4 py-2 text-sm',
+    lg: 'min-h-11 px-6 py-2.5 text-base'
   }
   return (
     <button {...props} type={type} title={title} className={`${base} ${variants[variant]} ${sizes[size]} ${className}`} disabled={disabled} onClick={onClick}>
