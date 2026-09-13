@@ -7,9 +7,11 @@ import { PwaLifecycle } from './components/pwa/PwaLifecycle'
 import { CookieNotice } from './components/public/CookieNotice'
 import { ChangelogPage } from './components/public/ChangelogPage'
 import { PublicBlogArticlePage, PublicBlogPage } from './components/public/PublicContentPages'
+import { ToastViewport } from './components/ui/ToastViewport'
 import { updateSeo } from './lib/seo'
 import './index.css'
 import './media.css'
+import './unified.css'
 
 type ThemeMode = 'light' | 'dark' | 'system'
 
@@ -58,6 +60,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
     <AuthProvider>
       <RootApp />
+      <ToastViewport />
       <CookieNotice />
       <PwaLifecycle />
     </AuthProvider>
