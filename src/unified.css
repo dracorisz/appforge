@@ -32,28 +32,7 @@
  filter: saturate(1.02) contrast(1.01);
 }
 
-/* Keep legacy native controls aligned with the 24px shared-control contract. */
-.app-unified-shell :where(button, input:not([type='file']), select) {
- max-height: 24px;
-}
-
-.app-unified-shell textarea {
- min-height: 40px !important;
- max-height: 112px !important;
-}
-
-/* Upload/drop targets should remain useful without dominating a tool page. */
-.app-unified-shell :where([class*='border-dashed'][class*='min-h-'], [class*='border-dashed'][class*='h-32'], [class*='border-dashed'][class*='h-40'], [class*='border-dashed'][class*='h-48']) {
- min-height: 72px !important;
- max-height: 128px;
-}
-
-.app-unified-shell :where(pre, [data-output-area]) {
- max-height: 224px;
- overflow: auto;
-}
-
-/* Normalize legacy clickable surfaces to the same border language. */
+/* Normalize legacy clickable surfaces to the same border language without imposing global dimensions. */
 .app-unified-shell :where(button, a)[class*="border"] {
  transition-property: border-color, box-shadow, background-color, color;
  transition-duration: 180ms;
