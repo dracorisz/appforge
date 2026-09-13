@@ -3,6 +3,7 @@ import { Navigate, Link, useSearchParams } from 'react-router-dom'
 import { KeyRound, Loader2, RefreshCw, ShieldCheck, Trash2, UserRound } from 'lucide-react'
 import { Button, Card } from '@/components/ui'
 import { useAuth } from '@/auth/AuthProvider'
+import { toast } from '@/lib/toast'
 import {
   adminDeleteUser,
   adminListUsers,
@@ -13,6 +14,7 @@ import {
   type AdminUser,
 } from '@/lib/account'
 import { AdminContentManager } from './AdminContentManager'
+import { AdminImageManager } from './AdminImageManager'
 import { AppAdminPage } from '@/components/dashboard/AppAdminPage'
 import MarketingStudio from '@/components/resources/MarketingStudio'
 
@@ -29,32 +31,29 @@ export function AdminConsolePage() {
   const setSection = (value: Section) => { const next = new URLSearchParams(params); next.set('section', value); setParams(next) }
   const [users, setUsers] = React.useState<AdminUser[]>([])
   const [busy, setBusy] = React.useState('')
-  const [error, setError] = React.useState('')
-  const [message, setMessage] = React.useState('')
+
+  const fail = (error: unknown, fallback: string) => toast.error(error instanceof Error ? error.message : fallback)
 
   const refreshAccess = React.useCallback(async () => {
     if (!user) return
     setLoading(true)
-    setError('')
     try {
       const [nextRole, security] = await Promise.all([getRole(user.id), getSecurityState()])
       setRole(nextRole)
       setAal2(security.currentLevel === 'aal2')
-    } catch (accessError) { setError(accessError instanceof Error ? accessError.message : 'Could not verify admin access.') }
+    } catch (accessError) { fail(accessError, 'Could not verify admin access.') }
     finally { setLoading(false) }
   }, [user])
 
   const refreshUsers = React.useCallback(async () => {
     setBusy('users')
     try { setUsers(await adminListUsers()) }
-    catch (usersError) { setError(usersError instanceof Error ? usersError.message : 'Could not load users.') }
+    catch (usersError) { fail(usersError, 'Could not load users.') }
     finally { setBusy('') }
   }, [])
 
   React.useEffect(() => { void refreshAccess() }, [refreshAccess])
   React.useEffect(() => { if (role === 'admin' && aal2 && section === 'users') void refreshUsers() }, [aal2, refreshUsers, role, section])
-
-  const flash = (text: string) => { setMessage(text); window.setTimeout(() => setMessage(''), 1800) }
 
   if (!user) return <Navigate to="/login" replace />
   if (loading) return <div className="flex min-h-[40vh] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>
@@ -65,12 +64,10 @@ export function AdminConsolePage() {
     <div className="w-full space-y-5 pb-10">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><h1 className="text-2xl font-semibold tracking-tight">Admin</h1><p className="mt-1 text-sm text-muted-foreground">Users, content, app presentation and internal marketing tools.</p></div><Link to="/settings" className="text-sm text-muted-foreground hover:text-foreground">Back to Settings</Link></div>
 
-      <div className="flex flex-wrap gap-1 border-b border-border/70 pb-2">{(['users','content','apps','marketing'] as Section[]).map((id) => <button key={id} onClick={() => setSection(id)} className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize ${section === id ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{id === 'content' ? 'Content Manager' : id === 'marketing' ? 'Marketing Studio' : id}</button>)}</div>
-      {message && <Card className="border-emerald-500/25 bg-emerald-500/5 p-3 text-sm text-emerald-600 dark:text-emerald-400">{message}</Card>}
-      {error && <Card className="border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</Card>}
+      <div className="flex flex-wrap gap-1 border-b border-border/70 pb-2">{(['users','content','apps','marketing'] as Section[]).map((id) => <button key={id} onClick={() => setSection(id)} className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize transition-[border-color,background-color,color,box-shadow] ${section === id ? 'bg-accent text-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'}`}>{id === 'content' ? 'Content Manager' : id === 'marketing' ? 'Marketing Studio' : id}</button>)}</div>
 
-      {section === 'users' && <div className="space-y-3"><div className="flex items-center justify-between"><h2 className="text-sm font-semibold">Users</h2><Button variant="secondary" size="sm" onClick={() => void refreshUsers()} disabled={busy === 'users'}><RefreshCw className={`h-4 w-4 ${busy === 'users' ? 'animate-spin' : ''}`} /> Refresh</Button></div>{users.map((item) => <Card key={item.id} className="p-3"><div className="flex flex-col gap-3 lg:flex-row lg:items-center"><div className="flex min-w-0 flex-1 items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-muted">{item.avatar_url ? <img src={item.avatar_url} alt="" className="h-full w-full object-cover" /> : <UserRound className="h-4 w-4" />}</div><div className="min-w-0"><div className="truncate text-sm font-medium">{item.display_name || item.email || item.id}</div><div className="truncate text-xs text-muted-foreground">{item.email}</div></div></div><div className="flex flex-wrap items-center gap-2"><select value={item.role} onChange={async (event) => { const nextRole = event.target.value as 'user' | 'admin'; try { await adminSetRole(item.id, nextRole); setUsers((rows) => rows.map((row) => row.id === item.id ? { ...row, role: nextRole } : row)); flash('Role updated.') } catch (roleError) { setError(roleError instanceof Error ? roleError.message : 'Role update failed.') } }} className="h-9 rounded-lg border border-input bg-background/55 px-2 text-xs"><option value="user">user</option><option value="admin">admin</option></select><button onClick={async () => { try { await adminUpdateProfile(item.id, { display_name: item.display_name, username: item.username, is_public: !item.is_public }); setUsers((rows) => rows.map((row) => row.id === item.id ? { ...row, is_public: !row.is_public } : row)); flash('Visibility updated.') } catch (profileError) { setError(profileError instanceof Error ? profileError.message : 'Update failed.') } }} className="rounded-lg border border-border/70 px-2.5 py-2 text-xs hover:bg-accent">{item.is_public ? 'Public' : 'Private'}</button>{item.id !== user.id && <Button variant="ghost" size="sm" onClick={async () => { if (!confirm(`Delete ${item.email || 'this user'}?`)) return; try { await adminDeleteUser(item.id); setUsers((rows) => rows.filter((row) => row.id !== item.id)); flash('User deleted.') } catch (deleteError) { setError(deleteError instanceof Error ? deleteError.message : 'Delete failed.') } }}><Trash2 className="h-4 w-4" /></Button>}</div></div></Card>)}</div>}
-      {section === 'content' && <AdminContentManager embedded adminVerified />}
+      {section === 'users' && <div className="space-y-3"><div className="flex items-center justify-between"><h2 className="text-sm font-semibold">Users</h2><Button variant="secondary" size="sm" onClick={() => void refreshUsers()} disabled={busy === 'users'}><RefreshCw className={`h-4 w-4 ${busy === 'users' ? 'animate-spin' : ''}`} /> Refresh</Button></div>{users.map((item) => <Card key={item.id} className="p-3"><div className="flex flex-col gap-3 lg:flex-row lg:items-center"><div className="flex min-w-0 flex-1 items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border/70 bg-muted">{item.avatar_url ? <img src={item.avatar_url} alt="" className="h-full w-full object-cover" /> : <UserRound className="h-4 w-4" />}</div><div className="min-w-0"><div className="truncate text-sm font-medium">{item.display_name || item.email || item.id}</div><div className="truncate text-xs text-muted-foreground">{item.email}</div></div></div><div className="flex flex-wrap items-center gap-2"><select value={item.role} onChange={async (event) => { const nextRole = event.target.value as 'user' | 'admin'; try { await adminSetRole(item.id, nextRole); setUsers((rows) => rows.map((row) => row.id === item.id ? { ...row, role: nextRole } : row)); toast.success('Role updated.') } catch (roleError) { fail(roleError, 'Role update failed.') } }} className="h-9 rounded-lg border border-input bg-background/55 px-2 text-xs"><option value="user">user</option><option value="admin">admin</option></select><button onClick={async () => { try { await adminUpdateProfile(item.id, { display_name: item.display_name, username: item.username, is_public: !item.is_public }); setUsers((rows) => rows.map((row) => row.id === item.id ? { ...row, is_public: !row.is_public } : row)); toast.success('Visibility updated.') } catch (profileError) { fail(profileError, 'Update failed.') } }} className="rounded-lg border border-border/70 px-2.5 py-2 text-xs transition-[border-color,background-color,box-shadow] hover:bg-accent hover:shadow-sm">{item.is_public ? 'Public' : 'Private'}</button>{item.id !== user.id && <Button variant="ghost" size="sm" onClick={async () => { if (!confirm(`Delete ${item.email || 'this user'}?`)) return; try { await adminDeleteUser(item.id); setUsers((rows) => rows.filter((row) => row.id !== item.id)); toast.success('User deleted.') } catch (deleteError) { fail(deleteError, 'Delete failed.') } }}><Trash2 className="h-4 w-4" /></Button>}</div></div></Card>)}</div>}
+      {section === 'content' && <div className="space-y-8"><AdminContentManager embedded adminVerified /><div className="border-t border-border/70 pt-6"><AdminImageManager /></div></div>}
       {section === 'apps' && <AppAdminPage />}
       {section === 'marketing' && <MarketingStudio />}
     </div>
