@@ -5,6 +5,7 @@ import { Badge, Card } from '@/components/ui'
 import { supabase, SUPABASE_PROJECT_URL } from '@/lib/supabase'
 import { ManagedGalleryStrip } from './ManagedGalleryStrip'
 import { PublicHeader } from './PublicHeader'
+import { PublicFooter } from './PublicFooter'
 
 export type PublicDragonAsset = {
   id: string
@@ -134,6 +135,7 @@ export function HuggingFaceGalleryPage() {
 
         <section className="grid gap-4 lg:grid-cols-2"><Card className="border-border/70 bg-background/55 p-4"><div className="flex items-center gap-2 text-sm font-semibold"><MessageSquareText className="h-4 w-4" /> Story-model rotation</div><p className="mt-1 text-xs leading-5 text-muted-foreground">Shared requests rotate through available Hugging Face credentials and these text models until one succeeds.</p><div className="mt-3 space-y-2">{GAME_MASTER_MODELS.map((model, i) => <div key={model.id} className="rounded-xl border border-border/70 bg-black/20 p-3"><div className="font-mono text-xs">{i + 1}. {model.id}</div><div className="mt-1 text-xs font-medium">{model.role}</div><div className="mt-0.5 text-xs leading-5 text-muted-foreground">{model.note}</div></div>)}</div></Card><Card className="border-border/70 bg-background/55 p-4"><div className="flex items-center gap-2 text-sm font-semibold"><ImageIcon className="h-4 w-4" /> Scene-model + provider rotation</div><p className="mt-1 text-xs leading-5 text-muted-foreground">AppForge resolves each model’s current provider mapping and tries compatible providers within a bounded request.</p><div className="mt-3 space-y-2">{IMAGE_MODELS.map((model, i) => <div key={model.id} className="rounded-xl border border-border/70 bg-black/20 p-3"><div className="font-mono text-xs">{i + 1}. {model.id}</div><div className="mt-1 text-xs font-medium">{model.role}</div><div className="mt-0.5 text-xs leading-5 text-muted-foreground">{model.note}</div></div>)}</div><div className="mt-3 flex flex-wrap gap-1.5">{IMAGE_PROVIDERS.map((provider) => <Badge key={provider} color="slate">{provider}</Badge>)}</div></Card></section>
       </main>
+      <PublicFooter />
     </div>
   )
 }

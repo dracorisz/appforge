@@ -7,8 +7,13 @@ export function PublicFooter() {
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 py-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
       <Link to="/landing" className="inline-flex items-center gap-2 hover:text-foreground"><img src="/favicon.svg?v=2" alt="" className="h-5 w-5" />AppForge · v{BUILD_INFO.version}</Link>
       <nav aria-label="Footer navigation" className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <Link to="/blog" className="hover:text-foreground">Blog</Link><Link to="/changelog" className="hover:text-foreground">Changelog</Link><Link to="/privacy" className="hover:text-foreground">Privacy</Link><Link to="/terms" className="hover:text-foreground">Terms</Link>
-        <a href="https://paypal.me/dracorisz" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">Support</a><a href="https://docs.sstoken.space/" className="hover:text-foreground">Docs</a>
+        <Link to="/apps" className="hover:text-foreground">Public Apps</Link>
+        <Link to="/blog" className="hover:text-foreground">Blog</Link>
+        {/* <Link to="/changelog" className="hover:text-foreground">Changelog</Link> */}
+        <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+        <Link to="/terms" className="hover:text-foreground">Terms</Link>
+        {/* <a href="https://paypal.me/dracorisz" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">Support</a> */}
+        <a href="https://docs.sstoken.space/" className="hover:text-foreground">Docs</a>
       </nav>
     </div>
   </footer>

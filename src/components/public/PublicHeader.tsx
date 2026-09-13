@@ -17,13 +17,23 @@ export function PublicHeader({ className = '' }: { className?: string }) {
           <span className="text-sm font-semibold tracking-tight">AppForge</span>
         </Link>
         <nav className="flex flex-wrap items-center justify-end gap-2" aria-label="Public navigation">
-          <a href="https://paypal.me/dracorisz" target="_blank" rel="noopener noreferrer" aria-label="Support AppForge via PayPal" title="Support AppForge" className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border/70 bg-background/70 text-muted-foreground transition-[border-color,background-color,color,box-shadow] hover:border-foreground/25 hover:text-foreground hover:focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"><Heart className="h-4 w-4" /></a>
-          <Link to="/explore" className={navItemClass}>Apps</Link>
-          <Link to="/huggingface" className={navItemClass}><Sparkles className="h-4 w-4" /><span className="hidden sm:inline">Hugging Face</span></Link>
-          <Link to="/blog" className={navItemClass}>Blog</Link>
-          <Link to="/changelog" className={navItemClass}><History className="h-4 w-4" /><span className="hidden sm:inline">Changelog</span></Link>
-          <a href="https://github.com/dracorisz/appforge" target="_blank" rel="noopener noreferrer" className={navItemClass}><Github className="h-4 w-4" /><span className="hidden sm:inline">GitHub</span></a>
-          <span className="inline-flex h-9 items-center rounded-xl border border-border/70 bg-background/70 px-3 text-xs font-semibold text-muted-foreground">v{BUILD_INFO.version}</span>
+          {/* <Link to="/explore" className={navItemClass}>Apps</Link> */}
+          {/* <Link to="/blog" className={navItemClass}>Blog</Link> */}
+          
+          <Link to="/changelog" className={navItemClass}>
+            <History className="h-4 w-4" />
+            <span className="hidden sm:inline">Changelog</span>
+          </Link>
+          <a href="https://github.com/dracorisz/appforge" target="_blank" rel="noopener noreferrer" className={navItemClass}>
+            <Github className="h-4 w-4" />
+            <span className="hidden sm:inline">GitHub</span>
+          </a>
+          <a href="https://paypal.me/dracorisz" target="_blank" rel="noopener noreferrer" aria-label="Support AppForge via PayPal" title="Support AppForge" className={navItemClass}>
+            <Heart className="h-4 w-4" />
+            <span className="hidden sm:inline">Support</span>
+          </a>
+          
+          {/* <span className="inline-flex h-9 items-center rounded-xl border border-border/70 bg-background/70 px-3 text-xs font-semibold text-muted-foreground">v{BUILD_INFO.version}</span> */}
         </nav>
       </div>
     </header>
