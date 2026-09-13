@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/scripts/restore-ui-batch.py'
+      - '.github/scripts/fix-ui-batch2.py'
       - '.github/workflows/restore-ui-batch.yml'
 
 permissions:
@@ -23,11 +24,15 @@ jobs:
           node-version: 22
           cache: npm
       - name: Apply recovered batch
-        run: python3 .github/scripts/restore-ui-batch.py
+        run: |
+          python3 .github/scripts/restore-ui-batch.py
+          python3 .github/scripts/fix-ui-batch2.py
       - name: Install dependencies
         run: npm ci
       - name: Verify release
-        run: npm run verify:release
+        run: |
+          npm run check:ui-style
+          npm run verify:release
       - name: Commit verified batch
         run: |
           git config user.name "github-actions[bot]"
