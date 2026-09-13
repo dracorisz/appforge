@@ -42,7 +42,7 @@ export function DesktopBuddyWorkspace() {
   }
 
   return (
-    <div className="w-full space-y-4 pb-8">
+    <div className="w-full space-y-5 pb-8">
       <WidgetPreferencePanel kind="desktop-buddy" />
       <Tabs tabs={tabs} active={activeTab} onChange={(id) => selectTab(id as WorkspaceTab)} ariaLabel="Desktop Buddy workspace" className="sticky top-0 z-20 -mx-1 bg-background/90 backdrop-blur" />
 

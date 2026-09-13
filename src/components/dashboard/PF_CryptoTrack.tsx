@@ -28,7 +28,7 @@ export interface CryptoCoin {
 type Provider = 'auto' | 'coingecko' | 'coinpaprika'
 type SortBy = 'marketCap' | 'price' | 'change24h' | 'name'
 type ViewMode = 'list' | 'grid'
-type MarketView = 'all' | 'gainers' | 'losers' 
+type MarketView = 'all' | 'gainers' | 'losers'
 
 interface CryptoResponse {
   ok: boolean
@@ -182,17 +182,8 @@ export function PF_CryptoTrack() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <AppHeading />
-
-
-          </div>
-
-        </div>
-      </div>
+    <div className="space-y-5">
+      <AppHeading />
 
       <Card>
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-end">

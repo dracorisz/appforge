@@ -299,13 +299,13 @@ export function PF_ImageLabeler() {
     <div className="space-y-6">
       <Card>
         <AppHeading />
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Current selection</p>
             <p className="mt-1 truncate text-sm font-medium text-foreground">{folderName}</p>
             <p className="mt-1 text-xs text-muted-foreground">Images stay in your browser. Folder identity is included in local label keys so similarly named files from different datasets do not overwrite each other.</p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 gap-2 min-w-[18rem] lg:grid-cols-2">
             <Button onClick={loadFolder}><FolderOpen className="h-4 w-4" /> Open folder</Button>
             <Button variant="secondary" onClick={() => fileInputRef.current?.click()}><Upload className="h-4 w-4" /> Choose files</Button>
             <Button variant="secondary" onClick={() => importInputRef.current?.click()}>Import labels</Button>

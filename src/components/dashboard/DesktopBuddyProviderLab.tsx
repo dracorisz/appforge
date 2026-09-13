@@ -301,11 +301,11 @@ export function DesktopBuddyProviderLab() {
         <div className="mt-4 rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-3 text-xs leading-5 text-muted-foreground"><strong className="text-foreground">Locked output rule:</strong> {TRANSPARENT_PNG_REQUIREMENT} Both provider endpoints append this on the server, report that it was applied, and the browser verifies actual alpha before accepting the result.</div>
 
         <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <button type="button" onClick={() => setProvider('huggingface')} className={`rounded-xl border p-3 text-left ${provider === 'huggingface' ? 'ring-2 ring-primary/30' : 'bg-background/45'}`}>
+          <button type="button" onClick={() => setProvider('huggingface')} className={`rounded-xl border p-3 text-left ${provider === 'huggingface' ? 'ring-1 ring-primary/30' : 'bg-background/45'}`}>
             <p className="text-xs font-semibold">Hugging Face</p>
             <p className="mt-1 text-xs text-muted-foreground">{hfStatus === null ? 'Checking deployment…' : hfStatus.configured ? 'Shared server token configured' : personalTokens ? 'Use your personal HF token' : 'Shared token not detected'}</p>
           </button>
-          <button type="button" onClick={() => setProvider('vertex')} className={`rounded-xl border p-3 text-left ${provider === 'vertex' ? 'ring-2 ring-primary/30' : 'bg-background/45'}`}>
+          <button type="button" onClick={() => setProvider('vertex')} className={`rounded-xl border p-3 text-left ${provider === 'vertex' ? 'ring-1 ring-primary/30' : 'bg-background/45'}`}>
             <p className="flex items-center gap-1.5 text-xs font-semibold"><Cloud className="h-3.5 w-3.5" /> Vertex AI</p>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">{vertexStatus === null ? 'Checking secure bridge…' : vertexStatus.configured ? `Secure bridge configured · ${vertexStatus.model || 'Gemini Image'}` : 'Bridge code ready; production WIF/IAM values still required'}</p>
           </button>
@@ -318,7 +318,7 @@ export function DesktopBuddyProviderLab() {
         <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="space-y-3">
             <label className="block text-xs font-medium text-muted-foreground">Character prompt
-              <textarea value={prompt} maxLength={900} onChange={(event) => setPrompt(event.target.value)} className="mt-1 min-h-28 w-full rounded-xl border bg-background p-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring/25" />
+              <textarea value={prompt} maxLength={900} onChange={(event) => setPrompt(event.target.value)} className="mt-1 min-h-28 w-full rounded-xl border bg-background p-3 text-sm text-foreground outline-none focus:ring-1 focus:ring-ring/25" />
             </label>
             <div className="flex flex-wrap items-center gap-2">
               <button type="button" onClick={() => void generate()} disabled={generating || prompt.trim().length < 8 || !selectedReady} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50">{generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />} {generating ? 'Working…' : provider === 'vertex' ? 'Generate with Vertex AI' : 'Generate with Hugging Face'}</button>

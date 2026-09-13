@@ -62,8 +62,8 @@ export function PwaLifecycle() {
   const showStatus = needRefresh || offlineReady || !online || showInstall
   if (!showStatus) return null
 
-  const primaryActionClass = 'rounded-xl border border-white bg-white px-3 py-1.5 text-xs font-semibold text-slate-950 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
-  const secondaryActionClass = 'rounded-xl border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70'
+  const primaryActionClass = 'rounded-xl border border-white bg-white px-3 py-1.5 text-xs font-semibold text-slate-950 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+  const secondaryActionClass = 'rounded-xl border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/70'
 
   return (
     <div className="fixed bottom-4 right-4 z-[100] w-[min(24rem,calc(100vw-2rem))] rounded-xl border border-white/15 bg-slate-950/95 p-3.5 text-white backdrop-blur-xl" style={{ colorScheme: 'dark' }}>
@@ -91,7 +91,7 @@ export function PwaLifecycle() {
             {showInstall && <button className={secondaryActionClass} onClick={dismissInstall}>Not now</button>}
           </div>
         </div>
-        <button aria-label="Dismiss PWA message" className="rounded-xl p-1 text-slate-300 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70" onClick={() => { setNeedRefresh(false); setOfflineReady(false); if (showInstall) dismissInstall() }}><X className="h-4 w-4" /></button>
+        <button aria-label="Dismiss PWA message" className="rounded-xl p-1 text-slate-300 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/70" onClick={() => { setNeedRefresh(false); setOfflineReady(false); if (showInstall) dismissInstall() }}><X className="h-4 w-4" /></button>
       </div>
     </div>
   )

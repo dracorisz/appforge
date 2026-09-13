@@ -31,8 +31,8 @@ export const KDE_BUDDY_LIBRARY: KdeStarter[] = [
   { id: 'konqi-akademy', name: 'Akademy Konqi', file: 'Mascot_konqi-commu-akademy.png', author: 'Tyson Tan / KDE Community', license: TYSON_LICENSE, note: 'Lecture / conference pose.' },
   { id: 'konqi-carrying', name: 'Carrying Konqi', file: 'Mascot_konqi-carrying_base.png', author: 'Julius Enriquez, based on Tyson Tan', license: COMMUNITY_LICENSE, note: 'Reusable carrying pose, published by KDE in 2024.' },
   { id: 'konqi-box', name: 'Third-party Box Konqi', file: 'Mascot_konqi-3rdparty.png', author: 'Julius Enriquez, based on Tyson Tan', license: COMMUNITY_LICENSE, note: 'Konqi carrying a box of items.' },
-  { id: 'konqi-pixel', name: 'Pixel Konqi', file: 'Konqi_Pixel.png', author: 'KDE Community', license: COMMUNITY_LICENSE, note: 'Compact pixel-art style character.' },
-  { id: 'konqi-gang', name: 'Konqi and the Gang', file: 'Konqi_and_the_Gang.png', author: 'KDE Community', license: COMMUNITY_LICENSE, note: 'Konqi, Katie and other KDE dragons.' },
+  // { id: 'konqi-pixel', name: 'Pixel Konqi', file: 'Konqi_Pixel.png', author: 'KDE Community', license: COMMUNITY_LICENSE, note: 'Compact pixel-art style character.' },
+  // { id: 'konqi-gang', name: 'Konqi and the Gang', file: 'Konqi_and_the_Gang.png', author: 'KDE Community', license: COMMUNITY_LICENSE, note: 'Konqi, Katie and other KDE dragons.' },
   { id: 'konqi-box-scene', name: 'Konqi and the Box', file: 'Konqi_and_the_box.png', author: 'KDE Community', license: COMMUNITY_LICENSE, note: 'Recent KDE Community Konqi artwork.' },
 ]
 
@@ -85,7 +85,7 @@ export function DesktopBuddyKdeLibrary() {
           const source = sourceUrl(starter.file)
           const active = currentSource === source
           return (
-            <article key={starter.id} className={`flex h-full min-h-[20rem] flex-col overflow-hidden rounded-xl border bg-background/40 ${active ? 'ring-2 ring-primary/35' : ''}`}>
+            <article key={starter.id} className={`flex h-full min-h-[20rem] flex-col overflow-hidden rounded-xl border bg-background/40 ${active ? 'ring-1 ring-primary/35' : ''}`}>
               <div className="grid h-36 place-items-center border-b border-border/60 bg-muted/20 p-3 sm:h-40">
                 <img src={imageUrl(starter.file)} alt={starter.name} loading="lazy" className="h-28 w-28 object-contain sm:h-32 sm:w-32" />
               </div>

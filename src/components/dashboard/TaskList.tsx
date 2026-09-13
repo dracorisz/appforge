@@ -14,7 +14,7 @@ type Task = {
 }
 
 type Filter = 'all' | 'active' | 'completed'
-type SortMode = 'newest' | 'oldest' | 'active-first' 
+type SortMode = 'newest' | 'oldest' | 'active-first'
 
 const STORAGE_KEY = 'appforge-task-list-v1'
 const DELETED_KEY = 'appforge-task-list-deleted-v1'
@@ -236,16 +236,28 @@ export function TaskList() {
   })
 
   return (
-    <div className="w-full space-y-3">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><AppHeading /></div></div>
-      </div>
+    <div className="w-full space-y-5">
+      <AppHeading />
 
-      <div className="grid gap-3 sm:grid-cols-3"><Card className="p-4">
-        <div className="mb-3 flex justify-end"><Button variant="secondary" onClick={() => void syncFromRemote()} disabled={!user || syncing} className="self-start sm:self-auto"><RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} /> Sync</Button></div><div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Active</div><div className="mt-1 text-2xl font-semibold text-foreground">{active}</div></Card><Card className="p-4"><div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Completed</div><div className="mt-1 text-2xl font-semibold text-foreground">{completed}</div></Card><Card className="p-4"><div className="flex items-center justify-between gap-3"><div><div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Progress</div><div className="mt-1 text-2xl font-semibold text-foreground">{progress}%</div></div><div className="text-xs text-muted-foreground">{remoteReady ? 'Cloud ready' : user ? syncing ? 'Syncing' : 'Local fallback' : 'Local-only'}</div></div><div className="mt-3 h-1.5 overflow-hidden rounded-xl bg-muted"><div className="h-full rounded-xl bg-foreground/70 transition-[width]" style={{ width: `${progress}%` }} /></div></Card></div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Card className="p-4">
+
+          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Active</div>
+          <div className="mt-1 text-2xl font-semibold text-foreground">{active}</div></Card><Card className="p-4"><div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Completed</div><div className="mt-1 text-2xl font-semibold text-foreground">{completed}</div></Card><Card className="p-4"><div className="flex items-center justify-between gap-3"><div><div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Progress</div><div className="mt-1 text-2xl font-semibold text-foreground">{progress}%</div></div><div className="text-xs text-muted-foreground">{remoteReady ? 'Cloud ready' : user ? syncing ? 'Syncing' : 'Local fallback' : 'Local-only'}</div></div><div className="mt-3 h-1.5 overflow-hidden rounded-xl bg-muted"><div className="h-full rounded-xl bg-foreground/70 transition-[width]" style={{ width: `${progress}%` }} /></div></Card></div>
 
       <Card className="p-4 sm:p-5">
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"><div><label className="mb-1.5 block text-xs font-medium text-muted-foreground">New task</label><Input value={title} maxLength={MAX_TITLE} onChange={(event) => setTitle(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') addTask() }} placeholder="Add the next concrete task…" aria-label="New task" /></div><Button onClick={addTask} disabled={!title.trim()} className="w-full sm:w-auto"><Plus className="h-4 w-4" /> Add task</Button></div>
+        <div className="grid gap-3 sm:grid-cols-5 grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+          <div className="col-span-3">
+            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">New task</label>
+            <Input value={title} maxLength={MAX_TITLE} onChange={(event) => setTitle(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') addTask() }} placeholder="Add the next concrete task…" aria-label="New task" />
+          </div>
+          <Button onClick={addTask} disabled={!title.trim()} className="w-full sm:w-auto"><Plus className="h-4 w-4" /> Add task</Button>
+          <Button variant="secondary" onClick={() => void syncFromRemote()} disabled={!user || syncing} className="self-start sm:self-auto"><RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} /> Sync</Button>
+
+
+          {/* <div className="mb-3 flex justify-end"> */}
+          {/* </div> */}
+        </div>
         {error && <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">{error}</div>}
         <div className="mt-4 grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center"><label className="relative block"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search tasks…" className="pl-9" aria-label="Search tasks" /></label><div className="flex flex-wrap items-center gap-2">{(['all', 'active', 'completed'] as Filter[]).map((value) => <button key={value} type="button" onClick={() => setFilter(value)} className={`rounded-xl border px-3 py-2 text-xs font-medium capitalize transition-colors ${filter === value ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'}`}>{value}</button>)}<Button variant="ghost" size="sm" onClick={() => void completeAll()} disabled={!active}><Check className="h-4 w-4" /> Complete all</Button><Button variant="ghost" size="sm" onClick={() => void clearCompleted()} disabled={!completed}><Trash2 className="h-4 w-4" /> Clear completed</Button><select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)} className="min-h-9 rounded-xl border border-input bg-background px-2 text-xs"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="active-first">Active first</option></select></div></div>
         <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><span>{active} active</span><span>·</span><span>{completed} completed</span><span>·</span><span>{tasks.length} total</span><span>·</span><span>{visibleTasks.length} shown</span></div>

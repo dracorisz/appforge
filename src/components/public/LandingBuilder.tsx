@@ -38,8 +38,8 @@ const defaultProject = (): LandingProject => ({
 const safeImageData = (value: unknown) => typeof value === 'string'
   && value.length <= MAX_IMAGE_DATA_CHARS
   && /^data:image\/(?:png|jpe?g|webp|gif|avif);base64,[a-z0-9+/=\r\n]+$/i.test(value)
-    ? value
-    : undefined
+  ? value
+  : undefined
 
 const safeHref = (value: string | undefined) => {
   const href = (value || '').trim()
@@ -210,7 +210,7 @@ export default function LandingBuilder() {
           <div className="grid grid-cols-2 gap-3"><label className="grid gap-1.5 text-sm font-medium">Appearance<select value={project.preset} onChange={(event) => setProject((current) => ({ ...current, preset: event.target.value as LandingProject['preset'] }))} className="h-11 rounded-xl border bg-background px-3"><option value="slate">Slate</option><option value="paper">Paper</option><option value="midnight">Midnight</option></select></label><label className="grid gap-1.5 text-sm font-medium">Accent<input type="color" value={project.accent} onChange={(event) => setProject((current) => ({ ...current, accent: event.target.value }))} className="h-11 w-full rounded-xl border bg-background p-1" /></label></div>
         </div>
 
-        <div className="mt-5"><div className="mb-2 text-sm font-semibold">Add section</div><div className="grid grid-cols-3 gap-2">{(['hero','features','gallery','cta','faq','footer'] as SectionKind[]).map((kind) => <button key={kind} type="button" onClick={() => add(kind)} className="inline-flex min-h-10 items-center justify-center gap-1 rounded-xl border px-2 text-xs font-medium capitalize hover:bg-accent"><Plus className="h-3.5 w-3.5" /> {kind}</button>)}</div></div>
+        <div className="mt-5"><div className="mb-2 text-sm font-semibold">Add section</div><div className="grid grid-cols-3 gap-2">{(['hero', 'features', 'gallery', 'cta', 'faq', 'footer'] as SectionKind[]).map((kind) => <button key={kind} type="button" onClick={() => add(kind)} className="inline-flex min-h-10 items-center justify-center gap-1 rounded-xl border px-2 text-xs font-medium capitalize hover:bg-accent"><Plus className="h-3.5 w-3.5" /> {kind}</button>)}</div></div>
 
         <div className="mt-5 grid gap-3">
           {project.sections.map((section, index) => (
@@ -228,7 +228,7 @@ export default function LandingBuilder() {
       </aside>
 
       <section className="min-w-0">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><div className="text-sm font-semibold">Responsive preview</div><div className="flex rounded-xl border bg-background p-1">{(['phone','tablet','desktop'] as const).map((item) => <button key={item} type="button" onClick={() => setViewport(item)} className={`rounded-xl px-3 py-2 text-xs font-medium capitalize ${viewport === item ? 'bg-accent text-foreground' : 'text-muted-foreground'}`}>{item}</button>)}</div></div>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><div className="text-sm font-semibold">Responsive preview</div><div className="flex rounded-xl border bg-background p-1">{(['phone', 'tablet', 'desktop'] as const).map((item) => <button key={item} type="button" onClick={() => setViewport(item)} className={`rounded-xl px-3 py-2 text-xs font-medium capitalize ${viewport === item ? 'bg-accent text-foreground' : 'text-muted-foreground'}`}>{item}</button>)}</div></div>
         <div className="overflow-auto rounded-xl border bg-muted/20 p-3 sm:p-5"><div className="mx-auto min-h-[720px] overflow-hidden rounded-xl border transition-[width] duration-200" style={{ width: previewWidth, maxWidth: '100%', background: palette.bg, color: palette.text }}>
           <main className="grid gap-4 p-4 sm:p-6">
             {project.sections.map((section) => {

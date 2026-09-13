@@ -8,11 +8,6 @@
  display: none !important;
 }
 
-/* Legacy app components sometimes wrap their own heading in a first child. The shared shell already renders the heading, so collapse the empty wrapper too. */
-.app-unified-shell .app-content > :where(.space-y-3, .space-y-4, .space-y-5, .space-y-6) > :first-child:has(.app-heading) {
- display: none !important;
-}
-
 .surface-card:hover,
 .app-page-header:hover {
  transform: none !important;

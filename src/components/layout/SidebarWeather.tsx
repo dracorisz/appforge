@@ -130,7 +130,7 @@ export function SidebarWeather({ collapsed }: { collapsed: boolean }) {
   return (
     <div className="rounded-xl border border-border/60 bg-background/45 p-2.5">
       <div className="flex items-start gap-2">
-        <Link to="/apps/weather-now" className="min-w-0 flex-1 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <Link to="/apps/weather-now" className="min-w-0 flex-1 rounded-xl focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
           <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground"><CloudSun className="h-3.5 w-3.5" /> Weather</div>
           {weather ? <>
             <div className="mt-1.5 flex items-end gap-2"><span className="text-xl font-semibold tabular-nums text-foreground">{Math.round(weather.temp_c)}°</span><span className="mb-0.5 truncate text-[11px] text-muted-foreground">{weather.condition}</span></div>

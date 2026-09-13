@@ -10,7 +10,7 @@ export function Button({ children, variant = 'primary', size = 'md', className =
   type?: 'button' | 'submit'
   title?: string
 } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'className' | 'disabled' | 'onClick' | 'type' | 'title'>) {
-  const base = 'inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl font-medium transition-[background-color,border-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50'
+  const base = 'inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl font-medium transition-[background-color,border-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/20 focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50'
   const variants = {
     default: 'border border-primary/90 bg-primary text-primary-foreground hover:bg-primary/92',
     primary: 'border border-primary/90 bg-primary text-primary-foreground hover:bg-primary/92',

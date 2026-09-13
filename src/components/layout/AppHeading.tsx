@@ -18,6 +18,6 @@ export function AppHeading() {
       <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
       <h1 className="min-w-0 text-2xl font-semibold tracking-tight text-foreground">{app.name}</h1>
     </div>
-    <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{app.description}</p>
+    <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground text-left">{app.description}</p>
   </header>
 }

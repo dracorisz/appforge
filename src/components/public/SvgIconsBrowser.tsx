@@ -158,18 +158,18 @@ export default function SvgIconsBrowser() {
     <div className="mx-auto w-full max-w-7xl p-4 sm:p-6">
       <section className="surface-card rounded-xl border p-4 sm:p-6">
         <AppHeading />
-
-        <div className="mt-5 grid gap-3 md:grid-cols-[minmax(220px,0.45fr)_minmax(260px,1fr)_180px]">
+        <div className="grid gap-3 md:grid-cols-[minmax(220px,0.45fr)_minmax(260px,1fr)_180px]">
           <label className="grid gap-1.5 text-sm font-medium">Icon pack<select value={pack} onChange={(event) => setPack(event.target.value as PackKey)} className="h-11 rounded-xl border bg-background px-3">{Object.entries(PACKS).map(([key, item]) => <option key={key} value={key}>{item.label}</option>)}</select></label>
-          <label className="grid gap-1.5 text-sm font-medium">Search component name<span className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input value={query} maxLength={100} onChange={(event) => { setQuery(event.target.value); setVisible(120) }} placeholder="Search e.g. arrow, github, cloud…" className="h-11 w-full rounded-xl border bg-background pl-10 pr-3" /></span></label>
-          <label className="grid gap-1.5 text-sm font-medium">Preview size <span className="text-xs font-normal text-muted-foreground">{size}px</span><input type="range" min="18" max="64" value={size} onChange={(event) => setSize(Number(event.target.value))} /></label>
+          <label className="grid gap-1.5 text-sm font-medium">Search component name<span className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input value={query} maxLength={100} onChange={(event) => { setQuery(event.target.value); setVisible(120) }} placeholder="Search e.g. arrow, github, cloud…" className="h-11 w-full rounded-xl border bg-background pl-10 pr-3 hover:cursor-pointer  " /></span></label>
+          <label className="grid gap-2 text-sm font-medium grid-cols-2">Preview size <span className="font-normal text-muted-foreground">{size}px</span><input type="range" min="18" max="64" className="col-span-2 -mt-7" value={size} onChange={(event) => setSize(Number(event.target.value))} /></label>
         </div>
-        <div className="mt-3 flex flex-wrap gap-2">{(['all', 'favorites', 'recent'] as const).map((value) => <button key={value} type="button" onClick={() => { setScope(value); setVisible(120) }} className={`rounded-xl border px-3 py-1.5 text-xs font-medium capitalize ${scope === value ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{value === 'favorites' ? `Favorites (${favorites.length})` : value === 'recent' ? `Recent (${recents.length})` : 'All icons'}</button>)}</div>
+        <div className="flex justify-between">
+        <div className="flex mt-3 flex-wrap gap-2">{(['all', 'favorites', 'recent'] as const).map((value) => <button key={value} type="button" onClick={() => { setScope(value); setVisible(120) }} className={`rounded-xl border px-3 py-1.5 text-xs font-medium hover:cursor-pointer capitalize ${scope === value ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{value === 'favorites' ? `Favorites (${favorites.length})` : value === 'recent' ? `Recent (${recents.length})` : 'All icons'}</button>)}</div>
+        <div aria-live="polite" className="min-h-8 px-1 pt-3 text-xs text-muted-foreground">{loading ? `Loading ${PACKS[pack].label}…` : message}</div>
+        </div>
       </section>
 
-      <div aria-live="polite" className="min-h-8 px-1 pt-3 text-xs text-muted-foreground">{loading ? `Loading ${PACKS[pack].label}…` : message}</div>
-
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6" aria-busy={loading}>
+      <section className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6" aria-busy={loading}>
         {filtered.slice(0, visible).map((icon) => {
           const id = iconId(icon.pack, icon.name)
           const favorite = favorites.includes(id)
