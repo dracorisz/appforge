@@ -2,6 +2,8 @@ import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 import {
   Camera,
+  ChevronLeft,
+  ChevronRight,
   Download,
   FileVideo,
   FileImage,
@@ -11,6 +13,7 @@ import {
   Gamepad2,
   Maximize2,
   PanelsTopLeft,
+  Pencil,
   Play,
   RefreshCw,
   Search,
@@ -137,10 +140,18 @@ export function PF_UserMediaVault() {
 
   React.useEffect(() => { void refresh() }, [refresh])
 
+  const cleanFolderName = (value: string) => value.trim().replace(/\s+/g, ' ').slice(0, 60)
+  const validateFolderName = (name: string, current?: string) => {
+    if (!name) return 'Folder name is required.'
+    if (RESERVED_FOLDERS.has(name.toLowerCase())) return 'That name is reserved for an AppForge folder.'
+    if (userFolders.some((item) => item.name.toLowerCase() === name.toLowerCase() && item.name !== current)) return 'A folder with that name already exists.'
+    return ''
+  }
+
   const createFolder = async () => {
-    const name = newFolder.trim().replace(/\s+/g, ' ')
-    if (!name) return
-    if (RESERVED_FOLDERS.has(name.toLowerCase())) { setError('That name is reserved for an AppForge folder.'); return }
+    const name = cleanFolderName(newFolder)
+    const validation = validateFolderName(name)
+    if (validation) { setError(validation); return }
     const { data: auth } = await supabase.auth.getUser()
     if (!auth.user) { setError('Sign in to create a folder.'); return }
     const { error: createError } = await supabase.from('user_media_folders').insert({ user_id: auth.user.id, name })
@@ -148,6 +159,46 @@ export function PF_UserMediaVault() {
     setNewFolder('')
     await loadFolders()
     setFolder(name)
+  }
+
+  const renameFolder = async (entry: UserFolder) => {
+    const requested = window.prompt('Rename folder', entry.name)
+    if (requested === null) return
+    const name = cleanFolderName(requested)
+    const validation = validateFolderName(name, entry.name)
+    if (validation) { setError(validation); return }
+    if (name === entry.name) return
+    setError('')
+    try {
+      const { data: rows, error: rowsError } = await supabase.from('user_media_vault').select('id,metadata').contains('metadata', { folder: entry.name })
+      if (rowsError) throw rowsError
+      for (const row of rows || []) {
+        const metadata = row.metadata && typeof row.metadata === 'object' ? row.metadata as Record<string, unknown> : {}
+        await updateVaultMedia(String(row.id), { metadata: { ...metadata, folder: name } })
+      }
+      const { error: renameError } = await supabase.from('user_media_folders').update({ name }).eq('id', entry.id)
+      if (renameError) throw renameError
+      await loadFolders()
+      if (folder === entry.name) setFolder(name)
+    } catch (renameError) { setError(renameError instanceof Error ? renameError.message : 'Could not rename folder.') }
+  }
+
+  const deleteFolder = async (entry: UserFolder) => {
+    if (!confirm(`Delete folder "${entry.name}"? Files inside it will be moved to General.`)) return
+    setError('')
+    try {
+      const { data: rows, error: rowsError } = await supabase.from('user_media_vault').select('id,metadata').contains('metadata', { folder: entry.name })
+      if (rowsError) throw rowsError
+      for (const row of rows || []) {
+        const metadata = row.metadata && typeof row.metadata === 'object' ? row.metadata as Record<string, unknown> : {}
+        await updateVaultMedia(String(row.id), { metadata: { ...metadata, folder: 'general' } })
+      }
+      const { error: deleteError } = await supabase.from('user_media_folders').delete().eq('id', entry.id)
+      if (deleteError) throw deleteError
+      if (folder === entry.name) setFolder('general')
+      await loadFolders()
+      await refresh()
+    } catch (folderError) { setError(folderError instanceof Error ? folderError.message : 'Could not delete folder.') }
   }
 
   const uploadTarget = folder !== 'all' && folder !== 'dragon-arena' && folder !== 'getter-pro' ? folder : 'general'
@@ -203,6 +254,13 @@ export function PF_UserMediaVault() {
     if (sortMode === 'type') return a.kind.localeCompare(b.kind) || nameA.localeCompare(nameB)
     return b.created_at.localeCompare(a.created_at)
   }), [media, sortMode])
+  const previewableMedia = React.useMemo(() => sortedMedia.filter((item) => item.kind === 'image' || item.kind === 'video'), [sortedMedia])
+  const previewIndex = preview ? previewableMedia.findIndex((item) => item.id === preview.item.id && item.source_bucket === preview.item.source_bucket) : -1
+  const navigatePreview = (offset: number) => {
+    if (previewIndex < 0 || previewableMedia.length < 2) return
+    const nextIndex = (previewIndex + offset + previewableMedia.length) % previewableMedia.length
+    void openPreview(previewableMedia[nextIndex])
+  }
   const usedPct = quota.quota_bytes ? Math.min(100, Math.round((quota.used_bytes / quota.quota_bytes) * 100)) : 0
 
   return (
@@ -214,7 +272,10 @@ export function PF_UserMediaVault() {
 
       <Card className="p-3"><div className="flex flex-col gap-3 lg:flex-row lg:items-center"><div className="flex flex-1 gap-2"><input value={newFolder} onChange={(event) => setNewFolder(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') void createFolder() }} maxLength={60} placeholder="Create a folder…" className="h-10 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/30" /><Button variant="secondary" onClick={() => void createFolder()} disabled={!newFolder.trim()}><FolderPlus className="h-4 w-4" /> New folder</Button></div><label className="flex items-center gap-2 text-xs text-muted-foreground">Sort<select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)} className="h-9 rounded-lg border border-input bg-background px-2 text-sm text-foreground"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="name-asc">Name A–Z</option><option value="name-desc">Name Z–A</option><option value="size-desc">Largest first</option><option value="type">Type</option></select></label></div></Card>
 
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">{folders.map(({ id, label, icon: Icon }) => <button key={String(id)} onClick={() => setFolder(id)} className={`flex items-center gap-2 rounded-xl border px-3 py-3 text-left text-sm transition-colors ${folder === id ? 'border-foreground/25 bg-accent' : 'border-border/70 bg-background/35 hover:bg-accent/60'}`}><Icon className="h-4 w-4" /><span className="truncate">{label}</span></button>)}</div>
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">{folders.map(({ id, label, icon: Icon }) => {
+        const userFolder = userFolders.find((entry) => entry.name === id)
+        return <div key={String(id)} className={`flex items-center gap-1 rounded-xl border px-2 py-2 transition-colors ${folder === id ? 'border-foreground/25 bg-accent' : 'border-border/70 bg-background/35 hover:bg-accent/60'}`}><button onClick={() => setFolder(id)} className="flex min-w-0 flex-1 items-center gap-2 px-1 py-1 text-left text-sm"><Icon className="h-4 w-4 shrink-0" /><span className="truncate">{label}</span></button>{userFolder && <><button type="button" onClick={() => void renameFolder(userFolder)} className="rounded-md p-1.5 text-muted-foreground hover:bg-background hover:text-foreground" aria-label={`Rename ${label}`}><Pencil className="h-3.5 w-3.5" /></button><button type="button" onClick={() => void deleteFolder(userFolder)} className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label={`Delete ${label}`}><Trash2 className="h-3.5 w-3.5" /></button></>}</div>
+      })}</div>
 
       {uploading && Object.keys(uploadProgress).length > 0 && <Card className="p-3"><div className="space-y-2">{Object.entries(uploadProgress).map(([name, pct]) => <div key={name} className="flex items-center gap-2 text-xs"><span className="w-40 truncate text-muted-foreground">{name}</span><div className="h-2 flex-1 rounded-full bg-muted"><div className="h-full rounded-full bg-foreground transition-all" style={{ width: `${pct}%` }} /></div><span>{pct}%</span></div>)}</div></Card>}
       <Card className="p-3"><div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Private upload quota used</span><span>{formatBytes(quota.used_bytes)} / {formatBytes(quota.quota_bytes)} ({usedPct}%)</span></div><div className="mt-1 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-foreground transition-all" style={{ width: `${usedPct}%` }} /></div><p className="mt-2 text-xs text-muted-foreground">{formatBytes(quota.remaining_bytes)} remaining. Linked Story Studio assets and Getter Pro references are not double-counted against upload storage.</p></Card>
@@ -232,7 +293,7 @@ export function PF_UserMediaVault() {
         })}
       </div>
 
-      {preview && (preview.item.kind === 'image' || preview.item.kind === 'video') ? <MediaShowbox open onClose={() => setPreview(null)} type={preview.item.kind} title={preview.item.title || preview.item.file_name || 'Media Vault item'} source={sourceLabel(preview.item)} originalUrl={metadataUrl(preview.item, 'original_url') || preview.item.source_ref || preview.item.external_url || preview.url} mediaUrl={preview.url} thumbnail={metadataUrl(preview.item, 'thumbnail') || undefined} note="Private Media Vault preview. YouTube references play in the privacy-enhanced embedded player." /> : preview ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={() => setPreview(null)}><div className="max-w-md rounded-xl border border-border/70 bg-background p-6 text-center text-muted-foreground">Preview is not available for this item type. Use the source/download action.</div><button onClick={() => setPreview(null)} className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"><X className="h-5 w-5" /></button></div> : null}
+      {preview && (preview.item.kind === 'image' || preview.item.kind === 'video') ? <><MediaShowbox open onClose={() => setPreview(null)} type={preview.item.kind} title={preview.item.title || preview.item.file_name || 'Media Vault item'} source={sourceLabel(preview.item)} originalUrl={metadataUrl(preview.item, 'original_url') || preview.item.source_ref || preview.item.external_url || preview.url} mediaUrl={preview.url} thumbnail={metadataUrl(preview.item, 'thumbnail') || undefined} note="Private Media Vault preview. YouTube references play in the privacy-enhanced embedded player." />{previewableMedia.length > 1 && <><button type="button" onClick={() => navigatePreview(-1)} className="fixed left-3 top-1/2 z-[70] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/70 text-white shadow-lg hover:bg-black/90 sm:left-6" aria-label="Previous media"><ChevronLeft className="h-6 w-6" /></button><button type="button" onClick={() => navigatePreview(1)} className="fixed right-3 top-1/2 z-[70] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/70 text-white shadow-lg hover:bg-black/90 sm:right-6" aria-label="Next media"><ChevronRight className="h-6 w-6" /></button></>}</> : preview ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={() => setPreview(null)}><div className="max-w-md rounded-xl border border-border/70 bg-background p-6 text-center text-muted-foreground">Preview is not available for this item type. Use the source/download action.</div><button onClick={() => setPreview(null)} className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"><X className="h-5 w-5" /></button></div> : null}
     </div>
   )
 }
