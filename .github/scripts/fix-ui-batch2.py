@@ -54,7 +54,7 @@ edit('tests/public-surface.test.js', public_surface)
 
 # Remove Settings code made obsolete by the embedded Admin / moved Appearance design and use correct integration logos.
 def settings_cleanup(s):
-    for token in ['  Cloud,\n', '  HeartHandshake,\n', '  Monitor,\n', '  Moon,\n', '  Sun,\n']:
+    for token in ['  Cloud,\n', '  HeartHandshake,\n', '  Monitor,\n', '  Moon,\n', '  Sun,\n', '  RefreshCw,\n']:
         s = s.replace(token, '')
     s = s.replace("import { SiGithub as Github } from 'react-icons/si'", "import { SiGithub as Github, SiGoogle as Google, SiSupabase as SupabaseIcon, SiVercel as Vercel } from 'react-icons/si'")
     s = s.replace("import type { AppState, Settings } from '@/types'", "import type { AppState } from '@/types'")
@@ -101,6 +101,10 @@ for path in ['README.md', 'docs/README.md']:
     text = text.replace('Settings > Security', 'Settings > Profile')
     text = text.replace('/settings/admin', '/settings?tab=admin')
     p.write_text(text)
+
+# Keep exactly one newline at EOF so git diff --check stays clean.
+changelog = Path('CHANGELOG.md')
+changelog.write_text(changelog.read_text().rstrip() + '\n')
 
 # Cleanup temporary recovery machinery from the final product tree.
 Path('.github/scripts/restore-ui-batch.py').unlink(missing_ok=True)
