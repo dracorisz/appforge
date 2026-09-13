@@ -63,6 +63,15 @@
  color: hsl(var(--foreground));
  font-feature-settings: "rlig" 1, "calt" 1;
  }
+ button,
+ input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+ select {
+ max-height: 24px;
+ }
+ textarea {
+ min-height: 40px;
+ max-height: 112px;
+ }
 }
 
 @layer components {
@@ -228,70 +237,4 @@
 }
 .dark ::-webkit-scrollbar-thumb:hover {
  background-color: rgb(71 85 105);
-}
-
-.scrollbar-hide {
- -ms-overflow-style: none;
- scrollbar-width: none;
-}
-.scrollbar-hide::-webkit-scrollbar {
- display: none;
-}
-
-/* Shared app identity and header rhythm. Page components own the vertical gap. */
-.app-heading {
- width: 100%;
- min-width: 0;
- margin: 0;
-}
-
-.app-heading h1 {
- line-height: 1.2;
-}
-
-/* Desktop Buddy starter cards intentionally share a compact, fixed media stage. */
-[data-route="/apps/desktop-buddy"] .app-content button:has(> div:first-child img[src*="community.kde.org"]) {
- min-height: 18rem !important;
- box-shadow: 0 1px 2px hsl(var(--glass-shadow) / 0.08);
- transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
-}
-
-[data-route="/apps/desktop-buddy"] .app-content button:has(> div:first-child img[src*="community.kde.org"]):hover {
- box-shadow: 0 12px 28px hsl(var(--glass-shadow) / 0.12);
- transform: translateY(-1px);
-}
-
-[data-route="/apps/desktop-buddy"] .app-content button:has(> div:first-child img[src*="community.kde.org"]) > div:first-child {
- aspect-ratio: auto !important;
- height: 9rem !important;
- min-height: 9rem !important;
- padding: 0.75rem !important;
-}
-
-[data-route="/apps/desktop-buddy"] .app-content button:has(> div:first-child img[src*="community.kde.org"]) > div:first-child img {
- width: 7rem !important;
- height: 7rem !important;
- max-width: 7rem !important;
- max-height: 7rem !important;
- object-fit: contain !important;
-}
-
-/* AppForge interaction cursor contract: enabled interactive controls advertise clickability. */
-button:not(:disabled),
-a[href],
-[role='button']:not([aria-disabled='true']),
-[role='tab']:not([aria-disabled='true']),
-label[for],
-input[type='checkbox']:not(:disabled),
-input[type='radio']:not(:disabled),
-select:not(:disabled),
-summary {
- cursor: pointer;
-}
-
-button:disabled,
-[aria-disabled='true'],
-input:disabled,
-select:disabled {
- cursor: not-allowed;
 }
