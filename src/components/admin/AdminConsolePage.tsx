@@ -58,7 +58,7 @@ export function AdminConsolePage() {
   if (!user) return <Navigate to="/login" replace />
   if (loading) return <div className="flex min-h-[40vh] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>
   if (role !== 'admin') return <Card className="p-6 text-center"><ShieldCheck className="mx-auto h-7 w-7 text-muted-foreground" /><h1 className="mt-3 text-lg font-semibold">Admin only</h1><Link to="/settings" className="mt-4 inline-flex text-sm underline">Back to Settings</Link></Card>
-  if (!aal2) return <Card className="p-6 text-center"><KeyRound className="mx-auto h-7 w-7 text-muted-foreground" /><h1 className="mt-3 text-lg font-semibold">TOTP verification required</h1><p className="mt-2 text-sm text-muted-foreground">Verify this session in Settings → Security.</p><Link to="/settings?tab=security" className="mt-4 inline-flex text-sm underline">Open Security</Link></Card>
+  if (!aal2) return <Card className="p-6 text-center"><KeyRound className="mx-auto h-7 w-7 text-muted-foreground" /><h1 className="mt-3 text-lg font-semibold">TOTP verification required</h1><p className="mt-2 text-sm text-muted-foreground">Verify this session in Settings → Profile.</p><Link to="/settings" className="mt-4 inline-flex text-sm underline">Open Profile</Link></Card>
 
   return (
     <div className="w-full space-y-5 pb-10">

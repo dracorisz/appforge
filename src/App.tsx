@@ -49,7 +49,6 @@ import { loadAppOverrides } from './lib/appOverrides'
 
 const SettingsPage = React.lazy(() => import('./components/resources/Settings').then((module) => ({ default: module.SettingsPage })))
 const PeoplePage = React.lazy(() => import('./components/resources/People').then((module) => ({ default: module.PeoplePage })))
-const AdminConsolePage = React.lazy(() => import('./components/admin/AdminConsolePage').then((module) => ({ default: module.AdminConsolePage })))
 const HuggingFaceGalleryPage = React.lazy(() => import('./components/public/HuggingFaceGalleryPage').then((module) => ({ default: module.HuggingFaceGalleryPage })))
 const PrivacyPolicyPage = React.lazy(() => import('./components/public/LegalPages').then((module) => ({ default: module.PrivacyPolicyPage })))
 const TermsOfServicePage = React.lazy(() => import('./components/public/LegalPages').then((module) => ({ default: module.TermsOfServicePage })))
@@ -248,7 +247,7 @@ if (loading || !user) return <LoginPage returnTo={requestedPath} />
         <Route path="/category/:id" element={dashboard} />
         <Route path="/people" element={lazyPage(<PeoplePage />)} />
         <Route path="/settings" element={lazyPage(<SettingsPage state={state} setState={setState} />)} />
-        <Route path="/settings/admin" element={lazyPage(<AdminConsolePage />)} />
+        <Route path="/settings/admin" element={<Navigate to="/settings?tab=admin" replace />} />
 
         <Route path="/apps/getter-pro" element={<PF_ScrapperPro />} />
         <Route path="/apps/scrapper-pro" element={<Navigate to="/apps/getter-pro" replace />} />

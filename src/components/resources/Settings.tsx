@@ -1,42 +1,32 @@
 import * as React from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 // @code-scanning/ignore js/xss-through-dom: Deployment URL is rendered via React JSX (auto-escaped) and used as href with rel="noopener noreferrer"; no DOM text reinterpretation as HTML occurs.
 import { GEMINI_KEY_STORAGE } from '@/lib/aiProviders'
 import {
   Check,
-  Cloud,
   Download,
   ExternalLink,
-  HeartHandshake,
   ImagePlus,
   KeyRound,
   Loader2,
   LockKeyhole,
   Mail,
   MapPin,
-  Monitor,
-  Moon,
-  RefreshCw,
   ShieldCheck,
-  Sun,
   Trash2,
   Upload,
   UserRound,
 } from 'lucide-react'
-import { SiGithub as Github } from 'react-icons/si'
+import { SiGithub as Github, SiGoogle as Google, SiSupabase as SupabaseIcon, SiVercel as Vercel } from 'react-icons/si'
 import { Badge, BuildBadge, Button, Card, Input, Tabs, Textarea } from '@/components/ui'
-import type { AppState, Settings } from '@/types'
+import type { AppState } from '@/types'
 import { useAuth } from '@/auth/AuthProvider'
-import { BUILD_INFO } from '@/lib/buildInfo'
 import { loadCategoryOverrides, saveCategoryOverrides } from '@/lib/categories'
 import { createWorkspaceBackup, parseWorkspaceBackup, type WorkspaceImportPreview } from '@/lib/workspaceBackup'
 import { isWidgetEnabled, setWidgetEnabled } from '@/lib/widgetPreferences'
 import { VertexBridgeStatus } from './VertexBridgeStatus'
+import { AdminConsolePage } from '@/components/admin/AdminConsolePage'
 import {
-  adminDeleteUser,
-  adminListUsers,
-  adminSetRole,
-  adminUpdateProfile,
   claimFirstAdmin,
   ensureProfile,
   enrollTotp,
@@ -50,20 +40,16 @@ import {
   unenrollTotp,
   uploadProfileImage,
   verifyTotpFactor,
-  type AdminUser,
   type AppProfile,
   type PrivateProfileInfo,
   type ProfileImageLink,
   type UserImage,
 } from '@/lib/account'
 
-const LIVE_URL_KEY = 'appforge-live-url'
-const PAYPAL_URL = 'https://www.paypal.com/paypalme/dracorisz'
 const PROFILE_IMAGE_ACCEPT = 'image/png,image/jpeg,image/webp,image/gif'
 const MAX_WORKSPACE_IMPORT_BYTES = 5 * 1024 * 1024
-type ThemeMode = 'light' | 'dark' | 'system'
-type TabId = 'profile' | 'appearance' | 'security' | 'data' | 'integrations' | 'deployment' | 'about' | 'admin'
-const TAB_IDS = new Set<TabId>(['profile', 'appearance', 'security', 'data', 'integrations', 'deployment', 'about', 'admin'])
+type TabId = 'profile' | 'data' | 'integrations' | 'admin'
+const TAB_IDS = new Set<TabId>(['profile', 'data', 'integrations', 'admin'])
 
 const imageFromLink = (link: ProfileImageLink) => {
   const value = link.user_images
@@ -75,24 +61,11 @@ const tabFromParams = (params: URLSearchParams): TabId => {
   const value = params.get('tab')
   return value && TAB_IDS.has(value as TabId) ? value as TabId : 'profile'
 }
-const safeHttpUrl = (value: string) => {
-  try {
-    const url = new URL(value)
-    return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : null
-  } catch { return null }
-}
 
 export function SettingsPage({ state, setState }: { state: AppState; setState: (s: AppState) => void }) {
   const { user, signOut } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
   const [activeTab, setActiveTab] = React.useState<TabId>(() => tabFromParams(searchParams))
-  const [themeMode, setThemeMode] = React.useState<ThemeMode>(() => {
-    try {
-      const mode = JSON.parse(localStorage.getItem('appforge-theme') || '{}')?.mode
-      if (mode === 'light' || mode === 'dark' || mode === 'system') return mode
-    } catch { /* ignore malformed local preference */ }
-    return state.settings.theme || 'dark'
-  })
   const [profile, setProfile] = React.useState<AppProfile | null>(null)
   const [privateInfo, setPrivateInfo] = React.useState<PrivateProfileInfo | null>(null)
   const [images, setImages] = React.useState<ProfileImageLink[]>([])
@@ -102,12 +75,10 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
   const [totpFactors, setTotpFactors] = React.useState<any[]>([])
   const [enrollment, setEnrollment] = React.useState<{ id: string; qr: string; secret: string } | null>(null)
   const [totpCode, setTotpCode] = React.useState('')
-  const [adminUsers, setAdminUsers] = React.useState<AdminUser[]>([])
   const [loading, setLoading] = React.useState(true)
   const [busy, setBusy] = React.useState('')
   const [message, setMessage] = React.useState('')
   const [error, setError] = React.useState('')
-  const [liveUrl, setLiveUrl] = React.useState(() => localStorage.getItem(LIVE_URL_KEY) || 'https://www.sstoken.space')
   const [skillsDraft, setSkillsDraft] = React.useState('')
   const [geminiKey, setGeminiKey] = React.useState(() => localStorage.getItem(GEMINI_KEY_STORAGE) || '')
   const [openRouterKey, setOpenRouterKey] = React.useState(() => localStorage.getItem('dragon-arena-openrouter-key') || '')
@@ -161,23 +132,6 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
     if (!loading && activeTab === 'admin' && role !== 'admin') selectTab('profile', true)
   }, [activeTab, loading, role, selectTab])
 
-  React.useEffect(() => {
-    const root = document.documentElement
-    const media = window.matchMedia('(prefers-color-scheme: dark)')
-    const apply = () => {
-      const dark = themeMode === 'dark' || (themeMode === 'system' && media.matches)
-      root.classList.toggle('dark', dark)
-      root.style.colorScheme = dark ? 'dark' : 'light'
-    }
-    apply()
-    if (themeMode === 'system') media.addEventListener('change', apply)
-    try { localStorage.setItem('appforge-theme', JSON.stringify({ mode: themeMode })) } catch { /* AppState still retains the theme */ }
-    if (state.settings.theme !== themeMode) {
-      const nextSettings = { ...state.settings, theme: themeMode } as Settings
-      setState({ ...state, settings: nextSettings })
-    }
-    return () => media.removeEventListener('change', apply)
-  }, [themeMode, state, setState])
 
   const flash = (text: string) => {
     setMessage(text)
@@ -288,17 +242,6 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
     } finally { setBusy('') }
   }
 
-  const loadAdmin = React.useCallback(async () => {
-    if (role !== 'admin' || currentLevel !== 'aal2') return
-    setBusy('admin-load')
-    try { setAdminUsers(await adminListUsers()) }
-    catch (adminError) { setError(adminError instanceof Error ? adminError.message : 'Could not load admin users.') }
-    finally { setBusy('') }
-  }, [currentLevel, role])
-
-  React.useEffect(() => {
-    if (activeTab === 'admin' && role === 'admin' && currentLevel === 'aal2') void loadAdmin()
-  }, [activeTab, role, currentLevel, loadAdmin])
 
   const exportWorkspace = () => {
     const payload = createWorkspaceBackup({
@@ -349,7 +292,6 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
       const value = importPreview.widgets[key]
       if (typeof value === 'boolean') setWidgetEnabled(key, value)
     }
-    setThemeMode(importPreview.workspace.settings.theme)
     setImportPreview(null)
     setImportFileName('')
     flash('Workspace backup imported.')
@@ -363,29 +305,20 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
     finally { setBusy('') }
   }
 
-  const updateLiveUrl = (value: string) => {
-    setLiveUrl(value)
-    try { localStorage.setItem(LIVE_URL_KEY, value) } catch { /* deployment URL remains in component state */ }
-  }
 
   const gallery = images.filter((link) => link.kind === 'gallery').map(imageFromLink).filter((image): image is UserImage => Boolean(image))
   const verifiedTotp = totpFactors.filter((factor) => factor.status === 'verified')
-  const deploymentUrl = safeHttpUrl(liveUrl)
   const tabs: { id: TabId; label: string }[] = [
     { id: 'profile', label: 'Profile' },
-    { id: 'appearance', label: 'Appearance' },
-    { id: 'security', label: 'Security' },
     { id: 'data', label: 'Data' },
     { id: 'integrations', label: 'Integrations' },
-    { id: 'deployment', label: 'Deployment' },
-    { id: 'about', label: 'About' },
     ...(role === 'admin' ? [{ id: 'admin' as TabId, label: 'Admin' }] : []),
   ]
 
   return (
     <div className="space-y-5 pb-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div><h1 className="text-2xl font-semibold tracking-tight text-foreground">Settings</h1><p className="mt-1 text-sm text-muted-foreground">Profile, privacy, security, collaboration, deployment and project settings.</p></div>
+        <div><h1 className="text-2xl font-semibold tracking-tight text-foreground">Settings</h1><p className="mt-1 text-sm text-muted-foreground">Profile, privacy, security, integrations and workspace settings.</p></div>
         <BuildBadge />
       </div>
 
@@ -481,16 +414,8 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
         </div>
       )}
 
-      {activeTab === 'appearance' && (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card className="p-4">
-            <h2 className="text-sm font-semibold text-foreground">Theme</h2>
-            <div className="mt-4 flex flex-wrap gap-2">{([{ value: 'light', label: 'Light', icon: Sun }, { value: 'dark', label: 'Dark', icon: Moon }, { value: 'system', label: 'System', icon: Monitor }] as const).map(({ value, label, icon: Icon }) => <button key={value} onClick={() => setThemeMode(value)} className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${themeMode === value ? 'border-foreground/25 bg-accent' : 'border-border/70 hover:bg-accent/60'}`}><Icon className="h-4 w-4" /> {label}</button>)}</div>
-          </Card>
-        </div>
-      )}
 
-      {activeTab === 'security' && (
+      {activeTab === 'profile' && (
         <div className="grid gap-4 lg:grid-cols-2">
           <Card className="p-4"><div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-foreground">Authentication</h2><p className="mt-1 text-xs text-muted-foreground">Identity is handled through Supabase Auth. Google is the first enabled provider.</p></div><Badge color="green">Connected</Badge></div><div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-3 text-sm"><div className="font-medium text-foreground">{user?.email}</div><div className="mt-1 text-xs text-muted-foreground">Session assurance: {currentLevel || 'checking…'} · next: {nextLevel || 'checking…'}</div></div>{role === 'user' && <div className="mt-4 rounded-xl border border-border/70 bg-background/35 p-3"><div className="text-sm font-medium text-foreground">Initial administrator</div><p className="mt-1 text-xs leading-5 text-muted-foreground">If this is the first and only AppForge account, initialize the first administrator once. No email is hardcoded into the client.</p><Button className="mt-3" variant="secondary" onClick={() => void bootstrapAdmin()} disabled={busy === 'bootstrap-admin'}>{busy === 'bootstrap-admin' ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />} Initialize admin</Button></div>}<Button variant="secondary" className="mt-4" onClick={() => void handleSignOut()} disabled={busy === 'signout'}>{busy === 'signout' ? <Loader2 className="h-4 w-4 animate-spin" /> : null}Sign out</Button></Card>
 
@@ -515,7 +440,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
 
       {activeTab === 'integrations' && (
         <div className="grid gap-4 lg:grid-cols-2">
-          <div className="grid gap-3 sm:grid-cols-2">{[['Supabase', 'Authentication, profiles, private personal data, preferences, roles, TOTP and profile media.', Cloud], ['Vercel', 'Vite frontend plus same-origin serverless APIs for network-backed tools.', RefreshCw], ['GitHub', 'Public source, contributors, issues, pull requests and CI.', Github], ['Google', 'OAuth identity provider; basic identity scopes only.', ShieldCheck]].map(([name, description, Icon]: any) => <Card key={name} className="p-4"><Icon className="h-5 w-5 text-muted-foreground" /><h2 className="mt-3 text-sm font-semibold text-foreground">{name}</h2><p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p></Card>)}</div>
+          <div className="grid gap-3 sm:grid-cols-2">{[['Supabase', 'Authentication, profiles, private personal data, preferences, roles, TOTP and profile media.', SupabaseIcon], ['Vercel', 'Vite frontend plus same-origin serverless APIs for network-backed tools.', Vercel], ['GitHub', 'Public source, contributors, issues, pull requests and CI.', Github], ['Google', 'OAuth identity provider; basic identity scopes only.', Google]].map(([name, description, Icon]: any) => <Card key={name} className="p-3"><Icon className="h-4 w-4 text-muted-foreground" /><h2 className="mt-2 text-sm font-semibold text-foreground">{name}</h2><p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p></Card>)}</div>
           <Card className="p-4">
             <h2 className="text-sm font-semibold text-foreground">AI provider keys</h2>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">Personal keys are saved in this browser and sent through AppForge’s server to the selected provider when used. They are excluded from workspace backups. Provider limits still apply.</p>
@@ -552,11 +477,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
         </div>
       )}
 
-      {activeTab === 'deployment' && <Card className="p-4"><div className="flex flex-wrap items-start justify-between gap-4"><div><h2 className="text-sm font-semibold text-foreground">Deployment</h2><p className="mt-1 text-xs text-muted-foreground">One AppForge project deploys the Vite frontend and colocated `/api/*` functions.</p></div><BuildBadge /></div><div className="mt-4 grid gap-3 sm:grid-cols-2"><Input label="Live URL" value={liveUrl} onChange={(e) => updateLiveUrl(e.target.value)} /><Input label="Product version" value={BUILD_INFO.version} disabled /><Input label="Commit" value={BUILD_INFO.shortSha} disabled /><Input label="Built" value={BUILD_INFO.builtAtLabel} disabled /></div>{deploymentUrl ? <a href={deploymentUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"><ExternalLink className="h-3.5 w-3.5" /> Open production</a> : <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">Enter a valid http:// or https:// deployment URL to enable the production link.</p>}</Card>}
-
-      {activeTab === 'about' && <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]"><Card className="p-5"><h2 className="text-lg font-semibold text-foreground">About AppForge</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">AppForge is an open-source toolbox with a public development model and an authenticated personal workspace. Local tools stay in-browser where practical; account state and features that need persistence or network access use Supabase and Vercel transparently.</p><p className="mt-3 text-sm leading-6 text-muted-foreground">No advertising analytics are built into AppForge. Public profile fields are opt-in; private personal information is stored separately under owner-only RLS.</p><div className="mt-4 flex flex-wrap gap-2"><Badge color="green">MIT open source</Badge><Badge color="blue">Authenticated workspace</Badge><Badge color="slate">Supabase RLS</Badge><Badge color="slate">PWA</Badge></div><div className="mt-5 flex flex-wrap gap-2"><a href="https://github.com/dracorisz/appforge" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-border/70 px-3 py-2 text-sm font-medium hover:bg-accent"><Github className="h-4 w-4" /> Contribute on GitHub</a><a href={PAYPAL_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-border/70 px-3 py-2 text-sm font-medium hover:bg-accent"><HeartHandshake className="h-4 w-4" /> Support any amount</a></div></Card><Card className="p-5"><h2 className="text-sm font-semibold text-foreground">Project principles</h2><ul className="mt-3 space-y-2 text-sm text-muted-foreground"><li>• Small tools with consistent interaction patterns.</li><li>• Public development and contributor-friendly documentation.</li><li>• No fake data presented as live data.</li><li>• Shared version/build identity across every app.</li><li>• Authentication and RLS around personal data.</li><li>• Test → report build fingerprint → contribute a focused PR.</li></ul></Card></div>}
-
-      {activeTab === 'admin' && role === 'admin' && <div className="space-y-4"><Card><h2 className="text-sm font-semibold">Admin console</h2><div className="mt-3 flex flex-wrap gap-2">{[['content', 'Content Manager'], ['marketing', 'Marketing Studio'], ['apps', 'App properties'], ['users', 'Users']].map(([section, label]) => <Link key={section} to={`/settings/admin?section=${section}`} className="inline-flex min-h-10 items-center rounded-xl border border-border/70 px-4 py-2 text-sm font-medium hover:bg-accent">{label}</Link>)}</div></Card>{currentLevel !== 'aal2' ? <Card className="p-6 text-center"><LockKeyhole className="mx-auto h-7 w-7 text-muted-foreground" /><h2 className="mt-3 text-sm font-semibold text-foreground">Admin is TOTP protected</h2><p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">Verify your authenticator in Security before AppForge will read or mutate administrative data.</p><Button className="mt-4" onClick={() => selectTab('security')}>Open Security</Button></Card> : <><div className="flex items-center justify-between"><div><h2 className="text-sm font-semibold text-foreground">Users</h2><p className="mt-1 text-xs text-muted-foreground">Role, public-profile visibility and destructive account actions are enforced with admin + AAL2 checks. Private personal information is not exposed here.</p></div><Button variant="secondary" size="sm" onClick={() => void loadAdmin()} disabled={busy === 'admin-load'}><RefreshCw className={`h-4 w-4 ${busy === 'admin-load' ? 'animate-spin' : ''}`} /> Refresh</Button></div><div className="space-y-2">{adminUsers.map((item) => <Card key={item.id} className="p-3"><div className="flex flex-col gap-3 lg:flex-row lg:items-center"><div className="flex min-w-0 flex-1 items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted">{item.avatar_url ? <img src={item.avatar_url} alt="" className="h-full w-full object-cover" /> : <UserRound className="h-4 w-4" />}</div><div className="min-w-0"><div className="truncate text-sm font-medium text-foreground">{item.display_name || item.email || item.id}</div><div className="truncate text-xs text-muted-foreground">{item.email} · {item.username ? `@${item.username}` : 'no username'}</div></div></div><div className="flex flex-wrap items-center gap-2"><select value={item.role} onChange={async (e) => { const nextRole = e.target.value as 'user' | 'admin'; try { await adminSetRole(item.id, nextRole); setAdminUsers((rows) => rows.map((row) => row.id === item.id ? { ...row, role: nextRole } : row)); flash('Role updated.') } catch (roleError) { setError(roleError instanceof Error ? roleError.message : 'Role update failed.') } }} className="h-9 rounded-xl border border-input bg-background/55 px-2 text-xs"><option value="user">user</option><option value="admin">admin</option></select><button onClick={async () => { try { await adminUpdateProfile(item.id, { display_name: item.display_name, username: item.username, is_public: !item.is_public }); setAdminUsers((rows) => rows.map((row) => row.id === item.id ? { ...row, is_public: !row.is_public } : row)); flash('Profile visibility updated.') } catch (profileError) { setError(profileError instanceof Error ? profileError.message : 'Profile update failed.') } }} className="rounded-xl border border-border/70 px-2.5 py-2 text-xs hover:bg-accent">{item.is_public ? 'Public' : 'Private'}</button>{item.id !== user?.id && <Button variant="ghost" size="sm" onClick={async () => { if (!confirm(`Delete ${item.email || 'this user'}?`)) return; try { await adminDeleteUser(item.id); setAdminUsers((rows) => rows.filter((row) => row.id !== item.id)); flash('User deleted.') } catch (deleteError) { setError(deleteError instanceof Error ? deleteError.message : 'Delete failed.') } }}><Trash2 className="h-4 w-4" /></Button>}</div></div></Card>)}</div></>}</div>}
+      {activeTab === 'admin' && role === 'admin' && <AdminConsolePage />}
     </div>
   )
 }

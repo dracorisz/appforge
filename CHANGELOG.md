@@ -106,3 +106,10 @@ This file tracks user-visible AppForge product changes. The canonical source is 
 
 ## Older history
 For earlier implementation history, see the Git commit history and archived project/session documentation in this repository.
+## 1.27.2 - 2026-09-13
+
+- Consolidated account access into a login modal with Google, GitHub and email sign-in.
+- Simplified Settings: security is part of Profile, Appearance moved to the sidebar account menu, Admin Console is embedded, and obsolete About/Deployment tabs were removed.
+- Polished Media Vault, Getter Pro, Crypto Track, Task List, People and shared compact input/upload patterns.
+- Protected the Desktop Buddies media destination and tightened the media preview viewport.
+- Continued shared-component/theme consolidation and removed obsolete UI paths while preserving public header/footer behavior.

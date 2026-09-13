@@ -12,6 +12,7 @@ interface AuthContextValue {
   loading: boolean
   signInWithGoogle: (returnTo?: string) => Promise<void>
   signInWithGitHub: (returnTo?: string) => Promise<void>
+  signInWithEmail: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -66,6 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = (returnTo = '/') => signInWithProvider('google', returnTo)
   const signInWithGitHub = (returnTo = '/') => signInWithProvider('github', returnTo)
+  const signInWithEmail = async (email: string, password: string) => { const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password }); if (error) throw error }
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut()
@@ -73,7 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user || null, loading, signInWithGoogle, signInWithGitHub, signOut }}>
+    <AuthContext.Provider value={{ session, user: session?.user || null, loading, signInWithGoogle, signInWithGitHub, signInWithEmail, signOut }}>
       {children}
     </AuthContext.Provider>
   )

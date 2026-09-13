@@ -222,7 +222,7 @@ export function PF_UserMediaVault() {
   }
 
   const moveItem = async (item: VaultMedia, destination: string) => {
-    if (isPinnedAsset(item) || !destination || destination === vaultFolder(item)) return
+    if (isPinnedAsset(item) || destination === 'desktop-buddies' || destination === 'Desktop Buddies' || !destination || destination === vaultFolder(item)) return
     try {
       await updateVaultMedia(item.id, { metadata: { ...(item.metadata || {}), folder: destination } })
       await refresh()
@@ -243,7 +243,7 @@ export function PF_UserMediaVault() {
     } catch { setError('Could not open preview.') }
   }
 
-  const allFolderOptions = React.useMemo(() => [...SYSTEM_FOLDERS.filter((item) => !['all', 'dragon-arena'].includes(String(item.id))).map((item) => ({ value: String(item.id), label: item.label })), ...userFolders.map((item) => ({ value: item.name, label: item.name }))], [userFolders])
+  const allFolderOptions = React.useMemo(() => [...SYSTEM_FOLDERS.filter((item) => !['all', 'dragon-arena', 'desktop-buddies'].includes(String(item.id)) && item.label !== 'Desktop Buddies').map((item) => ({ value: String(item.id), label: item.label })), ...userFolders.filter((item) => item.name !== 'Desktop Buddies').map((item) => ({ value: item.name, label: item.name }))], [userFolders])
   const folders = React.useMemo(() => [...SYSTEM_FOLDERS, ...userFolders.map((item) => ({ id: item.name as VaultFolder, label: item.name, icon: Folder }))], [userFolders])
   const sortedMedia = React.useMemo(() => [...media].sort((a, b) => {
     const nameA = (a.title || a.file_name || '').toLocaleLowerCase(); const nameB = (b.title || b.file_name || '').toLocaleLowerCase()

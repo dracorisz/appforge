@@ -188,9 +188,6 @@ export function PF_CryptoTrack() {
           </div>
 
         </div>
-        <Button variant="secondary" onClick={() => fetchCoins(provider)} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
-        </Button>
       </div>
 
       <Card>
@@ -230,6 +227,7 @@ export function PF_CryptoTrack() {
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
+          <Button variant="secondary" size="sm" onClick={() => fetchCoins(provider)} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh</Button>
           <button
             type="button"
             onClick={() => setWatchlistOnly((value) => !value)}

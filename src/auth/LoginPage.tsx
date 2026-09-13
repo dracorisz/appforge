@@ -44,9 +44,12 @@ const youtubeEmbed = (url: string) => {
 
 export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: string; landingOnly?: boolean }) {
   const navigate = useNavigate()
-  const { user, loading, signInWithGoogle, signInWithGitHub } = useAuth()
+  const { user, loading, signInWithGoogle, signInWithGitHub, signInWithEmail } = useAuth()
   const [busyProvider, setBusyProvider] = React.useState<AuthProviderName | null>(null)
   const [error, setError] = React.useState('')
+  const [authOpen, setAuthOpen] = React.useState(!landingOnly)
+  const [email, setEmail] = React.useState('')
+  const [password, setPassword] = React.useState('')
   const [videoUrl, setVideoUrl] = React.useState(DEFAULT_VIDEO_URL)
   const [videoEmbedUrl, setVideoEmbedUrl] = React.useState(DEFAULT_VIDEO_EMBED_URL)
   const [showAppCount, setShowAppCount] = React.useState(true)
@@ -136,7 +139,7 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
               <h1 className="max-w-4xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-6xl lg:text-[4.15rem] lg:leading-[1.02] xl:text-[4.55rem]">Build useful things.<span className="block text-muted-foreground">Own the workflow.</span></h1>
               <p className="mt-5 max-w-2xl text-pretty text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">Practical tools in one consistent workspace.</p>
               <div className="mt-7 flex flex-wrap gap-3" aria-busy={Boolean(busyProvider) || loading}>
-                {user ? <Button className="h-11 px-5" onClick={() => navigate('/')} disabled={loading}>Open workspace <ArrowRight className="h-4 w-4" /></Button> : <><Button className="h-11 px-5" onClick={() => void login('google')} disabled={Boolean(busyProvider) || loading}><Google className="h-4 w-4" />{loading ? 'Checking session…' : busyProvider === 'google' ? 'Opening Google…' : 'Continue with Google'}</Button><Button variant="secondary" className="h-11 px-5" onClick={() => void login('github')} disabled={Boolean(busyProvider) || loading}><Github className="h-4 w-4" />{busyProvider === 'github' ? 'Opening GitHub…' : 'Continue with GitHub'}</Button></>}
+                {user ? <Button className="h-11 px-5" onClick={() => navigate('/')} disabled={loading}>Open workspace <ArrowRight className="h-4 w-4" /></Button> : <Button className="h-11 px-5" onClick={() => setAuthOpen(true)} disabled={loading}>Sign in <ArrowRight className="h-4 w-4" /></Button>}
               </div>
               {error && <div role="alert" aria-live="polite" className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
               {showAppCount && <p className="mt-8 border-t border-border/60 pt-5 text-xs text-muted-foreground"><strong className="font-semibold text-foreground">{appCount}</strong> active apps · open source</p>}
@@ -157,6 +160,15 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
             </section>
           </div>
 
+
+          <section className="border-t border-border/60 py-8 sm:py-10" aria-labelledby="about-appforge-title">
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="md:col-span-1"><h2 id="about-appforge-title" className="text-xl font-semibold tracking-tight">Open source. Private by design.</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">AppForge combines public tools with an authenticated workspace, keeping local work in-browser where practical and using protected persistence only where it adds value.</p></div>
+              <div className="rounded-xl border border-border/70 bg-background/55 p-4"><div className="text-sm font-semibold">Consistent tools</div><p className="mt-1 text-xs leading-5 text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p></div>
+              <div className="rounded-xl border border-border/70 bg-background/55 p-4"><div className="text-sm font-semibold">Transparent project</div><p className="mt-1 text-xs leading-5 text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p></div>
+            </div>
+          </section>
+
           <section className="border-t border-border/60 py-8 sm:py-10" aria-labelledby="walkthrough-title">
             <div className="grid gap-5 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
               <div className="lg:pr-3"><div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"><PlayCircle className="h-4 w-4" /> Walkthrough</div><h2 id="walkthrough-title" className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{videoTitle}</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{videoSummary}</p><a href={videoUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Open video <ArrowRight className="h-4 w-4" /></a></div>
@@ -165,6 +177,8 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
           </section>
         </main>
 
+
+        {authOpen && !user && <div className="fixed inset-0 z-[100] flex min-h-[100dvh] items-center justify-center bg-black/75 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Sign in to AppForge" onMouseDown={(event) => { if (event.target === event.currentTarget && landingOnly) setAuthOpen(false) }}><div className="w-full max-w-md rounded-xl border border-border/70 bg-background p-5 shadow-xl"><div className="flex items-start justify-between gap-3"><div><h2 className="text-xl font-semibold">Sign in to AppForge</h2><p className="mt-1 text-sm text-muted-foreground">Use email or a connected provider.</p></div>{landingOnly && <button type="button" onClick={() => setAuthOpen(false)} className="rounded-xl px-2 py-1 text-sm text-muted-foreground hover:bg-accent">Close</button>}</div><div className="mt-5 grid gap-2"><Button onClick={() => void login('google')} disabled={Boolean(busyProvider) || loading}><Google className="h-4 w-4" /> Continue with Google</Button><Button variant="secondary" onClick={() => void login('github')} disabled={Boolean(busyProvider) || loading}><Github className="h-4 w-4" /> Continue with GitHub</Button></div><div className="my-4 flex items-center gap-3 text-xs text-muted-foreground"><span className="h-px flex-1 bg-border" />or email<span className="h-px flex-1 bg-border" /></div><form className="space-y-3" onSubmit={async (event) => { event.preventDefault(); setError(''); try { await signInWithEmail(email, password); navigate(consumeReturnPath(returnTo), { replace: true }) } catch (emailError) { setError(emailError instanceof Error ? emailError.message : 'Email sign-in failed.') } }}><input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm" /><input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm" /><Button type="submit" className="w-full" disabled={!email.trim() || !password}>Sign in with email</Button></form>{error && <div role="alert" className="mt-3 rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}</div></div>}
         <PublicFooter />
       </div>
     </div>

@@ -50,7 +50,7 @@ export function PeoplePage() {
   const coverFor = (profileId: string) => images.filter((link) => link.profile_id === profileId && link.kind === 'cover').map(linkedImage).filter((image): image is UserImage => Boolean(image?.source_url)).slice(0, 1)
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-5 pb-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-xl border border-border/70 bg-background/45 px-2.5 py-1 text-xs font-medium text-muted-foreground"><HeartHandshake className="h-3.5 w-3.5" /> Open-source collaborators</div>

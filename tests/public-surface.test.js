@@ -56,14 +56,17 @@ test('SEO public routes derive from the registry and preserve canonical aliases'
   assert.doesNotMatch(seo, /'\/huggingface'/)
 })
 
-test('blog and changelog stay public while legacy content admin redirects into the protected admin console', async () => {
+test('blog and changelog stay public while legacy admin routes redirect into embedded Settings admin', async () => {
   const main = await read('src/main.tsx')
   const app = await read('src/App.tsx')
   assert.match(main, /location\.pathname === '\/blog'.*PublicBlogPage/s)
   assert.match(main, /location\.pathname === '\/changelog'.*ChangelogPage/s)
   assert.match(main, /location\.pathname === '\/admin\/content'.*Navigate to="\/settings\/admin"/s)
   assert.match(main, /location\.pathname\.startsWith\('\/blog\/'\)/)
-  assert.match(app, /path="\/settings\/admin".*AdminConsolePage/s)
+  assert.match(app, /path="\/settings\/admin".*Navigate to="\/settings\?tab=admin"/s)
+
+  const settings = await read('src/components/resources/Settings.tsx')
+  assert.match(settings, /activeTab === 'admin'.*<AdminConsolePage \/>/s)
 
   const changelogPage = await read('src/components/public/ChangelogPage.tsx')
   assert.match(changelogPage, /CHANGELOG\.md\?raw/)
