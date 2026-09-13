@@ -2,6 +2,25 @@
 
 This file tracks user-visible AppForge product changes. The canonical source is the `main` branch.
 
+## 1.27.2 — September 13, 2026
+
+### Added
+- Consolidated account access into a focused sign-in modal with Google, GitHub and email/password sign-in while preserving the stable `/login` entry point.
+- Added the sidebar account drop-up with Appearance, Settings, Support and Sign out actions.
+
+### Improved
+- Simplified Settings: Security now lives with Profile, Appearance moved to the sidebar account menu, Admin Console is embedded directly in Settings, Integrations cards are more compact with provider-specific icons, and obsolete About/Deployment tabs were removed.
+- Reused useful About content on the public landing page instead of keeping a private Settings-only About section.
+- Polished Media Vault, Getter Pro, Crypto Track, Task List, People and shared compact textarea/upload/output patterns for more consistent spacing and component use.
+- Protected the Desktop Buddies media destination and tightened the Media Vault preview viewport, header and controls while retaining preview functionality.
+- Getter Pro now uses filter-aware pagination copy, removes obsolete Candidate JSON/export-contract UI, and uses a more compact empty-results state.
+- Crypto Track Refresh and Task List Sync actions now live with their relevant control sections instead of page-heading chrome.
+
+### Maintenance
+- Continued shared-component/theme consolidation, removed obsolete Settings/admin code paths, updated route coverage for embedded Admin, and preserved existing PublicHeader/PublicFooter work.
+- Updated release documentation and advanced the application version to `1.27.2`.
+- Completed registry, UI-style, documentation, TypeScript, unit-test, cloud-worker and production-build validation before deployment handoff.
+
 ## 1.27.1 — September 13, 2026
 
 ### Added
@@ -106,10 +125,3 @@ This file tracks user-visible AppForge product changes. The canonical source is 
 
 ## Older history
 For earlier implementation history, see the Git commit history and archived project/session documentation in this repository.
-## 1.27.2 - 2026-09-13
-
-- Consolidated account access into a login modal with Google, GitHub and email sign-in.
-- Simplified Settings: security is part of Profile, Appearance moved to the sidebar account menu, Admin Console is embedded, and obsolete About/Deployment tabs were removed.
-- Polished Media Vault, Getter Pro, Crypto Track, Task List, People and shared compact input/upload patterns.
-- Protected the Desktop Buddies media destination and tightened the media preview viewport.
-- Continued shared-component/theme consolidation and removed obsolete UI paths while preserving public header/footer behavior.
