@@ -1,101 +1,26 @@
 import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
-import { AlertCircle, Copy, Download, ExternalLink, QrCode, RefreshCw } from 'lucide-react'
+import { AlertCircle, Copy, Download, ExternalLink, Mail, Phone, QrCode, RefreshCw, Wifi } from 'lucide-react'
 import { Button, Card, Checkbox, Input, Select, Tabs, Textarea } from '@/components/ui'
 
 type Mode = 'text' | 'wifi'
 type Format = 'png' | 'svg'
-
-const wifiPayload = (ssid: string, password: string, security: 'WPA' | 'WEP' | 'nopass', hidden: boolean) => {
-  const esc = (value: string) => value.replace(/([\\;,:"])/g, '\\$1')
-  return `WIFI:T:${security};S:${esc(ssid)};${security !== 'nopass' ? `P:${esc(password)};` : ''}${hidden ? 'H:true;' : ''};`
-}
+type Ecc = 'L' | 'M' | 'Q' | 'H'
+const wifiPayload = (ssid: string, password: string, security: 'WPA' | 'WEP' | 'nopass', hidden: boolean) => { const esc = (value: string) => value.replace(/([\\;,:"])/g, '\\$1'); return `WIFI:T:${security};S:${esc(ssid)};${security !== 'nopass' ? `P:${esc(password)};` : ''}${hidden ? 'H:true;' : ''};` }
 
 export function QrGenerator() {
-  const [mode, setMode] = React.useState<Mode>('text')
-  const [value, setValue] = React.useState('https://www.sstoken.space')
-  const [ssid, setSsid] = React.useState('')
-  const [password, setPassword] = React.useState('')
-  const [security, setSecurity] = React.useState<'WPA' | 'WEP' | 'nopass'>('WPA')
-  const [hidden, setHidden] = React.useState(false)
-  const [size, setSize] = React.useState(320)
-  const [margin, setMargin] = React.useState(2)
-  const [format, setFormat] = React.useState<Format>('png')
-  const [nonce, setNonce] = React.useState(0)
-  const [copied, setCopied] = React.useState(false)
-  const [busy, setBusy] = React.useState(false)
-  const [error, setError] = React.useState('')
-
+  const [mode, setMode] = React.useState<Mode>('text'); const [value, setValue] = React.useState('https://www.sstoken.space'); const [ssid, setSsid] = React.useState(''); const [password, setPassword] = React.useState(''); const [security, setSecurity] = React.useState<'WPA' | 'WEP' | 'nopass'>('WPA'); const [hidden, setHidden] = React.useState(false); const [size, setSize] = React.useState(320); const [margin, setMargin] = React.useState(2); const [format, setFormat] = React.useState<Format>('png'); const [ecc, setEcc] = React.useState<Ecc>('M'); const [nonce, setNonce] = React.useState(0); const [copied, setCopied] = React.useState(false); const [busy, setBusy] = React.useState(false); const [error, setError] = React.useState('')
   const payload = mode === 'wifi' ? wifiPayload(ssid, password, security, hidden) : value.trim()
-  const url = React.useMemo(() => {
-    if (!payload) return ''
-    const params = new URLSearchParams({ data: payload, size: `${size}x${size}`, margin: String(margin), format })
-    params.set('_', String(nonce))
-    return `https://api.qrserver.com/v1/create-qr-code/?${params.toString()}`
-  }, [format, margin, nonce, payload, size])
+  const url = React.useMemo(() => { if (!payload) return ''; const params = new URLSearchParams({ data: payload, size: `${size}x${size}`, margin: String(margin), format, ecc }); params.set('_', String(nonce)); return `https://api.qrserver.com/v1/create-qr-code/?${params.toString()}` }, [ecc, format, margin, nonce, payload, size])
+  const download = async () => { if (!url || busy) return; setBusy(true); setError(''); try { const response = await fetch(url); if (!response.ok) throw new Error(`QR provider returned HTTP ${response.status}.`); const blob = await response.blob(); if (!blob.size) throw new Error('QR provider returned an empty image.'); const objectUrl = URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = objectUrl; anchor.download = `appforge-qr.${format}`; document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(objectUrl) } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not download the QR code.') } finally { setBusy(false) } }
+  const copyPayload = async () => { if (!payload) return; setError(''); try { await navigator.clipboard.writeText(payload); setCopied(true); window.setTimeout(() => setCopied(false), 1200) } catch { setError('Clipboard access was blocked by the browser.') } }
+  const changeMode = (next: Mode) => { setMode(next); setError(''); setCopied(false) }
+  const preset = (next: string) => { setMode('text'); setValue(next); setError('') }
+  const density = payload.length < 100 ? 'Light' : payload.length < 500 ? 'Medium' : payload.length < 1200 ? 'Dense' : 'Very dense'
 
-  const download = async () => {
-    if (!url || busy) return
-    setBusy(true)
-    setError('')
-    try {
-      const response = await fetch(url)
-      if (!response.ok) throw new Error(`QR provider returned HTTP ${response.status}.`)
-      const blob = await response.blob()
-      if (!blob.size) throw new Error('QR provider returned an empty image.')
-      const objectUrl = URL.createObjectURL(blob)
-      const anchor = document.createElement('a')
-      anchor.href = objectUrl
-      anchor.download = `appforge-qr.${format}`
-      document.body.appendChild(anchor)
-      anchor.click()
-      anchor.remove()
-      URL.revokeObjectURL(objectUrl)
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not download the QR code.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  const copyPayload = async () => {
-    if (!payload) return
-    setError('')
-    try {
-      await navigator.clipboard.writeText(payload)
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 1200)
-    } catch {
-      setError('Clipboard access was blocked by the browser.')
-    }
-  }
-
-  const changeMode = (next: Mode) => {
-    setMode(next)
-    setError('')
-    setCopied(false)
-  }
-
-  return (
-    <div className="w-full space-y-5 pb-10">
-      <AppHeading />
-
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
-        <Card className="p-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center"><Tabs className="min-w-0 flex-1" tabs={[{ id: 'text', label: 'Text / URL' }, { id: 'wifi', label: 'Wi-Fi' }]} active={mode} onChange={(id) => changeMode(id as Mode)} ariaLabel="QR content type" /><div className="flex flex-wrap gap-2 sm:ml-auto"><Button variant="secondary" onClick={() => { setNonce((current) => current + 1); setError('') }} disabled={!url || busy}><RefreshCw className="h-4 w-4" /> Refresh</Button><Button onClick={() => void download()} disabled={!url || busy}><Download className="h-4 w-4" /> {busy ? 'Downloading…' : 'Download'}</Button></div></div>
-
-          {mode === 'text' ? <div className="mt-5"><Textarea label="Content" value={value} onChange={(event) => { setValue(event.target.value); setError('') }} rows={6} placeholder="URL or text" /></div> : <div className="mt-5 grid gap-4 sm:grid-cols-2"><Input label="Network name" value={ssid} onChange={(event) => { setSsid(event.target.value); setError('') }} /><Input label="Password" type="password" value={password} onChange={(event) => { setPassword(event.target.value); setError('') }} disabled={security === 'nopass'} /><Select label="Security" value={security} onChange={(event) => { setSecurity(event.target.value as typeof security); setError('') }}><option value="WPA">WPA / WPA2</option><option value="WEP">WEP</option><option value="nopass">Open network</option></Select><div className="flex min-h-10 items-end pb-2"><Checkbox checked={hidden} onChange={setHidden} label="Hidden network" /></div></div>}
-
-          <div className="mt-5 grid gap-4 sm:grid-cols-3"><Select label="Size" value={size} onChange={(event) => setSize(Number(event.target.value))}>{[192,256,320,512,768].map((option) => <option key={option} value={option}>{option}px</option>)}</Select><Select label="Margin" value={margin} onChange={(event) => setMargin(Number(event.target.value))}>{[0,1,2,4,8].map((option) => <option key={option} value={option}>{option}</option>)}</Select><Select label="Format" value={format} onChange={(event) => setFormat(event.target.value as Format)}><option value="png">PNG</option><option value="svg">SVG</option></Select></div>
-
-          <div className="mt-5 flex flex-wrap items-center gap-2"><Button variant="secondary" onClick={() => void copyPayload()} disabled={!payload}><Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy encoded value'}</Button>{url && <a href={url} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border/70 bg-background px-3 py-2 text-sm font-medium transition-[background-color,box-shadow] hover:bg-accent"><ExternalLink className="h-4 w-4" /> Open image</a>}</div>
-          {error && <div role="alert" className="mt-4 flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />{error}</div>}
-        </Card>
-
-        <Card className="flex min-h-[420px] items-center justify-center p-5">
-          {url ? <div className="w-full text-center"><div className="mx-auto flex aspect-square w-full max-w-[360px] items-center justify-center rounded-xl bg-white p-4"><img src={url} alt="Generated QR code" className="h-full w-full object-contain" onError={() => setError('The QR preview provider is unavailable. Your content is still editable.')} /></div><p className="mt-3 text-xs text-muted-foreground">Generated by api.qrserver.com. QR content is sent to that provider.</p></div> : <div className="text-center text-sm text-muted-foreground"><QrCode className="mx-auto h-12 w-12 opacity-40" /><p className="mt-3">Add content to generate a code.</p></div>}
-        </Card>
-      </div>
-    </div>
-  )
+  return <div className="w-full space-y-5 pb-10"><AppHeading /><div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]"><Card className="p-5"><div className="flex flex-col gap-3 sm:flex-row sm:items-center"><Tabs className="min-w-0 flex-1" tabs={[{ id: 'text', label: 'Text / URL' }, { id: 'wifi', label: 'Wi-Fi' }]} active={mode} onChange={(id) => changeMode(id as Mode)} ariaLabel="QR content type" /><div className="flex flex-wrap gap-2 sm:ml-auto"><Button variant="secondary" onClick={() => { setNonce((current) => current + 1); setError('') }} disabled={!url || busy}><RefreshCw className="h-4 w-4" /> Refresh</Button><Button onClick={() => void download()} disabled={!url || busy}><Download className="h-4 w-4" /> {busy ? 'Downloading…' : 'Download'}</Button></div></div>
+  {mode === 'text' ? <div className="mt-5"><div className="mb-3 flex flex-wrap gap-2"><Button variant="secondary" size="sm" onClick={() => preset('https://')}><ExternalLink className="h-4 w-4" /> URL</Button><Button variant="secondary" size="sm" onClick={() => preset('mailto:hello@example.com')}><Mail className="h-4 w-4" /> Email</Button><Button variant="secondary" size="sm" onClick={() => preset('tel:+381')}><Phone className="h-4 w-4" /> Phone</Button><Button variant="secondary" size="sm" onClick={() => { setMode('wifi'); setError('') }}><Wifi className="h-4 w-4" /> Wi-Fi</Button></div><Textarea label="Content" value={value} onChange={(event) => { setValue(event.target.value); setError('') }} rows={6} placeholder="URL or text" /><div className="mt-2 flex justify-between text-xs text-muted-foreground"><span>{payload.length.toLocaleString()} characters</span><span>{density} payload</span></div></div> : <div className="mt-5 grid gap-4 sm:grid-cols-2"><Input label="Network name" value={ssid} onChange={(event) => { setSsid(event.target.value); setError('') }} /><Input label="Password" type="password" value={password} onChange={(event) => { setPassword(event.target.value); setError('') }} disabled={security === 'nopass'} /><Select label="Security" value={security} onChange={(event) => { setSecurity(event.target.value as typeof security); setError('') }}><option value="WPA">WPA / WPA2</option><option value="WEP">WEP</option><option value="nopass">Open network</option></Select><div className="flex min-h-10 items-end pb-2"><Checkbox checked={hidden} onChange={setHidden} label="Hidden network" /></div></div>}
+  <div className="mt-5 grid gap-4 sm:grid-cols-4"><Select label="Size" value={size} onChange={(event) => setSize(Number(event.target.value))}>{[192,256,320,512,768].map((option) => <option key={option} value={option}>{option}px</option>)}</Select><Select label="Margin" value={margin} onChange={(event) => setMargin(Number(event.target.value))}>{[0,1,2,4,8].map((option) => <option key={option} value={option}>{option}</option>)}</Select><Select label="Error correction" value={ecc} onChange={(event) => setEcc(event.target.value as Ecc)}><option value="L">L · 7%</option><option value="M">M · 15%</option><option value="Q">Q · 25%</option><option value="H">H · 30%</option></Select><Select label="Format" value={format} onChange={(event) => setFormat(event.target.value as Format)}><option value="png">PNG</option><option value="svg">SVG</option></Select></div>
+  <div className="mt-5 flex flex-wrap items-center gap-2"><Button variant="secondary" onClick={() => void copyPayload()} disabled={!payload}><Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy encoded value'}</Button>{url && <a href={url} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border/70 bg-background px-3 py-2 text-sm font-medium hover:bg-accent"><ExternalLink className="h-4 w-4" /> Open image</a>}</div>{payload.length > 1200 && <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">Large QR payloads become harder to scan. Consider shortening the content or increasing size/error correction.</div>}{error && <div role="alert" className="mt-4 flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />{error}</div>}</Card>
+  <Card className="flex min-h-[420px] items-center justify-center p-5">{url ? <div className="w-full text-center"><div className="mx-auto flex aspect-square w-full max-w-[360px] items-center justify-center rounded-xl bg-white p-4"><img src={url} alt="Generated QR code" className="h-full w-full object-contain" onError={() => setError('The QR preview provider is unavailable. Your content is still editable.')} /></div><p className="mt-3 text-xs text-muted-foreground">{size}px · ECC {ecc} · {format.toUpperCase()} · generated by api.qrserver.com. QR content is sent to that provider.</p></div> : <div className="text-center text-sm text-muted-foreground"><QrCode className="mx-auto h-12 w-12 opacity-40" /><p className="mt-3">Add content to generate a code.</p></div>}</Card></div></div>
 }
