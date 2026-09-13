@@ -87,6 +87,10 @@ def landing_about(s):
     return s
 edit('src/auth/LoginPage.tsx', landing_about)
 
+# Normalize newly introduced UI to the project's canonical radius/shadow tokens.
+edit('src/auth/LoginPage.tsx', lambda s: s.replace('rounded-2xl', 'rounded-xl').replace('shadow-2xl', 'shadow-xl'))
+edit('src/components/layout/Sidebar.tsx', lambda s: s.replace('rounded-lg', 'rounded-xl'))
+
 # Keep documentation content aligned with the new navigation/settings model.
 for path in ['README.md', 'docs/README.md']:
     p = Path(path)
