@@ -28,8 +28,9 @@ export interface CategoryDefinition {
   apps: AppDefinition[]
 }
 
-export const PRIVATE_APP_IDS = new Set(['scrapper-pro', 'media-vault', 'desktop-buddy', 'ai-dragon-arena'])
-export const isPublicApp = (app: Pick<AppDefinition, 'id'>) => !PRIVATE_APP_IDS.has(app.id)
+export const canonicalAppId = (id: string) => id === 'scrapper-pro' ? 'getter-pro' : id
+export const PRIVATE_APP_IDS = new Set(['getter-pro', 'media-vault', 'desktop-buddy', 'ai-dragon-arena'])
+export const isPublicApp = (app: Pick<AppDefinition, 'id'>) => !PRIVATE_APP_IDS.has(canonicalAppId(app.id))
 
 export const CATEGORIES: CategoryDefinition[] = [
   { id: 'converters', name: 'Converters', description: 'Convert files and structured data.', icon: 'ArrowLeftRight', apps: [] },
@@ -51,7 +52,7 @@ type AppSeed = Omit<AppDefinition, 'tags'> & { tags?: string[] }
 const app = (seed: AppSeed): AppDefinition => ({ ...seed, tags: seed.tags || [] })
 
 const APPS: AppDefinition[] = [
-  app({ id: 'scrapper-pro', name: 'Getter Pro', description: 'Search public media and archive signed-in results.', category: 'utilities', icon: 'Search', route: '/apps/getter-pro', tags: ['search', 'media', 'vault'], status: 'beta', version: '1.5.0' }),
+  app({ id: 'getter-pro', name: 'Getter Pro', description: 'Search public media and archive signed-in results.', category: 'utilities', icon: 'Search', route: '/apps/getter-pro', tags: ['search', 'media', 'vault'], status: 'beta', version: '1.5.0' }),
   app({ id: 'image-labeler', name: 'Image Labeler', description: 'Label local image sets and export metadata.', category: 'image', icon: 'Image', route: '/apps/image-labeler', tags: ['labeling', 'dataset'], status: 'beta', version: '1.1.0' }),
   app({ id: 'image-resizer', name: 'Image Resizer', description: 'Resize images locally.', category: 'image', icon: 'Image', route: '/apps/image-resizer', tags: ['image', 'resize'], status: 'beta', version: '0.2.0' }),
   app({ id: 'image-converter', name: 'Image Converter', description: 'Convert images to common browser formats.', category: 'image', icon: 'Image', route: '/apps/image-converter', tags: ['image', 'convert'], status: 'beta', version: '0.2.0' }),
@@ -90,7 +91,7 @@ const APPS: AppDefinition[] = [
 const APP_MAP = new Map(APPS.map((item) => [item.id, item]))
 const CORE_APPS = APPS.map((item) => ({ ...item, tags: [...item.tags] }))
 
-export function getApp(id: string): AppDefinition | undefined { const item = APP_MAP.get(id); return item?.visible === false ? undefined : item }
+export function getApp(id: string): AppDefinition | undefined { const item = APP_MAP.get(canonicalAppId(id)); return item?.visible === false ? undefined : item }
 export function getAppsByCategory(categoryId: string): AppDefinition[] { return APPS.filter((item) => item.visible !== false && item.category === categoryId) }
 export function searchApps(query: string): AppDefinition[] {
   const normalized = query.toLowerCase().trim()
@@ -103,29 +104,35 @@ export function getPublicApps(): AppDefinition[] { return APPS.filter((item) => 
 export function getAllCategories(): CategoryDefinition[] { return CATEGORIES }
 
 export function updateApp(next: AppDefinition): void {
-  const index = APPS.findIndex((item) => item.id === next.id)
-  if (index < 0) throw new Error(`App not found: ${next.id}`)
-  APPS[index] = next
-  APP_MAP.set(next.id, next)
+  const id = canonicalAppId(next.id)
+  const normalized = id === next.id ? next : { ...next, id }
+  const index = APPS.findIndex((item) => item.id === id)
+  if (index < 0) throw new Error(`App not found: ${id}`)
+  APPS[index] = normalized
+  APP_MAP.set(id, normalized)
 }
 
 export function deleteApp(id: string): void {
-  const index = APPS.findIndex((item) => item.id === id)
+  const normalizedId = canonicalAppId(id)
+  const index = APPS.findIndex((item) => item.id === normalizedId)
   if (index < 0) return
   APPS.splice(index, 1)
-  APP_MAP.delete(id)
+  APP_MAP.delete(normalizedId)
 }
 
 export function addApp(next: AppDefinition): void {
-  if (APP_MAP.has(next.id)) throw new Error(`App already exists: ${next.id}`)
-  APPS.push(next)
-  APP_MAP.set(next.id, next)
+  const id = canonicalAppId(next.id)
+  const normalized = id === next.id ? next : { ...next, id }
+  if (APP_MAP.has(id)) throw new Error(`App already exists: ${id}`)
+  APPS.push(normalized)
+  APP_MAP.set(id, normalized)
 }
 
 export type AppOverride = { app_id: string; name?: string | null; description?: string | null; category?: string | null; status?: AppStatus | null; cover_image?: string | null; tags?: unknown; visible?: boolean | null }
 export function applyAppOverrides(overrides: AppOverride[]): void {
+  const normalizedOverrides = overrides.map((item) => ({ ...item, app_id: canonicalAppId(item.app_id) }))
   APPS.splice(0, APPS.length, ...CORE_APPS.map((base) => {
-    const override = overrides.find((item) => item.app_id === base.id)
+    const override = normalizedOverrides.find((item) => item.app_id === base.id)
     if (!override) return { ...base, tags: [...base.tags] }
     return {
       ...base,
