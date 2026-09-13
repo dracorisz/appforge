@@ -94,12 +94,13 @@ for (const app of apps) {
   }
 }
 
-const getter = apps.find((item) => item.id === 'scrapper-pro')
-if (!getter) errors.push('Getter Pro compatibility registry entry is missing (expected stable id scrapper-pro)')
+const getter = apps.find((item) => item.id === 'getter-pro')
+if (!getter) errors.push('Getter Pro canonical registry entry is missing (expected id getter-pro)')
 else {
-  if (getter.name !== 'Getter Pro') errors.push(`scrapper-pro: product-facing name must be Getter Pro (found ${getter.name})`)
-  if (getter.route !== '/apps/getter-pro') errors.push(`scrapper-pro: canonical route must be /apps/getter-pro (found ${getter.route})`)
+  if (getter.name !== 'Getter Pro') errors.push(`getter-pro: product-facing name must be Getter Pro (found ${getter.name})`)
+  if (getter.route !== '/apps/getter-pro') errors.push(`getter-pro: canonical route must be /apps/getter-pro (found ${getter.route})`)
 }
+if (apps.some((item) => item.id === 'scrapper-pro')) errors.push('scrapper-pro must remain a compatibility route only, not a canonical registry id')
 
 const storyStudio = apps.find((item) => item.id === 'ai-dragon-arena')
 if (!storyStudio) errors.push('Story Studio registry entry is missing (expected stable id ai-dragon-arena)')
