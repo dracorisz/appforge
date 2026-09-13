@@ -24,6 +24,13 @@ export type FrontendContentDraft = Omit<FrontendContentRecord, 'id' | 'created_a
 
 const CONTENT_COLUMNS = 'id,content_type,slug,title,summary,body,image_url,video_url,app_route,published,sort_order,metadata,created_by,created_at,updated_at'
 const CONTENT_MEDIA_BUCKET = 'frontend-content'
+export const FRONTEND_CONTENT_UPDATED_EVENT = 'appforge:frontend-content-updated'
+
+const notifyFrontendContentUpdated = () => {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new Event(FRONTEND_CONTENT_UPDATED_EVENT))
+  try { localStorage.setItem('appforge-frontend-content-updated-at', String(Date.now())) } catch { /* cross-tab refresh is best effort */ }
+}
 
 export async function loadPublishedFrontendContent(contentType?: FrontendContentType) {
   let query = supabase.from('frontend_content').select(CONTENT_COLUMNS).eq('published', true).order('sort_order', { ascending: true }).order('updated_at', { ascending: false })
@@ -42,18 +49,21 @@ export async function loadAllFrontendContent() {
 export async function createFrontendContent(draft: FrontendContentDraft, userId: string) {
   const { data, error } = await supabase.from('frontend_content').insert({ ...draft, created_by: userId }).select(CONTENT_COLUMNS).single()
   if (error) throw error
+  notifyFrontendContentUpdated()
   return data as FrontendContentRecord
 }
 
 export async function updateFrontendContent(id: string, patch: Partial<FrontendContentDraft>) {
   const { data, error } = await supabase.from('frontend_content').update(patch).eq('id', id).select(CONTENT_COLUMNS).single()
   if (error) throw error
+  notifyFrontendContentUpdated()
   return data as FrontendContentRecord
 }
 
 export async function deleteFrontendContent(id: string) {
   const { error } = await supabase.from('frontend_content').delete().eq('id', id)
   if (error) throw error
+  notifyFrontendContentUpdated()
 }
 
 const safeFileName = (name: string) => name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'media'
