@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Navigate, useLocation } from 'react-router-dom'
 import App from './App'
 import { AuthProvider } from './auth/AuthProvider'
-import { AdminDocsManager } from './components/admin/AdminDocsManager'
 import { PwaLifecycle } from './components/pwa/PwaLifecycle'
 import { ChangelogPage } from './components/public/ChangelogPage'
 import { CookieNotice } from './components/public/CookieNotice'
@@ -13,7 +12,6 @@ import { ToastViewport } from './components/ui/ToastViewport'
 import { updateSeo } from './lib/seo'
 import './index.css'
 import './media.css'
-import './unified.css'
 
 type ThemeMode = 'light' | 'dark' | 'system'
 
@@ -58,7 +56,6 @@ function RootApp() {
 
   if (docsHost) return <DocsPage slug={docsSlugFromPath(location.pathname)} />
   if (location.pathname === '/docs' || location.pathname.startsWith('/docs/')) return <DocsPage slug={docsSlugFromPath(location.pathname, '/docs')} />
-  if (location.pathname === '/admin/docs') return <AdminDocsManager />
   if (location.pathname === '/blog') return <PublicBlogPage />
   if (location.pathname === '/changelog') return <ChangelogPage />
   if (location.pathname === '/admin/content') return <Navigate to="/settings/admin" replace />
