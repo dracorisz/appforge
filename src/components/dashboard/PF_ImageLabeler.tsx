@@ -294,7 +294,7 @@ export function PF_ImageLabeler() {
           <div className="min-w-0">
             <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Current selection</p>
             <p className="mt-2 truncate text-sm font-medium text-foreground">{folderName}</p>
-            <p className="mt-2 text-sm text-muted-foreground">Images stay in your browser. Folder identity is included in local label keys so similarly named files from different datasets do not overwrite each other.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Images stay in your browser. Folder identity is included in local label keys so similarly named files from different datasets do not overwrite each other.</p>
           </div>
           <div className="grid grid-cols-2 gap-2 min-w-[18rem] lg:grid-cols-2">
             <Button onClick={loadFolder}>
@@ -432,7 +432,7 @@ export function PF_ImageLabeler() {
                   Approve & next
                 </Button>
               </div>
-              <p className="mt-2 text-sm text-muted-foreground">Keyboard: ← / → navigate · A approves and advances.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Keyboard: ← / → navigate · A approves and advances.</p>
             </Card>
 
             <Card>

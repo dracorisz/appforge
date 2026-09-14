@@ -27,15 +27,15 @@
     --info-foreground: 0 0% 98%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
+    --ring: 240 5.9% 90%;
     --overlay: 240 10% 3.9%;
     --inverse: 0 0% 100%;
     --radius: 0.35rem;
     --control-height: 2.25rem;
     --pill-height: 1.75rem;
     --control-line-height: 1.25rem;
-    --border-opacity: 0.99;
-    --surface-border-opacity: 0.88;
+    --border-opacity: 0.95;
+    --surface-border-opacity: 0.95;
     --shadow-xl: 0 18px 45px hsl(var(--glass-shadow) / 0.18);
     --glass-bg: 0 0% 100%;
     --glass-highlight: 0 0% 100%;
@@ -65,7 +65,9 @@
     --warning-foreground: 26 83% 14%;
     --info: 213 94% 68%;
     --info-foreground: 224 71% 4%;
-    --border: 240 3.7% 15.9%;
+    --border: 200 5% 20%;
+    --border-opacity: 0.35;
+    --surface-border-opacity: 0.75;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
     --overlay: 0 0% 0%;
@@ -210,18 +212,21 @@
 
   .surface-card:hover,
   .surface-panel:hover {
-    border-color: hsl(var(--foreground) / 0.16);
+    border-color: hsl(var(--foreground) / 0.35);
   }
 
   .surface-card:focus-within,
   .surface-panel:focus-within,
   .surface-popover:focus-within {
-    border-color: hsl(var(--ring) / 0.3);
+    border-color: hsl(var(--ring) / 0.5);
   }
 
   .app-unified-shell .app-page-header,
   .app-unified-shell .surface-card {
-    transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      background-color 180ms ease;
   }
 
   .app-unified-shell .app-content .app-heading {
@@ -268,7 +273,9 @@
   }
 
   .preview-card img {
-    transition: filter 220ms ease, opacity 220ms ease;
+    transition:
+      filter 220ms ease,
+      opacity 220ms ease;
   }
 
   .preview-card,

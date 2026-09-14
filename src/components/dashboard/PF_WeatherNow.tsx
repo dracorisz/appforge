@@ -60,7 +60,7 @@ const readSidebarLocation = () => {
 
 function Metric({ icon: Icon, label, value, className = "" }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string; className?: string }) {
   return (
-    <div className={`group min-w-0 rounded-xl border border-border/70 bg-background/45 p-4 backdrop-blur-sm transition-colors hover:border-foreground/15 hover:bg-accent/35 ${className}`}>
+    <div className={`group min-w-0 rounded-xl border border-border bg-background/45 p-4 backdrop-blur-sm transition-colors hover:border-foreground/15 hover:bg-accent/35 ${className}`}>
       <div className="flex items-center gap-2 text-muted-foreground">
         <Icon className="h-4 w-4 shrink-0" />
         <span className="text-xs font-semibold uppercase tracking-[0.12em]">{label}</span> {/* design-xs-ok: compact metric label */}
@@ -278,7 +278,7 @@ export function PF_WeatherNow() {
       <AppHeading />
 
       <Card className="p-4 sm:p-4">
-        <div className="rounded-xl border border-border/70 bg-background/35 p-4 sm:p-4">
+        <div className="rounded-xl border border-border bg-background/35 p-4 sm:p-4">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
             <div>
               <label className="mb-2 block text-sm font-medium text-foreground">City or postal code</label>
@@ -324,7 +324,7 @@ export function PF_WeatherNow() {
           </div>
         </div>
 
-        <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_auto_auto_auto] md:items-center">
+        <div className="my-2 grid gap-4 md:grid-cols-[minmax(0,1fr)_auto_auto_auto] md:items-center">
           <label className="flex min-w-0 flex-col items-start gap-2 text-sm text-muted-foreground md:flex-row md:items-center">
             <span className="shrink-0 font-medium text-foreground">Sidebar weather city</span>
             <Select value={sidebarLocation} onChange={(event) => chooseSidebarCity(event.target.value)} className="w-full flex-1 rounded-xl border border-input bg-background px-2 py-2 text-sm text-foreground">
@@ -361,7 +361,7 @@ export function PF_WeatherNow() {
             </Button>
           </div>
         </div>
-        <div className="-mt-2 flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="secondary" size="sm" onClick={() => void refreshAll()} disabled={!cities.length || loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh all
           </Button>
@@ -425,8 +425,8 @@ export function PF_WeatherNow() {
                         <h3 className="truncate font-semibold text-foreground">{weather.location}</h3>
                         {sidebarLocation === weather.location && <Star className="h-4 w-4 fill-current text-warning" />}
                       </div>
-                      {weather.local_time && <p className="mt-2 text-sm text-muted-foreground">Local: {weather.local_time.replace("T", " ")}</p>}
-                      <p className="mt-2 text-sm text-muted-foreground">{freshnessLabel(weather)}</p>
+                      {weather.local_time && <p className="mt-1 text-sm text-muted-foreground">Local: {weather.local_time.replace("T", " ")}</p>}
+                      <p className="mt-1 text-sm text-muted-foreground">{freshnessLabel(weather)}</p>
                     </div>
                     <div className="flex shrink-0 gap-2">
                       <Button variant="ghost" size="sm" onClick={() => chooseSidebarCity(weather.location)} title="Show in sidebar">

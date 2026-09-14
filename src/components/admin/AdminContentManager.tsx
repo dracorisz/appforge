@@ -134,10 +134,7 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
     }
   };
 
-  const landingTeaser = React.useMemo(
-    () => items.find((item) => item.content_type === "video_teaser" && item.slug === LANDING_SLUG) || items.find((item) => item.content_type === "video_teaser" && item.published),
-    [items],
-  );
+  const landingTeaser = React.useMemo(() => items.find((item) => item.content_type === "video_teaser" && item.slug === LANDING_SLUG) || items.find((item) => item.content_type === "video_teaser" && item.published), [items]);
 
   React.useEffect(() => {
     if (!contentType) return;
@@ -334,7 +331,7 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
     );
   if (!user)
     return (
-      <div className="rounded-xl border border-border/70 p-4 text-center">
+      <div className="rounded-xl border border-border p-4 text-center">
         <ShieldCheck className="mx-auto h-9 w-9" />
         <h2 className="mt-4 text-lg font-semibold">Admin sign-in required</h2>
         <Link to="/login" className="mt-4 inline-flex text-sm underline">
@@ -344,14 +341,14 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
     );
   if (!isAdmin)
     return (
-      <div className="rounded-xl border border-border/70 p-4 text-center">
+      <div className="rounded-xl border border-border p-4 text-center">
         <ShieldCheck className="mx-auto h-9 w-9" />
         <h2 className="mt-4 text-lg font-semibold">Admin only</h2>
       </div>
     );
   if (!aal2)
     return (
-      <div className="rounded-xl border border-border/70 p-4">
+      <div className="rounded-xl border border-border p-4">
         <KeyRound className="h-7 w-7" />
         <h2 className="mt-4 text-lg font-semibold">Verify TOTP</h2>
         {factorId ? (
@@ -362,7 +359,7 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
             </Button>
           </form>
         ) : (
-          <p className="mt-2 text-sm text-muted-foreground">Enroll TOTP in Settings → Security first.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Enroll TOTP in Settings → Security first.</p>
         )}
       </div>
     );
@@ -372,7 +369,7 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-sm font-semibold">{filterType === "blog_article" ? "Blog content" : "Landing content"}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{filterType === "blog_article" ? "Draft and publish public blog articles." : "Manage the public landing page walkthrough and presentation."}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{filterType === "blog_article" ? "Draft and publish public blog articles." : "Manage the public landing page walkthrough and presentation."}</p>
         </div>
         <div className="inline-flex items-center gap-2 text-sm text-success dark:text-success">
           <CheckCircle2 className="h-4 w-4" /> Admin · TOTP
@@ -400,18 +397,18 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
       {error && <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-2 text-sm text-destructive">{error}</div>}
 
       {filterType === "video_teaser" && (
-        <section className="rounded-xl border border-border/70 p-4" aria-label="Landing page presentation">
+        <section className="rounded-xl border border-border p-4" aria-label="Landing page presentation">
           <h3 className="text-sm font-semibold">Landing page</h3>
           <label className="mt-4 flex items-center gap-4 text-sm">
             <Input type="checkbox" checked={landingTeaser?.metadata.show_active_app_count !== false} disabled={Boolean(busy)} onChange={(event) => void saveLandingCount(event.target.checked)} />
             Show active app count and open-source row
           </label>
-          <p className="mt-2 text-sm text-muted-foreground">Applies to the public landing and sign-in pages. Changes save immediately.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Applies to the public landing and sign-in pages. Changes save immediately.</p>
         </section>
       )}
       <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="rounded-xl border border-border/70 bg-background/40 p-4">
-          <Button onClick={newItem} className="flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-border/70 text-sm font-semibold hover:bg-accent">
+        <aside className="rounded-xl border border-border bg-background/40 p-4">
+          <Button onClick={newItem} className="flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-border text-sm font-semibold hover:bg-accent">
             <Plus className="h-4 w-4" /> {filterType === "video_teaser" && landingTeaser ? "Open walkthrough" : "New"}
           </Button>
           <div className="mt-4 space-y-2">
@@ -425,9 +422,9 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
           </div>
         </aside>
 
-        <section className="rounded-xl border border-border/70 bg-background/40 p-4 sm:p-4">
+        <section className="rounded-xl border border-border bg-background/40 p-4 sm:p-4">
           {draft.content_type === "blog_article" && (
-            <div className="mb-4 rounded-xl border border-border/70 p-4">
+            <div className="mb-4 rounded-xl border border-border p-4">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <Sparkles className="h-4 w-4" /> Vertex writing
               </div>

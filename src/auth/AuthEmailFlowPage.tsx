@@ -162,15 +162,15 @@ export function AuthEmailFlowPage({ mode }: { mode: Mode }) {
       <main className="mx-auto flex w-full max-w-xl flex-1 items-center px-4 py-8">
         <Card className="w-full p-8 shadow-xl">
           <div className="flex items-start gap-4">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-border/70 bg-accent/50">{mode === "confirm" ? <MailCheck className="h-4 w-4" /> : <KeyRound className="h-4 w-4" />}</div>
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-border bg-accent/50">{mode === "confirm" ? <MailCheck className="h-4 w-4" /> : <KeyRound className="h-4 w-4" />}</div>
             <div>
               <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
-              <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{description}</p>
             </div>
           </div>
 
           {state === "loading" && mode !== "forgot" && (
-            <div className="mt-4 flex items-center gap-2 rounded-xl border border-border/70 p-4 text-sm text-muted-foreground">
+            <div className="mt-4 flex items-center gap-2 rounded-xl border border-border p-4 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" /> Verifying secure email session…
             </div>
           )}

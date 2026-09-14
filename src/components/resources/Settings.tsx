@@ -312,10 +312,10 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
 
   return (
     <div className="space-y-4 pb-8">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-foreground">Settings</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Profile, security, integrations, workspace and admin controls.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Profile, security, integrations, workspace and admin controls.</p>
         </div>
         <BuildBadge />
       </div>
@@ -332,7 +332,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
         <div className="columns-1 gap-4 md:columns-2 xl:columns-3 [&>*]:mb-3 [&>*]:break-inside-avoid">
           <Card className="p-4">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-muted">
                 {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : <UserRound className="h-6 w-6 text-muted-foreground" />}
               </div>
               <div className="min-w-0">
@@ -372,7 +372,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
           </Card>
           <Card className="p-4">
             <h2 className="text-sm font-semibold">Save profile</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Cards flow independently, so short sections no longer stretch to match tall ones.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Don't forget to save your changes!</p>
             <Button className="mt-4" onClick={() => void savePublicProfile()} disabled={busy === "profile"}>
               {busy === "profile" ? <Loader2 className="animate-spin" /> : <Check />} Save profile
             </Button>
@@ -415,12 +415,12 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
             )}
           </Card>
           <Card className="p-4">
-            <div className="flex items-start gap-2">
-              <LockKeyhole className="mt-2 h-4 w-4 text-muted-foreground" />
-              <div>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <LockKeyhole className="h-4 w-4 text-muted-foreground" />
                 <h2 className="text-sm font-semibold">Private information</h2>
-                <p className="mt-2 text-sm text-muted-foreground">Owner-only profile details. Never shown in People.</p>
               </div>
+              <p className="text-sm text-muted-foreground">Owner-only profile details. Never shown in People.</p>
             </div>
             {privateInfo && (
               <div className="mt-4 grid gap-2">
@@ -451,10 +451,10 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
       {activeTab === "security" && (
         <div className="grid items-start gap-4 lg:grid-cols-2">
           <Card className="p-4">
-            <div className="flex flex-col items-start gap-2">
+            <div className="flex flex-col items-start gap-1">
               <div className="flex items-center gap-2">
                 <KeyRound className="h-4 w-4 text-muted-foreground" />
-                <h1 className="text-lg font-semibold">Email login password</h1>
+                <p className="text-sm font-semibold">Email login password</p>
               </div>
               <p className="text-sm text-muted-foreground">Minimum 8 characters with lowercase, uppercase, a digit and a symbol.</p>
             </div>
@@ -467,16 +467,16 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
             </div>
           </Card>
           <Card className="p-4">
-            <div className="flex flex-col items-start gap-2">
+            <div className="flex flex-col items-start gap-1">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                <h1 className="text-lg font-semibold">Two-factor authentication</h1>
+                <p className="text-sm font-semibold">Two-factor authentication</p>
               </div>
               <p className="text-sm text-muted-foreground">Session assurance: {currentLevel || "unknown"}.</p>
             </div>
             <div className="mt-4 space-y-2">
               {verifiedTotp.map((factor) => (
-                <div key={factor.id} className="flex items-center justify-between rounded-xl border border-border/70 p-2 text-sm">
+                <div key={factor.id} className="flex items-center justify-between rounded-xl border border-border p-2 text-sm">
                   <span>{factor.friendly_name || "Authenticator"} · verified</span>
                   <Button variant="ghost" onClick={() => void removeFactor(factor.id)} disabled={busy === "factor"}>
                     <Trash2 />
@@ -489,7 +489,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
                 </Button>
               )}
               {enrollment && (
-                <div className="rounded-xl border border-border/70 p-2">
+                <div className="rounded-xl border border-border p-2">
                   <img src={enrollment.qr} alt="TOTP QR code" className="mx-auto h-36 w-36 rounded-xl bg-inverse p-2" />
                   <div className="mt-2 break-all text-sm text-muted-foreground">{enrollment.secret}</div>
                   <div className="mt-2 flex gap-2">
@@ -504,18 +504,18 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
           </Card>
           {role !== "admin" && (
             <Card className="p-4">
-              <h2 className="text-sm font-semibold">Admin bootstrap</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Available only for the first/sole account when no admin exists.</p>
+              <p className="text-sm font-semibold">Admin bootstrap</p>
+              <p className="mt-1 text-sm text-muted-foreground">Available only for the first/sole account when no admin exists.</p>
               <Button className="mt-4" variant="secondary" onClick={() => void bootstrapAdmin()} disabled={busy === "bootstrap-admin"}>
                 Claim initial admin
               </Button>
             </Card>
           )}
-          <Card className="border-destructive/35 bg-destructive/5 p-4 lg:col-span-2">
-            <div className="flex flex-col items-start gap-2">
+          <Card className="border-destructive/35 bg-destructive/5 p-4">
+            <div className="flex flex-col items-start gap-1">
               <div className="flex items-center gap-2">
                 <Trash2 className="h-4 w-4 text-destructive" />
-                <h1 className="text-lg font-semibold text-destructive">Danger zone</h1>
+                <p className="text-lg font-semibold text-destructive">Danger zone</p>
               </div>
               <p className="text-sm text-muted-foreground">Permanently delete your Supabase Auth account and account-owned database records. This cannot be undone.</p>
             </div>
@@ -533,7 +533,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
         <div className="grid items-start gap-4 lg:grid-cols-2">
           <Card className="p-4">
             <h2 className="text-sm font-semibold">Hugging Face rotation</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Optional personal Inference Providers tokens. Story Studio rotates up to three before server-funded tokens. Tokens stay in this browser and are never written to your profile row.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Optional personal Inference Providers tokens. Story Studio rotates up to three before server-funded tokens. Tokens stay in this browser and are never written to your profile row.</p>
             <div className="mt-4 grid gap-2">
               {hfTokens.map((value, index) => (
                 <Input key={index} type="password" autoComplete="off" label={`Token ${index + 1}`} value={value} onChange={(event) => setHfTokens((current) => current.map((item, itemIndex) => (itemIndex === index ? event.target.value : item)))} placeholder="hf_…" />
@@ -547,7 +547,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
             <VertexBridgeStatus />
             <Card className="p-4">
               <h2 className="text-sm font-semibold">Provider model</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Story text uses the Hugging Face rotation with a continuity-safe local fallback. Vertex remains the secured cloud image bridge for AppForge features that use it. Gemini/OpenRouter browser-key fields are intentionally removed.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Story text uses the Hugging Face rotation with a continuity-safe local fallback. Vertex remains the secured cloud image bridge for AppForge features that use it. Gemini/OpenRouter browser-key fields are intentionally removed.</p>
             </Card>
           </div>
         </div>
@@ -557,14 +557,14 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
         <div className="grid items-start gap-4 lg:grid-cols-2">
           <Card className="p-4">
             <h2 className="text-sm font-semibold">Export workspace</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Download workspace state, category overrides and widget preferences as JSON.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Download workspace state, category overrides and widget preferences as JSON.</p>
             <Button className="mt-4" variant="secondary" onClick={exportWorkspace}>
               <Download className="h-4 w-4" /> Export
             </Button>
           </Card>
           <Card className="p-4">
             <h2 className="text-sm font-semibold">Import workspace</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Preview a backup before applying it. Maximum 5 MB.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Preview a backup before applying it. Maximum 5 MB.</p>
             <FileButton
               className="mt-4"
               accept="application/json,.json"
@@ -576,9 +576,9 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
             >
               <Upload className="h-4 w-4" /> Choose JSON
             </FileButton>
-            {importFileName && <div className="mt-2 text-sm text-muted-foreground">{importFileName}</div>}
+            {importFileName && <div className="mt-1 text-sm text-muted-foreground">{importFileName}</div>}
             {importPreview && (
-              <div className="mt-4 rounded-xl border border-border/70 p-2 text-sm">
+              <div className="mt-4 rounded-xl border border-border p-2 text-sm">
                 <div>Workspace backup is ready to apply.</div>
                 <Button className="mt-2" onClick={applyWorkspaceImport}>
                   Apply import

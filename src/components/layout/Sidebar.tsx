@@ -157,7 +157,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
           <div className="relative">
             <SearchInput value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onClear={() => setSearchQuery("")} placeholder="Search apps…" aria-label="Search apps" />
             {searchResults.length > 0 && (
-              <div className="surface-card mt-2 max-h-52 space-y-2 overflow-y-auto rounded-xl border p-2 shadow-xl">
+              <div className="surface-card mt-1 max-h-52 space-y-1 overflow-y-auto rounded-xl border p-2 shadow-xl">
                 {searchResults.slice(0, 8).map((app) => {
                   const Icon = iconMap[app.id === "ai-dragon-arena" ? "DragonArena" : app.icon] || Wrench;
                   return (
@@ -174,7 +174,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
       )}
       <nav className={`scrollbar-hide min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-2 ${isCollapsed ? "px-2" : "px-4"}`}>
         {!isCollapsed && <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">System</h3>} {/* design-xs-ok: compact navigation heading */}
-        <div className="space-y-2">
+        <div className="space-y-1">
           {coreItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -195,7 +195,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
                 </NavLink>
               </div>
             )}
-            <div className="space-y-2">
+            <div className="space-y-1">
               {sidebarCategories.map((category) => {
                 const Icon = iconMap[category.icon] || Wrench;
                 const path = `/category/${category.id}`;
@@ -208,7 +208,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
               })}
             </div>
             {sidebarApps.length > 0 && (
-              <div className={`${sidebarCategories.length > 0 ? "mt-2 " : ""}space-y-2`}>
+              <div className={`${sidebarCategories.length > 0 ? "mt-1 " : ""}space-y-1`}>
                 {sidebarApps.map((app) => {
                   const Icon = iconMap[app.id === "ai-dragon-arena" ? "DragonArena" : app.icon] || Wrench;
                   return (
@@ -232,7 +232,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
         {user && (
           <>
             {accountOpen && (
-              <div className={`absolute bottom-full z-[80] mb-2 rounded-xl border border-border/70 bg-background p-2 shadow-xl ${isCollapsed ? "left-2 w-56" : "left-4 right-4 w-auto"}`}>
+              <div className={`absolute bottom-full z-[80] mb-2 rounded-xl border border-border bg-background p-2 shadow-xl ${isCollapsed ? "left-2 w-56" : "left-4 right-4 w-auto"}`}>
                 <div className="px-2 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Appearance</div> {/* design-xs-ok: compact menu heading */}
                 <div className="grid grid-cols-3 gap-2 px-2 pb-2">
                   {(["light", "dark", "system"] as const).map((mode) => (
@@ -246,7 +246,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
                         document.documentElement.style.colorScheme = dark ? "dark" : "light";
                         setAccountOpen(false);
                       }}
-                      className="rounded-xl px-2 py-2 text-sm capitalize text-muted-foreground hover:bg-accent hover:text-foreground"
+                      className="rounded-xl px-2 text-xs !min-h-6 !max-h-6 !h-6 !py-0 capitalize text-muted-foreground hover:bg-accent hover:text-foreground"
                     >
                       {mode}
                     </Button>
@@ -265,7 +265,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
                 <a href="https://github.com/dracorisz/appforge/issues" target="_blank" rel="noreferrer" onClick={() => setAccountOpen(false)} className="flex items-center gap-2 rounded-xl px-2 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground">
                   <HeartHandshake className="h-4 w-4" /> Support
                 </a>
-                <Button onClick={() => void handleSignOut()} disabled={signingOut} className="flex w-full items-center justify-start gap-2 rounded-xl px-2 py-2 text-left text-sm text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-60">
+                <Button onClick={() => void handleSignOut()} disabled={signingOut} className="flex w-full items-center justify-start gap-2 rounded-xl px-2 py-2 text-left text-sm text-muted-foreground border !border-border/0 hover:bg-accent hover:text-foreground disabled:opacity-60">
                   <LogOut className="h-4 w-4" />
                   {signingOut ? "Signing out…" : "Sign out"}
                 </Button>
@@ -280,9 +280,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
               aria-expanded={accountOpen}
               aria-haspopup="menu"
             >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-accent text-sm font-semibold text-foreground">
-                {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : initial}
-              </div>
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-accent text-sm font-semibold text-foreground">{avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : initial}</div>
               <div className={`min-w-0 flex-1 ${isCollapsed ? "hidden group-hover/sidebar:block" : ""}`}>
                 <div className="truncate text-sm font-medium text-foreground">{String(displayName)}</div>
                 {user.email && <div className="truncate text-sm text-muted-foreground">{user.email}</div>}

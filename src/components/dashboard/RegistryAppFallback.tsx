@@ -13,7 +13,7 @@ export function RegistryAppFallback() {
       <Card className="mx-auto max-w-2xl p-4 text-center">
         <Construction className="mx-auto h-9 w-9 text-muted-foreground" />
         <h1 className="mt-4 text-lg font-semibold">App route not found</h1>
-        <p className="mt-2 text-sm text-muted-foreground">This route is not registered in the AppForge app registry.</p>
+        <p className="mt-1 text-sm text-muted-foreground">This route is not registered in the AppForge app registry.</p>
         <Link to="/apps" className="mt-4 inline-flex items-center gap-2 rounded-xl px-4 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
           <ArrowLeft className="h-4 w-4" /> Back to apps
         </Link>
@@ -30,7 +30,7 @@ export function RegistryAppFallback() {
           <Badge color="slate">{app.category.replace("-", " ")}</Badge>
         </div>
         <h1 className="mt-4 text-lg font-semibold">{app.name}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{app.description}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{app.description}</p>
         <div className="mt-4 rounded-xl border border-border/60 bg-background/45 p-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2 font-medium text-foreground">
             <Construction className="h-4 w-4" /> Unavailable app surface

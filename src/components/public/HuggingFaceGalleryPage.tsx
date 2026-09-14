@@ -189,10 +189,10 @@ export function HuggingFaceGalleryPage() {
           <h1 className="mt-2 text-lg font-semibold tracking-tight">Story Studio × Hugging Face</h1>
           <p className="mt-2 max-w-3xl text-sm text-muted-foreground">Story Studio uses Hugging Face for narrative generation and scene artwork. Generated scenes stay private by default; creators explicitly choose what appears here.</p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Link to="/" className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border/70 bg-background/65 px-4 py-2 text-sm font-medium text-foreground hover:bg-accent/55">
+            <Link to="/" className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-background/65 px-4 py-2 text-sm font-medium text-foreground hover:bg-accent/55">
               Open Story Studio <ArrowRight className="h-4 w-4" />
             </Link>
-            <a href="https://huggingface.co/" target="_blank" rel="noreferrer" className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border/70 bg-background/65 px-4 py-2 text-sm font-medium text-foreground hover:bg-accent/55">
+            <a href="https://huggingface.co/" target="_blank" rel="noreferrer" className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-background/65 px-4 py-2 text-sm font-medium text-foreground hover:bg-accent/55">
               <ExternalLink className="h-4 w-4" /> Hugging Face
             </a>
           </div>
@@ -202,13 +202,13 @@ export function HuggingFaceGalleryPage() {
           <div className="mb-2 flex items-end justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold tracking-tight">Public generated assets</h2>
-              <p className="mt-2 text-sm text-muted-foreground">One gallery for creator-selected Story Studio scenes and admin-managed images.</p>
+              <p className="mt-1 text-sm text-muted-foreground">One gallery for creator-selected Story Studio scenes and admin-managed images.</p>
             </div>
             <span className="text-sm text-muted-foreground">{assets.length} scenes</span>
           </div>
           {error && <Card className="mb-4 border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">Could not load the public gallery: {error}</Card>}
           {loading ? (
-            <Card className="flex items-center justify-center gap-2 border-border/70 bg-background/55 p-8 text-sm text-muted-foreground">
+            <Card className="flex items-center justify-center gap-2 border-border bg-background/55 p-8 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" /> Loading public Story Studio assets…
             </Card>
           ) : (
@@ -217,36 +217,36 @@ export function HuggingFaceGalleryPage() {
         </section>
 
         <section className="grid gap-4 lg:grid-cols-2">
-          <Card className="border-border/70 bg-background/55 p-4">
+          <Card className="border-border bg-background/55 p-4">
             <div className="flex items-center gap-2 text-sm font-semibold">
               <MessageSquareText className="h-4 w-4" /> Story-model rotation
             </div>
-            <p className="mt-2 text-sm text-muted-foreground">Shared requests rotate through available Hugging Face credentials and these text models until one succeeds.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Shared requests rotate through available Hugging Face credentials and these text models until one succeeds.</p>
             <div className="mt-4 space-y-2">
               {GAME_MASTER_MODELS.map((model, i) => (
-                <div key={model.id} className="rounded-xl border border-border/70 bg-overlay/20 p-4">
+                <div key={model.id} className="rounded-xl border border-border bg-overlay/20 p-4">
                   <div className="font-mono text-sm">
                     {i + 1}. {model.id}
                   </div>
                   <div className="mt-2 text-sm font-medium">{model.role}</div>
-                  <div className="mt-2 text-sm text-muted-foreground">{model.note}</div>
+                  <div className="mt-1 text-sm text-muted-foreground">{model.note}</div>
                 </div>
               ))}
             </div>
           </Card>
-          <Card className="border-border/70 bg-background/55 p-4">
+          <Card className="border-border bg-background/55 p-4">
             <div className="flex items-center gap-2 text-sm font-semibold">
               <ImageIcon className="h-4 w-4" /> Scene-model + provider rotation
             </div>
-            <p className="mt-2 text-sm text-muted-foreground">AppForge resolves each model’s current provider mapping and tries compatible providers within a bounded request.</p>
+            <p className="mt-1 text-sm text-muted-foreground">AppForge resolves each model’s current provider mapping and tries compatible providers within a bounded request.</p>
             <div className="mt-4 space-y-2">
               {IMAGE_MODELS.map((model, i) => (
-                <div key={model.id} className="rounded-xl border border-border/70 bg-overlay/20 p-4">
+                <div key={model.id} className="rounded-xl border border-border bg-overlay/20 p-4">
                   <div className="font-mono text-sm">
                     {i + 1}. {model.id}
                   </div>
                   <div className="mt-2 text-sm font-medium">{model.role}</div>
-                  <div className="mt-2 text-sm text-muted-foreground">{model.note}</div>
+                  <div className="mt-1 text-sm text-muted-foreground">{model.note}</div>
                 </div>
               ))}
             </div>

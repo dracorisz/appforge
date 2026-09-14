@@ -160,7 +160,7 @@ export function DNSChecker() {
                     setType(item.type);
                     void lookup(item.name, item.type);
                   }}
-                  className="rounded-xl border border-border/70 px-2 py-2 text-sm hover:bg-accent"
+                  className="rounded-xl border border-border px-2 py-2 text-sm hover:bg-accent"
                 >
                   {item.name} · {item.type}
                 </Button>
@@ -186,7 +186,7 @@ export function DNSChecker() {
               </Button>
             </div>
             <p className="mt-2 break-all font-mono text-sm">{resolvedName}</p>
-            <p className="mt-2 text-sm text-muted-foreground">Select a branch to inspect its answers. This maps one resolver’s records, not global propagation.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Select a branch to inspect its answers. This maps one resolver’s records, not global propagation.</p>
             <div className="mt-4 grid gap-2 border-l-2 border-border pl-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="DNS map branches">
               {results.map((result) => (
                 <Button
@@ -214,7 +214,7 @@ export function DNSChecker() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h2 className="text-sm font-semibold">{result.type}</h2>
-                    <p className="mt-2 text-sm text-muted-foreground">{result.message || (result.records.length ? `${result.records.length} answers · ${result.validated ? "DNSSEC validated" : "DNSSEC not validated"}` : "No records at this DNS name.")}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{result.message || (result.records.length ? `${result.records.length} answers · ${result.validated ? "DNSSEC validated" : "DNSSEC not validated"}` : "No records at this DNS name.")}</p>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => void copyValues(result)} disabled={!result.records.length}>
                     {copied === result.type ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} Values

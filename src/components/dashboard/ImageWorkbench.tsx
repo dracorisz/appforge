@@ -221,16 +221,16 @@ export function ImageWorkbench() {
                 event.currentTarget.value = "";
               }}
             />
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border/70 bg-background/50">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-background/50">
               <Upload className="h-5 w-5 text-muted-foreground" />
             </div>
             <h2 className="mt-4 text-sm font-semibold text-foreground">Drop an image here</h2>
-            <p className="mt-2 text-sm text-muted-foreground">or click to choose a local file · max 25 MB / 50 MP</p>
+            <p className="mt-1 text-sm text-muted-foreground">or click to choose a local file · max 25 MB / 50 MP</p>
           </label>
         ) : (
           <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
             <div>
-              <div className="overflow-hidden rounded-xl border border-border/70 bg-muted/35">
+              <div className="overflow-hidden rounded-xl border border-border bg-muted/35">
                 <img src={outputUrl || info.url} alt={info.file.name} className="max-h-[34rem] w-full object-contain" />
               </div>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
@@ -305,7 +305,7 @@ export function ImageWorkbench() {
                       ["Last modified", new Date(info.file.lastModified).toLocaleString()],
                       ["Transparency", info.file.type === "image/png" || info.file.type === "image/webp" ? "Possible" : "Unlikely"],
                     ].map(([label, value]) => (
-                      <div key={label} className="rounded-xl border border-border/70 bg-background/35 p-4">
+                      <div key={label} className="rounded-xl border border-border bg-background/35 p-4">
                         <div className="text-sm text-muted-foreground">{label}</div>
                         <div className="mt-2 break-words text-sm font-medium text-foreground">{value}</div>
                       </div>
@@ -317,7 +317,7 @@ export function ImageWorkbench() {
                 </>
               )}
               {outputBlob && (
-                <div className="rounded-xl border border-border/70 bg-background/35 p-4">
+                <div className="rounded-xl border border-border bg-background/35 p-4">
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <div className="text-sm text-muted-foreground">Processed result</div>

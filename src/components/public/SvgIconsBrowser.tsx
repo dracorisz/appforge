@@ -282,7 +282,7 @@ export default function SvgIconsBrowser() {
         </div>
       )}
 
-      <section className="mt-4 rounded-xl border border-border/70 bg-background/60 p-4 text-sm text-muted-foreground">
+      <section className="mt-4 rounded-xl border border-border bg-background/60 p-4 text-sm text-muted-foreground">
         <strong className="text-foreground">Licensing:</strong> react-icons aggregates upstream icon projects with different licenses. AppForge does not own those icon sets. Before redistributing a copied/exported SVG, review the source pack license and attribution requirements published by
         react-icons/upstream. Brand icons may also be subject to trademark rules.
       </section>

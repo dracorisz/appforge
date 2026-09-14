@@ -217,7 +217,7 @@ export function QrGenerator() {
               <Copy className="h-4 w-4" /> {copied ? "Copied" : "Copy encoded value"}
             </Button>
             {url && (
-              <a href={url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-border/70 bg-background px-4 py-2 text-sm font-medium hover:bg-accent">
+              <a href={url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-accent">
                 <ExternalLink className="h-4 w-4" /> Open image
               </a>
             )}

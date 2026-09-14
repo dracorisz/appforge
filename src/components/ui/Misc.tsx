@@ -12,7 +12,7 @@ export type TabItem = {
 
 export function Tabs({ tabs, active, onChange, ariaLabel = "Sections", className = "" }: { tabs: TabItem[]; active: string; onChange: (id: string) => void; ariaLabel?: string; className?: string }) {
   return (
-    <div className={`flex gap-2 overflow-x-auto rounded-xl border border-border/70 bg-card/70 p-2 ${className}`} role="tablist" aria-label={ariaLabel}>
+    <div className={`flex gap-2 overflow-x-auto rounded-xl border border-border bg-card/70 p-2 ${className}`} role="tablist" aria-label={ariaLabel}>
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const selected = active === tab.id;
@@ -37,7 +37,7 @@ export function Tabs({ tabs, active, onChange, ariaLabel = "Sections", className
 
 export function EmptyState({ title, description }: { title: string; description?: string }) {
   return (
-    <div className="flex min-h-32 flex-col items-center justify-center rounded-xl border border-dashed border-border/70 px-4 py-8 text-center">
+    <div className="flex min-h-32 flex-col items-center justify-center rounded-xl border border-dashed border-border px-4 py-8 text-center">
       <p className="text-lg font-semibold tracking-tight text-foreground">{title}</p>
       {description && <p className="mt-2 max-w-md text-sm text-muted-foreground">{description}</p>}
     </div>
@@ -46,7 +46,7 @@ export function EmptyState({ title, description }: { title: string; description?
 
 export function Toast({ message, onClose }: { message: string; onClose: () => void }) {
   return (
-    <div role="status" aria-live="polite" className="fixed bottom-4 right-4 z-50 flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-xl border border-border/70 bg-card px-4 py-2 text-sm text-foreground shadow-xl">
+    <div role="status" aria-live="polite" className="fixed bottom-4 right-4 z-50 flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm text-foreground shadow-xl">
       <span className="min-w-0 flex-1">{message}</span>
       <IconButton label="Dismiss notification" icon={<X />} onClick={onClose} />
     </div>

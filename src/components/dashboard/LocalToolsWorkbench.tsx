@@ -302,7 +302,7 @@ export function LocalToolsWorkbench() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <label className="text-sm font-medium text-foreground">Result</label>
-                {summary && <div className="mt-2 text-sm text-muted-foreground">{summary}</div>}
+                {summary && <div className="mt-1 text-sm text-muted-foreground">{summary}</div>}
               </div>
               <div className="flex gap-2">
                 <Button variant="ghost" size="sm" onClick={() => void copy()} disabled={!output}>

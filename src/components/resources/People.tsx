@@ -54,7 +54,9 @@ export function PeoplePage() {
   return (
     <div className="space-y-4 pb-8">
       <div>
-        <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground"> {/* design-xs-ok: compact section eyebrow */}
+        <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          {" "}
+          {/* design-xs-ok: compact section eyebrow */}
           <HeartHandshake className="h-4 w-4" /> Community
         </div>
         <h1 className="mt-2 text-lg font-semibold tracking-tight text-foreground">People</h1>
@@ -70,7 +72,7 @@ export function PeoplePage() {
             <HeartHandshake className="h-4 w-4" /> Open to collaborate
           </Button>
         </div>
-        <div className="mt-2 text-sm text-muted-foreground">
+        <div className="mt-1 text-sm text-muted-foreground">
           {visible.length} of {profiles.length} public profiles shown
         </div>
       </Card>
@@ -81,23 +83,23 @@ export function PeoplePage() {
         <Card className="p-8 text-center">
           <UserRound className="mx-auto h-6 w-6 text-muted-foreground" />
           <h2 className="mt-4 text-sm font-medium text-foreground">No matching profiles</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Try a broader search or turn off the collaboration filter.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Try a broader search or turn off the collaboration filter.</p>
         </Card>
       ) : (
         <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
           {visible.map((profile) => {
             const cover = coverFor(profile.id);
             return (
-              <Card key={profile.id} className="overflow-hidden p-2">
+              <Card key={profile.id} className="overflow-hidden p-0">
                 {cover?.source_url ? <img src={cover.source_url} alt="" className="h-24 w-full object-cover" loading="lazy" /> : null}
                 <div className="p-4">
                   <div className="flex items-start gap-4">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted text-muted-foreground">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-muted text-muted-foreground">
                       {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : <UserRound className="h-5 w-5" />}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="truncate text-sm font-semibold text-foreground">{profile.display_name || profile.username || "AppForge user"}</h2>
+                        <h2 className="truncate text-sm font-semibold text-foreground mr-auto">{profile.display_name || profile.username || "AppForge user"}</h2>
                         {profile.open_to_collaboration && <Badge color="green">Collaborate</Badge>}
                       </div>
                       {profile.username && <p className="truncate text-sm text-muted-foreground">@{profile.username}</p>}
@@ -108,7 +110,7 @@ export function PeoplePage() {
                   {profile.show_skills !== false && (profile.skills || []).length > 0 && (
                     <div className="mt-4 flex flex-wrap gap-2">
                       {profile.skills.slice(0, 6).map((skill) => (
-                        <span key={skill} className="rounded-xl border border-border/70 px-2 py-2 text-sm text-muted-foreground">
+                        <span key={skill} className="rounded-xl border border-border px-2 py-2 text-sm text-muted-foreground">
                           {skill}
                         </span>
                       ))}

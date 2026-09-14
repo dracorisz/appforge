@@ -155,7 +155,7 @@ export function AppAdminPage() {
             <img src={form.coverImage} alt="Current app cover" className="h-full w-full object-cover" />
           </div>
         )}
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-border/70 px-4">
+        <div className="flex items-center justify-between gap-4 rounded-xl border border-border px-4">
           <div>
             <div className="text-sm font-medium">Visible across AppForge</div>
             <div className="text-sm text-muted-foreground">Hide this app from runtime catalogs and navigation.</div>
@@ -180,7 +180,7 @@ export function AppAdminPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold tracking-tight text-foreground">Apps</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Manage app names, covers and catalog visibility.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Manage app names, covers and catalog visibility.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button
@@ -201,7 +201,7 @@ export function AppAdminPage() {
 
       <div className="flex flex-col gap-2 sm:flex-row">
         <SearchInput value={search} onChange={(event) => setSearch(event.target.value)} onClear={() => setSearch("")} placeholder="Search apps…" />
-        <div className="flex shrink-0 rounded-xl border border-border/70 bg-background">
+        <div className="flex shrink-0 rounded-xl border border-border bg-background">
           <Button size="sm" variant={viewMode === "grid" ? "secondary" : "ghost"} onClick={() => setViewMode("grid")} aria-label="Grid view">
             <LayoutGrid className="h-4 w-4" />
           </Button>

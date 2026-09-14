@@ -57,7 +57,7 @@ function WorkspaceEditor({ apps, categories }: { apps: AppDefinition[]; categori
       <Card className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-sm font-semibold">Sidebar shortcuts</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Choose what stays pinned.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Choose what stays pinned.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="secondary" size="sm" onClick={restoreDefaultSidebarCategories}>
@@ -222,7 +222,9 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: { state:
       <section className="surface-card rounded-xl border p-4 sm:p-4">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground"> {/* design-xs-ok: compact section eyebrow */}
+            <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              {" "}
+              {/* design-xs-ok: compact section eyebrow */}
               <LayoutGrid className="h-4 w-4" /> AppForge
             </div>
             <h1 className="mt-2 text-lg font-semibold tracking-tight sm:text-lg">{isWorkspace ? "Workspace" : isDashboard ? "Your tools" : title}</h1>

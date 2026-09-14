@@ -72,7 +72,7 @@ export function MediaShowbox({
   return (
     <div className="fixed inset-0 z-[60] flex h-[100dvh] min-h-[100dvh] w-screen items-center justify-center overflow-y-auto bg-overlay/85 p-2 backdrop-blur-sm sm:p-4" onMouseDown={onClose}>
       <section role="dialog" aria-modal="true" aria-label={title} onMouseDown={(event) => event.stopPropagation()} className="flex max-h-[calc(100dvh-1rem)] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-inverse/10 bg-background sm:max-h-[calc(100dvh-1.5rem)]">
-        <header className="flex items-center gap-4 border-b border-border/70 px-4">
+        <header className="flex items-center gap-4 border-b border-border px-4">
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-sm font-semibold text-foreground">{title}</h2>
             <p className="truncate text-sm text-muted-foreground">{source}</p>
@@ -97,7 +97,7 @@ export function MediaShowbox({
         </div>
 
         {(note || onDownload || originalUrl) && (
-          <footer className="flex flex-col gap-2 border-t border-border/70 px-4 py-2 sm:flex-row sm:items-center sm:justify-between">
+          <footer className="flex flex-col gap-2 border-t border-border px-4 py-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0 text-sm text-muted-foreground">{note || "Preview"}</div>
             <div className="flex shrink-0 gap-2">
               {onDownload && (

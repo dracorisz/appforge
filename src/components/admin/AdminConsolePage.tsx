@@ -146,7 +146,7 @@ export function AdminConsolePage() {
             </Button>
           </div>
         ) : (
-          <div className="mt-4 rounded-xl border border-border/70 p-4 text-sm text-muted-foreground">
+          <div className="mt-4 rounded-xl border border-border p-4 text-sm text-muted-foreground">
             No verified TOTP factor is available.{" "}
             <Link to="/settings?tab=security" className="cursor-pointer font-medium text-foreground underline">
               Set up an authenticator in Security
@@ -162,7 +162,7 @@ export function AdminConsolePage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-lg font-semibold tracking-tight">Admin</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Users, content, app presentation and internal marketing tools.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Users, content, app presentation and internal marketing tools.</p>
         </div>
         <Link to="/settings" className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
           Back to Settings
@@ -192,7 +192,7 @@ export function AdminConsolePage() {
             <Card key={item.id} className="p-4">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
                 <div className="flex min-w-0 flex-1 items-center gap-4">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted">{item.avatar_url ? <img src={item.avatar_url} alt="" className="h-full w-full object-cover" /> : <UserRound className="h-4 w-4" />}</div>
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-muted">{item.avatar_url ? <img src={item.avatar_url} alt="" className="h-full w-full object-cover" /> : <UserRound className="h-4 w-4" />}</div>
                   <div className="min-w-0">
                     <div className="truncate text-sm font-medium">{item.display_name || item.email || item.id}</div>
                     <div className="truncate text-sm text-muted-foreground">{item.email}</div>

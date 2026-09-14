@@ -40,7 +40,7 @@ export function PublicAppsPage() {
         <section className="mx-auto mt-8 max-w-3xl border-y border-border/60 py-4" aria-label="Filter apps">
           <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_200px]">
             <SearchInput value={query} onChange={(event) => setQuery(event.target.value)} onClear={() => setQuery("")} placeholder="Search apps…" aria-label="Search apps" />
-            <Select value={category} onChange={(event) => setCategory(event.target.value)} className="rounded-xl border border-border/70 bg-background/45 px-2 text-sm h-9 outline-none focus:ring-1 focus:ring-ring/30">
+            <Select value={category} onChange={(event) => setCategory(event.target.value)} className="rounded-xl border border-border bg-background/45 px-2 text-sm h-9 outline-none focus:ring-1 focus:ring-ring/30">
               <option value="all">All categories</option>
               {categories.map((id) => (
                 <option key={id} value={id}>
@@ -73,7 +73,7 @@ export function PublicAppsPage() {
             </Link>
           ))}
         </section>
-        {!visible.length && <div className="mt-8 rounded-xl border border-border/70 p-8 text-center text-sm text-muted-foreground">No apps match.</div>}
+        {!visible.length && <div className="mt-8 rounded-xl border border-border p-8 text-center text-sm text-muted-foreground">No apps match.</div>}
       </main>
       <PublicFooter />
     </div>

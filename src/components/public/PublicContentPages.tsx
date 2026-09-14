@@ -150,7 +150,7 @@ function VideoBlock({ url }: { url?: string }) {
   if (!url) return null;
   const embed = youtubeEmbed(url);
   return (
-    <div className="mt-8 overflow-hidden rounded-xl border border-border/70 bg-overlay">
+    <div className="mt-8 overflow-hidden rounded-xl border border-border bg-overlay">
       {embed ? (
         <iframe src={embed} title="Article video walkthrough" className="aspect-video w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
       ) : (
@@ -167,7 +167,7 @@ function ArticleCard({ article, compact = false }: { article: BlogArticle; compa
       <div className="flex flex-1 flex-col p-4">
         <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{article.appName}</div> {/* design-xs-ok: compact article metadata */}
         <h2 className={compact ? "mt-2 text-sm font-semibold tracking-[-0.02em]" : "mt-2 text-lg font-semibold tracking-[-0.025em]"}>{article.title}</h2>
-        {!compact && <p className="mt-2 text-sm text-muted-foreground">{article.description}</p>}
+        {!compact && <p className="mt-1 text-sm text-muted-foreground">{article.description}</p>}
         <div className="mt-auto flex items-center justify-between gap-4 pt-4 text-sm text-muted-foreground">
           <span>
             {article.publishedAt} · {article.readTime}
@@ -204,7 +204,7 @@ export function PublicBlogPage() {
         </header>
         {featured && (
           <section className="mx-auto mt-8 max-w-3xl">
-            <Link to={`/blog/${featured.slug}`} className="block rounded-xl border border-border/70 bg-background/45 p-4 text-center transition-[border-color,background-color,box-shadow] hover:border-foreground/20 hover:bg-accent/25 hover:shadow-xl">
+            <Link to={`/blog/${featured.slug}`} className="block rounded-xl border border-border bg-background/45 p-4 text-center transition-[border-color,background-color,box-shadow] hover:border-foreground/20 hover:bg-accent/25 hover:shadow-xl">
               <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Featured · {featured.appName}</div> {/* design-xs-ok: compact article metadata */}
               <h2 className="mx-auto mt-4 max-w-2xl text-lg font-semibold tracking-[-0.03em]">{featured.title}</h2>
               <p className="mx-auto mt-4 max-w-2xl text-sm text-muted-foreground">{featured.description}</p>
@@ -278,7 +278,7 @@ export function PublicBlogArticlePage({ slug }: { slug: string }) {
             </div>
           </header>
           {article.imageUrl && (
-            <div className="mt-8 overflow-hidden rounded-xl border border-border/70">
+            <div className="mt-8 overflow-hidden rounded-xl border border-border">
               <img src={article.imageUrl} alt={article.title} className="max-h-[36rem] w-full object-cover" />
             </div>
           )}
@@ -308,7 +308,7 @@ export function PublicBlogArticlePage({ slug }: { slug: string }) {
           </section>
         )}
       </main>
-      <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2 rounded-xl border border-border/70 bg-background/95 p-2 shadow-xl backdrop-blur-xl" role="group" aria-label="Article layout">
+      <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2 rounded-xl border border-border bg-background/95 p-2 shadow-xl backdrop-blur-xl" role="group" aria-label="Article layout">
         <span className={`text-sm ${readingMode ? "text-muted-foreground" : "font-semibold text-foreground"}`}>Normal</span>
         <Switch checked={readingMode} onCheckedChange={setReadingMode} label="Toggle reading mode" />
         <span className={`text-sm ${readingMode ? "font-semibold text-foreground" : "text-muted-foreground"}`}>Reading</span>

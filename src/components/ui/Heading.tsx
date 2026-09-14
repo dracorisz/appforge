@@ -15,7 +15,7 @@ export function Heading({ title, description, icon, actions, level = "h1", scale
     <header className={`flex min-w-0 flex-col gap-2 ${className}`}>
       <div className="flex min-w-0 items-start justify-between gap-4">
         <div className="flex min-w-0 items-center gap-2">
-          {icon && <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-muted/50 text-muted-foreground [&>svg]:h-4 [&>svg]:w-4">{icon}</span>}
+          {icon && <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-muted/50 text-muted-foreground [&>svg]:h-4 [&>svg]:w-4">{icon}</span>}
           <Tag className={`min-w-0 text-foreground ${titleClasses[scale]}`}>{title}</Tag>
         </div>
         {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}

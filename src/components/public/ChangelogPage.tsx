@@ -49,7 +49,7 @@ export function ChangelogPage() {
         </section>
         <div className="space-y-4 py-8">
           {releases.map((release, releaseIndex) => (
-            <section key={release.title} className="rounded-xl border border-border/70 bg-background/45 p-4 sm:p-4">
+            <section key={release.title} className="rounded-xl border border-border bg-background/45 p-4 sm:p-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="text-lg font-semibold tracking-[-0.025em] sm:text-lg">{release.title}</h2>
                 <span className="text-sm text-muted-foreground">{release.groups.reduce((total, group) => total + group.items.length, 0)} changes</span>

@@ -323,19 +323,19 @@ export function DesktopBuddyProviderLab() {
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           <Button type="button" onClick={() => setProvider("huggingface")} className={`rounded-xl border p-4 text-left ${provider === "huggingface" ? "ring-1 ring-primary/30" : "bg-background/45"}`}>
             <p className="text-sm font-semibold">Hugging Face</p>
-            <p className="mt-2 text-sm text-muted-foreground">{hfStatus === null ? "Checking deployment…" : hfStatus.configured ? "Shared server token configured" : personalTokens ? "Use your personal HF token" : "Shared token not detected"}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{hfStatus === null ? "Checking deployment…" : hfStatus.configured ? "Shared server token configured" : personalTokens ? "Use your personal HF token" : "Shared token not detected"}</p>
           </Button>
           <Button type="button" onClick={() => setProvider("vertex")} className={`rounded-xl border p-4 text-left ${provider === "vertex" ? "ring-1 ring-primary/30" : "bg-background/45"}`}>
             <p className="flex items-center gap-2 text-sm font-semibold">
               <Cloud className="h-4 w-4" /> Vertex AI
             </p>
-            <p className="mt-2 text-sm text-muted-foreground">{vertexStatus === null ? "Checking secure bridge…" : vertexStatus.configured ? `Secure bridge configured · ${vertexStatus.model || "Gemini Image"}` : "Bridge code ready; production WIF/IAM values still required"}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{vertexStatus === null ? "Checking secure bridge…" : vertexStatus.configured ? `Secure bridge configured · ${vertexStatus.model || "Gemini Image"}` : "Bridge code ready; production WIF/IAM values still required"}</p>
           </Button>
           <div className="rounded-xl border bg-background/45 p-4">
             <p className="flex items-center gap-2 text-sm font-semibold">
               <KeyRound className="h-4 w-4" /> Personal HF
             </p>
-            <p className="mt-2 text-sm text-muted-foreground">{personalTokens ? `${personalTokens} local token${personalTokens === 1 ? "" : "s"} available from Story Studio` : "Optional; configure in Story Studio provider settings"}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{personalTokens ? `${personalTokens} local token${personalTokens === 1 ? "" : "s"} available from Story Studio` : "Optional; configure in Story Studio provider settings"}</p>
           </div>
         </div>
 
@@ -396,7 +396,7 @@ export function DesktopBuddyProviderLab() {
               <Images className="h-5 w-5" />
               <h2 className="font-semibold">Your generated buddies</h2>
             </div>
-            <p className="mt-2 text-sm text-muted-foreground">Private per-user gallery from Media Vault / Desktop Buddies. The newest 24 generations are shown here.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Private per-user gallery from Media Vault / Desktop Buddies. The newest 24 generations are shown here.</p>
           </div>
           <div className="flex gap-2">
             <Button type="button" onClick={() => void refreshGallery()} disabled={galleryLoading} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent disabled:opacity-50">
@@ -418,7 +418,7 @@ export function DesktopBuddyProviderLab() {
                 </div>
                 <div className="p-2">
                   <p className="truncate text-sm font-medium">{buddy.item.title || "Generated Buddy"}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">{new Date(buddy.item.created_at).toLocaleDateString()}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{new Date(buddy.item.created_at).toLocaleDateString()}</p>
                 </div>
               </Button>
             ))}

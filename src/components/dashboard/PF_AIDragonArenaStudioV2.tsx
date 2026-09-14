@@ -292,9 +292,9 @@ export function PF_AIDragonArenaStudioV2() {
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {sessions.length ? (
               sessions.map((session) => (
-                <Button key={session.id} type="button" onClick={() => void loadSession(session)} className={`rounded-xl border p-2 text-left text-sm hover:bg-accent ${session.id === sessionId ? "border-primary/50 bg-accent/50" : "border-border/70"}`}>
+                <Button key={session.id} type="button" onClick={() => void loadSession(session)} className={`rounded-xl border p-2 text-left text-sm hover:bg-accent ${session.id === sessionId ? "border-primary/50 bg-accent/50" : "border-border"}`}>
                   <div className="font-semibold">{session.title || "Untitled story"}</div>
-                  <div className="mt-2 text-sm text-muted-foreground">
+                  <div className="mt-1 text-sm text-muted-foreground">
                     {session.turn_count} turns · {new Date(session.updated_at).toLocaleDateString()}
                   </div>
                 </Button>
@@ -312,7 +312,7 @@ export function PF_AIDragonArenaStudioV2() {
               assets.map((asset) => {
                 const src = safeAssetUrl(asset);
                 return (
-                  <Button key={asset.id} type="button" onClick={() => src && setLightbox(src)} className="h-20 w-28 shrink-0 overflow-hidden rounded-xl border border-border/70 bg-muted">
+                  <Button key={asset.id} type="button" onClick={() => src && setLightbox(src)} className="h-20 w-28 shrink-0 overflow-hidden rounded-xl border border-border bg-muted">
                     {src && <img src={src} alt="" className="h-full w-full object-cover" />}
                   </Button>
                 );
@@ -325,7 +325,7 @@ export function PF_AIDragonArenaStudioV2() {
       )}
 
       <Card className="overflow-hidden p-2">
-        <div className="border-b border-border/70 p-4">
+        <div className="border-b border-border p-4">
           <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_220px] sm:items-end">
             <div>
               <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">World seed</div> {/* design-xs-ok: compact metadata label */}
@@ -358,7 +358,7 @@ export function PF_AIDragonArenaStudioV2() {
                 <div className="mt-2 grid gap-4 md:grid-cols-[minmax(0,1fr)_180px] md:items-start">
                   <div className="whitespace-pre-line text-sm">{item.narrative}</div>
                   {src && (
-                    <Button type="button" onClick={() => setLightbox(src)} className="overflow-hidden rounded-xl border border-border/70">
+                    <Button type="button" onClick={() => setLightbox(src)} className="overflow-hidden rounded-xl border border-border">
                       <img src={src} alt={`Scene ${item.turnNumber}`} className="aspect-[4/3] w-full object-cover" />
                     </Button>
                   )}

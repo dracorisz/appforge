@@ -21,8 +21,8 @@ export function ProjectPulse() {
 
   return (
     <div className="mb-4 rounded-xl border border-border/60 bg-background/45 text-sm text-muted-foreground backdrop-blur-lg">
-      <Button type="button" className="flex w-full flex-col gap-2 px-4 py-2 text-left sm:flex-row sm:items-center sm:justify-between" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded}>
-        <div className="flex min-w-0 items-center gap-2">
+      <Button type="button" className="flex w-full flex-col gap-2 px-0 text-left sm:flex-row sm:items-center sm:justify-between" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded}>
+        <div className="flex min-w-0 items-center gap-2 py-2">
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-muted/45">
             <Activity className="h-4 w-4" />
           </span>
@@ -32,7 +32,7 @@ export function ProjectPulse() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-2 rounded-xl border border-border/60 bg-background/45 px-2 py-2">
+          <span className="inline-flex items-center gap-2 rounded-xl bg-background/45 px-2 py-2">
             <Boxes className="h-3 w-3" />
             {apps.length} tools · {active} active · {building} building
           </span>
@@ -76,10 +76,10 @@ export function ProjectPulse() {
               <div className="flex items-center gap-2 font-medium text-foreground">
                 <Rocket className="h-4 w-4" /> Shared release gates
               </div>
-              <div className="mt-2 space-y-2">
+              <div className="mt-8 space-y-3">
                 {["Installable manifest + icons", "Service-worker app shell", "Responsive tool routes", "GitHub Pages path-safe build", "Registry-backed release status"].map((item) => (
-                  <div key={item} className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-2 h-4 w-4 shrink-0 text-foreground" />
+                  <div key={item} className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-foreground" />
                     <span>{item}</span>
                   </div>
                 ))}

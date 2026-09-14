@@ -247,7 +247,7 @@ export function DesktopBuddyOverlay() {
 
       <div onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag} className="relative flex h-36 w-40 touch-none cursor-grab items-end justify-center active:cursor-grabbing" title="Drag Desktop Buddy">
         <img src={buddy.imageDataUrl || FALLBACK_IMAGE} alt="" draggable={false} className={`pointer-events-none max-h-36 max-w-40 object-contain transition-transform ${speaking ? "scale-105" : ""} ${jumping ? "-translate-y-10 rotate-3" : ""}`} />
-        <span className="pointer-events-none absolute right-0 top-0 rounded-xl border border-border/70 bg-card/90 p-2 text-muted-foreground">
+        <span className="pointer-events-none absolute right-0 top-0 rounded-xl border border-border bg-card/90 p-2 text-muted-foreground">
           <Move className="h-4 w-4" />
         </span>
       </div>

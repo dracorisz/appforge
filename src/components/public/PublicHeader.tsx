@@ -7,7 +7,7 @@ const APPFORGE_MARK = "/favicon.svg?v=2";
 const APPFORGE_ORIGIN = "https://www.sstoken.space";
 
 const navItemClass =
-  "inline-flex h-9 items-center gap-2 rounded-xl border border-border/70 bg-background/70 px-4 text-sm font-semibold text-muted-foreground transition-[border-color,background-color,color,box-shadow] hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+  "inline-flex h-9 items-center gap-2 rounded-xl border border-border bg-background/70 px-4 text-sm font-semibold text-muted-foreground transition-[border-color,background-color,color,box-shadow] hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 export function PublicHeader({ className = "" }: { className?: string }) {
   const docsHost = typeof window !== "undefined" && window.location.hostname.toLowerCase() === "docs.sstoken.space";

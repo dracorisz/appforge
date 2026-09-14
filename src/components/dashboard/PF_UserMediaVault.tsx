@@ -13,7 +13,7 @@ const SYSTEM_FOLDERS: { id: VaultFolder | "all"; label: string; icon: React.Comp
   { id: "all", label: "All files", icon: Folder },
   { id: "general", label: "General", icon: Folder },
   { id: "desktop-buddies", label: "Desktop Buddies", icon: Sparkles },
-  { id: "Screenshots", label: "Screenshots", icon: Camera },
+  { id: "screenshots", label: "Screenshots", icon: Camera },
   { id: "dragon-arena", label: "Story Studio", icon: Gamepad2 },
   { id: "getter-pro", label: "Getter Pro", icon: Search },
 ];
@@ -305,13 +305,7 @@ export function PF_UserMediaVault() {
     }
   };
 
-  const allFolderOptions = React.useMemo(
-    () => [
-      { value: "general", label: "General" },
-      ...userFolders.map((item) => ({ value: item.name, label: item.name })),
-    ],
-    [userFolders],
-  );
+  const allFolderOptions = React.useMemo(() => [{ value: "general", label: "General" }, ...userFolders.map((item) => ({ value: item.name, label: item.name }))], [userFolders]);
   const folders = React.useMemo(() => [...SYSTEM_FOLDERS, ...userFolders.map((item) => ({ id: item.name as VaultFolder, label: item.name, icon: Folder }))], [userFolders]);
   const sortedMedia = React.useMemo(
     () =>
@@ -391,8 +385,8 @@ export function PF_UserMediaVault() {
         {folders.map(({ id, label, icon: Icon }) => {
           const userFolder = userFolders.find((entry) => entry.name === id);
           return (
-            <div key={String(id)} className={`flex items-center gap-2 rounded-xl border px-2 py-2 transition-colors ${folder === id ? "border-foreground/25 bg-accent" : "border-border/70 bg-background/35 hover:bg-accent/60"}`}>
-              <Button onClick={() => setFolder(id)} className="flex min-w-0 flex-1 items-center gap-2 px-2 py-2 text-left text-sm">
+            <div key={String(id)} className={`flex items-center gap-2 rounded-xl border transition-colors ${folder === id ? "border-foreground/25 bg-accent" : "border-border bg-background/35 hover:bg-accent/60"}`}>
+              <Button onClick={() => setFolder(id)} className="flex min-w-0 flex-1 items-center gap-2 text-left text-sm">
                 <Icon className="h-4 w-4 shrink-0" />
                 <span className="truncate">{label}</span>
               </Button>
@@ -436,7 +430,7 @@ export function PF_UserMediaVault() {
         <div className="mt-2 h-2 overflow-hidden rounded-xl bg-muted">
           <div className="h-full rounded-xl bg-foreground transition-all" style={{ width: `${usedPct}%` }} />
         </div>
-        <p className="mt-2 text-sm text-muted-foreground">{formatBytes(quota.remaining_bytes)} remaining. Linked Story Studio assets and Getter Pro references are not double-counted against upload storage.</p>
+        <p className="mt-1 text-sm text-muted-foreground">{formatBytes(quota.remaining_bytes)} remaining. Linked Story Studio assets and Getter Pro references are not double-counted against upload storage.</p>
       </Card>
       {error && <Card className="border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</Card>}
 
@@ -449,7 +443,7 @@ export function PF_UserMediaVault() {
           ariaLabel="Media kinds"
         />
         <div className="flex-1" />
-        <div className="flex items-center rounded-xl border border-border/60 p-2">
+        <div className="flex items-center rounded-xl border border-border/60 p-2 gap-2">
           <Button variant={viewMode === "grid" ? "secondary" : "ghost"} size="sm" onClick={() => setViewMode("grid")} title="Grid view">
             <FileImage className="h-4 w-4" />
           </Button>
@@ -488,34 +482,45 @@ export function PF_UserMediaVault() {
                   </Button>
                 )}
                 <div className={list ? "min-w-0 flex-1" : "p-4"}>
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex flex-col gap-2">
                     <div className={list ? "flex min-w-0 items-center gap-2" : "min-w-0"}>
-                      {list && <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />}
-                      <div className="min-w-0">
+                      {/* {list && <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />} */}
+                      {list && (
+                        <Button type="button" onClick={() => void openPreview(item)} style={{ padding: 0 }} className={`relative block w-20 !min-h-32 overflow-hidden bg-muted ${showcase ? "aspect-[16/10]" : "aspect-video"}`}>
+                          <VaultThumb item={item} />
+                        </Button>
+                      )}
+                      <div className="min-w-full">
                         <p className="truncate text-sm font-medium">{item.title || item.file_name || "Untitled"}</p>
-                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <div className="mt-4 mb-2 flex items-center gap-2">
                           {kindBadge(item.kind)}
-                          <Badge color="slate">{vaultFolder(item)}</Badge>
+                          <Badge className="min-w-36 justify-center" color="slate">
+                            {vaultFolder(item)}
+                          </Badge>
                         </div>
+                        <VaultActions item={item} onPreview={() => void openPreview(item)} onDelete={() => void handleDelete(item)} />
                       </div>
                     </div>
-                    <VaultActions item={item} onPreview={() => void openPreview(item)} onDelete={() => void handleDelete(item)} />
                   </div>
                   <div className="mt-2 flex flex-wrap items-end justify-between gap-2">
                     <span className="text-sm text-muted-foreground">{new Date(item.created_at).toLocaleString()}</span>
-                    <div className="flex flex-wrap items-center justify-end gap-2">
-                      <span className="text-sm text-muted-foreground">{sourceLabel(item)}</span>
-                      {!isPinnedAsset(item) && (
-                        <Select aria-label="Move file to folder" value={vaultFolder(item)} onChange={(event) => void moveItem(item, event.target.value)} className="h-9 max-w-44 rounded-xl border border-input bg-background px-2 text-sm text-foreground">
-                          {!allFolderOptions.some((option) => option.value === vaultFolder(item)) && <option value={vaultFolder(item)} disabled>{vaultFolder(item)}</option>}
-                          {allFolderOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </Select>
-                      )}
-                    </div>
+                    <span className="text-sm text-muted-foreground">{sourceLabel(item)}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                    {!isPinnedAsset(item) && (
+                      <Select aria-label="Move file to folder" value={vaultFolder(item)} onChange={(event) => void moveItem(item, event.target.value)} className="h-9 max-w-44 rounded-xl border border-input bg-background px-2 text-sm text-foreground">
+                        {!allFolderOptions.some((option) => option.value === vaultFolder(item)) && (
+                          <option value={vaultFolder(item)} disabled>
+                            {vaultFolder(item)}
+                          </option>
+                        )}
+                        {allFolderOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -550,7 +555,7 @@ export function PF_UserMediaVault() {
         </>
       ) : preview ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/90 p-4" onClick={() => setPreview(null)}>
-          <div className="max-w-md rounded-xl border border-border/70 bg-background p-4 text-center text-muted-foreground">Preview is not available for this item type. Use the source/download action.</div>
+          <div className="max-w-md rounded-xl border border-border bg-background p-4 text-center text-muted-foreground">Preview is not available for this item type. Use the source/download action.</div>
           <Button onClick={() => setPreview(null)} className="absolute right-4 top-4 rounded-xl bg-overlay/50 p-2 text-inverse hover:bg-overlay/70">
             <X className="h-5 w-5" />
           </Button>

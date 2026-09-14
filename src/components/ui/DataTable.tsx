@@ -2,10 +2,10 @@ import React from "react";
 
 export function DataTable<T>({ columns, data, onRowClick, getRowId }: { columns: { key: string; header: string; render?: (row: T) => React.ReactNode; width?: string }[]; data: T[]; onRowClick?: (row: T) => void; getRowId?: (row: T) => string }) {
   return (
-    <div className="w-full overflow-x-auto rounded-xl border border-border/70">
+    <div className="w-full overflow-x-auto rounded-xl border border-border">
       <table className="w-full border-collapse text-left text-sm">
         <thead className="bg-muted/35">
-          <tr className="border-b border-border/70">
+          <tr className="border-b border-border">
             {columns.map((col) => (
               <th key={col.key} style={{ width: col.width }} className="h-9 whitespace-nowrap px-4 text-sm font-semibold text-muted-foreground">
                 {col.header}

@@ -9,7 +9,6 @@
 <p align="center">
   <a href="https://github.com/dracorisz/appforge/stargazers"><img src="https://img.shields.io/github/stars/dracorisz/appforge?style=social&label=Star" alt="GitHub Stars"></a>
   <a href="https://github.com/dracorisz/appforge/fork"><img src="https://img.shields.io/github/forks/dracorisz/appforge?style=social&label=Fork" alt="GitHub Forks"></a>
-  <img src="https://img.shields.io/github/watching/dracorisz/appforge?style=social&label=Watch" alt="GitHub Watch">
   <a href="https://www.sstoken.space/"><img src="https://img.shields.io/badge/live-sstoken.space-brightgreen" alt="Live site"></a>
   <a href="https://docs.sstoken.space/"><img src="https://img.shields.io/badge/docs-docs.sstoken.space-blue" alt="Docs"></a>
 </p>

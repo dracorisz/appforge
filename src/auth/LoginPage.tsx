@@ -179,10 +179,10 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
 
             <section className="relative mx-auto w-full max-w-xl lg:max-w-none" aria-label="Public tools and workspace access">
               <div aria-hidden="true" className="absolute inset-8 -z-10 rounded-xl border border-border/50 bg-accent/25 blur-2xl" />
-              <div className="rounded-xl border border-border/70 bg-background/80 p-4 backdrop-blur-xl sm:p-4">
+              <div className="rounded-xl border border-border bg-background/80 p-4 backdrop-blur-xl sm:p-4">
                 <div className="flex items-center justify-between gap-4 border-b border-border/60 pb-4">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-background">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-background">
                       <img src={APPFORGE_MARK} alt="" className="h-9 w-9 rounded-xl" decoding="async" />
                     </div>
                     <div className="text-sm font-semibold">AppForge</div>
@@ -191,8 +191,8 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                 </div>
                 <div className="grid gap-2 py-4">
                   {publicTools.map(({ label, description, path, icon: Icon }) => (
-                    <Link key={path} to={path} className="group flex items-center gap-4 rounded-xl border border-border/70 px-4 py-4 transition-colors hover:border-border/70 hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-background">
+                    <Link key={path} to={path} className="group flex items-center gap-4 rounded-xl border border-border px-4 py-4 transition-colors hover:border-border hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-background">
                         <Icon className="h-4 w-4" />
                       </span>
                       <span className="min-w-0 flex-1">
@@ -203,11 +203,11 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                     </Link>
                   ))}
                 </div>
-                <Link to="/explore" className="group flex items-center justify-between rounded-xl border border-border/70 bg-background/65 px-4 py-4 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                <Link to="/explore" className="group flex items-center justify-between rounded-xl border border-border bg-background/65 px-4 py-4 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                   <span>Browse all public apps</span>
                   <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                 </Link>
-                <Link to="/huggingface" className="group flex items-center justify-between rounded-xl border border-border/70 bg-background/65 px-4 py-4 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                <Link to="/huggingface" className="group flex items-center justify-between rounded-xl border border-border bg-background/65 px-4 py-4 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                   <span className="flex items-center gap-2">
                     <HuggingFaceLogo className="h-4 w-4 text-[#FF9D00]" /> Hugging Face integration
                   </span>
@@ -220,18 +220,20 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
           <section className="py-8 sm:py-8" aria-labelledby="walkthrough-title">
             <div className="grid gap-4 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
               <div className="lg:pr-4">
-                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground"> {/* design-xs-ok: compact eyebrow label */}
+                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  {" "}
+                  {/* design-xs-ok: compact eyebrow label */}
                   <PlayCircle className="h-4 w-4" /> Walkthrough
                 </div>
                 <h2 id="walkthrough-title" className="mt-2 text-lg font-semibold tracking-tight sm:text-lg">
                   {videoTitle}
                 </h2>
-                <p className="mt-2 text-sm text-muted-foreground">{videoSummary}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{videoSummary}</p>
                 <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                   Open video <ArrowRight className="h-4 w-4" />
                 </a>
               </div>
-              <div className="overflow-hidden rounded-xl border border-border/70 bg-overlay">
+              <div className="overflow-hidden rounded-xl border border-border bg-overlay">
                 {videoEmbedUrl ? (
                   <iframe
                     key={videoEmbedUrl}
@@ -255,16 +257,16 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
               <h2 id="about-appforge-title" className="text-lg font-semibold tracking-tight">
                 Open source. Private by design.
               </h2>
-              <p className="mt-2 text-sm text-muted-foreground">AppForge combines public tools with an authenticated workspace, keeping local work in-browser where practical and using protected persistence only where it adds value.</p>
+              <p className="mt-1 text-sm text-muted-foreground">AppForge combines public tools with an authenticated workspace, keeping local work in-browser where practical and using protected persistence only where it adds value.</p>
             </div>
             <div className="grid gap-4 md:grid-cols-2 mt-4">
               <div className="rounded-xl border border-inverse/10 bg-inverse/5 p-4">
                 <div className="text-sm font-semibold">Consistent tools</div>
-                <p className="mt-2 text-sm text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p>
+                <p className="mt-1 text-sm text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p>
               </div>
               <div className="rounded-xl border border-inverse/10 bg-inverse/5 p-4">
                 <div className="text-sm font-semibold">Transparent project</div>
-                <p className="mt-2 text-sm text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p>
+                <p className="mt-1 text-sm text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p>
               </div>
             </div>
           </section>
@@ -280,18 +282,18 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
               if (event.target === event.currentTarget) setAuthOpen(false);
             }}
           >
-            <div className="w-full max-w-md rounded-xl border border-border/70 bg-background p-4 shadow-xl">
+            <div className="w-full max-w-md rounded-xl border border-border bg-background p-4 shadow-xl">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold">Sign in to AppForge</h2>
-                  <p className="mt-2 text-sm text-muted-foreground">Use email or a connected provider.</p>
+                  <p className="mt-1 text-sm text-muted-foreground">Use email or a connected provider.</p>
                 </div>
                 <Button type="button" onClick={() => setAuthOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close sign in">
                   <span aria-hidden="true">×</span>
                 </Button>
               </div>
               <div className="mt-4 grid gap-2 grid-cols-2">
-                <Button onClick={() => void login("google")} disabled={Boolean(busyProvider) || loading}>
+                <Button variant="primary" className="border bg-black text-white border-white/30" onClick={() => void login("google")} disabled={Boolean(busyProvider) || loading}>
                   <Google className="h-4 w-4" /> Continue with Google
                 </Button>
                 <Button variant="secondary" onClick={() => void login("github")} disabled={Boolean(busyProvider) || loading}>

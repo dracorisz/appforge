@@ -204,7 +204,7 @@ export function DesktopBuddyAssetLab() {
         {message}
       </div>
       {sourceName && (
-        <div className="mt-2 text-sm text-muted-foreground">
+        <div className="mt-1 text-sm text-muted-foreground">
           Source: {sourceName} · {formatBytes(sourceBytes)}
         </div>
       )}
@@ -222,7 +222,7 @@ export function DesktopBuddyAssetLab() {
                     <div className="text-sm font-semibold">
                       {variant.size} × {variant.size}
                     </div>
-                    <div className="mt-2 text-sm text-muted-foreground">
+                    <div className="mt-1 text-sm text-muted-foreground">
                       PNG {formatBytes(variant.pngBytes)} · WebP {formatBytes(variant.webpBytes)}
                     </div>
                   </div>

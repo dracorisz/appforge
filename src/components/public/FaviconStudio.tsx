@@ -273,7 +273,7 @@ export default function FaviconStudio() {
           <pre className="mt-4 max-h-64 overflow-auto rounded-xl border bg-background p-4 text-sm">{manifest}</pre>
         </div>
 
-        <div className="surface-card rounded-xl border p-4 sm:p-4">
+        <div className="surface-card h-max rounded-xl border p-4 sm:p-4">
           <div className="mb-4 flex items-center justify-between gap-4">
             <div>
               <h2 className="font-semibold">Live previews</h2>
@@ -281,9 +281,9 @@ export default function FaviconStudio() {
             </div>
             <ImageIcon className="h-5 w-5 text-muted-foreground" />
           </div>
-          <div className="grid grid-cols-5 gap-2">
+          <div className="flex flex-wrap gap-2">
             {PREVIEW_SIZES.map((size) => (
-              <Button key={size} type="button" onClick={() => void exportPreview(size)} className="group grid min-h-24 place-items-center gap-2 rounded-xl border bg-background p-2 text-sm text-muted-foreground hover:bg-accent" title={`Download ${size}×${size} PNG`}>
+              <Button key={size} type="button" onClick={() => void exportPreview(size)} className="group grid min-h-9 place-items-center gap-2 rounded-xl border bg-background text-sm text-muted-foreground hover:bg-accent" title={`Download ${size}×${size} PNG`}>
                 <img src={svgDataUrl} alt={`${size} by ${size} favicon preview`} width={16} height={16} className="h-4 w-4 rounded-xl" />
                 <span>
                   {size}×{size}
