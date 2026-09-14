@@ -66,7 +66,7 @@ test('blog and changelog stay public while legacy admin routes redirect into emb
   assert.match(app, /path="\/settings\/admin".*Navigate to="\/settings\?tab=admin"/s)
 
   const settings = await read('src/components/resources/Settings.tsx')
-  assert.match(settings, /activeTab === 'admin'.*<AdminConsolePage \/>/s)
+  assert.match(settings, /activeTab === "admin" && role === "admin" && <AdminConsolePage \/>/s)
 
   const changelogPage = await read('src/components/public/ChangelogPage.tsx')
   assert.match(changelogPage, /CHANGELOG\.md\?raw/)
