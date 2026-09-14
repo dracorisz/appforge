@@ -16,6 +16,7 @@
 
 <p align="center">
   <a href="https://www.sstoken.space/">Try AppForge</a> ·
+  <a href="https://docs.sstoken.space/">Documentation</a> ·
   <a href="https://github.com/dracorisz/appforge/issues/new?template=bug_report.yml">Report a bug</a> ·
   <a href="https://github.com/dracorisz/appforge/issues/new?template=feature_request.yml">Request a tool</a> ·
   <a href="./CONTRIBUTING.md">Contribute</a>
@@ -51,11 +52,11 @@ The canonical registry uses five product states:
 - **Launched** — stable production AppForge capability with verified primary workflows.
 - **Deprecated** — retained only for compatibility or migration history.
 
-There is no per-app `Full`, fork-ready, extraction-ready, or standalone-PWA maturity level. See [`docs/APP_MODEL.md`](./docs/APP_MODEL.md) and [`docs/PROJECT-PULSE.md`](./docs/PROJECT-PULSE.md).
+There is no per-app `Full`, fork-ready, extraction-ready, or standalone-PWA maturity level. See the [App model](https://docs.sstoken.space/app-model) and [Project Pulse](https://docs.sstoken.space/project-pulse).
 
 ## Access model
 
-**Public without an account** includes the landing page, searchable Apps directory, Blog, Changelog, and all registry apps not marked account-backed/private.
+**Public without an account** includes the landing page, searchable Apps directory, Blog, Changelog, documentation, and all registry apps not marked account-backed/private.
 
 **Authenticated workspace** includes the dashboard/catalog, favorites and recent tools, profile/preferences, user-owned synced data, and the private app set: **Getter Pro, Media Vault, Desktop Buddy, and Story Studio**. Story Studio's creator-controlled public showcase data may be shared only when a user explicitly opts in; the Story Studio workspace itself remains private.
 
@@ -83,7 +84,6 @@ Release-facing checks:
 
 ```bash
 npm run verify:release
-npx vitepress build docs
 ```
 
 ## Stack
@@ -95,7 +95,8 @@ npx vitepress build docs
 - Lucide / react-icons
 - AppForge PWA via `vite-plugin-pwa`
 - Vercel static deployment + same-project serverless `/api` functions
-- Supabase Auth, PostgreSQL, Storage, RPCs, and Row Level Security
+- Supabase Auth, PostgreSQL, Storage, RPCs, Row Level Security, and managed frontend content
+- GitHub Pages for `docs.sstoken.space`
 
 ## Architecture
 
@@ -107,7 +108,7 @@ src/
     admin/                        unified AAL2/TOTP-protected admin console
     dashboard/                    app implementations and workbenches
     layout/                       authenticated shell and sidebar
-    public/                       shared public navigation/pages/tool shell
+    public/                       shared public navigation/pages/tool shell/docs view
     pwa/                          AppForge install/update/offline lifecycle
     resources/                    Settings, People and supporting resources
     ui/                           shared controls, cards and media UI
@@ -115,11 +116,12 @@ src/
     registry.ts                   canonical app catalog + access metadata
     buildInfo.ts                  deployment/build fingerprint
     account.ts                    profile/image/role/MFA adapters
+    frontendContent.ts            blog/landing/gallery/docs content adapter
     preferences.ts                per-user preference sync
 api/                              narrow Vercel server endpoints
 supabase/migrations/              reproducible auth/data/storage schema
 scripts/                          validation/release tooling
-docs/                             concise product, developer and operations docs
+.github/workflows/pages.yml       GitHub Pages documentation deployment
 ```
 
 ## AppForge PWA
@@ -128,7 +130,7 @@ AppForge itself is an installable Progressive Web App. `vite.config.ts` defines 
 
 The PWA shell is shared platform infrastructure. Individual internal apps do not receive separate manifests, service workers, or standalone-PWA readiness targets inside this repository.
 
-See [`docs/PWA.md`](./docs/PWA.md) for install, update, caching, offline, and verification guidance.
+See the [PWA documentation](https://docs.sstoken.space/pwa) for install, update, caching, offline, and verification guidance.
 
 ## Versioning and deployment
 
@@ -146,13 +148,15 @@ Production is deployed deliberately from a verified `main` state, then checked a
 
 ## Documentation
 
-The public documentation is intentionally compact. Start with:
+Documentation is managed in Supabase through `Admin → Content → Docs` and rendered by `src/components/public/DocsPage.tsx`. GitHub Pages deploys the same Vite application bundle to the existing `docs.sstoken.space` custom domain; VitePress and repository Markdown source pages are no longer part of the docs runtime.
 
-- [`docs/GETTING_STARTED.md`](./docs/GETTING_STARTED.md)
-- [`docs/apps/index.md`](./docs/apps/index.md)
-- [`docs/APP_MODEL.md`](./docs/APP_MODEL.md)
-- [`docs/PROJECT-PULSE.md`](./docs/PROJECT-PULSE.md)
-- [`docs/PWA.md`](./docs/PWA.md)
+Start with:
+
+- [Getting Started](https://docs.sstoken.space/getting-started)
+- [Applications](https://docs.sstoken.space/apps)
+- [App Model](https://docs.sstoken.space/app-model)
+- [Project Pulse](https://docs.sstoken.space/project-pulse)
+- [PWA](https://docs.sstoken.space/pwa)
 
 App-specific implementation detail should generally live close to source, API code, or migrations rather than in a separate page for every tool.
 
