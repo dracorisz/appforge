@@ -1,6 +1,7 @@
 import React from "react";
 import { Download, RefreshCw, WifiOff, X } from "lucide-react";
 import { registerSW } from "virtual:pwa-register";
+import { Button } from "@/components/ui";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -83,17 +84,17 @@ export function PwaLifecycle() {
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             {needRefresh && (
-              <button className={primaryActionClass} onClick={() => void updateRef.current?.(true)}>
+              <Button className={primaryActionClass} onClick={() => void updateRef.current?.(true)}>
                 Update now
-              </button>
+              </Button>
             )}
             {showInstall && (
-              <button className={primaryActionClass} onClick={() => void install()}>
+              <Button className={primaryActionClass} onClick={() => void install()}>
                 Install
-              </button>
+              </Button>
             )}
             {(needRefresh || offlineReady) && (
-              <button
+              <Button
                 className={secondaryActionClass}
                 onClick={() => {
                   setNeedRefresh(false);
@@ -101,16 +102,16 @@ export function PwaLifecycle() {
                 }}
               >
                 Later
-              </button>
+              </Button>
             )}
             {showInstall && (
-              <button className={secondaryActionClass} onClick={dismissInstall}>
+              <Button className={secondaryActionClass} onClick={dismissInstall}>
                 Not now
-              </button>
+              </Button>
             )}
           </div>
         </div>
-        <button
+        <Button
           aria-label="Dismiss PWA message"
           className="rounded-xl p-2 text-muted-foreground transition-colors hover:bg-inverse/10 hover:text-inverse focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inverse/70"
           onClick={() => {
@@ -120,7 +121,7 @@ export function PwaLifecycle() {
           }}
         >
           <X className="h-4 w-4" />
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -31,6 +31,11 @@
         --overlay: 240 10% 3.9%;
         --inverse: 0 0% 100%;
         --radius: 0.75rem;
+        --control-height: 2.25rem;
+        --control-line-height: 1.25rem;
+        --border-opacity: 0.92;
+        --surface-border-opacity: 0.88;
+        --shadow-xl: 0 18px 45px hsl(var(--glass-shadow) / 0.18);
         --glass-bg: 0 0% 100%;
         --glass-highlight: 0 0% 100%;
         --glass-shadow: 240 10% 3.9%;
@@ -107,14 +112,16 @@
     }
 
     :where(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']), select, textarea) {
-        min-height: 2.5rem;
-        border: 1px solid hsl(var(--input) / 0.8);
+        height: var(--control-height);
+        min-height: var(--control-height);
+        max-height: var(--control-height);
+        border: 1px solid hsl(var(--input) / var(--border-opacity));
         border-radius: var(--radius);
         background: hsl(var(--background));
         color: hsl(var(--foreground));
-        padding: 0.5rem 1rem;
+        padding: 0 1rem;
         font-size: 0.875rem;
-        line-height: 1.5rem;
+        line-height: var(--control-line-height);
         transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
     }
 
@@ -138,18 +145,22 @@
     }
 
     textarea {
-        min-height: 2.5rem;
+        height: auto;
+        min-height: 6rem;
         max-height: 7rem;
         resize: vertical;
     }
 }
 
 @layer components {
+    .app-control {
+        line-height: var(--control-line-height);
+    }
     .surface-card,
     .surface-panel,
     .surface-popover,
     .surface-muted {
-        border: 1px solid hsl(var(--border) / 0.78);
+        border: 1px solid hsl(var(--border) / var(--surface-border-opacity));
         border-radius: var(--radius);
     }
 
@@ -167,7 +178,7 @@
 
     .surface-popover {
         background: hsl(var(--popover) / 0.96);
-        box-shadow: 0 18px 45px hsl(var(--glass-shadow) / 0.18);
+        box-shadow: var(--shadow-xl);
     }
 
     .surface-muted {

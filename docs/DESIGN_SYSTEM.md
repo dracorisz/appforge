@@ -47,3 +47,8 @@ Respect `prefers-reduced-motion`; shared surfaces and previews already reduce tr
 `npm run check:ui-style` is the design contract. It hard-fails on noncanonical typography, spacing, radius, shadow, ring widths, font weights, local line-height overrides, and hard-coded Tailwind palette utilities. It also inventories raw native controls and hand-built surfaces with non-increasing migration budgets so legacy markup cannot drift upward.
 
 `npm run verify:release` includes the style contract along with app integrity, environment documentation, lint, type checking, tests, and production build. If a genuine edge case requires an exception, document the reason in source instead of weakening the global rule.
+
+
+## Central theme controls
+
+Core geometry is centralized in `src/index.css` and mapped through `tailwind.config.js`. `--radius` controls `rounded-xl`; `--control-height` controls the shared `h-9` scale; `--border-opacity` and `--surface-border-opacity` control structural border prominence; `--shadow-xl` controls the sole project shadow. Shared Button, Input, Select, Textarea and Badge primitives consume these values. New page-level native button/input/select/textarea elements are not permitted.

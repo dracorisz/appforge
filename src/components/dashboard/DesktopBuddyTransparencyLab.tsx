@@ -1,6 +1,7 @@
 import React from "react";
 import { Check, Download, Eraser, ImagePlus, Loader2, WandSparkles } from "lucide-react";
 import { safeCanvasImageSource } from "@/lib/imageTransparency";
+import { Button, Input } from "@/components/ui";
 
 const BUDDY_STORAGE_KEY = "appforge-desktop-buddy-v1";
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
@@ -237,13 +238,13 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
         </div>
         <div className="flex flex-wrap gap-2">
           {!standalone && (
-            <button type="button" onClick={() => void loadActiveBuddy()} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent">
+            <Button type="button" onClick={() => void loadActiveBuddy()} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent">
               <WandSparkles className="h-4 w-4" /> Use active Buddy
-            </button>
+            </Button>
           )}
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent">
             <ImagePlus className="h-4 w-4" /> Choose image
-            <input
+            <Input
               type="file"
               accept="image/*"
               className="hidden"
@@ -267,7 +268,7 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
                 [38, "Balanced"],
                 [56, "Aggressive"],
               ].map(([value, label]) => (
-                <button
+                <Button
                   key={String(label)}
                   type="button"
                   onClick={() => {
@@ -277,11 +278,11 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
                   className={`rounded-xl border px-2 py-2 text-sm ${tolerance === Number(value) ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   {String(label)}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
-          <input
+          <Input
             type="range"
             min="14"
             max="78"
@@ -295,9 +296,9 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
           />
           <p className="mt-2 text-sm text-muted-foreground">Lower values preserve more of the character; higher values remove more checkerboard/flat background. Re-run repair after changing this value.</p>
         </div>
-        <button type="button" disabled={!source || processing} onClick={() => void runRepair()} className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">
+        <Button type="button" disabled={!source || processing} onClick={() => void runRepair()} className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">
           {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eraser className="h-4 w-4" />} Repair background
-        </button>
+        </Button>
       </div>
 
       <div aria-live="polite" className="mt-4 text-sm text-muted-foreground">
@@ -330,13 +331,13 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
             · {result.transparentPercent.toFixed(1)}% transparent/feathered pixels
           </div>
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => downloadResult(result, source.name)} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
+            <Button type="button" onClick={() => downloadResult(result, source.name)} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
               <Download className="h-3.5 w-3.5" /> Download PNG
-            </button>
+            </Button>
             {!standalone && (
-              <button type="button" onClick={applyToBuddy} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">
+              <Button type="button" onClick={applyToBuddy} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">
                 <Check className="h-3.5 w-3.5" /> Use in Buddy
-              </button>
+              </Button>
             )}
           </div>
         </div>

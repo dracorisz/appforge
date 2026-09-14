@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Card, Input } from "@/components/ui";
+import { Button, Card, Input, Select } from "@/components/ui";
 import { Check, Copy, Download, Search } from "lucide-react";
 import { AppHeading } from "@/components/layout/AppHeading";
 import { DNS_TYPES, OVERVIEW_TYPES, lookupDns, normalizeDnsName, recordTypeCode, recordTypeName, type DnsResult } from "@/lib/dns";
@@ -106,13 +106,13 @@ export function DNSChecker() {
           <Input label="Domain or DNS name" value={domain} onChange={(event) => setDomain(event.target.value)} placeholder="example.com or _dmarc.example.com" />
           <label className="grid gap-2 text-sm">
             Record type
-            <select value={type} onChange={(event) => setType(event.target.value)} className="rounded-xl border border-input bg-background px-4">
+            <Select value={type} onChange={(event) => setType(event.target.value)} className="rounded-xl border border-input bg-background px-4">
               <option value="overview">Common records</option>
               {Object.keys(DNS_TYPES).map((name) => (
                 <option key={name}>{name}</option>
               ))}
               <option value="custom">Custom type number</option>
-            </select>
+            </Select>
           </label>
           <Button type="submit" disabled={loading || !domain.trim()}>
             <Search className="h-4 w-4" />
@@ -152,7 +152,7 @@ export function DNSChecker() {
             <div className="mb-2 text-sm font-medium text-muted-foreground">Recent lookups</div>
             <div className="flex flex-wrap gap-2">
               {history.map((item) => (
-                <button
+                <Button
                   key={`${item.name}-${item.type}`}
                   type="button"
                   onClick={() => {
@@ -163,7 +163,7 @@ export function DNSChecker() {
                   className="rounded-xl border border-border/70 px-2 py-2 text-sm hover:bg-accent"
                 >
                   {item.name} · {item.type}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -189,7 +189,7 @@ export function DNSChecker() {
             <p className="mt-2 text-sm text-muted-foreground">Select a branch to inspect its answers. This maps one resolver’s records, not global propagation.</p>
             <div className="mt-4 grid gap-2 border-l-2 border-border pl-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="DNS map branches">
               {results.map((result) => (
-                <button
+                <Button
                   key={result.type}
                   type="button"
                   aria-pressed={selected === result.type}
@@ -204,7 +204,7 @@ export function DNSChecker() {
                     </span>
                   ))}
                   {result.records.length > 3 && <span className="mt-2 block text-sm text-muted-foreground">{result.records.length - 3} more answers</span>}
-                </button>
+                </Button>
               ))}
             </div>
           </Card>

@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, CalendarDays, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FRONTEND_CONTENT_UPDATED_EVENT, loadPublishedFrontendContent, type FrontendContentRecord } from "@/lib/frontendContent";
 import { PublicHeader } from "./PublicHeader";
+import { Button } from "@/components/ui";
 
 type BlogSection = { heading: string; body: string };
 type BlogArticle = {
@@ -164,7 +165,7 @@ function ArticleCard({ article, compact = false }: { article: BlogArticle; compa
     <Link to={`/blog/${article.slug}`} className="group flex h-full flex-col overflow-hidden rounded-xl border border-border/65 bg-background/35 transition-[border-color,background-color,box-shadow] hover:border-foreground/20 hover:bg-accent/25 hover:shadow-xl">
       {article.imageUrl && <img src={article.imageUrl} alt="" className={compact ? "h-28 w-full object-cover" : "h-36 w-full object-cover"} loading="lazy" />}
       <div className="flex flex-1 flex-col p-4">
-        <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{article.appName}</div>
+        <div className="text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">{article.appName}</div>
         <h2 className={compact ? "mt-2 text-sm font-semibold tracking-[-0.02em]" : "mt-2 text-lg font-semibold tracking-[-0.025em]"}>{article.title}</h2>
         {!compact && <p className="mt-2 text-sm text-muted-foreground">{article.description}</p>}
         <div className="mt-auto flex items-center justify-between gap-4 pt-4 text-sm text-muted-foreground">
@@ -204,7 +205,7 @@ export function PublicBlogPage() {
         {featured && (
           <section className="mx-auto mt-8 max-w-3xl">
             <Link to={`/blog/${featured.slug}`} className="block rounded-xl border border-border/70 bg-background/45 p-4 text-center transition-[border-color,background-color,box-shadow] hover:border-foreground/20 hover:bg-accent/25 hover:shadow-xl">
-              <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Featured · {featured.appName}</div>
+              <div className="text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">Featured · {featured.appName}</div>
               <h2 className="mx-auto mt-4 max-w-2xl text-lg font-semibold tracking-[-0.03em]">{featured.title}</h2>
               <p className="mx-auto mt-4 max-w-2xl text-sm text-muted-foreground">{featured.description}</p>
               <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold">
@@ -263,7 +264,7 @@ export function PublicBlogArticlePage({ slug }: { slug: string }) {
         </Link>
         <article className={`mx-auto mt-8 w-full transition-[max-width] ${articleWidth}`}>
           <header className="text-center">
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{article.appName}</div>
+            <div className="text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">{article.appName}</div>
             <h1 className="mt-4 text-lg font-semibold tracking-[-0.04em] sm:text-5xl">{article.title}</h1>
             <p className="mx-auto mt-4 max-w-7xl text-sm text-muted-foreground">{article.description}</p>
             <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
@@ -308,12 +309,12 @@ export function PublicBlogArticlePage({ slug }: { slug: string }) {
         )}
       </main>
       <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2 rounded-xl border border-border/70 bg-background/95 p-2 shadow-xl backdrop-blur-xl" role="group" aria-label="Article width">
-        <button type="button" onClick={() => setReadingMode(true)} aria-pressed={readingMode} className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${readingMode ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+        <Button type="button" onClick={() => setReadingMode(true)} aria-pressed={readingMode} className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${readingMode ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
           Reading
-        </button>
-        <button type="button" onClick={() => setReadingMode(false)} aria-pressed={!readingMode} className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${!readingMode ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+        </Button>
+        <Button type="button" onClick={() => setReadingMode(false)} aria-pressed={!readingMode} className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${!readingMode ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
           Normal
-        </button>
+        </Button>
       </div>
       <PublicFooter />
     </div>

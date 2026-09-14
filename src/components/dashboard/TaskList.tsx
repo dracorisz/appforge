@@ -1,7 +1,7 @@
 import { AppHeading } from "@/components/layout/AppHeading";
 import React from "react";
 import { Check, CheckCircle2, Circle, ClipboardList, Pencil, Plus, RefreshCw, Search, Trash2, X } from "lucide-react";
-import { Button, Card, Input } from "@/components/ui";
+import { Button, Card, Input, Select } from "@/components/ui";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/auth/AuthProvider";
 
@@ -335,11 +335,11 @@ export function TaskList() {
             <Button variant="ghost" size="sm" onClick={() => void clearCompleted()} disabled={!completed}>
               <Trash2 className="h-4 w-4" /> Clear completed
             </Button>
-            <select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)} className="rounded-xl border border-input bg-background px-2 text-sm">
+            <Select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)} className="rounded-xl border border-input bg-background px-2 text-sm">
               <option value="newest">Newest first</option>
               <option value="oldest">Oldest first</option>
               <option value="active-first">Active first</option>
-            </select>
+            </Select>
           </div>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -356,9 +356,9 @@ export function TaskList() {
       <div className="space-y-2">
         {visibleTasks.map((task) => (
           <Card key={task.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 p-4 sm:p-4">
-            <button type="button" onClick={() => toggle(task)} className="shrink-0 rounded-xl p-2 text-muted-foreground hover:text-foreground" aria-label={task.completed ? `Mark ${task.title} active` : `Complete ${task.title}`}>
+            <Button type="button" onClick={() => toggle(task)} className="shrink-0 rounded-xl p-2 text-muted-foreground hover:text-foreground" aria-label={task.completed ? `Mark ${task.title} active` : `Complete ${task.title}`}>
               {task.completed ? <CheckCircle2 className="h-5 w-5" /> : <Circle className="h-5 w-5" />}
-            </button>
+            </Button>
             {editingId === task.id ? (
               <Input
                 autoFocus
@@ -375,9 +375,9 @@ export function TaskList() {
                 aria-label={`Edit ${task.title}`}
               />
             ) : (
-              <button type="button" onClick={() => toggle(task)} className={`min-w-0 break-words text-left text-sm ${task.completed ? "text-muted-foreground line-through" : "text-foreground"}`}>
+              <Button type="button" onClick={() => toggle(task)} className={`min-w-0 break-words text-left text-sm ${task.completed ? "text-muted-foreground line-through" : "text-foreground"}`}>
                 {task.title}
-              </button>
+              </Button>
             )}
             <div className="flex items-center gap-2">
               {editingId === task.id ? (

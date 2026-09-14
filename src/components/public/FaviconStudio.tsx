@@ -1,6 +1,7 @@
 import { AppHeading } from "@/components/layout/AppHeading";
 import React from "react";
 import { Copy, Download, Image as ImageIcon, RotateCcw, Upload } from "lucide-react";
+import { Button, Input } from "@/components/ui";
 
 const PREVIEW_SIZES = [16, 32, 180, 192, 512] as const;
 const MAX_UPLOAD_BYTES = 5_000_000;
@@ -183,16 +184,16 @@ export default function FaviconStudio() {
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="grid gap-2 text-sm font-medium">
               App name
-              <input value={appName} maxLength={80} onChange={(event) => setAppName(event.target.value)} className="h-11 rounded-xl border bg-background px-4 text-sm" />
+              <Input value={appName} maxLength={80} onChange={(event) => setAppName(event.target.value)} className="h-11 rounded-xl border bg-background px-4 text-sm" />
             </label>
             <label className="grid gap-2 text-sm font-medium">
               Short name
-              <input value={shortName} maxLength={30} onChange={(event) => setShortName(event.target.value)} className="h-11 rounded-xl border bg-background px-4 text-sm" />
+              <Input value={shortName} maxLength={30} onChange={(event) => setShortName(event.target.value)} className="h-11 rounded-xl border bg-background px-4 text-sm" />
             </label>
           </div>
           <label className="grid gap-2 text-sm font-medium">
             Text or emoji
-            <input
+            <Input
               value={text}
               onChange={(event) => {
                 setText(event.target.value.slice(0, 4));
@@ -205,29 +206,29 @@ export default function FaviconStudio() {
           <div className="grid grid-cols-2 gap-4">
             <label className="grid gap-2 text-sm font-medium">
               Background
-              <input type="color" value={background} onChange={(event) => setBackground(event.target.value)} className="h-11 w-full rounded-xl border bg-background p-2" />
+              <Input type="color" value={background} onChange={(event) => setBackground(event.target.value)} className="h-11 w-full rounded-xl border bg-background p-2" />
             </label>
             <label className="grid gap-2 text-sm font-medium">
               Foreground
-              <input type="color" value={foreground} onChange={(event) => setForeground(event.target.value)} className="h-11 w-full rounded-xl border bg-background p-2" disabled={Boolean(imageData)} />
+              <Input type="color" value={foreground} onChange={(event) => setForeground(event.target.value)} className="h-11 w-full rounded-xl border bg-background p-2" disabled={Boolean(imageData)} />
             </label>
           </div>
           <label className="grid gap-2 text-sm font-medium">
             Corner radius <span className="text-sm font-normal text-muted-foreground">{radius}%</span>
-            <input type="range" min="0" max="50" value={radius} onChange={(event) => setRadius(Number(event.target.value))} />
+            <Input type="range" min="0" max="50" value={radius} onChange={(event) => setRadius(Number(event.target.value))} />
           </label>
           <label className="grid gap-2 text-sm font-medium">
             Glyph size <span className="text-sm font-normal text-muted-foreground">{Math.round(fontScale * 100)}%</span>
-            <input type="range" min="0.28" max="0.8" step="0.01" value={fontScale} onChange={(event) => setFontScale(Number(event.target.value))} disabled={Boolean(imageData)} />
+            <Input type="range" min="0.28" max="0.8" step="0.01" value={fontScale} onChange={(event) => setFontScale(Number(event.target.value))} disabled={Boolean(imageData)} />
           </label>
 
           <div className="flex flex-wrap gap-2 pt-2">
             <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border bg-background px-4 text-sm font-medium hover:bg-accent">
               <Upload className="h-4 w-4" /> Upload image
-              <input type="file" accept="image/*" className="sr-only" onChange={onUpload} />
+              <Input type="file" accept="image/*" className="sr-only" onChange={onUpload} />
             </label>
             {imageData && (
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setImageData(null);
@@ -236,18 +237,18 @@ export default function FaviconStudio() {
                 className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent"
               >
                 <RotateCcw className="h-4 w-4" /> Use text
-              </button>
+              </Button>
             )}
           </div>
         </div>
 
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
-          <button type="button" onClick={() => void exportSet()} className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">
+          <Button type="button" onClick={() => void exportSet()} className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">
             <Download className="h-4 w-4" /> Download favicon set
-          </button>
-          <button type="button" onClick={() => void copy(htmlLinks, "HTML tags")} className="inline-flex items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
+          </Button>
+          <Button type="button" onClick={() => void copy(htmlLinks, "HTML tags")} className="inline-flex items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
             <Copy className="h-4 w-4" /> Copy HTML tags
-          </button>
+          </Button>
         </div>
         <div aria-live="polite" className="mt-4 text-sm text-muted-foreground">
           {message}
@@ -265,12 +266,12 @@ export default function FaviconStudio() {
           </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
             {PREVIEW_SIZES.map((size) => (
-              <button key={size} type="button" onClick={() => void exportPreview(size)} className="group grid min-h-24 place-items-center gap-2 rounded-xl border bg-background p-4 text-sm text-muted-foreground hover:bg-accent" title={`Download ${size}×${size} PNG`}>
+              <Button key={size} type="button" onClick={() => void exportPreview(size)} className="group grid min-h-24 place-items-center gap-2 rounded-xl border bg-background p-4 text-sm text-muted-foreground hover:bg-accent" title={`Download ${size}×${size} PNG`}>
                 <img src={svgDataUrl} alt={`${size} by ${size} favicon preview`} width={Math.min(size, 72)} height={Math.min(size, 72)} className="rounded-xl" />
                 <span>
                   {size}×{size}
                 </span>
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -282,12 +283,12 @@ export default function FaviconStudio() {
               <p className="text-sm text-muted-foreground">Copy-ready project assets.</p>
             </div>
             <div className="flex gap-2">
-              <button type="button" onClick={() => void copy(svg, "SVG")} className="rounded-xl border px-4 py-2 text-sm font-medium hover:bg-accent">
+              <Button type="button" onClick={() => void copy(svg, "SVG")} className="rounded-xl border px-4 py-2 text-sm font-medium hover:bg-accent">
                 Copy SVG
-              </button>
-              <button type="button" onClick={() => void copy(manifest, "Manifest")} className="rounded-xl border px-4 py-2 text-sm font-medium hover:bg-accent">
+              </Button>
+              <Button type="button" onClick={() => void copy(manifest, "Manifest")} className="rounded-xl border px-4 py-2 text-sm font-medium hover:bg-accent">
                 Copy manifest
-              </button>
+              </Button>
             </div>
           </div>
           <pre className="mt-4 max-h-64 overflow-auto rounded-xl border bg-background p-4 text-sm">{manifest}</pre>

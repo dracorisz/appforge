@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Navigate, Link, useSearchParams } from "react-router-dom";
 import { KeyRound, Loader2, RefreshCw, ShieldCheck, Trash2, UserRound } from "lucide-react";
-import { Button, Card, Input, Tabs } from "@/components/ui";
+import { Button, Card, Input, Select, Tabs } from "@/components/ui";
 import { useAuth } from "@/auth/AuthProvider";
 import { toast } from "@/lib/toast";
 import { adminDeleteUser, adminListUsers, adminSetRole, adminUpdateProfile, getRole, getSecurityState, verifyTotpFactor, type AdminUser } from "@/lib/account";
@@ -198,7 +198,7 @@ export function AdminConsolePage() {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <select
+                  <Select
                     value={item.role}
                     onChange={async (event) => {
                       const nextRole = event.target.value as "user" | "admin";
@@ -214,7 +214,7 @@ export function AdminConsolePage() {
                   >
                     <option value="user">user</option>
                     <option value="admin">admin</option>
-                  </select>
+                  </Select>
                   <Button
                     variant="secondary"
                     size="sm"

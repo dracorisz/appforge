@@ -212,7 +212,7 @@ export function ImageWorkbench() {
             }}
             className={`flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center transition-colors ${dragging ? "border-foreground/30 bg-accent/70" : "border-border hover:border-foreground/20 hover:bg-accent/35"}`}
           >
-            <input
+            <Input
               type="file"
               accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
               className="hidden"
@@ -261,7 +261,7 @@ export function ImageWorkbench() {
                     <Input label="Height" type="number" min={1} max={MAX_DIMENSION} value={height} onChange={(event) => updateHeight(Number(event.target.value) || 1)} />
                   </div>
                   <label className="flex items-center gap-2 text-sm text-foreground">
-                    <input type="checkbox" checked={lockRatio} onChange={(event) => setLockRatio(event.target.checked)} /> Lock original aspect ratio ({ratio})
+                    <Input type="checkbox" checked={lockRatio} onChange={(event) => setLockRatio(event.target.checked)} /> Lock original aspect ratio ({ratio})
                   </label>
                   <p className="text-sm text-muted-foreground">
                     Target: {width} × {height} · {((width * height) / 1_000_000).toFixed(2)} MP
@@ -286,7 +286,7 @@ export function ImageWorkbench() {
                     ))}
                   </div>
                   <label className="mb-2 block text-sm font-medium text-foreground">Quality · {quality}%</label>
-                  <input type="range" min={20} max={100} value={quality} onChange={(event) => setQuality(Number(event.target.value))} className="w-full" />
+                  <Input type="range" min={20} max={100} value={quality} onChange={(event) => setQuality(Number(event.target.value))} className="w-full" />
                 </div>
               )}
               {definition.mode === "convert" && mime === "image/jpeg" && (info.file.type === "image/png" || info.file.type === "image/webp") && (
@@ -342,7 +342,7 @@ export function ImageWorkbench() {
                   </Button>
                 )}
                 <label>
-                  <input
+                  <Input
                     type="file"
                     accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
                     className="hidden"

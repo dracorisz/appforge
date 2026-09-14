@@ -1,13 +1,8 @@
 import React from 'react'
 import { controlClass, controlLabelClass } from './controlStyles'
 
-export function Select({ label, children, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { label?: string }) {
-  return (
-    <div className="w-full">
-      {label && <label className={controlLabelClass}>{label}</label>}
-      <select {...props} className={`${controlClass} ${props.className || ''}`}>
-        {children}
-      </select>
-    </div>
-  )
-}
+export const Select = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<HTMLSelectElement> & { label?: string }>(function Select({ label, children, className = '', ...props }, ref) {
+  const select = <select ref={ref} {...props} className={`${controlClass} ${className}`}>{children}</select>
+  if (!label) return select
+  return <div className="w-full"><label className={controlLabelClass}>{label}</label>{select}</div>
+})

@@ -1,7 +1,7 @@
 import { AppHeading } from '@/components/layout/AppHeading'
 import React from 'react'
 // @code-scanning/ignore js/xss-through-dom: Image URLs and metadata are rendered via React JSX (auto-escaped); image src attributes use local object URLs and do not reinterpret DOM text as HTML.
-import { Card, Button, Input, Badge } from '@/components/ui'
+import { Badge, Button, Card, Input } from "@/components/ui";
 import {
   Check,
   ChevronLeft,
@@ -313,8 +313,8 @@ export function PF_ImageLabeler() {
           </div>
         </div>
 
-        <input ref={fileInputRef} type="file" multiple accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="hidden" onChange={(event) => { const files = Array.from(event.target.files || []); const firstPath = (files[0] as File & { webkitRelativePath?: string } | undefined)?.webkitRelativePath; const root = firstPath?.split('/')[0] || 'Selected images'; assetsFromFiles(files, root); event.target.value = '' }} />
-        <input ref={importInputRef} type="file" accept="application/json,.json" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void importLabels(file); event.target.value = '' }} />
+        <Input ref={fileInputRef} type="file" multiple accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="hidden" onChange={(event) => { const files = Array.from(event.target.files || []); const firstPath = (files[0] as File & { webkitRelativePath?: string } | undefined)?.webkitRelativePath; const root = firstPath?.split('/')[0] || 'Selected images'; assetsFromFiles(files, root); event.target.value = '' }} />
+        <Input ref={importInputRef} type="file" accept="application/json,.json" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void importLabels(file); event.target.value = '' }} />
 
         {error && <div className="mt-4 rounded-xl border border-warning/30 bg-warning/10 px-4 py-2 text-sm text-warning dark:text-warning">{error}</div>}
 
@@ -325,7 +325,7 @@ export function PF_ImageLabeler() {
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,.65fr)]">
           <Card>
             <div className="flex flex-wrap items-center justify-between gap-2"><div className="flex items-center gap-2"><Badge color="slate">{currentIndex + 1} / {images.length}</Badge><span className="max-w-[55vw] truncate text-sm text-muted-foreground">{currentImage.path}</span></div><div className="flex gap-2"><Button variant="ghost" size="sm" onClick={() => goTo(currentIndex - 1)} disabled={currentIndex === 0}><ChevronLeft className="h-4 w-4" /></Button><Button variant="ghost" size="sm" onClick={() => goTo(currentIndex + 1)} disabled={currentIndex === images.length - 1}><ChevronRight className="h-4 w-4" /></Button><Button variant="ghost" size="sm" onClick={saveCurrentImage} title="Download original"><Download className="h-4 w-4" /></Button><Button variant="ghost" size="sm" onClick={() => setLightbox(currentImage.url)} title="Full screen"><Maximize2 className="h-4 w-4" /></Button></div></div>
-            <button type="button" onClick={() => setLightbox(currentImage.url)} className="mt-4 flex min-h-[360px] w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-overlay/5 p-2 dark:bg-overlay/30"><img src={currentImage.url} alt={currentImage.name} className="max-h-[62vh] max-w-full object-contain" /></button>
+            <Button type="button" onClick={() => setLightbox(currentImage.url)} className="mt-4 flex min-h-[360px] w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-overlay/5 p-2 dark:bg-overlay/30"><img src={currentImage.url} alt={currentImage.name} className="max-h-[62vh] max-w-full object-contain" /></Button>
             <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground"><span>{currentImage.name}</span><span>{formatBytes(currentImage.size)}</span><span>{currentImage.type || 'image'}</span></div>
           </Card>
 
@@ -335,20 +335,20 @@ export function PF_ImageLabeler() {
               <Input value={currentLabel?.label || ''} onChange={(event) => updateLabel({ label: event.target.value.slice(0, 1000) })} placeholder="e.g. portrait, product shot, motion reference…" className="mt-2" />
               <label className="mt-4 block text-sm font-medium text-foreground">Tags</label>
               <div className="mt-2 flex gap-2"><Input value={tagInput} onChange={(event) => setTagInput(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); addTag() } }} placeholder="Add tag" /><Button variant="secondary" onClick={addTag}><Tag className="h-4 w-4" /></Button></div>
-              <div className="mt-2 flex flex-wrap gap-2">{(currentLabel?.tags || []).map((tag) => <button key={tag} onClick={() => removeTag(tag)} className="inline-flex items-center gap-2 rounded-xl bg-muted px-2 py-2 text-sm text-foreground hover:bg-accent">{tag}<X className="h-3 w-3 text-muted-foreground" /></button>)}</div>
+              <div className="mt-2 flex flex-wrap gap-2">{(currentLabel?.tags || []).map((tag) => <Button key={tag} onClick={() => removeTag(tag)} className="inline-flex items-center gap-2 rounded-xl bg-muted px-2 py-2 text-sm text-foreground hover:bg-accent">{tag}<X className="h-3 w-3 text-muted-foreground" /></Button>)}</div>
               <div className="mt-4 grid gap-2 sm:grid-cols-2"><Button variant={currentLabel?.approved ? 'secondary' : 'primary'} onClick={() => updateLabel({ approved: !currentLabel?.approved })}><Check className="h-4 w-4" /> {currentLabel?.approved ? 'Approved' : 'Approve image'}</Button><Button variant="secondary" onClick={approveAndNext} disabled={currentIndex >= images.length - 1 && Boolean(currentLabel?.approved)}>Approve & next</Button></div><p className="mt-2 text-sm text-muted-foreground">Keyboard: ← / → navigate · A approves and advances.</p>
             </Card>
 
             <Card>
               <div className="flex items-center justify-between"><h2 className="text-sm font-medium text-foreground">Folder queue</h2><span className="text-sm text-muted-foreground">{completion}% approved</span></div>
-              <div className="mt-4 max-h-[340px] space-y-2 overflow-y-auto pr-2">{images.map((image, index) => { const item = labels[image.id]; return <button key={image.id} onClick={() => goTo(index)} className={`flex w-full items-center gap-2 rounded-xl border px-2 py-2 text-left text-sm ${index === currentIndex ? 'border-foreground/30 bg-accent' : 'border-transparent hover:bg-accent/50'}`}><span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-xl ${item?.approved ? 'bg-success/15 text-success' : 'bg-muted text-muted-foreground'}`}>{item?.approved ? <Check className="h-3 w-3" /> : index + 1}</span><span className="min-w-0 flex-1 truncate text-foreground">{image.path}</span></button> })}</div>
+              <div className="mt-4 max-h-[340px] space-y-2 overflow-y-auto pr-2">{images.map((image, index) => { const item = labels[image.id]; return <Button key={image.id} onClick={() => goTo(index)} className={`flex w-full items-center gap-2 rounded-xl border px-2 py-2 text-left text-sm ${index === currentIndex ? 'border-foreground/30 bg-accent' : 'border-transparent hover:bg-accent/50'}`}><span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-xl ${item?.approved ? 'bg-success/15 text-success' : 'bg-muted text-muted-foreground'}`}>{item?.approved ? <Check className="h-3 w-3" /> : index + 1}</span><span className="min-w-0 flex-1 truncate text-foreground">{image.path}</span></Button> })}</div>
               <Button variant="ghost" size="sm" className="mt-4 w-full" onClick={clearFolderLabels}><RotateCcw className="h-3.5 w-3.5" /> Clear labels for this folder</Button>
             </Card>
           </div>
         </div>
       ) : <Card><div className="py-8 text-center"><ImageIcon className="mx-auto h-7 w-7 text-muted-foreground" /><h2 className="mt-4 text-sm font-medium text-foreground">Open a local image folder</h2><p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">Supported formats: PNG, JPEG, WebP, GIF, and AVIF. Images are previewed through local object URLs and are not uploaded.</p></div></Card>}
 
-      {lightbox && <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/90 p-4" onClick={() => setLightbox(null)}><button onClick={() => setLightbox(null)} className="absolute right-4 top-4 rounded-xl bg-overlay/40 p-2 text-inverse hover:bg-overlay/60" aria-label="Close preview"><X className="h-6 w-6" /></button><img src={lightbox} alt="Full-size preview" className="max-h-[92vh] max-w-[96vw] object-contain" /></div>}
+      {lightbox && <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/90 p-4" onClick={() => setLightbox(null)}><Button onClick={() => setLightbox(null)} className="absolute right-4 top-4 rounded-xl bg-overlay/40 p-2 text-inverse hover:bg-overlay/60" aria-label="Close preview"><X className="h-6 w-6" /></Button><img src={lightbox} alt="Full-size preview" className="max-h-[92vh] max-w-[96vw] object-contain" /></div>}
     </div>
   )
 }

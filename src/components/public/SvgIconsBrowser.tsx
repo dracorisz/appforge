@@ -2,6 +2,7 @@ import { AppHeading } from "@/components/layout/AppHeading";
 import React from "react";
 import { Copy, Download, Heart, Search, Star } from "lucide-react";
 import type { IconType } from "react-icons";
+import { Button, Input, Select } from "@/components/ui";
 
 const PACKS = {
   ai: { label: "Ant Design Icons", load: () => import("react-icons/ai") },
@@ -184,19 +185,19 @@ export default function SvgIconsBrowser() {
         <div className="grid gap-4 md:grid-cols-[minmax(220px,0.45fr)_minmax(260px,1fr)_180px]">
           <label className="grid gap-2 text-sm font-medium">
             Icon pack
-            <select value={pack} onChange={(event) => setPack(event.target.value as PackKey)} className="h-11 rounded-xl border bg-background px-4">
+            <Select value={pack} onChange={(event) => setPack(event.target.value as PackKey)} className="h-11 rounded-xl border bg-background px-4">
               {Object.entries(PACKS).map(([key, item]) => (
                 <option key={key} value={key}>
                   {item.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <label className="grid gap-2 text-sm font-medium">
             Search component name
             <span className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input
+              <Input
                 value={query}
                 maxLength={100}
                 onChange={(event) => {
@@ -210,13 +211,13 @@ export default function SvgIconsBrowser() {
           </label>
           <label className="grid gap-2 text-sm font-medium grid-cols-2">
             Preview size <span className="font-normal text-muted-foreground">{size}px</span>
-            <input type="range" min="18" max="64" className="col-span-2 -mt-8" value={size} onChange={(event) => setSize(Number(event.target.value))} />
+            <Input type="range" min="18" max="64" className="col-span-2 -mt-8" value={size} onChange={(event) => setSize(Number(event.target.value))} />
           </label>
         </div>
         <div className="flex justify-between">
           <div className="flex mt-4 flex-wrap gap-2">
             {(["all", "favorites", "recent"] as const).map((value) => (
-              <button
+              <Button
                 key={value}
                 type="button"
                 onClick={() => {
@@ -226,7 +227,7 @@ export default function SvgIconsBrowser() {
                 className={`rounded-xl border px-4 py-2 text-sm font-medium hover:cursor-pointer capitalize ${scope === value ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               >
                 {value === "favorites" ? `Favorites (${favorites.length})` : value === "recent" ? `Recent (${recents.length})` : "All icons"}
-              </button>
+              </Button>
             ))}
           </div>
           <div aria-live="polite" className="min-h-9 px-2 pt-4 text-sm text-muted-foreground">
@@ -251,22 +252,22 @@ export default function SvgIconsBrowser() {
                 <div className="text-sm text-muted-foreground">react-icons/{icon.pack}</div>
               </div>
               <div className="mt-4 grid grid-cols-4 gap-2">
-                <button type="button" onClick={() => void copyImport(icon)} className="grid place-items-center rounded-xl border hover:bg-accent" title="Copy import">
+                <Button type="button" onClick={() => void copyImport(icon)} className="grid place-items-center rounded-xl border hover:bg-accent" title="Copy import">
                   <Copy className="h-3.5 w-3.5" />
-                </button>
-                <button type="button" onClick={() => void copyJsx(icon)} className="grid place-items-center rounded-xl border text-sm font-semibold hover:bg-accent" title="Copy JSX">
+                </Button>
+                <Button type="button" onClick={() => void copyJsx(icon)} className="grid place-items-center rounded-xl border text-sm font-semibold hover:bg-accent" title="Copy JSX">
                   JSX
-                </button>
-                <button type="button" onClick={() => void copySvg(icon)} className="grid place-items-center rounded-xl border text-sm font-semibold hover:bg-accent" title="Copy rendered SVG">
+                </Button>
+                <Button type="button" onClick={() => void copySvg(icon)} className="grid place-items-center rounded-xl border text-sm font-semibold hover:bg-accent" title="Copy rendered SVG">
                   SVG
-                </button>
-                <button type="button" onClick={() => toggleFavorite(icon)} className="grid place-items-center rounded-xl border hover:bg-accent" title={favorite ? "Remove favorite" : "Favorite"}>
+                </Button>
+                <Button type="button" onClick={() => toggleFavorite(icon)} className="grid place-items-center rounded-xl border hover:bg-accent" title={favorite ? "Remove favorite" : "Favorite"}>
                   {favorite ? <Heart className="h-3.5 w-3.5 fill-current" /> : <Star className="h-3.5 w-3.5" />}
-                </button>
+                </Button>
               </div>
-              <button type="button" onClick={() => void downloadSvg(icon)} className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-medium hover:bg-accent">
+              <Button type="button" onClick={() => void downloadSvg(icon)} className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-medium hover:bg-accent">
                 <Download className="h-3.5 w-3.5" /> Download SVG
-              </button>
+              </Button>
             </article>
           );
         })}
@@ -275,9 +276,9 @@ export default function SvgIconsBrowser() {
       {!loading && filtered.length === 0 && <div className="surface-card rounded-xl border p-8 text-center text-sm text-muted-foreground">No icons in this pack match “{query}”.</div>}
       {visible < filtered.length && (
         <div className="mt-4 flex justify-center">
-          <button type="button" onClick={() => setVisible((value) => value + 120)} className="rounded-xl border bg-background px-4 text-sm font-semibold hover:bg-accent">
+          <Button type="button" onClick={() => setVisible((value) => value + 120)} className="rounded-xl border bg-background px-4 text-sm font-semibold hover:bg-accent">
             Load 120 more
-          </button>
+          </Button>
         </div>
       )}
 

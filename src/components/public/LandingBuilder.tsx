@@ -1,6 +1,7 @@
 import { AppHeading } from "@/components/layout/AppHeading";
 import React from "react";
 import { ArrowDown, ArrowUp, Download, Image as ImageIcon, Plus, Save, Trash2, Upload } from "lucide-react";
+import { Button, Input, Select, Textarea } from "@/components/ui";
 
 type SectionKind = "hero" | "features" | "gallery" | "cta" | "faq" | "footer";
 type LandingSection = { id: string; kind: SectionKind; title: string; body: string; linkLabel?: string; linkUrl?: string; image?: string };
@@ -239,20 +240,20 @@ export default function LandingBuilder() {
         <div className="mt-4 grid gap-4">
           <label className="grid gap-2 text-sm font-medium">
             Project name
-            <input value={project.name} onChange={(event) => setProject((current) => ({ ...current, name: event.target.value }))} className="h-11 rounded-xl border bg-background px-4" />
+            <Input value={project.name} onChange={(event) => setProject((current) => ({ ...current, name: event.target.value }))} className="h-11 rounded-xl border bg-background px-4" />
           </label>
           <div className="grid grid-cols-2 gap-4">
             <label className="grid gap-2 text-sm font-medium">
               Appearance
-              <select value={project.preset} onChange={(event) => setProject((current) => ({ ...current, preset: event.target.value as LandingProject["preset"] }))} className="h-11 rounded-xl border bg-background px-4">
+              <Select value={project.preset} onChange={(event) => setProject((current) => ({ ...current, preset: event.target.value as LandingProject["preset"] }))} className="h-11 rounded-xl border bg-background px-4">
                 <option value="slate">Slate</option>
                 <option value="paper">Paper</option>
                 <option value="midnight">Midnight</option>
-              </select>
+              </Select>
             </label>
             <label className="grid gap-2 text-sm font-medium">
               Accent
-              <input type="color" value={project.accent} onChange={(event) => setProject((current) => ({ ...current, accent: event.target.value }))} className="h-11 w-full rounded-xl border bg-background p-2" />
+              <Input type="color" value={project.accent} onChange={(event) => setProject((current) => ({ ...current, accent: event.target.value }))} className="h-11 w-full rounded-xl border bg-background p-2" />
             </label>
           </div>
         </div>
@@ -261,9 +262,9 @@ export default function LandingBuilder() {
           <div className="mb-2 text-sm font-semibold">Add section</div>
           <div className="grid grid-cols-3 gap-2">
             {(["hero", "features", "gallery", "cta", "faq", "footer"] as SectionKind[]).map((kind) => (
-              <button key={kind} type="button" onClick={() => add(kind)} className="inline-flex items-center justify-center gap-2 rounded-xl border px-2 text-sm font-medium capitalize hover:bg-accent">
+              <Button key={kind} type="button" onClick={() => add(kind)} className="inline-flex items-center justify-center gap-2 rounded-xl border px-2 text-sm font-medium capitalize hover:bg-accent">
                 <Plus className="h-3.5 w-3.5" /> {kind}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -276,30 +277,30 @@ export default function LandingBuilder() {
                   {index + 1}. {section.kind}
                 </span>
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="grid h-9 w-9 place-items-center rounded-xl border disabled:opacity-40" aria-label={`Move ${section.kind} up`}>
+                  <Button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="grid h-9 w-9 place-items-center rounded-xl border disabled:opacity-40" aria-label={`Move ${section.kind} up`}>
                     <ArrowUp className="h-3.5 w-3.5" />
-                  </button>
-                  <button type="button" onClick={() => move(index, 1)} disabled={index === project.sections.length - 1} className="grid h-9 w-9 place-items-center rounded-xl border disabled:opacity-40" aria-label={`Move ${section.kind} down`}>
+                  </Button>
+                  <Button type="button" onClick={() => move(index, 1)} disabled={index === project.sections.length - 1} className="grid h-9 w-9 place-items-center rounded-xl border disabled:opacity-40" aria-label={`Move ${section.kind} down`}>
                     <ArrowDown className="h-3.5 w-3.5" />
-                  </button>
-                  <button type="button" onClick={() => remove(section.id)} className="grid h-9 w-9 place-items-center rounded-xl border hover:bg-destructive/10" aria-label={`Remove ${section.kind}`}>
+                  </Button>
+                  <Button type="button" onClick={() => remove(section.id)} className="grid h-9 w-9 place-items-center rounded-xl border hover:bg-destructive/10" aria-label={`Remove ${section.kind}`}>
                     <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  </Button>
                 </div>
               </div>
               <div className="mt-4 grid gap-2">
-                <input value={section.title} onChange={(event) => updateSection(section.id, { title: event.target.value })} className="h-9 rounded-xl border bg-background px-4 text-sm font-medium" aria-label={`${section.kind} title`} />
-                <textarea value={section.body} onChange={(event) => updateSection(section.id, { body: event.target.value })} rows={3} className="rounded-xl border bg-background p-4 text-sm" aria-label={`${section.kind} body`} />
+                <Input value={section.title} onChange={(event) => updateSection(section.id, { title: event.target.value })} className="h-9 rounded-xl border bg-background px-4 text-sm font-medium" aria-label={`${section.kind} title`} />
+                <Textarea value={section.body} onChange={(event) => updateSection(section.id, { body: event.target.value })} rows={3} className="rounded-xl border bg-background p-4 text-sm" aria-label={`${section.kind} body`} />
                 {(section.kind === "hero" || section.kind === "cta" || section.kind === "footer") && (
                   <div className="grid grid-cols-2 gap-2">
-                    <input value={section.linkLabel || ""} onChange={(event) => updateSection(section.id, { linkLabel: event.target.value })} placeholder="Button label" className="h-9 rounded-xl border bg-background px-4 text-sm" />
-                    <input value={section.linkUrl || ""} onChange={(event) => updateSection(section.id, { linkUrl: event.target.value })} placeholder="https://… or #section" className="h-9 rounded-xl border bg-background px-4 text-sm" />
+                    <Input value={section.linkLabel || ""} onChange={(event) => updateSection(section.id, { linkLabel: event.target.value })} placeholder="Button label" className="h-9 rounded-xl border bg-background px-4 text-sm" />
+                    <Input value={section.linkUrl || ""} onChange={(event) => updateSection(section.id, { linkUrl: event.target.value })} placeholder="https://… or #section" className="h-9 rounded-xl border bg-background px-4 text-sm" />
                   </div>
                 )}
                 {section.kind === "gallery" && (
                   <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border text-sm font-medium hover:bg-accent">
                     <ImageIcon className="h-3.5 w-3.5" /> Local image
-                    <input
+                    <Input
                       type="file"
                       accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
                       className="sr-only"
@@ -316,19 +317,19 @@ export default function LandingBuilder() {
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <button type="button" onClick={saveNamed} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
+          <Button type="button" onClick={saveNamed} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
             <Save className="h-4 w-4" /> Save local
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => downloadText(JSON.stringify({ ...project, updatedAt: new Date().toISOString() }, null, 2), `${project.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() || "landing"}.appforge.json`, "application/json")}
             className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent"
           >
             <Download className="h-4 w-4" /> Project JSON
-          </button>
+          </Button>
           <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
             <Upload className="h-4 w-4" /> Import JSON
-            <input
+            <Input
               type="file"
               accept="application/json,.json"
               className="sr-only"
@@ -338,19 +339,19 @@ export default function LandingBuilder() {
               }}
             />
           </label>
-          <button
+          <Button
             type="button"
             onClick={() => downloadText(buildHtml(project), `${project.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() || "landing"}.html`, "text/html;charset=utf-8")}
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground"
           >
             <Download className="h-4 w-4" /> Static HTML
-          </button>
+          </Button>
         </div>
 
         {Object.keys(savedProjects).length > 0 && (
           <label className="mt-4 grid gap-2 text-sm font-medium text-muted-foreground">
             Saved browser projects
-            <select
+            <Select
               defaultValue=""
               onChange={(event) => {
                 const saved = savedProjects[event.target.value];
@@ -369,7 +370,7 @@ export default function LandingBuilder() {
                     {name}
                   </option>
                 ))}
-            </select>
+            </Select>
           </label>
         )}
         <div aria-live="polite" className="mt-4 text-sm text-muted-foreground">
@@ -382,9 +383,9 @@ export default function LandingBuilder() {
           <div className="text-sm font-semibold">Responsive preview</div>
           <div className="flex rounded-xl border bg-background p-2">
             {(["phone", "tablet", "desktop"] as const).map((item) => (
-              <button key={item} type="button" onClick={() => setViewport(item)} className={`rounded-xl px-4 py-2 text-sm font-medium capitalize ${viewport === item ? "bg-accent text-foreground" : "text-muted-foreground"}`}>
+              <Button key={item} type="button" onClick={() => setViewport(item)} className={`rounded-xl px-4 py-2 text-sm font-medium capitalize ${viewport === item ? "bg-accent text-foreground" : "text-muted-foreground"}`}>
                 {item}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

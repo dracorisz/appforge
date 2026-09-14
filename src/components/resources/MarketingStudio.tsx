@@ -4,6 +4,7 @@ import { SiYoutube as Youtube } from "react-icons/si";
 import { getAllApps } from "@/lib/registry";
 import { BUILD_INFO } from "@/lib/buildInfo";
 import { APPFORGE_CHANNEL_URL, DemoPackage, DemoStatus, makeDemoPackage, makePublication, MarketingFormat, PLAYLISTS, PublicationRecord, PublicationStatus } from "@/lib/marketing";
+import { Button, Input, Select, Textarea } from "@/components/ui";
 
 const DEMOS_KEY = "appforge-marketing-demos-v1";
 const PUBLICATIONS_KEY = "appforge-marketing-publications-v1";
@@ -88,7 +89,7 @@ export default function MarketingStudio() {
       <section className="surface-card rounded-xl border p-4 sm:p-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Demo package + publication ledger</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">Demo package + publication ledger</p>
             <h1 className="mt-2 text-lg font-semibold tracking-tight">Marketing Studio</h1>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
               Generate repeatable walkthrough scripts and channel-neutral publication records from the canonical AppForge registry. YouTube publishing remains review-first; delegated upload stays disabled until the narrow upload scope is approved.
@@ -102,17 +103,17 @@ export default function MarketingStudio() {
         <div className="mt-4 grid gap-4 md:grid-cols-[minmax(240px,1fr)_auto]">
           <label className="grid gap-2 text-sm font-medium">
             App
-            <select value={appId} onChange={(event) => setAppId(event.target.value)} className="h-11 rounded-xl border bg-background px-4">
+            <Select value={appId} onChange={(event) => setAppId(event.target.value)} className="h-11 rounded-xl border bg-background px-4">
               {apps.map((app) => (
                 <option key={app.id} value={app.id}>
                   {app.name} · {app.version} · {app.status}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
-          <button type="button" onClick={generate} className="inline-flex items-center justify-center gap-2 self-end rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">
+          <Button type="button" onClick={generate} className="inline-flex items-center justify-center gap-2 self-end rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">
             <Film className="h-4 w-4" /> Generate demo package
-          </button>
+          </Button>
         </div>
         <div aria-live="polite" className="mt-4 text-sm text-muted-foreground">
           {message}
@@ -121,15 +122,15 @@ export default function MarketingStudio() {
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="surface-card self-start rounded-xl border p-4 xl:sticky xl:top-4">
-          <div className="px-2 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Demo packages</div>
+          <div className="px-2 py-2 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">Demo packages</div>
           <div className="grid max-h-[70dvh] gap-2 overflow-auto">
             {demos.map((demo) => (
-              <button key={demo.id} type="button" onClick={() => setSelectedDemoId(demo.id)} className={`rounded-xl border p-4 text-left ${selectedDemo?.id === demo.id ? "bg-accent" : "bg-background/50 hover:bg-accent/60"}`}>
+              <Button key={demo.id} type="button" onClick={() => setSelectedDemoId(demo.id)} className={`rounded-xl border p-4 text-left ${selectedDemo?.id === demo.id ? "bg-accent" : "bg-background/50 hover:bg-accent/60"}`}>
                 <div className="text-sm font-semibold">{demo.appName}</div>
                 <div className="mt-2 text-sm text-muted-foreground">
                   {demo.status} · {demo.appVersion}
                 </div>
-              </button>
+              </Button>
             ))}
             {demos.length === 0 && <div className="p-4 text-sm text-muted-foreground">Generate the first package from the registry.</div>}
           </div>
@@ -145,12 +146,12 @@ export default function MarketingStudio() {
                 </div>
                 <label className="grid gap-2 text-sm font-medium text-muted-foreground">
                   Recording status
-                  <select value={selectedDemo.status} onChange={(event) => updateDemo(selectedDemo.id, { status: event.target.value as DemoStatus })} className="h-9 rounded-xl border bg-background px-4 text-sm text-foreground">
+                  <Select value={selectedDemo.status} onChange={(event) => updateDemo(selectedDemo.id, { status: event.target.value as DemoStatus })} className="h-9 rounded-xl border bg-background px-4 text-sm text-foreground">
                     <option value="planned">Planned</option>
                     <option value="recorded">Recorded</option>
                     <option value="edited">Edited</option>
                     <option value="published">Published</option>
-                  </select>
+                  </Select>
                 </label>
               </div>
 
@@ -158,9 +159,9 @@ export default function MarketingStudio() {
                 <div>
                   <div className="mb-2 flex items-center justify-between">
                     <h3 className="text-sm font-semibold">30–90s script</h3>
-                    <button type="button" onClick={() => void copy(selectedDemo.script.join("\n"))} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+                    <Button type="button" onClick={() => void copy(selectedDemo.script.join("\n"))} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
                       <Clipboard className="h-3.5 w-3.5" /> Copy
-                    </button>
+                    </Button>
                   </div>
                   <ol className="grid gap-2 text-sm text-muted-foreground">
                     {selectedDemo.script.map((line, index) => (
@@ -174,9 +175,9 @@ export default function MarketingStudio() {
                 <div>
                   <div className="mb-2 flex items-center justify-between">
                     <h3 className="text-sm font-semibold">Shot/click list</h3>
-                    <button type="button" onClick={() => void copy(selectedDemo.shots.join("\n"))} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+                    <Button type="button" onClick={() => void copy(selectedDemo.shots.join("\n"))} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
                       <Clipboard className="h-3.5 w-3.5" /> Copy
-                    </button>
+                    </Button>
                   </div>
                   <ol className="grid gap-2 text-sm text-muted-foreground">
                     {selectedDemo.shots.map((line, index) => (
@@ -191,30 +192,30 @@ export default function MarketingStudio() {
 
               <label className="mt-4 grid gap-2 text-sm font-semibold">
                 Narration
-                <textarea value={selectedDemo.narration} onChange={(event) => updateDemo(selectedDemo.id, { narration: event.target.value })} rows={4} className="rounded-xl border bg-background p-4 text-sm font-normal" />
+                <Textarea value={selectedDemo.narration} onChange={(event) => updateDemo(selectedDemo.id, { narration: event.target.value })} rows={4} className="rounded-xl border bg-background p-4 text-sm font-normal" />
               </label>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-2 text-sm font-semibold">
                   Thumbnail text
-                  <input value={selectedDemo.thumbnailText} onChange={(event) => updateDemo(selectedDemo.id, { thumbnailText: event.target.value })} className="h-11 rounded-xl border bg-background px-4 font-normal" />
+                  <Input value={selectedDemo.thumbnailText} onChange={(event) => updateDemo(selectedDemo.id, { thumbnailText: event.target.value })} className="h-11 rounded-xl border bg-background px-4 font-normal" />
                 </label>
                 <label className="grid gap-2 text-sm font-semibold">
                   Playlist
-                  <select value={selectedDemo.playlist} onChange={(event) => updateDemo(selectedDemo.id, { playlist: event.target.value })} className="h-11 rounded-xl border bg-background px-4 font-normal">
+                  <Select value={selectedDemo.playlist} onChange={(event) => updateDemo(selectedDemo.id, { playlist: event.target.value })} className="h-11 rounded-xl border bg-background px-4 font-normal">
                     {PLAYLISTS.map((playlist) => (
                       <option key={playlist}>{playlist}</option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
               </div>
 
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <button type="button" onClick={() => createPublication("youtube-16x9")} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
+                <Button type="button" onClick={() => createPublication("youtube-16x9")} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
                   <Youtube className="h-4 w-4" /> Prepare 16:9 publication
-                </button>
-                <button type="button" onClick={() => createPublication("short-9x16")} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
+                </Button>
+                <Button type="button" onClick={() => createPublication("short-9x16")} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
                   <Film className="h-4 w-4" /> Prepare Short
-                </button>
+                </Button>
               </div>
             </section>
 
@@ -223,43 +224,43 @@ export default function MarketingStudio() {
                 <article key={record.id} className="surface-card rounded-xl border p-4 sm:p-4">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                      <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      <div className="text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                         {record.channel} · {record.format}
                       </div>
                       <h3 className="mt-2 font-semibold">{record.title}</h3>
                     </div>
-                    <select value={record.status} onChange={(event) => updatePublication(record.id, { status: event.target.value as PublicationStatus })} className="h-9 rounded-xl border bg-background px-4 text-sm">
+                    <Select value={record.status} onChange={(event) => updatePublication(record.id, { status: event.target.value as PublicationStatus })} className="h-9 rounded-xl border bg-background px-4 text-sm">
                       <option value="draft">Draft</option>
                       <option value="ready">Ready</option>
                       <option value="publishing">Publishing</option>
                       <option value="published">Published</option>
                       <option value="failed">Failed</option>
-                    </select>
+                    </Select>
                   </div>
                   <label className="mt-4 grid gap-2 text-sm font-medium">
                     Title
-                    <input value={record.title} onChange={(event) => updatePublication(record.id, { title: event.target.value })} className="h-11 rounded-xl border bg-background px-4" />
+                    <Input value={record.title} onChange={(event) => updatePublication(record.id, { title: event.target.value })} className="h-11 rounded-xl border bg-background px-4" />
                   </label>
                   <label className="mt-4 grid gap-2 text-sm font-medium">
                     Description
-                    <textarea value={record.description} onChange={(event) => updatePublication(record.id, { description: event.target.value })} rows={8} className="rounded-xl border bg-background p-4 text-sm" />
+                    <Textarea value={record.description} onChange={(event) => updatePublication(record.id, { description: event.target.value })} rows={8} className="rounded-xl border bg-background p-4 text-sm" />
                   </label>
                   <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_auto]">
                     <label className="grid gap-2 text-sm font-medium">
                       Published URL
-                      <input value={record.remoteUrl || ""} onChange={(event) => updatePublication(record.id, { remoteUrl: event.target.value })} placeholder="https://youtu.be/…" className="h-11 rounded-xl border bg-background px-4" />
+                      <Input value={record.remoteUrl || ""} onChange={(event) => updatePublication(record.id, { remoteUrl: event.target.value })} placeholder="https://youtu.be/…" className="h-11 rounded-xl border bg-background px-4" />
                     </label>
-                    <button type="button" onClick={() => markPublished(record)} className="inline-flex items-center justify-center gap-2 self-end rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
+                    <Button type="button" onClick={() => markPublished(record)} className="inline-flex items-center justify-center gap-2 self-end rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
                       <CheckCircle2 className="h-4 w-4" /> Mark published
-                    </button>
+                    </Button>
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <button type="button" onClick={() => void copy(`${record.title}\n\n${record.description}\n\nTags: ${record.tags.join(", ")}`)} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
+                    <Button type="button" onClick={() => void copy(`${record.title}\n\n${record.description}\n\nTags: ${record.tags.join(", ")}`)} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
                       <Clipboard className="h-3.5 w-3.5" /> Copy publication package
-                    </button>
-                    <button type="button" disabled title="Enable only after Google approves the narrow delegated YouTube upload scope" className="inline-flex cursor-not-allowed items-center gap-2 rounded-xl border px-4 text-sm font-semibold opacity-50">
+                    </Button>
+                    <Button type="button" disabled title="Enable only after Google approves the narrow delegated YouTube upload scope" className="inline-flex cursor-not-allowed items-center gap-2 rounded-xl border px-4 text-sm font-semibold opacity-50">
                       <Send className="h-3.5 w-3.5" /> Upload via YouTube OAuth · approval required
-                    </button>
+                    </Button>
                   </div>
                 </article>
               ))}

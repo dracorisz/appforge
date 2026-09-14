@@ -127,7 +127,7 @@ export function AppAdminPage() {
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
           <Input label="Cover image URL" value={form.coverImage || ""} onChange={(event) => setForm({ ...form, coverImage: event.target.value || undefined })} />
           <div className="flex items-end gap-2">
-            <input
+            <Input
               ref={coverInputRef}
               type="file"
               accept="image/*"

@@ -1,6 +1,7 @@
 import React from "react";
 import { Camera, Check, Download, ImagePlus, Loader2, MonitorUp, Save } from "lucide-react";
 import { uploadVaultMedia } from "@/lib/mediaVault";
+import { Button, Input } from "@/components/ui";
 
 const MAX_CAPTURE_EDGE = 2560;
 
@@ -168,12 +169,12 @@ export function DesktopBuddyCapture() {
           <p className="mt-2 max-w-3xl text-sm text-muted-foreground">Use the browser screen-share API on supported desktop browsers. If Brave or an installed PWA blocks it, import a screenshot instead and continue with the same download/Media Vault workflow.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" disabled={Boolean(busy)} onClick={() => void captureScreen()} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">
+          <Button type="button" disabled={Boolean(busy)} onClick={() => void captureScreen()} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">
             {busy === "capture" ? <Loader2 className="h-4 w-4 animate-spin" /> : <MonitorUp className="h-4 w-4" />} Capture screen
-          </button>
+          </Button>
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent">
             <ImagePlus className="h-4 w-4" /> Import screenshot
-            <input
+            <Input
               type="file"
               accept="image/png,image/jpeg,image/webp"
               className="hidden"
@@ -204,12 +205,12 @@ export function DesktopBuddyCapture() {
               · {capture.source === "screen" ? "browser capture" : "imported fallback"}
             </div>
             <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={() => downloadCapture(capture)} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
+              <Button type="button" onClick={() => downloadCapture(capture)} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
                 <Download className="h-3.5 w-3.5" /> Download PNG
-              </button>
-              <button type="button" disabled={Boolean(busy)} onClick={() => void saveToVault()} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent disabled:opacity-50">
+              </Button>
+              <Button type="button" disabled={Boolean(busy)} onClick={() => void saveToVault()} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent disabled:opacity-50">
                 {busy === "save" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} Save to Media Vault
-              </button>
+              </Button>
               <span className="inline-flex items-center gap-2 rounded-xl border border-success/25 bg-success/5 px-4 text-sm text-success dark:text-success">
                 <Check className="h-3.5 w-3.5" /> Local preview
               </span>

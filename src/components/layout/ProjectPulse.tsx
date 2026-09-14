@@ -1,7 +1,7 @@
 import React from 'react'
 // @code-scanning/ignore js/xss-through-dom: Project Pulse build data is derived from app registry metadata (trusted source) and rendered via React JSX which auto-escapes all text content.
 import { Activity, Boxes, ChevronDown, ChevronUp, CheckCircle2, ExternalLink, Rocket } from 'lucide-react'
-import { BuildBadge } from '@/components/ui'
+import { BuildBadge, Button } from "@/components/ui";
 import { getAllApps } from '@/lib/registry'
 
 const readinessScore = {
@@ -21,7 +21,7 @@ export function ProjectPulse() {
 
   return (
     <div className="mb-4 rounded-xl border border-border/60 bg-background/45 text-sm text-muted-foreground backdrop-blur-lg">
-      <button
+      <Button
         type="button"
         className="flex w-full flex-col gap-2 px-4 py-2 text-left sm:flex-row sm:items-center sm:justify-between"
         onClick={() => setExpanded((value) => !value)}
@@ -44,7 +44,7 @@ export function ProjectPulse() {
           <BuildBadge compact />
           {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
         </div>
-      </button>
+      </Button>
 
       {expanded && (
         <div className="border-t border-border/60 p-4">

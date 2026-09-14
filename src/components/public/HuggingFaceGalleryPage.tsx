@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, ExternalLink, Image as ImageIcon, Loader2, MessageSquareText, Sparkles } from "lucide-react";
-import { Badge, Card } from "@/components/ui";
+import { Badge, Button, Card } from "@/components/ui";
 import { supabase, SUPABASE_PROJECT_URL } from "@/lib/supabase";
 import { FRONTEND_CONTENT_UPDATED_EVENT, loadPublishedFrontendContent } from "@/lib/frontendContent";
 import { PublicHeader } from "./PublicHeader";
@@ -61,7 +61,7 @@ function CarouselCard({ asset, active, onSelect }: { asset: PublicDragonAsset; a
   const src = publicAssetUrl(asset);
   const modelLabel = asset.model === "unknown-legacy" ? "Legacy model not recorded" : asset.model || "Hugging Face image model";
   return (
-    <button
+    <Button
       type="button"
       onClick={onSelect}
       className={`group relative shrink-0 cursor-pointer overflow-hidden rounded-xl border border-inverse/10 bg-[#080d16] text-left transition-all duration-500 ${active ? "z-10 w-[78vw] max-w-3xl scale-100 opacity-100 md:w-[58vw]" : "w-[52vw] max-w-xl scale-[.82] opacity-45 md:w-[34vw]"}`}
@@ -93,7 +93,7 @@ function CarouselCard({ asset, active, onSelect }: { asset: PublicDragonAsset; a
           <span className="shrink-0 text-sm text-inverse/40">{new Date(asset.generated_at).toLocaleDateString()}</span>
         </div>
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -120,15 +120,15 @@ function InfiniteShowcase({ assets }: { assets: PublicDragonAsset[] }) {
       </div>
       {assets.length > 1 && (
         <div className="mt-4 flex items-center justify-center gap-4">
-          <button type="button" onClick={() => setIndex((value) => wrap(value - 1, assets.length))} className="cursor-pointer rounded-xl border border-inverse/10 bg-inverse/5 p-2 text-inverse/75 hover:bg-inverse/10" aria-label="Previous scene">
+          <Button type="button" onClick={() => setIndex((value) => wrap(value - 1, assets.length))} className="cursor-pointer rounded-xl border border-inverse/10 bg-inverse/5 p-2 text-inverse/75 hover:bg-inverse/10" aria-label="Previous scene">
             <ArrowLeft className="h-4 w-4" />
-          </button>
+          </Button>
           <span className="min-w-16 text-center text-sm text-inverse/45">
             {index + 1} / {assets.length}
           </span>
-          <button type="button" onClick={() => setIndex((value) => wrap(value + 1, assets.length))} className="cursor-pointer rounded-xl border border-inverse/10 bg-inverse/5 p-2 text-inverse/75 hover:bg-inverse/10" aria-label="Next scene">
+          <Button type="button" onClick={() => setIndex((value) => wrap(value + 1, assets.length))} className="cursor-pointer rounded-xl border border-inverse/10 bg-inverse/5 p-2 text-inverse/75 hover:bg-inverse/10" aria-label="Next scene">
             <ArrowRight className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       )}
     </div>

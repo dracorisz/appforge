@@ -2,7 +2,7 @@ import React from "react";
 import { ArrowLeftRight, ArrowRight, Cloud, PlayCircle, ShieldCheck } from "lucide-react";
 import { SiGithub as Github, SiGoogle as Google } from "react-icons/si";
 import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
 import { getAllApps } from "@/lib/registry";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { FRONTEND_CONTENT_UPDATED_EVENT, loadPublishedFrontendContent } from "@/lib/frontendContent";
@@ -234,7 +234,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
           <section className="border-t border-border/60 py-8 sm:py-8" aria-labelledby="walkthrough-title">
             <div className="grid gap-4 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
               <div className="lg:pr-4">
-                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   <PlayCircle className="h-4 w-4" /> Walkthrough
                 </div>
                 <h2 id="walkthrough-title" className="mt-2 text-lg font-semibold tracking-tight sm:text-lg">
@@ -281,9 +281,9 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                   <h2 className="text-lg font-semibold">Sign in to AppForge</h2>
                   <p className="mt-2 text-sm text-muted-foreground">Use email or a connected provider.</p>
                 </div>
-                <button type="button" onClick={() => setAuthOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close sign in">
+                <Button type="button" onClick={() => setAuthOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close sign in">
                   <span aria-hidden="true">×</span>
-                </button>
+                </Button>
               </div>
               <div className="mt-4 grid gap-2 grid-cols-2">
                 <Button onClick={() => void login("google")} disabled={Boolean(busyProvider) || loading}>
@@ -311,8 +311,8 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                   }
                 }}
               >
-                <input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="h-9 w-full rounded-xl border border-input bg-background px-4 text-sm" />
-                <input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" className="h-9 w-full rounded-xl border border-input bg-background px-4 text-sm" />
+                <Input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="h-9 w-full rounded-xl border border-input bg-background px-4 text-sm" />
+                <Input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" className="h-9 w-full rounded-xl border border-input bg-background px-4 text-sm" />
                 <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                   <Link to="/auth/forgot-password" onClick={() => setAuthOpen(false)} className="font-medium text-foreground hover:underline">
                     Forgot password?

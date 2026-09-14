@@ -1,6 +1,6 @@
 import { AppHeading } from "@/components/layout/AppHeading";
 import React from "react";
-import { Card, Button, Input } from "@/components/ui";
+import { Button, Card, Input, Select } from "@/components/ui";
 import { AlertCircle, ChevronLeft, ChevronRight, LayoutGrid, List, RefreshCw, Search, Star, TrendingDown, TrendingUp } from "lucide-react";
 
 export interface CryptoCoin {
@@ -184,7 +184,7 @@ export function PF_CryptoTrack() {
           </div>
           <div>
             <label className="mb-2 block text-sm font-medium text-foreground">Provider</label>
-            <select
+            <Select
               value={provider}
               onChange={(event) => {
                 const next = event.target.value as Provider;
@@ -196,15 +196,15 @@ export function PF_CryptoTrack() {
               <option value="auto">Auto fallback</option>
               <option value="coingecko">CoinGecko</option>
               <option value="coinpaprika">CoinPaprika</option>
-            </select>
+            </Select>
           </div>
           <div className="flex items-center gap-2 rounded-xl border border-border p-2">
-            <button onClick={() => setViewMode("list")} aria-label="List view" className={`rounded-xl p-2 ${viewMode === "list" ? "bg-accent" : "text-muted-foreground hover:text-foreground"}`}>
+            <Button onClick={() => setViewMode("list")} aria-label="List view" className={`rounded-xl p-2 ${viewMode === "list" ? "bg-accent" : "text-muted-foreground hover:text-foreground"}`}>
               <List className="h-4 w-4" />
-            </button>
-            <button onClick={() => setViewMode("grid")} aria-label="Grid view" className={`rounded-xl p-2 ${viewMode === "grid" ? "bg-accent" : "text-muted-foreground hover:text-foreground"}`}>
+            </Button>
+            <Button onClick={() => setViewMode("grid")} aria-label="Grid view" className={`rounded-xl p-2 ${viewMode === "grid" ? "bg-accent" : "text-muted-foreground hover:text-foreground"}`}>
               <LayoutGrid className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -212,30 +212,30 @@ export function PF_CryptoTrack() {
           <Button variant="secondary" size="sm" onClick={() => fetchCoins(provider)} disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh
           </Button>
-          <button
+          <Button
             type="button"
             onClick={() => setWatchlistOnly((value) => !value)}
             className={`inline-flex items-center gap-2 rounded-xl border px-2 py-2 text-sm font-medium ${watchlistOnly ? "border-warning/40 bg-warning/10 text-warning dark:text-warning" : "border-border text-muted-foreground hover:text-foreground"}`}
           >
             <Star className={`h-3.5 w-3.5 ${watchlistOnly ? "fill-current" : ""}`} /> Watchlist {watchlist.size}
-          </button>
+          </Button>
           <div className="flex items-center gap-2 rounded-xl border border-border p-2">
             {(["all", "gainers", "losers"] as MarketView[]).map((value) => (
-              <button key={value} type="button" onClick={() => setMarketView(value)} className={`rounded-xl px-2 py-2 text-sm font-medium capitalize ${marketView === value ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              <Button key={value} type="button" onClick={() => setMarketView(value)} className={`rounded-xl px-2 py-2 text-sm font-medium capitalize ${marketView === value ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
                 {value}
-              </button>
+              </Button>
             ))}
           </div>
           <span className="ml-2 text-sm text-muted-foreground">Sort:</span>
-          <select value={sortBy} onChange={(event) => setSortBy(event.target.value as SortBy)} className="rounded-xl border border-input bg-background px-2 py-2 text-sm text-foreground">
+          <Select value={sortBy} onChange={(event) => setSortBy(event.target.value as SortBy)} className="rounded-xl border border-input bg-background px-2 py-2 text-sm text-foreground">
             <option value="marketCap">Market cap</option>
             <option value="price">Price</option>
             <option value="change24h">24h change</option>
             <option value="name">Name</option>
-          </select>
-          <button onClick={() => setSortDir((value) => (value === "asc" ? "desc" : "asc"))} className="rounded-xl border border-border px-2 py-2 text-sm text-muted-foreground hover:text-foreground">
+          </Select>
+          <Button onClick={() => setSortDir((value) => (value === "asc" ? "desc" : "asc"))} className="rounded-xl border border-border px-2 py-2 text-sm text-muted-foreground hover:text-foreground">
             {sortDir === "desc" ? "Descending" : "Ascending"}
-          </button>
+          </Button>
           <div className="ml-auto flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             {resolvedProvider && <span>Source: {resolvedProvider}</span>}
             {updatedAt && <span>Updated {new Date(updatedAt).toLocaleTimeString()}</span>}
@@ -273,9 +273,9 @@ export function PF_CryptoTrack() {
                         <p className="text-sm font-medium text-muted-foreground">{coin.symbol}</p>
                       </div>
                     </div>
-                    <button onClick={() => toggleWatchlist(coin.id)} aria-label={watching ? "Remove from watchlist" : "Add to watchlist"} className={`rounded-xl p-2 ${watching ? "text-warning" : "text-muted-foreground hover:text-foreground"}`}>
+                    <Button onClick={() => toggleWatchlist(coin.id)} aria-label={watching ? "Remove from watchlist" : "Add to watchlist"} className={`rounded-xl p-2 ${watching ? "text-warning" : "text-muted-foreground hover:text-foreground"}`}>
                       <Star className={`h-4 w-4 ${watching ? "fill-current" : ""}`} />
-                    </button>
+                    </Button>
                   </div>
                   <p className="mt-4 text-lg font-semibold tracking-tight text-foreground">{formatUsd(coin.price)}</p>
                   <div className={`mt-2 inline-flex items-center gap-2 text-sm font-medium ${positive ? "text-success dark:text-success" : "text-destructive dark:text-destructive"}`}>
@@ -312,9 +312,9 @@ export function PF_CryptoTrack() {
                       {positive ? "+" : ""}
                       {coin.change24h.toFixed(2)}%
                     </p>
-                    <button onClick={() => toggleWatchlist(coin.id)} aria-label={watching ? "Remove from watchlist" : "Add to watchlist"} className={`rounded-xl p-2 ${watching ? "text-warning" : "text-muted-foreground hover:text-foreground"}`}>
+                    <Button onClick={() => toggleWatchlist(coin.id)} aria-label={watching ? "Remove from watchlist" : "Add to watchlist"} className={`rounded-xl p-2 ${watching ? "text-warning" : "text-muted-foreground hover:text-foreground"}`}>
                       <Star className={`h-4 w-4 ${watching ? "fill-current" : ""}`} />
-                    </button>
+                    </Button>
                   </div>
                 </Card>
               );

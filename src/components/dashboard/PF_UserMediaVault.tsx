@@ -1,7 +1,7 @@
 import { AppHeading } from "@/components/layout/AppHeading";
 import React from "react";
 import { Camera, ChevronLeft, ChevronRight, Download, FileVideo, FileImage, FileText, Folder, FolderPlus, Gamepad2, Maximize2, PanelsTopLeft, Pencil, Play, RefreshCw, Search, Sparkles, Trash2, Upload, X } from "lucide-react";
-import { Badge, Button, Card, Tabs } from "@/components/ui";
+import { Badge, Button, Card, Input, Select, Tabs } from "@/components/ui";
 import { MediaShowbox } from "@/components/ui/MediaShowbox";
 import { supabase } from "@/lib/supabase";
 import { listVaultMedia, getVaultQuota, uploadVaultMediaWithProgress, deleteVaultMedia, updateVaultMedia, vaultItemUrl, vaultFolder, type VaultFolder, type VaultMedia } from "@/lib/mediaVault";
@@ -104,15 +104,15 @@ const VaultActions = ({ item, onPreview, onDelete }: { item: VaultMedia; onPrevi
   const cls = "rounded-xl border border-border/60 p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground";
   return (
     <div className="flex items-center gap-2">
-      <button onClick={onPreview} className={cls} aria-label="Preview">
+      <Button onClick={onPreview} className={cls} aria-label="Preview">
         <Maximize2 className="h-4 w-4" />
-      </button>
+      </Button>
       <a href={downloadUrl} download={item.source_bucket !== "external"} target={item.source_bucket === "external" ? "_blank" : undefined} rel={item.source_bucket === "external" ? "noreferrer" : undefined} className={cls} aria-label="Download or open source">
         <Download className="h-4 w-4" />
       </a>
-      <button onClick={onDelete} className={`${cls} hover:border-destructive/40 hover:text-destructive`} aria-label="Delete">
+      <Button onClick={onDelete} className={`${cls} hover:border-destructive/40 hover:text-destructive`} aria-label="Delete">
         <Trash2 className="h-4 w-4" />
-      </button>
+      </Button>
     </div>
   );
 };
@@ -131,6 +131,7 @@ export function PF_UserMediaVault() {
   const [error, setError] = React.useState("");
   const [quota, setQuota] = React.useState({ quota_bytes: 0, used_bytes: 0, remaining_bytes: 0 });
   const [preview, setPreview] = React.useState<{ item: VaultMedia; url: string; fallbacks: string[] } | null>(null);
+  const uploadInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const loadFolders = React.useCallback(async () => {
     const { data, error: folderError } = await supabase.from("user_media_folders").select("id,name").order("name");
@@ -233,12 +234,17 @@ export function PF_UserMediaVault() {
     }
   };
 
-  const uploadTarget = folder !== "all" && folder !== "dragon-arena" && folder !== "getter-pro" ? folder : "general";
+  const uploadsRestricted = folder === "desktop-buddies" || folder === "Screenshots";
+  const uploadTarget = !uploadsRestricted && folder !== "all" && folder !== "dragon-arena" && folder !== "getter-pro" ? folder : "general";
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
     const files = Array.from(input.files || []);
     input.value = "";
     if (!files.length) return;
+    if (uploadsRestricted) {
+      setError("Uploads are disabled in this managed folder.");
+      return;
+    }
     setUploading(true);
     setError("");
     const failures: string[] = [];
@@ -335,7 +341,7 @@ export function PF_UserMediaVault() {
       <Card className="p-4">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end">
           <div className="flex min-w-0 flex-1 gap-2">
-            <input
+            <Input
               value={newFolder}
               onChange={(event) => setNewFolder(event.target.value)}
               onKeyDown={(event) => {
@@ -352,23 +358,29 @@ export function PF_UserMediaVault() {
           <div className="flex flex-wrap items-end gap-2">
             <label className="flex items-center gap-2 text-sm text-muted-foreground">
               Sort
-              <select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)} className="h-9 rounded-xl border border-input bg-background px-2 text-sm text-foreground">
+              <Select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)} className="h-9 rounded-xl border border-input bg-background px-2 text-sm text-foreground">
                 <option value="newest">Newest first</option>
                 <option value="oldest">Oldest first</option>
                 <option value="name-asc">Name A–Z</option>
                 <option value="name-desc">Name Z–A</option>
                 <option value="size-desc">Largest first</option>
                 <option value="type">Type</option>
-              </select>
+              </Select>
             </label>
             <Button variant="secondary" onClick={() => void refresh()} disabled={loading}>
               <RefreshCw className="h-4 w-4" /> Refresh
             </Button>
-            <input type="file" multiple accept="image/*,video/*,audio/*,application/pdf,.txt,.md,.json" className="hidden" onChange={handleUpload} disabled={uploading} id="vault-upload" />
-            <label htmlFor="vault-upload" className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border/70 bg-background/45 px-4 py-2 text-sm font-medium hover:bg-accent">
-              <Upload className="h-4 w-4" />
-              {uploading ? "Uploading…" : `Upload to ${uploadTarget === "general" ? "General" : uploadTarget}`}
-            </label>
+            {uploadsRestricted ? (
+              <Badge color="slate">Managed folder · uploads disabled</Badge>
+            ) : (
+              <>
+                <Input ref={uploadInputRef} type="file" multiple accept="image/*,video/*,audio/*,application/pdf,.txt,.md,.json" className="hidden" onChange={handleUpload} disabled={uploading} />
+                <Button variant="secondary" onClick={() => uploadInputRef.current?.click()} disabled={uploading}>
+                  <Upload className="h-4 w-4" />
+                  {uploading ? "Uploading…" : `Upload to ${uploadTarget === "general" ? "General" : uploadTarget}`}
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </Card>
@@ -378,18 +390,18 @@ export function PF_UserMediaVault() {
           const userFolder = userFolders.find((entry) => entry.name === id);
           return (
             <div key={String(id)} className={`flex items-center gap-2 rounded-xl border px-2 py-2 transition-colors ${folder === id ? "border-foreground/25 bg-accent" : "border-border/70 bg-background/35 hover:bg-accent/60"}`}>
-              <button onClick={() => setFolder(id)} className="flex min-w-0 flex-1 items-center gap-2 px-2 py-2 text-left text-sm">
+              <Button onClick={() => setFolder(id)} className="flex min-w-0 flex-1 items-center gap-2 px-2 py-2 text-left text-sm">
                 <Icon className="h-4 w-4 shrink-0" />
                 <span className="truncate">{label}</span>
-              </button>
+              </Button>
               {userFolder && (
                 <>
-                  <button type="button" onClick={() => void renameFolder(userFolder)} className="rounded-xl p-2 text-muted-foreground hover:bg-background hover:text-foreground" aria-label={`Rename ${label}`}>
+                  <Button type="button" onClick={() => void renameFolder(userFolder)} className="rounded-xl p-2 text-muted-foreground hover:bg-background hover:text-foreground" aria-label={`Rename ${label}`}>
                     <Pencil className="h-3.5 w-3.5" />
-                  </button>
-                  <button type="button" onClick={() => void deleteFolder(userFolder)} className="rounded-xl p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label={`Delete ${label}`}>
+                  </Button>
+                  <Button type="button" onClick={() => void deleteFolder(userFolder)} className="rounded-xl p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label={`Delete ${label}`}>
                     <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  </Button>
                 </>
               )}
             </div>
@@ -469,9 +481,9 @@ export function PF_UserMediaVault() {
             return (
               <Card key={`${item.metadata?.source_table || item.source_app || "vault"}-${item.id}`} className={list ? "flex items-center gap-4 p-4" : `overflow-hidden p-2 ${showcase ? "bg-card/70" : ""}`}>
                 {!list && (
-                  <button type="button" onClick={() => void openPreview(item)} className={`relative block w-full overflow-hidden bg-muted ${showcase ? "aspect-[16/10]" : "aspect-video"}`}>
+                  <Button type="button" onClick={() => void openPreview(item)} className={`relative block w-full overflow-hidden bg-muted ${showcase ? "aspect-[16/10]" : "aspect-video"}`}>
                     <VaultThumb item={item} />
-                  </button>
+                  </Button>
                 )}
                 <div className={list ? "min-w-0 flex-1" : "p-4"}>
                   <div className="flex items-start justify-between gap-2">
@@ -491,13 +503,13 @@ export function PF_UserMediaVault() {
                   <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                     <span className="text-sm text-muted-foreground">{new Date(item.created_at).toLocaleString()}</span>
                     {!isPinnedAsset(item) && (
-                      <select aria-label="Move file to folder" value={vaultFolder(item)} onChange={(event) => void moveItem(item, event.target.value)} className="h-9 max-w-44 rounded-xl border border-input bg-background px-2 text-sm text-foreground">
+                      <Select aria-label="Move file to folder" value={vaultFolder(item)} onChange={(event) => void moveItem(item, event.target.value)} className="h-9 max-w-44 rounded-xl border border-input bg-background px-2 text-sm text-foreground">
                         {allFolderOptions.map((option) => (
                           <option key={option.value} value={option.value}>
                             {option.label}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                     )}
                   </div>
                 </div>
@@ -522,21 +534,21 @@ export function PF_UserMediaVault() {
           />
           {previewableMedia.length > 1 && (
             <>
-              <button type="button" onClick={() => navigatePreview(-1)} className="fixed left-3 top-1/2 z-[70] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-xl border border-inverse/20 bg-overlay/70 text-inverse hover:bg-overlay/90 sm:left-6" aria-label="Previous media">
+              <Button type="button" onClick={() => navigatePreview(-1)} className="fixed left-3 top-1/2 z-[70] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-xl border border-inverse/20 bg-overlay/70 text-inverse hover:bg-overlay/90 sm:left-6" aria-label="Previous media">
                 <ChevronLeft className="h-6 w-6" />
-              </button>
-              <button type="button" onClick={() => navigatePreview(1)} className="fixed right-3 top-1/2 z-[70] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-xl border border-inverse/20 bg-overlay/70 text-inverse hover:bg-overlay/90 sm:right-6" aria-label="Next media">
+              </Button>
+              <Button type="button" onClick={() => navigatePreview(1)} className="fixed right-3 top-1/2 z-[70] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-xl border border-inverse/20 bg-overlay/70 text-inverse hover:bg-overlay/90 sm:right-6" aria-label="Next media">
                 <ChevronRight className="h-6 w-6" />
-              </button>
+              </Button>
             </>
           )}
         </>
       ) : preview ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/90 p-4" onClick={() => setPreview(null)}>
           <div className="max-w-md rounded-xl border border-border/70 bg-background p-4 text-center text-muted-foreground">Preview is not available for this item type. Use the source/download action.</div>
-          <button onClick={() => setPreview(null)} className="absolute right-4 top-4 rounded-xl bg-overlay/50 p-2 text-inverse hover:bg-overlay/70">
+          <Button onClick={() => setPreview(null)} className="absolute right-4 top-4 rounded-xl bg-overlay/50 p-2 text-inverse hover:bg-overlay/70">
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
       ) : null}
     </div>

@@ -1,5 +1,6 @@
 import React from "react";
 import { Check, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui";
 
 const STORAGE_KEY = "appforge-desktop-buddy-v1";
 
@@ -106,9 +107,9 @@ export function DesktopBuddyKdeLibrary() {
                   {starter.license}
                 </p>
                 <div className="mt-auto flex gap-2 pt-4">
-                  <button type="button" onClick={() => selectStarter(starter)} className="flex-1 rounded-xl border px-2 py-2 text-sm font-semibold hover:bg-accent">
+                  <Button type="button" onClick={() => selectStarter(starter)} className="flex-1 rounded-xl border px-2 py-2 text-sm font-semibold hover:bg-accent">
                     {active ? "Active" : "Use character"}
-                  </button>
+                  </Button>
                   <a href={source} target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-xl border text-muted-foreground hover:bg-accent hover:text-foreground" aria-label={`Open source page for ${starter.name}`}>
                     <ExternalLink className="h-3.5 w-3.5" />
                   </a>

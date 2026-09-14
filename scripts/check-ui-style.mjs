@@ -97,7 +97,7 @@ const formatTop = (map, limit = 20) => [...map.entries()]
 
 const rawControlCount = [...diagnostics.rawControls.values()].reduce((a, b) => a + b, 0)
 const surfaceCount = [...diagnostics.surfaces.values()].reduce((a, b) => a + b, 0)
-const rawControlBudget = 250
+const rawControlBudget = 0
 const surfaceBudget = 135
 if (rawControlCount > rawControlBudget) violations.push(`raw native control budget exceeded: ${rawControlCount} > ${rawControlBudget}`)
 if (surfaceCount > surfaceBudget) violations.push(`hand-built surface budget exceeded: ${surfaceCount} > ${surfaceBudget}`)

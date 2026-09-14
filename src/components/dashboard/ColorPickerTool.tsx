@@ -203,7 +203,7 @@ export function ColorPickerTool() {
               </Button>
             </div>
           </div>
-          <input
+          <Input
             ref={fileInputRef}
             type="file"
             accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
@@ -217,11 +217,11 @@ export function ColorPickerTool() {
           <div className="mt-4 overflow-hidden rounded-xl border border-border/70 bg-muted/30">
             <canvas ref={canvasRef} onClick={pickFromCanvas} className={`max-h-[34rem] w-full object-contain ${imageUrl ? "cursor-crosshair" : "hidden"}`} />
             {!imageUrl && (
-              <button type="button" onClick={() => fileInputRef.current?.click()} className="flex w-full flex-col items-center justify-center p-8 text-center text-muted-foreground hover:bg-accent/30">
+              <Button type="button" onClick={() => fileInputRef.current?.click()} className="flex w-full flex-col items-center justify-center p-8 text-center text-muted-foreground hover:bg-accent/30">
                 <ImagePlus className="h-6 w-6" />
                 <span className="mt-4 text-sm font-medium text-foreground">Choose an image</span>
                 <span className="mt-2 text-sm">PNG, JPEG, WebP, GIF, or AVIF · max 25 MB / 50 MP</span>
-              </button>
+              </Button>
             )}
           </div>
           {fileName && <p className="mt-2 truncate text-sm text-muted-foreground">{fileName}</p>}
@@ -232,7 +232,7 @@ export function ColorPickerTool() {
               </div>
               <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
                 {palette.map((color) => (
-                  <button key={color} type="button" onClick={() => setHex(color)} title={color} className="aspect-square rounded-xl border border-border/70" style={{ backgroundColor: color }} />
+                  <Button key={color} type="button" onClick={() => setHex(color)} title={color} className="aspect-square rounded-xl border border-border/70" style={{ backgroundColor: color }} />
                 ))}
               </div>
             </div>
@@ -242,7 +242,7 @@ export function ColorPickerTool() {
           <h2 className="text-sm font-semibold text-foreground">Selected color</h2>
           <div className="mt-4 aspect-[16/8] rounded-xl border border-border/70" style={{ backgroundColor: /^#[0-9A-F]{6}$/i.test(hex) ? hex : "#5B6CFF" }} />
           <div className="mt-4 grid gap-4 sm:grid-cols-[5rem_1fr]">
-            <input type="color" value={/^#[0-9A-F]{6}$/i.test(hex) ? hex : "#5B6CFF"} onChange={(event) => setHex(event.target.value.toUpperCase())} className="h-9 w-full cursor-pointer rounded-xl border border-border bg-transparent p-2" />
+            <Input type="color" value={/^#[0-9A-F]{6}$/i.test(hex) ? hex : "#5B6CFF"} onChange={(event) => setHex(event.target.value.toUpperCase())} className="h-9 w-full cursor-pointer rounded-xl border border-border bg-transparent p-2" />
             <Input value={hex} onChange={(event) => updateHex(event.target.value)} aria-label="HEX color" />
           </div>
           <div className="mt-4 space-y-2">
@@ -250,9 +250,9 @@ export function ColorPickerTool() {
               <div key={label} className="flex items-center gap-2 rounded-xl border border-border/70 bg-background/35 p-4">
                 <div className="w-10 text-sm font-medium text-muted-foreground">{label}</div>
                 <code className="min-w-0 flex-1 truncate text-sm text-foreground">{value}</code>
-                <button onClick={() => void copy(label, value)} className="rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label={`Copy ${label}`}>
+                <Button onClick={() => void copy(label, value)} className="rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label={`Copy ${label}`}>
                   {copied === label ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                </button>
+                </Button>
               </div>
             ))}
           </div>
@@ -260,7 +260,7 @@ export function ColorPickerTool() {
             <div className="mb-2 text-sm font-medium text-muted-foreground">Shade ladder · 3 darker / 3 lighter</div>
             <div className="grid grid-cols-7 gap-2">
               {shadeSteps.map((color, index) => (
-                <button key={`${color}-${index}`} type="button" onClick={() => setHex(color)} title={color} className={`aspect-square rounded-xl border ${index === 3 ? "ring-1 ring-ring/40" : "border-border/70"}`} style={{ backgroundColor: color }} />
+                <Button key={`${color}-${index}`} type="button" onClick={() => setHex(color)} title={color} className={`aspect-square rounded-xl border ${index === 3 ? "ring-1 ring-ring/40" : "border-border/70"}`} style={{ backgroundColor: color }} />
               ))}
             </div>
           </div>

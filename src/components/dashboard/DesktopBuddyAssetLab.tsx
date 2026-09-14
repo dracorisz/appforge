@@ -1,5 +1,6 @@
 import React from "react";
 import { Check, Download, ImagePlus, Loader2, Upload } from "lucide-react";
+import { Button, Input } from "@/components/ui";
 
 const BUDDY_STORAGE_KEY = "appforge-desktop-buddy-v1";
 const MAX_SOURCE_BYTES = 12 * 1024 * 1024;
@@ -188,7 +189,7 @@ export function DesktopBuddyAssetLab() {
         <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent">
           {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
           {processing ? "Optimizing…" : "Choose source image"}
-          <input
+          <Input
             type="file"
             accept="image/*"
             disabled={processing}
@@ -229,17 +230,17 @@ export function DesktopBuddyAssetLab() {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <button type="button" onClick={() => downloadUrl(variant.pngUrl, `${safeStem(sourceName)}-${variant.size}.png`)} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
+                    <Button type="button" onClick={() => downloadUrl(variant.pngUrl, `${safeStem(sourceName)}-${variant.size}.png`)} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
                       <Download className="h-3.5 w-3.5" /> PNG
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       disabled={!variant.webpUrl}
                       onClick={() => variant.webpUrl && downloadUrl(variant.webpUrl, `${safeStem(sourceName)}-${variant.size}.webp`)}
                       className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent disabled:opacity-40"
                     >
                       <Download className="h-3.5 w-3.5" /> WebP
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </article>
@@ -247,9 +248,9 @@ export function DesktopBuddyAssetLab() {
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-background/45 p-4">
             <p className="max-w-2xl text-sm text-muted-foreground">Use the optimized 512px PNG as the persistent companion image. This updates only browser-local Desktop Buddy storage and keeps your source file on this device.</p>
-            <button type="button" onClick={() => void applyToBuddy()} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">
+            <Button type="button" onClick={() => void applyToBuddy()} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">
               <Check className="h-4 w-4" /> Use 512px in Buddy
-            </button>
+            </Button>
           </div>
         </>
       )}

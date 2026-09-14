@@ -54,7 +54,7 @@ export function PeoplePage() {
   return (
     <div className="space-y-4 pb-8">
       <div>
-        <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           <HeartHandshake className="h-4 w-4" /> Community
         </div>
         <h1 className="mt-2 text-lg font-semibold tracking-tight text-foreground">People</h1>

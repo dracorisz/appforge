@@ -3,6 +3,7 @@ import { Camera, MessageCircle, Move, Volume2, X } from "lucide-react";
 import { uploadVaultMedia } from "@/lib/mediaVault";
 import { APP_BUDDY_NOTIFICATION_EVENT, type AppToast, toast } from "@/lib/toast";
 import { isWidgetEnabled, setWidgetEnabled, subscribeWidgetPreferences } from "@/lib/widgetPreferences";
+import { Button } from "@/components/ui";
 
 const STORAGE_KEY = "appforge-desktop-buddy-v1";
 const POSITION_KEY = "appforge-desktop-buddy-position-v1";
@@ -238,10 +239,10 @@ export function DesktopBuddyOverlay() {
   return (
     <aside className="fixed z-50 select-none" style={{ left: position.x, top: position.y }} aria-label="Movable Desktop Buddy widget">
       {showMessage && (
-        <button type="button" onClick={() => setShowMessage(false)} className="mb-2 block w-48 cursor-pointer rounded-xl border border-border bg-card/95 px-4 py-2 text-left text-sm text-muted-foreground backdrop-blur-xl">
+        <Button type="button" onClick={() => setShowMessage(false)} className="mb-2 block w-48 cursor-pointer rounded-xl border border-border bg-card/95 px-4 py-2 text-left text-sm text-muted-foreground backdrop-blur-xl">
           <span className="font-semibold text-foreground">{buddy.name || "Konqi Buddy"}</span>
           <span className="mt-2 line-clamp-3 block">{message}</span>
-        </button>
+        </Button>
       )}
 
       <div onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag} className="relative flex h-36 w-40 touch-none cursor-grab items-end justify-center active:cursor-grabbing" title="Drag Desktop Buddy">
@@ -252,13 +253,13 @@ export function DesktopBuddyOverlay() {
       </div>
 
       <div className="mx-auto mt-2 flex w-fit items-center gap-2 rounded-xl border border-border bg-card/95 p-2 backdrop-blur-xl">
-        <button type="button" onClick={() => speakText(message)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title="Speak last response" aria-label="Speak last response">
+        <Button type="button" onClick={() => speakText(message)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title="Speak last response" aria-label="Speak last response">
           <Volume2 className={`h-4 w-4 ${speaking ? "animate-pulse" : ""}`} />
-        </button>
-        <button type="button" onClick={jump} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title="Jump" aria-label="Make Desktop Buddy jump">
+        </Button>
+        <Button type="button" onClick={jump} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title="Jump" aria-label="Make Desktop Buddy jump">
           <span className="text-sm">↥</span>
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => void screenshot()}
           disabled={savingScreenshot}
@@ -267,13 +268,13 @@ export function DesktopBuddyOverlay() {
           aria-label="Save screenshot"
         >
           <Camera className={`h-4 w-4 ${savingScreenshot ? "animate-pulse" : ""}`} />
-        </button>
-        <button type="button" onClick={() => setShowMessage((value) => !value)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title={status} aria-label="Show Desktop Buddy status">
+        </Button>
+        <Button type="button" onClick={() => setShowMessage((value) => !value)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title={status} aria-label="Show Desktop Buddy status">
           <MessageCircle className="h-4 w-4" />
-        </button>
-        <button type="button" onClick={() => setWidgetEnabled("desktop-buddy", false)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title="Turn off floating Desktop Buddy" aria-label="Turn off Desktop Buddy widget">
+        </Button>
+        <Button type="button" onClick={() => setWidgetEnabled("desktop-buddy", false)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title="Turn off floating Desktop Buddy" aria-label="Turn off Desktop Buddy widget">
           <X className="h-4 w-4" />
-        </button>
+        </Button>
       </div>
       <p className="sr-only" aria-live="polite">
         {status}

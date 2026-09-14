@@ -56,6 +56,12 @@ export default {
       borderRadius: {
         xl: 'var(--radius)',
       },
+      spacing: {
+        9: 'var(--control-height)',
+      },
+      boxShadow: {
+        xl: 'var(--shadow-xl)',
+      },
     },
   },
   plugins: []

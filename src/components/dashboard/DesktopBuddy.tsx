@@ -3,6 +3,7 @@ import React from "react";
 import { Download, ExternalLink, ImagePlus, MessageCircle, Mic2, PackageOpen, Pause, Play, RotateCcw, Upload } from "lucide-react";
 import { APP_TOAST_EVENT, type AppToast, toast } from "@/lib/toast";
 import { isWidgetEnabled } from "@/lib/widgetPreferences";
+import { Button, Input, Select, Textarea } from "@/components/ui";
 
 type Provider = "huggingface" | "vertex" | "browser";
 type Activity = "idle" | "listening" | "speaking";
@@ -283,7 +284,7 @@ export function DesktopBuddy() {
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="rounded-xl border p-4">
                 <span className="text-sm font-medium text-muted-foreground">Name</span>
-                <input className="mt-2 w-full bg-transparent text-sm outline-none" value={config.name} maxLength={64} onChange={(event) => setConfig((current) => ({ ...current, name: event.target.value }))} />
+                <Input className="mt-2 w-full bg-transparent text-sm outline-none" value={config.name} maxLength={64} onChange={(event) => setConfig((current) => ({ ...current, name: event.target.value }))} />
               </label>
               <div className="rounded-xl border p-4">
                 <span className="text-sm font-medium text-muted-foreground">State</span>
@@ -293,19 +294,19 @@ export function DesktopBuddy() {
             <div className="flex flex-wrap gap-2">
               <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
                 <Upload className="h-4 w-4" /> Upload character
-                <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={onUpload} />
+                <Input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={onUpload} />
               </label>
-              <button type="button" onClick={exportPack} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+              <Button type="button" onClick={exportPack} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
                 <Download className="h-4 w-4" /> Export pack
-              </button>
+              </Button>
               <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
                 <PackageOpen className="h-4 w-4" /> Import pack
-                <input type="file" accept="application/json,.json" className="hidden" onChange={importPack} />
+                <Input type="file" accept="application/json,.json" className="hidden" onChange={importPack} />
               </label>
-              <button type="button" onClick={() => void exportPng()} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+              <Button type="button" onClick={() => void exportPng()} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
                 <ImagePlus className="h-4 w-4" /> Export PNG
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => {
                   setConfig(defaultConfig);
@@ -315,7 +316,7 @@ export function DesktopBuddy() {
                 className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted"
               >
                 <RotateCcw className="h-4 w-4" /> Reset
-              </button>
+              </Button>
             </div>
           </div>
           <div className="relative min-h-[390px] overflow-hidden border-t bg-muted/40 lg:border-l lg:border-t-0">
@@ -343,7 +344,7 @@ export function DesktopBuddy() {
           {KDE_STARTERS.map((starter) => {
             const active = config.assetSourceUrl === starter.sourceUrl;
             return (
-              <button key={starter.id} type="button" onClick={() => chooseStarter(starter)} className={`flex h-full min-h-24 cursor-pointer flex-col overflow-hidden rounded-xl border text-left transition-colors hover:border-foreground/25 ${active ? "ring-1 ring-primary/35" : ""}`}>
+              <Button key={starter.id} type="button" onClick={() => chooseStarter(starter)} className={`flex h-full min-h-24 cursor-pointer flex-col overflow-hidden rounded-xl border text-left transition-colors hover:border-foreground/25 ${active ? "ring-1 ring-primary/35" : ""}`}>
                 <div className="flex h-48 w-full items-center justify-center border-b border-border/60 bg-muted/20">
                   <img src={starter.imageUrl} alt={starter.name} className="h-full w-full scale-90 object-contain" loading="lazy" />
                 </div>
@@ -352,7 +353,7 @@ export function DesktopBuddy() {
                   <p className="mt-2 text-sm text-muted-foreground">{starter.note}</p>
                   <p className="mt-4 text-sm text-muted-foreground">{starter.license}</p>
                 </div>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -378,15 +379,15 @@ export function DesktopBuddy() {
           </div>
           <label className="block space-y-2 text-sm">
             <span>Scale · {config.scale}%</span>
-            <input className="w-full cursor-pointer" type="range" min="45" max="145" value={config.scale} onChange={(event) => setConfig((current) => ({ ...current, scale: Number(event.target.value) }))} />
+            <Input className="w-full cursor-pointer" type="range" min="45" max="145" value={config.scale} onChange={(event) => setConfig((current) => ({ ...current, scale: Number(event.target.value) }))} />
           </label>
           <label className="block space-y-2 text-sm">
             <span>Horizontal · {config.offsetX}px</span>
-            <input className="w-full cursor-pointer" type="range" min="-120" max="120" value={config.offsetX} onChange={(event) => setConfig((current) => ({ ...current, offsetX: Number(event.target.value) }))} />
+            <Input className="w-full cursor-pointer" type="range" min="-120" max="120" value={config.offsetX} onChange={(event) => setConfig((current) => ({ ...current, offsetX: Number(event.target.value) }))} />
           </label>
           <label className="block space-y-2 text-sm">
             <span>Vertical · {config.offsetY}px</span>
-            <input className="w-full cursor-pointer" type="range" min="-120" max="120" value={config.offsetY} onChange={(event) => setConfig((current) => ({ ...current, offsetY: Number(event.target.value) }))} />
+            <Input className="w-full cursor-pointer" type="range" min="-120" max="120" value={config.offsetY} onChange={(event) => setConfig((current) => ({ ...current, offsetY: Number(event.target.value) }))} />
           </label>
         </section>
         <section className="space-y-4 rounded-xl border bg-card p-4">
@@ -394,36 +395,36 @@ export function DesktopBuddy() {
             <MessageCircle className="h-4 w-4" />
             <h2 className="font-semibold">Agent response + voice</h2>
           </div>
-          <textarea className="min-h-24 w-full rounded-xl border bg-background p-4 text-sm outline-none" value={message} onChange={(event) => setMessage(event.target.value)} />
+          <Textarea className="min-h-24 w-full rounded-xl border bg-background p-4 text-sm outline-none" value={message} onChange={(event) => setMessage(event.target.value)} />
           <label className="rounded-xl border p-4 text-sm">
             <span className="text-sm text-muted-foreground">Voice</span>
-            <select className="mt-2 w-full cursor-pointer bg-transparent outline-none" value={config.voiceName} onChange={(event) => setConfig((current) => ({ ...current, voiceName: event.target.value }))}>
+            <Select className="mt-2 w-full cursor-pointer bg-transparent outline-none" value={config.voiceName} onChange={(event) => setConfig((current) => ({ ...current, voiceName: event.target.value }))}>
               <option value="">System default</option>
               {voices.map((voice) => (
                 <option key={`${voice.name}-${voice.lang}`} value={voice.name}>
                   {voice.name} · {voice.lang}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={speak} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+            <Button type="button" onClick={speak} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
               <Mic2 className="h-4 w-4" /> Speak text
-            </button>
-            <button type="button" onClick={testVoice} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+            </Button>
+            <Button type="button" onClick={testVoice} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
               <Play className="h-4 w-4" /> Test voice
-            </button>
-            <button type="button" onClick={stopSpeaking} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+            </Button>
+            <Button type="button" onClick={stopSpeaking} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
               <Pause className="h-4 w-4" /> Stop
-            </button>
+            </Button>
           </div>
           <label className="flex cursor-pointer items-center gap-4 rounded-xl border p-4 text-sm">
-            <input type="checkbox" checked={config.voiceEnabled} onChange={(event) => setConfig((current) => ({ ...current, voiceEnabled: event.target.checked }))} />
+            <Input type="checkbox" checked={config.voiceEnabled} onChange={(event) => setConfig((current) => ({ ...current, voiceEnabled: event.target.checked }))} />
             Auto-speak agent responses and AppForge notifications while the Desktop Buddy widget is enabled.
           </label>
-          <button type="button" onClick={testReaction} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+          <Button type="button" onClick={testReaction} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
             <Play className="h-4 w-4" /> Test agent reaction
-          </button>
+          </Button>
         </section>
       </div>
     </div>

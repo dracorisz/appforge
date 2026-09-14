@@ -36,7 +36,7 @@ import { appSidebarPreferenceKey, isAppVisibleInSidebar, isCategoryVisibleInSide
 import { useAuth } from "@/auth/AuthProvider";
 import { ensureProfile } from "@/lib/account";
 import { DragonArenaIcon } from "@/components/dashboard/DragonArenaIcon";
-import { SearchInput } from "@/components/ui";
+import { Button, SearchInput } from "@/components/ui";
 import { SidebarWeather } from "./SidebarWeather";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = { ArrowLeftRight, Binary, Braces, Calendar, CloudSun, Code, FileCode, Hash, Image: ImageIcon, Lock, Palette, QrCode, Regex, Search, Sparkles, Table2, Type, Video, Wrench, DragonArena: DragonArenaIcon };
@@ -45,8 +45,8 @@ const coreItems = [
   { id: "people", label: "People", icon: Users, path: "/people" },
 ];
 const navClass = (active: boolean) => `flex items-center gap-4 rounded-xl px-4 py-2 text-sm font-medium transition-colors ${active ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"}`;
-const collapsedNavClass = "group relative z-20 w-10 overflow-visible hover:z-50 hover:w-56 hover:border hover:border-border/70 hover:bg-background hover:shadow-xl";
-const collapsedLabelClass = "pointer-events-none hidden whitespace-nowrap pr-4 text-sm font-medium group-hover:block";
+const collapsedNavClass = "w-full justify-center px-2 group-hover/sidebar:justify-start group-hover/sidebar:px-4";
+const collapsedLabelClass = "pointer-events-none hidden whitespace-nowrap pr-4 text-sm font-medium group-hover/sidebar:block";
 
 export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }: { onClose?: () => void; collapsed?: boolean; onToggleCollapse?: () => void }) {
   const location = useLocation();
@@ -125,12 +125,12 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
     setSearchQuery("");
     onClose?.();
   };
-  const asideWidth = onClose ? "w-screen max-w-none border-r-0" : isCollapsed ? "w-16 border-r border-border" : "w-64 border-r border-border";
+  const asideWidth = onClose ? "w-screen max-w-none border-r-0" : isCollapsed ? "w-16 border-r border-border hover:w-64" : "w-64 border-r border-border";
   const isCoreActive = (path: string) => (path === "/settings" ? location.pathname.startsWith("/settings") : location.pathname === path);
   const collapsedLinkClass = (active: boolean) => `${navClass(active)} ${isCollapsed ? collapsedNavClass : ""}`;
 
   return (
-    <aside className={`relative z-40 flex h-full flex-col overflow-visible bg-background/92 backdrop-blur-xl transition-[width,transform,opacity] duration-200 ease-out ${asideWidth}`}>
+    <aside className={`group/sidebar relative z-40 flex h-full flex-col overflow-visible bg-background/92 backdrop-blur-xl transition-[width,transform,opacity] duration-200 ease-out ${asideWidth}`}>
       <div className={`flex items-center gap-2 py-4 ${isCollapsed ? "flex-col px-2" : "px-4"}`}>
         {isCollapsed ? (
           <NavLink to="/" aria-label="AppForge home" className="shrink-0">
@@ -143,13 +143,13 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
           </NavLink>
         )}
         {onClose ? (
-          <button onClick={onClose} className="ml-auto rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close navigation">
+          <Button onClick={onClose} className="ml-auto rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close navigation">
             <X className="h-4 w-4" />
-          </button>
+          </Button>
         ) : (
-          <button onClick={toggleCollapse} className={`${isCollapsed ? "" : "ml-auto"} rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground`} aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
+          <Button onClick={toggleCollapse} className={`${isCollapsed ? "" : "ml-auto"} rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground`} aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
             {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </button>
+          </Button>
         )}
       </div>
       {!isCollapsed && (
@@ -172,9 +172,9 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
           </div>
         </div>
       )}
-      <nav className={`scrollbar-hide flex-1 px-4 py-2 ${isCollapsed ? "overflow-visible" : "overflow-y-auto overflow-x-hidden"}`}>
-        {!isCollapsed && <h3 className="mb-2 px-0 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">System</h3>}
-        <div className="space-y-1">
+      <nav className={`scrollbar-hide min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-2 ${isCollapsed ? "px-2" : "px-4"}`}>
+        {!isCollapsed && <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">System</h3>}
+        <div className="space-y-2">
           {coreItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -188,14 +188,14 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
         {(sidebarCategories.length > 0 || sidebarApps.length > 0) && (
           <div className="mt-4">
             {!isCollapsed && (
-              <div className="mb-2 flex items-center justify-between px-0">
-                <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Workspace</h3>
-                <NavLink to="/workspace" onClick={onClose} className="text-xs text-muted-foreground hover:text-foreground">
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">Workspace</h3>
+                <NavLink to="/workspace" onClick={onClose} className="text-sm text-muted-foreground hover:text-foreground">
                   Customize
                 </NavLink>
               </div>
             )}
-            <div className="space-y-1">
+            <div className="space-y-2">
               {sidebarCategories.map((category) => {
                 const Icon = iconMap[category.icon] || Wrench;
                 const path = `/category/${category.id}`;
@@ -208,7 +208,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
               })}
             </div>
             {sidebarApps.length > 0 && (
-              <div className={`${sidebarCategories.length > 0 ? "mt-2 " : ""}space-y-1`}>
+              <div className={`${sidebarCategories.length > 0 ? "mt-2 " : ""}space-y-2`}>
                 {sidebarApps.map((app) => {
                   const Icon = iconMap[app.id === "ai-dragon-arena" ? "DragonArena" : app.icon] || Wrench;
                   return (
@@ -233,10 +233,10 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
           <>
             {accountOpen && (
               <div className={`absolute z-[80] w-56 rounded-xl border border-border/70 bg-background p-2 shadow-xl ${isCollapsed ? "bottom-0 left-[calc(100%+0.5rem)]" : "bottom-[calc(100%-0.25rem)] left-3 right-3 w-auto"}`}>
-                <div className="px-2 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Appearance</div>
+                <div className="px-2 py-2 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">Appearance</div>
                 <div className="grid grid-cols-3 gap-2 px-2 pb-2">
                   {(["light", "dark", "system"] as const).map((mode) => (
-                    <button
+                    <Button
                       key={mode}
                       type="button"
                       onClick={() => {
@@ -249,7 +249,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
                       className="rounded-xl px-2 py-2 text-sm capitalize text-muted-foreground hover:bg-accent hover:text-foreground"
                     >
                       {mode}
-                    </button>
+                    </Button>
                   ))}
                 </div>
                 <NavLink
@@ -265,13 +265,13 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
                 <a href="https://github.com/dracorisz/appforge/issues" target="_blank" rel="noreferrer" onClick={() => setAccountOpen(false)} className="flex items-center gap-2 rounded-xl px-2 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground">
                   <HeartHandshake className="h-4 w-4" /> Support
                 </a>
-                <button onClick={() => void handleSignOut()} disabled={signingOut} className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-60">
+                <Button onClick={() => void handleSignOut()} disabled={signingOut} className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-60">
                   <LogOut className="h-4 w-4" />
                   {signingOut ? "Signing out…" : "Sign out"}
-                </button>
+                </Button>
               </div>
             )}
-            <button
+            <Button
               type="button"
               onClick={() => setAccountOpen((value) => !value)}
               className={`flex w-full items-center gap-2 rounded-xl border border-border/60 bg-background/35 p-2 text-left hover:border-foreground/15 ${isCollapsed ? "justify-center" : ""}`}
@@ -291,7 +291,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
                   <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${accountOpen ? "rotate-180" : ""}`} />
                 </>
               )}
-            </button>
+            </Button>
           </>
         )}
         {signOutError && !isCollapsed && (
@@ -307,9 +307,9 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
 export function MobileHeader({ onOpen, triggerRef }: { onOpen: () => void; triggerRef?: React.Ref<HTMLButtonElement> }) {
   return (
     <header className="flex h-14 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur-xl lg:hidden">
-      <button ref={triggerRef} onClick={onOpen} className="rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Open navigation">
+      <Button ref={triggerRef} onClick={onOpen} className="rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Open navigation">
         <Sliders className="h-4 w-4" />
-      </button>
+      </Button>
       <NavLink to="/" className="flex items-center gap-2">
         <img src="/favicon.svg" alt="AppForge" className="h-9 w-9" />
         <span className="text-sm font-semibold text-foreground">AppForge</span>

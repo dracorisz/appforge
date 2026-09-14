@@ -344,7 +344,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
               </div>
             </div>
             <label className="mt-4 inline-flex cursor-pointer">
-              <input
+              <Input
                 type="file"
                 accept={PROFILE_IMAGE_ACCEPT}
                 className="hidden"
@@ -354,10 +354,10 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
                   event.currentTarget.value = "";
                 }}
               />
-              <span className="inline-flex h-6 items-center gap-2 rounded-xl border border-border px-2 text-sm font-medium hover:bg-accent">
+              <Badge className="inline-flex h-6 items-center gap-2 rounded-xl border border-border px-2 text-sm font-medium hover:bg-accent">
                 <ImagePlus className="h-3.5 w-3.5" />
                 {busy === "avatar" ? "Uploading…" : "Change avatar"}
-              </span>
+              </Badge>
             </label>
           </Card>
           <Card className="p-4">
@@ -396,22 +396,22 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
             {profile && (
               <div className="mt-4 grid gap-2 text-sm">
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={profile.is_public} onChange={(e) => setProfile({ ...profile, is_public: e.target.checked })} /> Show profile in People
+                  <Input type="checkbox" checked={profile.is_public} onChange={(e) => setProfile({ ...profile, is_public: e.target.checked })} /> Show profile in People
                 </label>
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={profile.open_to_collaboration} onChange={(e) => setProfile({ ...profile, open_to_collaboration: e.target.checked })} /> Open to collaboration
+                  <Input type="checkbox" checked={profile.open_to_collaboration} onChange={(e) => setProfile({ ...profile, open_to_collaboration: e.target.checked })} /> Open to collaboration
                 </label>
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={profile.show_skills !== false} onChange={(e) => setProfile({ ...profile, show_skills: e.target.checked })} /> Show skills
+                  <Input type="checkbox" checked={profile.show_skills !== false} onChange={(e) => setProfile({ ...profile, show_skills: e.target.checked })} /> Show skills
                 </label>
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={profile.show_github !== false} onChange={(e) => setProfile({ ...profile, show_github: e.target.checked })} /> Show GitHub
+                  <Input type="checkbox" checked={profile.show_github !== false} onChange={(e) => setProfile({ ...profile, show_github: e.target.checked })} /> Show GitHub
                 </label>
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={profile.show_website !== false} onChange={(e) => setProfile({ ...profile, show_website: e.target.checked })} /> Show website
+                  <Input type="checkbox" checked={profile.show_website !== false} onChange={(e) => setProfile({ ...profile, show_website: e.target.checked })} /> Show website
                 </label>
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={Boolean(profile.show_email)} onChange={(e) => setProfile({ ...profile, show_email: e.target.checked, public_email: e.target.checked ? profile.public_email || user?.email || "" : profile.public_email })} /> Show public email
+                  <Input type="checkbox" checked={Boolean(profile.show_email)} onChange={(e) => setProfile({ ...profile, show_email: e.target.checked, public_email: e.target.checked ? profile.public_email || user?.email || "" : profile.public_email })} /> Show public email
                 </label>
                 {profile.show_email && <Input type="email" label="Public email" value={profile.public_email || ""} onChange={(e) => setProfile({ ...profile, public_email: e.target.value })} />}
               </div>
@@ -569,7 +569,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
             <h2 className="text-sm font-semibold">Import workspace</h2>
             <p className="mt-2 text-sm text-muted-foreground">Preview a backup before applying it. Maximum 5 MB.</p>
             <label className="mt-4 inline-flex cursor-pointer">
-              <input
+              <Input
                 type="file"
                 accept="application/json,.json"
                 className="hidden"
@@ -579,9 +579,9 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
                   event.currentTarget.value = "";
                 }}
               />
-              <span className="inline-flex h-9 items-center gap-2 rounded-xl border border-border px-2 text-sm font-medium hover:bg-accent">
+              <Badge className="inline-flex h-9 items-center gap-2 rounded-xl border border-border px-2 text-sm font-medium hover:bg-accent">
                 <Upload className="h-4 w-4" /> Choose JSON
-              </span>
+              </Badge>
             </label>
             {importFileName && <div className="mt-2 text-sm text-muted-foreground">{importFileName}</div>}
             {importPreview && (
