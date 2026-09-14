@@ -1,24 +1,25 @@
-export const buttonBaseClass = 'inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-[background-color,border-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&>svg]:h-4 [&>svg]:w-4 [&>svg]:shrink-0'
+export const buttonBaseClass =
+  "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-[background-color,border-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&>svg]:h-4 [&>svg]:w-4 [&>svg]:shrink-0";
 
 export const buttonVariantClasses = {
-  default: 'border-primary/90 bg-primary text-primary-foreground hover:bg-primary/90',
-  primary: 'border-primary/90 bg-primary text-primary-foreground hover:bg-primary/90',
-  secondary: 'border-border/70 bg-secondary/70 text-secondary-foreground backdrop-blur-md hover:border-foreground/20 hover:bg-secondary',
-  ghost: 'border-transparent bg-transparent text-foreground hover:border-border/70 hover:bg-accent/70 hover:text-accent-foreground',
-  destructive: 'border-destructive/90 bg-destructive text-destructive-foreground hover:bg-destructive/90',
-} as const
+  default: "border-primary/90 bg-primary text-primary-foreground hover:bg-primary/90",
+  primary: "border-primary/90 bg-primary text-primary-foreground hover:bg-primary/90",
+  secondary: "border-border/70 bg-secondary/70 text-secondary-foreground backdrop-blur-md hover:border-foreground/20 hover:bg-secondary",
+  ghost: "border-transparent bg-transparent text-foreground hover:border-border/70 hover:bg-accent/70 hover:text-accent-foreground",
+  destructive: "border-destructive/90 bg-destructive text-destructive-foreground hover:bg-destructive/90",
+} as const;
 
 export const buttonSizeClasses = {
-  sm: 'h-8 px-2',
-  md: 'h-10 px-4',
-  lg: 'h-10 px-8',
-} as const
+  sm: "h-9 min-h-9 max-h-9 px-2",
+  md: "h-9 min-h-9 max-h-9 px-4",
+  lg: "h-9 min-h-9 max-h-9 px-8",
+} as const;
 
 export const iconButtonSizeClasses = {
-  sm: 'h-8 w-8',
-  md: 'h-10 w-10',
-} as const
+  sm: "h-9 min-h-9 max-h-9 w-9",
+  md: "h-9 min-h-9 max-h-9 w-9",
+} as const;
 
-export type ButtonVariant = keyof typeof buttonVariantClasses
-export type ButtonSize = keyof typeof buttonSizeClasses
-export type IconButtonSize = keyof typeof iconButtonSizeClasses
+export type ButtonVariant = keyof typeof buttonVariantClasses;
+export type ButtonSize = keyof typeof buttonSizeClasses;
+export type IconButtonSize = keyof typeof iconButtonSizeClasses;

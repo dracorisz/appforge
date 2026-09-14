@@ -550,9 +550,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
             <VertexBridgeStatus />
             <Card className="p-4">
               <h2 className="text-sm font-semibold">Provider model</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Story text uses the Hugging Face rotation with a continuity-safe local fallback. Vertex remains the secured cloud image bridge for AppForge features that use it. Gemini/OpenRouter browser-key fields are intentionally removed.
-              </p>
+              <p className="mt-2 text-sm text-muted-foreground">Story text uses the Hugging Face rotation with a continuity-safe local fallback. Vertex remains the secured cloud image bridge for AppForge features that use it. Gemini/OpenRouter browser-key fields are intentionally removed.</p>
             </Card>
           </div>
         </div>
@@ -581,7 +579,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
                   event.currentTarget.value = "";
                 }}
               />
-              <span className="inline-flex h-8 items-center gap-2 rounded-xl border border-border px-2 text-sm font-medium hover:bg-accent">
+              <span className="inline-flex h-9 items-center gap-2 rounded-xl border border-border px-2 text-sm font-medium hover:bg-accent">
                 <Upload className="h-4 w-4" /> Choose JSON
               </span>
             </label>

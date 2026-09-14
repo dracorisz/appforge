@@ -148,7 +148,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
         <PublicHeader className="shrink-0" />
 
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-8 pt-4 sm:px-4 sm:pt-4 lg:px-8">
-          <div className="grid items-center gap-8 lg:min-h-[calc(100dvh-8rem)] lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] lg:gap-8 xl:gap-8">
+          <div className="grid items-center gap-8 lg:min-h-[calc(100dvh-9rem)] lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] lg:gap-8 xl:gap-8">
             <section className="max-w-4xl py-4 lg:py-8">
               <h1 className="max-w-4xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-5xl lg:text-5xl xl:text-5xl">
                 Build useful things.<span className="block text-muted-foreground">Own the workflow.</span>
@@ -194,7 +194,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                 </div>
                 <div className="grid gap-2 py-4">
                   {publicTools.map(({ label, description, path, icon: Icon }) => (
-                    <Link key={path} to={path} className="group flex min-h-14 items-center gap-4 rounded-xl border border-border/70 px-4 py-4 transition-colors hover:border-border/70 hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                    <Link key={path} to={path} className="group flex items-center gap-4 rounded-xl border border-border/70 px-4 py-4 transition-colors hover:border-border/70 hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-background">
                         <Icon className="h-4 w-4" />
                       </span>
@@ -206,11 +206,11 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                     </Link>
                   ))}
                 </div>
-                <Link to="/explore" className="group flex min-h-12 items-center justify-between rounded-xl border border-border/70 bg-background/65 px-4 py-4 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                <Link to="/explore" className="group flex items-center justify-between rounded-xl border border-border/70 bg-background/65 px-4 py-4 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                   <span>Browse all public apps</span>
                   <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                 </Link>
-                <Link to="/huggingface" className="group flex min-h-12 items-center justify-between rounded-xl border border-border/70 bg-background/65 px-4 py-4 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                <Link to="/huggingface" className="group flex items-center justify-between rounded-xl border border-border/70 bg-background/65 px-4 py-4 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                   <span className="flex items-center gap-2">
                     <HuggingFaceLogo className="h-4 w-4 text-[#FF9D00]" /> Hugging Face integration
                   </span>
@@ -234,7 +234,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
           <section className="border-t border-border/60 py-8 sm:py-8" aria-labelledby="walkthrough-title">
             <div className="grid gap-4 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
               <div className="lg:pr-4">
-                <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   <PlayCircle className="h-4 w-4" /> Walkthrough
                 </div>
                 <h2 id="walkthrough-title" className="mt-2 text-lg font-semibold tracking-tight sm:text-lg">
@@ -311,9 +311,16 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                   }
                 }}
               >
-                <input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="h-10 w-full rounded-xl border border-input bg-background px-4 text-sm" />
-                <input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" className="h-10 w-full rounded-xl border border-input bg-background px-4 text-sm" />
-                <div className="flex flex-wrap items-center justify-between gap-2 text-sm"><Link to="/auth/forgot-password" onClick={() => setAuthOpen(false)} className="font-medium text-foreground hover:underline">Forgot password?</Link><Link to="/auth/confirm" onClick={() => setAuthOpen(false)} className="text-muted-foreground hover:text-foreground hover:underline">Resend confirmation</Link></div>
+                <input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="h-9 w-full rounded-xl border border-input bg-background px-4 text-sm" />
+                <input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" className="h-9 w-full rounded-xl border border-input bg-background px-4 text-sm" />
+                <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                  <Link to="/auth/forgot-password" onClick={() => setAuthOpen(false)} className="font-medium text-foreground hover:underline">
+                    Forgot password?
+                  </Link>
+                  <Link to="/auth/confirm" onClick={() => setAuthOpen(false)} className="text-muted-foreground hover:text-foreground hover:underline">
+                    Resend confirmation
+                  </Link>
+                </div>
                 <Button type="submit" className="w-full" disabled={!email.trim() || !password}>
                   Sign in with email
                 </Button>

@@ -1,148 +1,431 @@
-import { AppHeading } from '@/components/layout/AppHeading'
-import React from 'react'
-import { Download, ExternalLink, ImagePlus, MessageCircle, Mic2, PackageOpen, Pause, Play, RotateCcw, Upload } from 'lucide-react'
-import { APP_TOAST_EVENT, type AppToast, toast } from '@/lib/toast'
-import { isWidgetEnabled } from '@/lib/widgetPreferences'
+import { AppHeading } from "@/components/layout/AppHeading";
+import React from "react";
+import { Download, ExternalLink, ImagePlus, MessageCircle, Mic2, PackageOpen, Pause, Play, RotateCcw, Upload } from "lucide-react";
+import { APP_TOAST_EVENT, type AppToast, toast } from "@/lib/toast";
+import { isWidgetEnabled } from "@/lib/widgetPreferences";
 
-type Provider = 'huggingface' | 'vertex' | 'browser'
-type Activity = 'idle' | 'listening' | 'speaking'
+type Provider = "huggingface" | "vertex" | "browser";
+type Activity = "idle" | "listening" | "speaking";
 
 type BuddyConfig = {
-  name: string
-  provider: Provider
-  voiceEnabled: boolean
-  voiceName: string
-  imageDataUrl: string
-  assetLabel: string
-  assetSourceUrl: string
-  assetLicense: string
-  scale: number
-  offsetX: number
-  offsetY: number
-}
+  name: string;
+  provider: Provider;
+  voiceEnabled: boolean;
+  voiceName: string;
+  imageDataUrl: string;
+  assetLabel: string;
+  assetSourceUrl: string;
+  assetLicense: string;
+  scale: number;
+  offsetX: number;
+  offsetY: number;
+};
 
-type StarterAsset = { id: string; name: string; imageUrl: string; sourceUrl: string; license: string; note: string }
+type StarterAsset = { id: string; name: string; imageUrl: string; sourceUrl: string; license: string; note: string };
 
-const STORAGE_KEY = 'appforge-desktop-buddy-v1'
-const MAX_IMAGE_BYTES = 2_500_000
-const MAX_PACK_IMAGE_CHARS = 4_000_000
-const ALLOWED_UPLOAD_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'])
-const KDE_LICENSE = 'KDE mascot artwork: CC BY-SA / GFDL / LGPL'
+const STORAGE_KEY = "appforge-desktop-buddy-v1";
+const MAX_IMAGE_BYTES = 2_500_000;
+const MAX_PACK_IMAGE_CHARS = 4_000_000;
+const ALLOWED_UPLOAD_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/svg+xml"]);
+const KDE_LICENSE = "KDE mascot artwork: CC BY-SA / GFDL / LGPL";
 const KDE_STARTERS: StarterAsset[] = [
-  { id: 'konqi-default', name: 'Konqi', imageUrl: 'https://community.kde.org/images.community/c/cb/Konqi.svg', sourceUrl: 'https://community.kde.org/Promo/Material/Mascots#2014', license: KDE_LICENSE, note: 'Default KDE dragon mascot artwork.' },
-  { id: 'konqi-utilities', name: 'Utilities Konqi', imageUrl: 'https://community.kde.org/Special:Redirect/file/Mascot_konqi-app-utilities.png', sourceUrl: 'https://community.kde.org/File:Mascot_konqi-app-utilities.png', license: 'Creative Commons Attribution-ShareAlike · Tyson Tan', note: 'KDE utilities mascot used on the Get Involved wiki.' },
-  { id: 'konqi-katie-phone', name: 'Konqi + Katie', imageUrl: 'https://community.kde.org/images.community/2/26/Konqi_katie_phone.png', sourceUrl: 'https://community.kde.org/Promo/Material/Mascots#2018', license: KDE_LICENSE, note: 'KDE dragons with smartphones, useful for an assistant/mobile personality.' },
-]
-const defaultStarter = KDE_STARTERS[0]
-const defaultConfig: BuddyConfig = { name: 'Konqi Buddy', provider: 'huggingface', voiceEnabled: false, voiceName: '', imageDataUrl: defaultStarter.imageUrl, assetLabel: defaultStarter.name, assetSourceUrl: defaultStarter.sourceUrl, assetLicense: defaultStarter.license, scale: 88, offsetX: 0, offsetY: 0 }
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
-const isProvider = (value: unknown): value is Provider => value === 'huggingface' || value === 'vertex' || value === 'browser'
+  { id: "konqi-default", name: "Konqi", imageUrl: "https://community.kde.org/images.community/c/cb/Konqi.svg", sourceUrl: "https://community.kde.org/Promo/Material/Mascots#2014", license: KDE_LICENSE, note: "Default KDE dragon mascot artwork." },
+  {
+    id: "konqi-utilities",
+    name: "Utilities Konqi",
+    imageUrl: "https://community.kde.org/Special:Redirect/file/Mascot_konqi-app-utilities.png",
+    sourceUrl: "https://community.kde.org/File:Mascot_konqi-app-utilities.png",
+    license: "Creative Commons Attribution-ShareAlike · Tyson Tan",
+    note: "KDE utilities mascot used on the Get Involved wiki.",
+  },
+  {
+    id: "konqi-katie-phone",
+    name: "Konqi + Katie",
+    imageUrl: "https://community.kde.org/images.community/2/26/Konqi_katie_phone.png",
+    sourceUrl: "https://community.kde.org/Promo/Material/Mascots#2018",
+    license: KDE_LICENSE,
+    note: "KDE dragons with smartphones, useful for an assistant/mobile personality.",
+  },
+];
+const defaultStarter = KDE_STARTERS[0];
+const defaultConfig: BuddyConfig = {
+  name: "Konqi Buddy",
+  provider: "huggingface",
+  voiceEnabled: false,
+  voiceName: "",
+  imageDataUrl: defaultStarter.imageUrl,
+  assetLabel: defaultStarter.name,
+  assetSourceUrl: defaultStarter.sourceUrl,
+  assetLicense: defaultStarter.license,
+  scale: 88,
+  offsetX: 0,
+  offsetY: 0,
+};
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+const isProvider = (value: unknown): value is Provider => value === "huggingface" || value === "vertex" || value === "browser";
 const safeHttpUrl = (value: unknown) => {
-  if (typeof value !== 'string' || !value.trim()) return ''
-  try { const url = new URL(value); return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString().slice(0, 2_000) : '' } catch { return '' }
-}
+  if (typeof value !== "string" || !value.trim()) return "";
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString().slice(0, 2_000) : "";
+  } catch {
+    return "";
+  }
+};
 const safeImageSource = (value: unknown) => {
-  if (typeof value !== 'string' || !value || value.length > MAX_PACK_IMAGE_CHARS) return defaultConfig.imageDataUrl
-  if (/^data:image\/(?:png|jpeg|webp|svg\+xml)[;,]/i.test(value)) return value
-  return safeHttpUrl(value) || defaultConfig.imageDataUrl
-}
+  if (typeof value !== "string" || !value || value.length > MAX_PACK_IMAGE_CHARS) return defaultConfig.imageDataUrl;
+  if (/^data:image\/(?:png|jpeg|webp|svg\+xml)[;,]/i.test(value)) return value;
+  return safeHttpUrl(value) || defaultConfig.imageDataUrl;
+};
 const sanitizeConfig = (value: Partial<BuddyConfig>): BuddyConfig => ({
-  name: typeof value.name === 'string' ? value.name.slice(0, 64) : defaultConfig.name,
+  name: typeof value.name === "string" ? value.name.slice(0, 64) : defaultConfig.name,
   provider: isProvider(value.provider) ? value.provider : defaultConfig.provider,
-  voiceEnabled: typeof value.voiceEnabled === 'boolean' ? value.voiceEnabled : defaultConfig.voiceEnabled,
-  voiceName: typeof value.voiceName === 'string' ? value.voiceName.slice(0, 160) : '',
-  imageDataUrl: safeImageSource(value.imageDataUrl), assetLabel: typeof value.assetLabel === 'string' ? value.assetLabel.slice(0, 120) : '', assetSourceUrl: safeHttpUrl(value.assetSourceUrl), assetLicense: typeof value.assetLicense === 'string' ? value.assetLicense.slice(0, 240) : '',
-  scale: clamp(Number.isFinite(value.scale) ? Number(value.scale) : defaultConfig.scale, 45, 145), offsetX: clamp(Number.isFinite(value.offsetX) ? Number(value.offsetX) : defaultConfig.offsetX, -120, 120), offsetY: clamp(Number.isFinite(value.offsetY) ? Number(value.offsetY) : defaultConfig.offsetY, -120, 120),
-})
-const loadConfig = (): BuddyConfig => { try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? sanitizeConfig(JSON.parse(raw) as Partial<BuddyConfig>) : defaultConfig } catch { return defaultConfig } }
-const downloadBlob = (blob: Blob, filename: string) => { const url = URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = filename; document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url) }
+  voiceEnabled: typeof value.voiceEnabled === "boolean" ? value.voiceEnabled : defaultConfig.voiceEnabled,
+  voiceName: typeof value.voiceName === "string" ? value.voiceName.slice(0, 160) : "",
+  imageDataUrl: safeImageSource(value.imageDataUrl),
+  assetLabel: typeof value.assetLabel === "string" ? value.assetLabel.slice(0, 120) : "",
+  assetSourceUrl: safeHttpUrl(value.assetSourceUrl),
+  assetLicense: typeof value.assetLicense === "string" ? value.assetLicense.slice(0, 240) : "",
+  scale: clamp(Number.isFinite(value.scale) ? Number(value.scale) : defaultConfig.scale, 45, 145),
+  offsetX: clamp(Number.isFinite(value.offsetX) ? Number(value.offsetX) : defaultConfig.offsetX, -120, 120),
+  offsetY: clamp(Number.isFinite(value.offsetY) ? Number(value.offsetY) : defaultConfig.offsetY, -120, 120),
+});
+const loadConfig = (): BuddyConfig => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? sanitizeConfig(JSON.parse(raw) as Partial<BuddyConfig>) : defaultConfig;
+  } catch {
+    return defaultConfig;
+  }
+};
+const downloadBlob = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+};
 
 export function DesktopBuddy() {
-  const [config, setConfig] = React.useState<BuddyConfig>(loadConfig)
-  const [message, setMessage] = React.useState('Ready to react to your next AppForge response.')
-  const [voices, setVoices] = React.useState<SpeechSynthesisVoice[]>([])
-  const [activity, setActivity] = React.useState<Activity>('idle')
+  const [config, setConfig] = React.useState<BuddyConfig>(loadConfig);
+  const [message, setMessage] = React.useState("Ready to react to your next AppForge response.");
+  const [voices, setVoices] = React.useState<SpeechSynthesisVoice[]>([]);
+  const [activity, setActivity] = React.useState<Activity>("idle");
 
-  React.useEffect(() => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(config)) } catch { setMessage('This character is too large for browser storage. Export the pack or choose a smaller image.') } }, [config])
-  React.useEffect(() => { const loadVoices = () => setVoices(window.speechSynthesis?.getVoices?.() || []); loadVoices(); window.speechSynthesis?.addEventListener?.('voiceschanged', loadVoices); return () => window.speechSynthesis?.removeEventListener?.('voiceschanged', loadVoices) }, [])
+  React.useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    } catch {
+      setMessage("This character is too large for browser storage. Export the pack or choose a smaller image.");
+    }
+  }, [config]);
+  React.useEffect(() => {
+    const loadVoices = () => setVoices(window.speechSynthesis?.getVoices?.() || []);
+    loadVoices();
+    window.speechSynthesis?.addEventListener?.("voiceschanged", loadVoices);
+    return () => window.speechSynthesis?.removeEventListener?.("voiceschanged", loadVoices);
+  }, []);
 
-  const speakText = React.useCallback((text: string) => {
-    if (!('speechSynthesis' in window) || !text.trim()) return
-    window.speechSynthesis.cancel()
-    const utterance = new SpeechSynthesisUtterance(text)
-    const selected = voices.find((voice) => voice.name === config.voiceName)
-    if (selected) utterance.voice = selected
-    utterance.onstart = () => setActivity('speaking')
-    utterance.onend = () => setActivity('idle')
-    utterance.onerror = () => setActivity('idle')
-    window.speechSynthesis.speak(utterance)
-  }, [config.voiceName, voices])
+  const speakText = React.useCallback(
+    (text: string) => {
+      if (!("speechSynthesis" in window) || !text.trim()) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      const selected = voices.find((voice) => voice.name === config.voiceName);
+      if (selected) utterance.voice = selected;
+      utterance.onstart = () => setActivity("speaking");
+      utterance.onend = () => setActivity("idle");
+      utterance.onerror = () => setActivity("idle");
+      window.speechSynthesis.speak(utterance);
+    },
+    [config.voiceName, voices],
+  );
 
   React.useEffect(() => {
     const onAgentResponse = (event: Event) => {
-      const text = String((event as CustomEvent<{ text?: string }>).detail?.text || '').trim()
-      if (!text) return
-      setMessage(text)
-      if (config.voiceEnabled) speakText(text); else { setActivity('listening'); window.setTimeout(() => setActivity('idle'), 700) }
-    }
-    window.addEventListener('appforge:agent-response', onAgentResponse)
-    return () => window.removeEventListener('appforge:agent-response', onAgentResponse)
-  }, [config.voiceEnabled, speakText])
+      const text = String((event as CustomEvent<{ text?: string }>).detail?.text || "").trim();
+      if (!text) return;
+      setMessage(text);
+      if (config.voiceEnabled) speakText(text);
+      else {
+        setActivity("listening");
+        window.setTimeout(() => setActivity("idle"), 700);
+      }
+    };
+    window.addEventListener("appforge:agent-response", onAgentResponse);
+    return () => window.removeEventListener("appforge:agent-response", onAgentResponse);
+  }, [config.voiceEnabled, speakText]);
 
   React.useEffect(() => {
     const onToast = (event: Event) => {
-      if (!config.voiceEnabled || !isWidgetEnabled('desktop-buddy')) return
-      const notification = (event as CustomEvent<AppToast>).detail
-      if (!notification?.message) return
-      setMessage(notification.message)
-      speakText(notification.message)
-    }
-    window.addEventListener(APP_TOAST_EVENT, onToast)
-    return () => window.removeEventListener(APP_TOAST_EVENT, onToast)
-  }, [config.voiceEnabled, speakText])
+      if (!config.voiceEnabled || !isWidgetEnabled("desktop-buddy")) return;
+      const notification = (event as CustomEvent<AppToast>).detail;
+      if (!notification?.message) return;
+      setMessage(notification.message);
+      speakText(notification.message);
+    };
+    window.addEventListener(APP_TOAST_EVENT, onToast);
+    return () => window.removeEventListener(APP_TOAST_EVENT, onToast);
+  }, [config.voiceEnabled, speakText]);
 
   const onUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-    if (!ALLOWED_UPLOAD_TYPES.has(file.type) || file.size > MAX_IMAGE_BYTES) { toast.error(file.size > MAX_IMAGE_BYTES ? 'Choose an image under 2.5 MB.' : 'Choose a PNG, WebP, JPEG, or SVG image.'); event.target.value = ''; return }
-    const reader = new FileReader()
-    reader.onerror = () => toast.error('The browser could not read that character image.')
-    reader.onload = () => { const imageDataUrl = String(reader.result || ''); if (imageDataUrl.length > MAX_PACK_IMAGE_CHARS) { toast.error('That image is too large for a portable buddy pack.'); return } setConfig((current) => ({ ...current, imageDataUrl: safeImageSource(imageDataUrl), assetLabel: file.name, assetSourceUrl: '', assetLicense: 'User-supplied asset' })); setMessage('Character loaded locally.'); toast.success('Desktop Buddy character loaded.') }
-    reader.readAsDataURL(file)
-  }
-  const chooseStarter = (starter: StarterAsset) => { setConfig((current) => ({ ...current, imageDataUrl: starter.imageUrl, assetLabel: starter.name, assetSourceUrl: starter.sourceUrl, assetLicense: starter.license })); setMessage(`${starter.name} selected from the KDE Community Wiki starter set.`) }
-  const speak = () => { if (!('speechSynthesis' in window)) { toast.error('Browser speech synthesis is not available here.'); return } speakText(message) }
-  const testVoice = () => { const text = `Hi, I am ${config.name || 'your Desktop Buddy'}. Voice notifications are ready.`; setMessage(text); speakText(text) }
-  const stopSpeaking = () => { window.speechSynthesis?.cancel(); setActivity('idle') }
-  const exportPack = () => { downloadBlob(new Blob([JSON.stringify({ version: 2, app: 'desktop-buddy', exportedAt: new Date().toISOString(), config }, null, 2)], { type: 'application/json' }), `${config.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'desktop-buddy'}.buddy.json`); toast.success('Buddy pack exported.') }
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!ALLOWED_UPLOAD_TYPES.has(file.type) || file.size > MAX_IMAGE_BYTES) {
+      toast.error(file.size > MAX_IMAGE_BYTES ? "Choose an image under 2.5 MB." : "Choose a PNG, WebP, JPEG, or SVG image.");
+      event.target.value = "";
+      return;
+    }
+    const reader = new FileReader();
+    reader.onerror = () => toast.error("The browser could not read that character image.");
+    reader.onload = () => {
+      const imageDataUrl = String(reader.result || "");
+      if (imageDataUrl.length > MAX_PACK_IMAGE_CHARS) {
+        toast.error("That image is too large for a portable buddy pack.");
+        return;
+      }
+      setConfig((current) => ({ ...current, imageDataUrl: safeImageSource(imageDataUrl), assetLabel: file.name, assetSourceUrl: "", assetLicense: "User-supplied asset" }));
+      setMessage("Character loaded locally.");
+      toast.success("Desktop Buddy character loaded.");
+    };
+    reader.readAsDataURL(file);
+  };
+  const chooseStarter = (starter: StarterAsset) => {
+    setConfig((current) => ({ ...current, imageDataUrl: starter.imageUrl, assetLabel: starter.name, assetSourceUrl: starter.sourceUrl, assetLicense: starter.license }));
+    setMessage(`${starter.name} selected from the KDE Community Wiki starter set.`);
+  };
+  const speak = () => {
+    if (!("speechSynthesis" in window)) {
+      toast.error("Browser speech synthesis is not available here.");
+      return;
+    }
+    speakText(message);
+  };
+  const testVoice = () => {
+    const text = `Hi, I am ${config.name || "your Desktop Buddy"}. Voice notifications are ready.`;
+    setMessage(text);
+    speakText(text);
+  };
+  const stopSpeaking = () => {
+    window.speechSynthesis?.cancel();
+    setActivity("idle");
+  };
+  const exportPack = () => {
+    downloadBlob(
+      new Blob([JSON.stringify({ version: 2, app: "desktop-buddy", exportedAt: new Date().toISOString(), config }, null, 2)], { type: "application/json" }),
+      `${
+        config.name
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-") || "desktop-buddy"
+      }.buddy.json`,
+    );
+    toast.success("Buddy pack exported.");
+  };
   const importPack = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]; if (!file) return
-    if (file.size > 5_000_000) { toast.error('That buddy pack is too large to import safely.'); event.target.value = ''; return }
-    const reader = new FileReader(); reader.onerror = () => toast.error('The browser could not read that buddy pack.')
-    reader.onload = () => { try { const parsed = JSON.parse(String(reader.result || '{}')) as { app?: unknown; version?: unknown; config?: Partial<BuddyConfig> }; if (parsed.app !== 'desktop-buddy' || ![1, 2].includes(Number(parsed.version)) || !parsed.config) throw new Error('Invalid buddy pack'); setConfig(sanitizeConfig(parsed.config)); setMessage('Buddy pack imported and unsafe source URLs were discarded.'); toast.success('Buddy pack imported.') } catch { toast.error('That file is not a valid Desktop Buddy pack.') } }
-    reader.readAsText(file)
-  }
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5_000_000) {
+      toast.error("That buddy pack is too large to import safely.");
+      event.target.value = "";
+      return;
+    }
+    const reader = new FileReader();
+    reader.onerror = () => toast.error("The browser could not read that buddy pack.");
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result || "{}")) as { app?: unknown; version?: unknown; config?: Partial<BuddyConfig> };
+        if (parsed.app !== "desktop-buddy" || ![1, 2].includes(Number(parsed.version)) || !parsed.config) throw new Error("Invalid buddy pack");
+        setConfig(sanitizeConfig(parsed.config));
+        setMessage("Buddy pack imported and unsafe source URLs were discarded.");
+        toast.success("Buddy pack imported.");
+      } catch {
+        toast.error("That file is not a valid Desktop Buddy pack.");
+      }
+    };
+    reader.readAsText(file);
+  };
   const exportPng = async () => {
-    try { const image = new Image(); image.crossOrigin = 'anonymous'; image.src = config.imageDataUrl; await image.decode(); const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 512; const context = canvas.getContext('2d'); if (!context) throw new Error(); const fit = Math.min(470 / image.naturalWidth, 470 / image.naturalHeight); const width = image.naturalWidth * fit; const height = image.naturalHeight * fit; context.clearRect(0, 0, 512, 512); context.drawImage(image, (512 - width) / 2, (512 - height) / 2, width, height); const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png')); if (!blob) throw new Error(); downloadBlob(blob, `${config.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'buddy'}-512.png`); toast.success('Transparent 512 × 512 PNG exported.') } catch { toast.error('This remote asset blocks canvas export. Upload a local copy first.') }
-  }
-  const testReaction = () => window.dispatchEvent(new CustomEvent('appforge:agent-response', { detail: { text: `${config.name || 'Desktop Buddy'} received an AppForge agent response and is ready.` } }))
+    try {
+      const image = new Image();
+      image.crossOrigin = "anonymous";
+      image.src = config.imageDataUrl;
+      await image.decode();
+      const canvas = document.createElement("canvas");
+      canvas.width = 512;
+      canvas.height = 512;
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error();
+      const fit = Math.min(470 / image.naturalWidth, 470 / image.naturalHeight);
+      const width = image.naturalWidth * fit;
+      const height = image.naturalHeight * fit;
+      context.clearRect(0, 0, 512, 512);
+      context.drawImage(image, (512 - width) / 2, (512 - height) / 2, width, height);
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+      if (!blob) throw new Error();
+      downloadBlob(blob, `${config.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "buddy"}-512.png`);
+      toast.success("Transparent 512 × 512 PNG exported.");
+    } catch {
+      toast.error("This remote asset blocks canvas export. Upload a local copy first.");
+    }
+  };
+  const testReaction = () => window.dispatchEvent(new CustomEvent("appforge:agent-response", { detail: { text: `${config.name || "Desktop Buddy"} received an AppForge agent response and is ready.` } }));
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 p-4">
       <section className="overflow-hidden rounded-xl border bg-card">
         <div className="grid lg:grid-cols-[1.05fr_.95fr]">
-          <div className="space-y-4 p-8"><AppHeading />
-            <div className="grid gap-4 sm:grid-cols-2"><label className="rounded-xl border p-4"><span className="text-sm font-medium text-muted-foreground">Name</span><input className="mt-2 w-full bg-transparent text-sm outline-none" value={config.name} maxLength={64} onChange={(event) => setConfig((current) => ({ ...current, name: event.target.value }))} /></label><div className="rounded-xl border p-4"><span className="text-sm font-medium text-muted-foreground">State</span><p className="mt-2 text-sm capitalize">{activity}</p></div></div>
-            <div className="flex flex-wrap gap-2"><label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted"><Upload className="h-4 w-4" /> Upload character<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={onUpload} /></label><button type="button" onClick={exportPack} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted"><Download className="h-4 w-4" /> Export pack</button><label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted"><PackageOpen className="h-4 w-4" /> Import pack<input type="file" accept="application/json,.json" className="hidden" onChange={importPack} /></label><button type="button" onClick={() => void exportPng()} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted"><ImagePlus className="h-4 w-4" /> Export PNG</button><button type="button" onClick={() => { setConfig(defaultConfig); setMessage('Desktop Buddy reset to KDE Konqi.'); toast.success('Desktop Buddy reset.') }} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted"><RotateCcw className="h-4 w-4" /> Reset</button></div>
+          <div className="space-y-4 p-8">
+            <AppHeading />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="rounded-xl border p-4">
+                <span className="text-sm font-medium text-muted-foreground">Name</span>
+                <input className="mt-2 w-full bg-transparent text-sm outline-none" value={config.name} maxLength={64} onChange={(event) => setConfig((current) => ({ ...current, name: event.target.value }))} />
+              </label>
+              <div className="rounded-xl border p-4">
+                <span className="text-sm font-medium text-muted-foreground">State</span>
+                <p className="mt-2 text-sm capitalize">{activity}</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+                <Upload className="h-4 w-4" /> Upload character
+                <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={onUpload} />
+              </label>
+              <button type="button" onClick={exportPack} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+                <Download className="h-4 w-4" /> Export pack
+              </button>
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+                <PackageOpen className="h-4 w-4" /> Import pack
+                <input type="file" accept="application/json,.json" className="hidden" onChange={importPack} />
+              </label>
+              <button type="button" onClick={() => void exportPng()} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+                <ImagePlus className="h-4 w-4" /> Export PNG
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setConfig(defaultConfig);
+                  setMessage("Desktop Buddy reset to KDE Konqi.");
+                  toast.success("Desktop Buddy reset.");
+                }}
+                className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted"
+              >
+                <RotateCcw className="h-4 w-4" /> Reset
+              </button>
+            </div>
           </div>
-          <div className="relative min-h-[390px] overflow-hidden border-t bg-muted/40 lg:border-l lg:border-t-0"><div className={`absolute inset-0 flex items-end justify-center overflow-hidden p-4 transition-transform ${activity === 'speaking' ? 'scale-[1.025]' : activity === 'listening' ? 'scale-[1.01]' : ''}`}><img src={config.imageDataUrl} alt={`${config.name || 'Desktop Buddy'} character`} className="max-h-[350px] max-w-[92%] select-none object-contain" style={{ transform: `translate(${config.offsetX}px, ${config.offsetY}px) scale(${config.scale / 100})` }} /></div><div className="absolute left-4 top-4 rounded-xl border bg-background/90 px-4 py-2 text-sm backdrop-blur"><span className="font-semibold">{config.name || 'Buddy'}</span> · {activity}</div></div>
+          <div className="relative min-h-[390px] overflow-hidden border-t bg-muted/40 lg:border-l lg:border-t-0">
+            <div className={`absolute inset-0 flex items-end justify-center overflow-hidden p-4 transition-transform ${activity === "speaking" ? "scale-[1.025]" : activity === "listening" ? "scale-[1.01]" : ""}`}>
+              <img src={config.imageDataUrl} alt={`${config.name || "Desktop Buddy"} character`} className="max-h-[350px] max-w-[92%] select-none object-contain" style={{ transform: `translate(${config.offsetX}px, ${config.offsetY}px) scale(${config.scale / 100})` }} />
+            </div>
+            <div className="absolute left-4 top-4 rounded-xl border bg-background/90 px-4 py-2 text-sm backdrop-blur">
+              <span className="font-semibold">{config.name || "Buddy"}</span> · {activity}
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="space-y-4 rounded-xl border bg-card p-4"><div className="flex flex-wrap items-end justify-between gap-4"><div><h2 className="font-semibold">KDE dragon starters</h2><p className="mt-2 text-sm text-muted-foreground">Starter artwork keeps source and license metadata inside the buddy pack.</p></div><a href="https://community.kde.org/Promo/Material/Mascots" target="_blank" rel="noreferrer" className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">KDE mascot wiki <ExternalLink className="h-4 w-4" /></a></div><div className="grid gap-4 sm:grid-cols-3">{KDE_STARTERS.map((starter) => { const active = config.assetSourceUrl === starter.sourceUrl; return <button key={starter.id} type="button" onClick={() => chooseStarter(starter)} className={`flex h-full min-h-24 cursor-pointer flex-col overflow-hidden rounded-xl border text-left transition-colors hover:border-foreground/25 ${active ? 'ring-1 ring-primary/35' : ''}`}><div className="flex h-48 w-full items-center justify-center border-b border-border/60 bg-muted/20"><img src={starter.imageUrl} alt={starter.name} className="h-full w-full scale-90 object-contain" loading="lazy" /></div><div className="flex flex-1 flex-col p-4"><div className="text-sm font-semibold">{starter.name}</div><p className="mt-2 text-sm text-muted-foreground">{starter.note}</p><p className="mt-4 text-sm text-muted-foreground">{starter.license}</p></div></button> })}</div><div className="rounded-xl border bg-background/45 p-4 text-sm text-muted-foreground"><strong className="text-foreground">Current asset:</strong> {config.assetLabel || 'Custom character'} · {config.assetLicense || 'No license metadata recorded'}{config.assetSourceUrl && <> · <a href={config.assetSourceUrl} target="_blank" rel="noreferrer" className="cursor-pointer underline underline-offset-2">source</a></>}</div></section>
+      <section className="space-y-4 rounded-xl border bg-card p-4">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="font-semibold">KDE dragon starters</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Starter artwork keeps source and license metadata inside the buddy pack.</p>
+          </div>
+          <a href="https://community.kde.org/Promo/Material/Mascots" target="_blank" rel="noreferrer" className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+            KDE mascot wiki <ExternalLink className="h-4 w-4" />
+          </a>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {KDE_STARTERS.map((starter) => {
+            const active = config.assetSourceUrl === starter.sourceUrl;
+            return (
+              <button key={starter.id} type="button" onClick={() => chooseStarter(starter)} className={`flex h-full min-h-24 cursor-pointer flex-col overflow-hidden rounded-xl border text-left transition-colors hover:border-foreground/25 ${active ? "ring-1 ring-primary/35" : ""}`}>
+                <div className="flex h-48 w-full items-center justify-center border-b border-border/60 bg-muted/20">
+                  <img src={starter.imageUrl} alt={starter.name} className="h-full w-full scale-90 object-contain" loading="lazy" />
+                </div>
+                <div className="flex flex-1 flex-col p-4">
+                  <div className="text-sm font-semibold">{starter.name}</div>
+                  <p className="mt-2 text-sm text-muted-foreground">{starter.note}</p>
+                  <p className="mt-4 text-sm text-muted-foreground">{starter.license}</p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+        <div className="rounded-xl border bg-background/45 p-4 text-sm text-muted-foreground">
+          <strong className="text-foreground">Current asset:</strong> {config.assetLabel || "Custom character"} · {config.assetLicense || "No license metadata recorded"}
+          {config.assetSourceUrl && (
+            <>
+              {" "}
+              ·{" "}
+              <a href={config.assetSourceUrl} target="_blank" rel="noreferrer" className="cursor-pointer underline underline-offset-2">
+                source
+              </a>
+            </>
+          )}
+        </div>
+      </section>
 
-      <div className="grid gap-8 lg:grid-cols-2"><section className="space-y-4 rounded-xl border bg-card p-4"><div className="flex items-center gap-2"><ImagePlus className="h-4 w-4" /><h2 className="font-semibold">Character framing</h2></div><label className="block space-y-2 text-sm"><span>Scale · {config.scale}%</span><input className="w-full cursor-pointer" type="range" min="45" max="145" value={config.scale} onChange={(event) => setConfig((current) => ({ ...current, scale: Number(event.target.value) }))} /></label><label className="block space-y-2 text-sm"><span>Horizontal · {config.offsetX}px</span><input className="w-full cursor-pointer" type="range" min="-120" max="120" value={config.offsetX} onChange={(event) => setConfig((current) => ({ ...current, offsetX: Number(event.target.value) }))} /></label><label className="block space-y-2 text-sm"><span>Vertical · {config.offsetY}px</span><input className="w-full cursor-pointer" type="range" min="-120" max="120" value={config.offsetY} onChange={(event) => setConfig((current) => ({ ...current, offsetY: Number(event.target.value) }))} /></label></section>
-        <section className="space-y-4 rounded-xl border bg-card p-4"><div className="flex items-center gap-2"><MessageCircle className="h-4 w-4" /><h2 className="font-semibold">Agent response + voice</h2></div><textarea className="min-h-28 w-full rounded-xl border bg-background p-4 text-sm outline-none" value={message} onChange={(event) => setMessage(event.target.value)} /><label className="rounded-xl border p-4 text-sm"><span className="text-sm text-muted-foreground">Voice</span><select className="mt-2 w-full cursor-pointer bg-transparent outline-none" value={config.voiceName} onChange={(event) => setConfig((current) => ({ ...current, voiceName: event.target.value }))}><option value="">System default</option>{voices.map((voice) => <option key={`${voice.name}-${voice.lang}`} value={voice.name}>{voice.name} · {voice.lang}</option>)}</select></label><div className="flex flex-wrap gap-2"><button type="button" onClick={speak} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted"><Mic2 className="h-4 w-4" /> Speak text</button><button type="button" onClick={testVoice} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted"><Play className="h-4 w-4" /> Test voice</button><button type="button" onClick={stopSpeaking} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted"><Pause className="h-4 w-4" /> Stop</button></div><label className="flex cursor-pointer items-center gap-4 rounded-xl border p-4 text-sm"><input type="checkbox" checked={config.voiceEnabled} onChange={(event) => setConfig((current) => ({ ...current, voiceEnabled: event.target.checked }))} />Auto-speak agent responses and AppForge notifications while the Desktop Buddy widget is enabled.</label><button type="button" onClick={testReaction} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted"><Play className="h-4 w-4" /> Test agent reaction</button></section></div>
+      <div className="grid gap-8 lg:grid-cols-2">
+        <section className="space-y-4 rounded-xl border bg-card p-4">
+          <div className="flex items-center gap-2">
+            <ImagePlus className="h-4 w-4" />
+            <h2 className="font-semibold">Character framing</h2>
+          </div>
+          <label className="block space-y-2 text-sm">
+            <span>Scale · {config.scale}%</span>
+            <input className="w-full cursor-pointer" type="range" min="45" max="145" value={config.scale} onChange={(event) => setConfig((current) => ({ ...current, scale: Number(event.target.value) }))} />
+          </label>
+          <label className="block space-y-2 text-sm">
+            <span>Horizontal · {config.offsetX}px</span>
+            <input className="w-full cursor-pointer" type="range" min="-120" max="120" value={config.offsetX} onChange={(event) => setConfig((current) => ({ ...current, offsetX: Number(event.target.value) }))} />
+          </label>
+          <label className="block space-y-2 text-sm">
+            <span>Vertical · {config.offsetY}px</span>
+            <input className="w-full cursor-pointer" type="range" min="-120" max="120" value={config.offsetY} onChange={(event) => setConfig((current) => ({ ...current, offsetY: Number(event.target.value) }))} />
+          </label>
+        </section>
+        <section className="space-y-4 rounded-xl border bg-card p-4">
+          <div className="flex items-center gap-2">
+            <MessageCircle className="h-4 w-4" />
+            <h2 className="font-semibold">Agent response + voice</h2>
+          </div>
+          <textarea className="min-h-24 w-full rounded-xl border bg-background p-4 text-sm outline-none" value={message} onChange={(event) => setMessage(event.target.value)} />
+          <label className="rounded-xl border p-4 text-sm">
+            <span className="text-sm text-muted-foreground">Voice</span>
+            <select className="mt-2 w-full cursor-pointer bg-transparent outline-none" value={config.voiceName} onChange={(event) => setConfig((current) => ({ ...current, voiceName: event.target.value }))}>
+              <option value="">System default</option>
+              {voices.map((voice) => (
+                <option key={`${voice.name}-${voice.lang}`} value={voice.name}>
+                  {voice.name} · {voice.lang}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={speak} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+              <Mic2 className="h-4 w-4" /> Speak text
+            </button>
+            <button type="button" onClick={testVoice} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+              <Play className="h-4 w-4" /> Test voice
+            </button>
+            <button type="button" onClick={stopSpeaking} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+              <Pause className="h-4 w-4" /> Stop
+            </button>
+          </div>
+          <label className="flex cursor-pointer items-center gap-4 rounded-xl border p-4 text-sm">
+            <input type="checkbox" checked={config.voiceEnabled} onChange={(event) => setConfig((current) => ({ ...current, voiceEnabled: event.target.checked }))} />
+            Auto-speak agent responses and AppForge notifications while the Desktop Buddy widget is enabled.
+          </label>
+          <button type="button" onClick={testReaction} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+            <Play className="h-4 w-4" /> Test agent reaction
+          </button>
+        </section>
+      </div>
     </div>
-  )
+  );
 }

@@ -1,34 +1,262 @@
-import React from 'react'
-import { Button, Card, Input } from '@/components/ui'
-import { Check, Copy, Download, Search } from 'lucide-react'
-import { AppHeading } from '@/components/layout/AppHeading'
-import { DNS_TYPES, OVERVIEW_TYPES, lookupDns, normalizeDnsName, recordTypeCode, recordTypeName, type DnsResult } from '@/lib/dns'
+import React from "react";
+import { Button, Card, Input } from "@/components/ui";
+import { Check, Copy, Download, Search } from "lucide-react";
+import { AppHeading } from "@/components/layout/AppHeading";
+import { DNS_TYPES, OVERVIEW_TYPES, lookupDns, normalizeDnsName, recordTypeCode, recordTypeName, type DnsResult } from "@/lib/dns";
 
-type HistoryItem = { name: string; type: string }
-const HISTORY_KEY = 'appforge-dns-history-v1'
-const loadHistory = (): HistoryItem[] => { try { const value = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); return Array.isArray(value) ? value.filter((item) => item && typeof item.name === 'string' && typeof item.type === 'string').slice(0, 6) : [] } catch { return [] } }
+type HistoryItem = { name: string; type: string };
+const HISTORY_KEY = "appforge-dns-history-v1";
+const loadHistory = (): HistoryItem[] => {
+  try {
+    const value = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+    return Array.isArray(value) ? value.filter((item) => item && typeof item.name === "string" && typeof item.type === "string").slice(0, 6) : [];
+  } catch {
+    return [];
+  }
+};
 
 export function DNSChecker() {
-  const [domain, setDomain] = React.useState(''); const [type, setType] = React.useState('overview'); const [customType, setCustomType] = React.useState(''); const [results, setResults] = React.useState<DnsResult[]>([]); const [resolvedName, setResolvedName] = React.useState(''); const [loading, setLoading] = React.useState(false); const [error, setError] = React.useState(''); const [selected, setSelected] = React.useState(''); const [history, setHistory] = React.useState<HistoryItem[]>(loadHistory); const [copied, setCopied] = React.useState('')
-  const controller = React.useRef<AbortController | null>(null)
-  React.useEffect(() => () => controller.current?.abort(), [])
-  React.useEffect(() => { try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)) } catch { /* optional local history */ } }, [history])
+  const [domain, setDomain] = React.useState("");
+  const [type, setType] = React.useState("overview");
+  const [customType, setCustomType] = React.useState("");
+  const [results, setResults] = React.useState<DnsResult[]>([]);
+  const [resolvedName, setResolvedName] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState("");
+  const [selected, setSelected] = React.useState("");
+  const [history, setHistory] = React.useState<HistoryItem[]>(loadHistory);
+  const [copied, setCopied] = React.useState("");
+  const controller = React.useRef<AbortController | null>(null);
+  React.useEffect(() => () => controller.current?.abort(), []);
+  React.useEffect(() => {
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch {
+      /* optional local history */
+    }
+  }, [history]);
 
   const lookup = async (requestedDomain = domain, requestedType = type) => {
-    controller.current?.abort(); let name: string; let types: string[]
-    try { name = normalizeDnsName(requestedDomain); types = requestedType === 'overview' ? OVERVIEW_TYPES : [requestedType === 'custom' ? String(recordTypeCode(customType)) : requestedType] } catch (validationError) { setError(validationError instanceof Error ? validationError.message : 'Invalid query.'); return }
-    const request = new AbortController(); controller.current = request; const timeout = window.setTimeout(() => request.abort(), 20000); setLoading(true); setError(''); setResults([]); setSelected(''); setResolvedName('')
-    try { const records = await lookupDns(name, types, { signal: request.signal }); if (controller.current !== request) return; setResults(records); setResolvedName(name); setDomain(name); setType(requestedType); setHistory((current) => [{ name, type: requestedType }, ...current.filter((item) => !(item.name === name && item.type === requestedType))].slice(0, 6)) } catch (requestError) { if (controller.current === request) setError(request.signal.aborted ? 'Lookup timed out. Please retry.' : requestError instanceof Error ? requestError.message : 'Lookup failed.') } finally { window.clearTimeout(timeout); if (controller.current === request) setLoading(false) }
-  }
-  const exportResults = () => { const url = URL.createObjectURL(new Blob([JSON.stringify({ name: resolvedName, resolver: 'Google Public DNS', results }, null, 2)], { type: 'application/json' })); const link = document.createElement('a'); link.href = url; link.download = `${resolvedName}-dns.json`; link.click(); window.setTimeout(() => URL.revokeObjectURL(url), 1000) }
-  const copyValues = async (result: DnsResult) => { const value = result.records.map((record) => record.data).join('\n'); if (!value) return; try { await navigator.clipboard.writeText(value); setCopied(result.type); window.setTimeout(() => setCopied(''), 1200) } catch { setError('Clipboard access was blocked by the browser.') } }
-  const visible = selected ? results.filter((result) => result.type === selected) : results
-  const quickTypes = ['A', 'AAAA', 'MX', 'TXT', 'CNAME', 'NS']
+    controller.current?.abort();
+    let name: string;
+    let types: string[];
+    try {
+      name = normalizeDnsName(requestedDomain);
+      types = requestedType === "overview" ? OVERVIEW_TYPES : [requestedType === "custom" ? String(recordTypeCode(customType)) : requestedType];
+    } catch (validationError) {
+      setError(validationError instanceof Error ? validationError.message : "Invalid query.");
+      return;
+    }
+    const request = new AbortController();
+    controller.current = request;
+    const timeout = window.setTimeout(() => request.abort(), 20000);
+    setLoading(true);
+    setError("");
+    setResults([]);
+    setSelected("");
+    setResolvedName("");
+    try {
+      const records = await lookupDns(name, types, { signal: request.signal });
+      if (controller.current !== request) return;
+      setResults(records);
+      setResolvedName(name);
+      setDomain(name);
+      setType(requestedType);
+      setHistory((current) => [{ name, type: requestedType }, ...current.filter((item) => !(item.name === name && item.type === requestedType))].slice(0, 6));
+    } catch (requestError) {
+      if (controller.current === request) setError(request.signal.aborted ? "Lookup timed out. Please retry." : requestError instanceof Error ? requestError.message : "Lookup failed.");
+    } finally {
+      window.clearTimeout(timeout);
+      if (controller.current === request) setLoading(false);
+    }
+  };
+  const exportResults = () => {
+    const url = URL.createObjectURL(new Blob([JSON.stringify({ name: resolvedName, resolver: "Google Public DNS", results }, null, 2)], { type: "application/json" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${resolvedName}-dns.json`;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  const copyValues = async (result: DnsResult) => {
+    const value = result.records.map((record) => record.data).join("\n");
+    if (!value) return;
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(result.type);
+      window.setTimeout(() => setCopied(""), 1200);
+    } catch {
+      setError("Clipboard access was blocked by the browser.");
+    }
+  };
+  const visible = selected ? results.filter((result) => result.type === selected) : results;
+  const quickTypes = ["A", "AAAA", "MX", "TXT", "CNAME", "NS"];
 
-  return <div className="w-full space-y-4 pb-8"><AppHeading /><Card><form onSubmit={(event) => { event.preventDefault(); void lookup() }} className="grid items-end gap-4 sm:grid-cols-[minmax(0,1fr)_180px_auto]"><Input label="Domain or DNS name" value={domain} onChange={(event) => setDomain(event.target.value)} placeholder="example.com or _dmarc.example.com" /><label className="grid gap-2 text-sm">Record type<select value={type} onChange={(event) => setType(event.target.value)} className="min-h-10 rounded-xl border border-input bg-background px-4"><option value="overview">Common records</option>{Object.keys(DNS_TYPES).map((name) => <option key={name}>{name}</option>)}<option value="custom">Custom type number</option></select></label><Button type="submit" disabled={loading || !domain.trim()}><Search className="h-4 w-4" />{loading ? 'Checking…' : 'Check DNS'}</Button>{type === 'custom' && <Input label="Type number (1–65535)" inputMode="numeric" value={customType} onChange={(event) => setCustomType(event.target.value)} placeholder="257" />}</form>
-    <div className="mt-4 flex flex-wrap gap-2"><Button variant="secondary" size="sm" onClick={() => { setType('overview'); void lookup(domain, 'overview') }} disabled={!domain.trim() || loading}>Overview</Button>{quickTypes.map((recordType) => <Button key={recordType} variant="secondary" size="sm" onClick={() => { setType(recordType); void lookup(domain, recordType) }} disabled={!domain.trim() || loading}>{recordType}</Button>)}</div>
-    {history.length > 0 && <div className="mt-4"><div className="mb-2 text-sm font-medium text-muted-foreground">Recent lookups</div><div className="flex flex-wrap gap-2">{history.map((item) => <button key={`${item.name}-${item.type}`} type="button" onClick={() => { setDomain(item.name); setType(item.type); void lookup(item.name, item.type) }} className="rounded-xl border border-border/70 px-2 py-2 text-sm hover:bg-accent">{item.name} · {item.type}</button>)}</div></div>}
-    <p className="mt-4 text-sm text-muted-foreground">Google Public DNS · no API key. Common records checks 12 types. SRV, DKIM and DMARC need their full owner name. PTR uses a reverse name such as 8.8.8.8.in-addr.arpa.</p>{error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}</Card>
-    {results.length > 0 && <><Card><div className="flex flex-wrap items-center justify-between gap-4"><h2 className="text-sm font-semibold">DNS record map</h2><Button variant="secondary" size="sm" onClick={exportResults}><Download className="h-4 w-4" />Export JSON</Button></div><p className="mt-2 break-all font-mono text-sm">{resolvedName}</p><p className="mt-2 text-sm text-muted-foreground">Select a branch to inspect its answers. This maps one resolver’s records, not global propagation.</p><div className="mt-4 grid gap-2 border-l-2 border-border pl-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="DNS map branches">{results.map((result) => <button key={result.type} type="button" aria-pressed={selected === result.type} onClick={() => setSelected(selected === result.type ? '' : result.type)} className={`rounded-xl border p-4 text-left text-sm ${selected === result.type ? 'border-primary bg-accent' : 'border-border hover:bg-accent'}`}><span className="font-semibold">{result.type}</span><span className="ml-2 text-sm text-muted-foreground">{result.status ? result.message : `${result.records.length} answers`}</span>{result.records.slice(0, 3).map((record, index) => <span key={index} className="mt-2 block break-all border-l border-border pl-4 font-mono text-sm text-muted-foreground">{record.data}</span>)}{result.records.length > 3 && <span className="mt-2 block text-sm text-muted-foreground">{result.records.length - 3} more answers</span>}</button>)}</div></Card>
-      <div aria-live="polite" className="space-y-4">{visible.map((result) => <Card key={result.type}><div className="flex items-start justify-between gap-4"><div><h2 className="text-sm font-semibold">{result.type}</h2><p className="mt-2 text-sm text-muted-foreground">{result.message || (result.records.length ? `${result.records.length} answers · ${result.validated ? 'DNSSEC validated' : 'DNSSEC not validated'}` : 'No records at this DNS name.')}</p></div><Button variant="ghost" size="sm" onClick={() => void copyValues(result)} disabled={!result.records.length}>{copied === result.type ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} Values</Button></div>{[['Answers', result.records], ['Authority', result.authority]].map(([label, records]) => typeof records !== 'string' && records.length > 0 && <div key={String(label)} className="mt-4 overflow-x-auto"><table className="w-full text-left text-sm"><caption className="mb-2 text-left font-medium">{String(label)}</caption><thead><tr className="border-b border-border"><th className="p-2">Name</th><th className="p-2">Type</th><th className="p-2">TTL (s)</th><th className="p-2">Value</th></tr></thead><tbody>{records.map((record, index) => <tr key={index} className="border-b border-border/50"><td className="p-2 font-mono">{record.name}</td><td className="p-2">{recordTypeName(record.type)}</td><td className="p-2">{record.ttl}</td><td className="min-w-48 break-all p-2 font-mono">{record.data}</td></tr>)}</tbody></table></div>)}</Card>)}</div></>}</div>
+  return (
+    <div className="w-full space-y-4 pb-8">
+      <AppHeading />
+      <Card>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void lookup();
+          }}
+          className="grid items-end gap-4 sm:grid-cols-[minmax(0,1fr)_180px_auto]"
+        >
+          <Input label="Domain or DNS name" value={domain} onChange={(event) => setDomain(event.target.value)} placeholder="example.com or _dmarc.example.com" />
+          <label className="grid gap-2 text-sm">
+            Record type
+            <select value={type} onChange={(event) => setType(event.target.value)} className="rounded-xl border border-input bg-background px-4">
+              <option value="overview">Common records</option>
+              {Object.keys(DNS_TYPES).map((name) => (
+                <option key={name}>{name}</option>
+              ))}
+              <option value="custom">Custom type number</option>
+            </select>
+          </label>
+          <Button type="submit" disabled={loading || !domain.trim()}>
+            <Search className="h-4 w-4" />
+            {loading ? "Checking…" : "Check DNS"}
+          </Button>
+          {type === "custom" && <Input label="Type number (1–65535)" inputMode="numeric" value={customType} onChange={(event) => setCustomType(event.target.value)} placeholder="257" />}
+        </form>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              setType("overview");
+              void lookup(domain, "overview");
+            }}
+            disabled={!domain.trim() || loading}
+          >
+            Overview
+          </Button>
+          {quickTypes.map((recordType) => (
+            <Button
+              key={recordType}
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setType(recordType);
+                void lookup(domain, recordType);
+              }}
+              disabled={!domain.trim() || loading}
+            >
+              {recordType}
+            </Button>
+          ))}
+        </div>
+        {history.length > 0 && (
+          <div className="mt-4">
+            <div className="mb-2 text-sm font-medium text-muted-foreground">Recent lookups</div>
+            <div className="flex flex-wrap gap-2">
+              {history.map((item) => (
+                <button
+                  key={`${item.name}-${item.type}`}
+                  type="button"
+                  onClick={() => {
+                    setDomain(item.name);
+                    setType(item.type);
+                    void lookup(item.name, item.type);
+                  }}
+                  className="rounded-xl border border-border/70 px-2 py-2 text-sm hover:bg-accent"
+                >
+                  {item.name} · {item.type}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        <p className="mt-4 text-sm text-muted-foreground">Google Public DNS · no API key. Common records checks 12 types. SRV, DKIM and DMARC need their full owner name. PTR uses a reverse name such as 8.8.8.8.in-addr.arpa.</p>
+        {error && (
+          <p role="alert" className="mt-4 text-sm text-destructive">
+            {error}
+          </p>
+        )}
+      </Card>
+      {results.length > 0 && (
+        <>
+          <Card>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <h2 className="text-sm font-semibold">DNS record map</h2>
+              <Button variant="secondary" size="sm" onClick={exportResults}>
+                <Download className="h-4 w-4" />
+                Export JSON
+              </Button>
+            </div>
+            <p className="mt-2 break-all font-mono text-sm">{resolvedName}</p>
+            <p className="mt-2 text-sm text-muted-foreground">Select a branch to inspect its answers. This maps one resolver’s records, not global propagation.</p>
+            <div className="mt-4 grid gap-2 border-l-2 border-border pl-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="DNS map branches">
+              {results.map((result) => (
+                <button
+                  key={result.type}
+                  type="button"
+                  aria-pressed={selected === result.type}
+                  onClick={() => setSelected(selected === result.type ? "" : result.type)}
+                  className={`rounded-xl border p-4 text-left text-sm ${selected === result.type ? "border-primary bg-accent" : "border-border hover:bg-accent"}`}
+                >
+                  <span className="font-semibold">{result.type}</span>
+                  <span className="ml-2 text-sm text-muted-foreground">{result.status ? result.message : `${result.records.length} answers`}</span>
+                  {result.records.slice(0, 3).map((record, index) => (
+                    <span key={index} className="mt-2 block break-all border-l border-border pl-4 font-mono text-sm text-muted-foreground">
+                      {record.data}
+                    </span>
+                  ))}
+                  {result.records.length > 3 && <span className="mt-2 block text-sm text-muted-foreground">{result.records.length - 3} more answers</span>}
+                </button>
+              ))}
+            </div>
+          </Card>
+          <div aria-live="polite" className="space-y-4">
+            {visible.map((result) => (
+              <Card key={result.type}>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="text-sm font-semibold">{result.type}</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">{result.message || (result.records.length ? `${result.records.length} answers · ${result.validated ? "DNSSEC validated" : "DNSSEC not validated"}` : "No records at this DNS name.")}</p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => void copyValues(result)} disabled={!result.records.length}>
+                    {copied === result.type ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} Values
+                  </Button>
+                </div>
+                {[
+                  ["Answers", result.records],
+                  ["Authority", result.authority],
+                ].map(
+                  ([label, records]) =>
+                    typeof records !== "string" &&
+                    records.length > 0 && (
+                      <div key={String(label)} className="mt-4 overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                          <caption className="mb-2 text-left font-medium">{String(label)}</caption>
+                          <thead>
+                            <tr className="border-b border-border">
+                              <th className="p-2">Name</th>
+                              <th className="p-2">Type</th>
+                              <th className="p-2">TTL (s)</th>
+                              <th className="p-2">Value</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {records.map((record, index) => (
+                              <tr key={index} className="border-b border-border/50">
+                                <td className="p-2 font-mono">{record.name}</td>
+                                <td className="p-2">{recordTypeName(record.type)}</td>
+                                <td className="p-2">{record.ttl}</td>
+                                <td className="min-w-48 break-all p-2 font-mono">{record.data}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ),
+                )}
+              </Card>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
 }

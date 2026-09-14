@@ -1,18 +1,19 @@
-import React from 'react'
-import { Heart, History } from 'lucide-react'
-import { SiGithub as Github } from 'react-icons/si'
-import { Link } from 'react-router-dom'
+import React from "react";
+import { Heart, History } from "lucide-react";
+import { SiGithub as Github } from "react-icons/si";
+import { Link } from "react-router-dom";
 
-const APPFORGE_MARK = '/favicon.svg?v=2'
+const APPFORGE_MARK = "/favicon.svg?v=2";
 
-const navItemClass = 'inline-flex h-9 items-center gap-2 rounded-xl border border-border/70 bg-background/70 px-4 text-sm font-semibold text-muted-foreground transition-[border-color,background-color,color,box-shadow] hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+const navItemClass =
+  "inline-flex h-9 items-center gap-2 rounded-xl border border-border/70 bg-background/70 px-4 text-sm font-semibold text-muted-foreground transition-[border-color,background-color,color,box-shadow] hover:border-foreground/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
-export function PublicHeader({ className = '' }: { className?: string }) {
+export function PublicHeader({ className = "" }: { className?: string }) {
   return (
     <header className={`sticky top-0 z-40 border-b border-border/60 bg-overlay/90 backdrop-blur-xl ${className}`}>
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 lg:px-8">
         <Link to="/landing" className="group inline-flex items-center gap-4 rounded-xl focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
-          <img src={APPFORGE_MARK} alt="AppForge" className="h-10 w-10 shrink-0 rounded-xl" decoding="async" />
+          <img src={APPFORGE_MARK} alt="AppForge" className="h-9 w-9 shrink-0 rounded-xl" decoding="async" />
           <span className="text-sm font-semibold tracking-tight">AppForge</span>
         </Link>
         <nav className="flex flex-wrap items-center justify-end gap-2" aria-label="Public navigation">
@@ -31,5 +32,5 @@ export function PublicHeader({ className = '' }: { className?: string }) {
         </nav>
       </div>
     </header>
-  )
+  );
 }

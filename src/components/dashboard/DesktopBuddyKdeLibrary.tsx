@@ -1,74 +1,77 @@
-import React from 'react'
-import { Check, ExternalLink } from 'lucide-react'
+import React from "react";
+import { Check, ExternalLink } from "lucide-react";
 
-const STORAGE_KEY = 'appforge-desktop-buddy-v1'
+const STORAGE_KEY = "appforge-desktop-buddy-v1";
 
 type KdeStarter = {
-  id: string
-  name: string
-  file: string
-  author: string
-  license: string
-  note: string
-}
+  id: string;
+  name: string;
+  file: string;
+  author: string;
+  license: string;
+  note: string;
+};
 
-const TYSON_LICENSE = 'CC BY-SA · Tyson Tan / KDE Community'
-const COMMUNITY_LICENSE = 'CC BY-SA 4.0 · KDE Community'
+const TYSON_LICENSE = "CC BY-SA · Tyson Tan / KDE Community";
+const COMMUNITY_LICENSE = "CC BY-SA 4.0 · KDE Community";
 
 export const KDE_BUDDY_LIBRARY: KdeStarter[] = [
-  { id: 'konqi-classic', name: 'Classic Konqi', file: 'Mascot_konqi.png', author: 'Tyson Tan / KDE Community', license: TYSON_LICENSE, note: 'Classic modern Konqi mascot.' },
-  { id: 'konqi-kde-dev', name: 'KDE Developer Konqi', file: 'Mascot_konqi-dev-kde.png', author: 'Tyson Tan', license: TYSON_LICENSE, note: 'KDE development and engineering pose.' },
-  { id: 'katie-developer', name: 'Developer Katie', file: 'Mascot_konqi-app-dev-katie.png', author: 'Tyson Tan', license: TYSON_LICENSE, note: 'Katie with laptop; useful for coding responses.' },
-  { id: 'konqi-graphics', name: 'Graphics Konqi', file: 'Mascot_konqi-app-graphics.png', author: 'Tyson Tan', license: TYSON_LICENSE, note: 'Painting pose for image and creative tools.' },
-  { id: 'konqi-hardware', name: 'Hardware Konqi', file: 'Mascot_konqi-app-hardware.png', author: 'Tyson Tan', license: TYSON_LICENSE, note: 'Hardware / CPU / GPU themed pose.' },
-  { id: 'konqi-internet', name: 'Internet Konqi', file: 'Mascot_konqi-app-internet.png', author: 'Tyson Tan', license: TYSON_LICENSE, note: 'Internet and networking themed pose.' },
-  { id: 'konqi-presentation', name: 'Presentation Konqi', file: 'Mascot_konqi-app-presentation.png', author: 'Tyson Tan', license: TYSON_LICENSE, note: 'Presentation, teaching and mentoring pose.' },
-  { id: 'konqi-science', name: 'Science Konqi', file: 'Mascot_konqi-app-science.png', author: 'Tyson Tan', license: TYSON_LICENSE, note: 'Laboratory pose for experiments and AI work.' },
-  { id: 'konqi-system', name: 'System Konqi', file: 'Mascot_konqi-app-system.png', author: 'Tyson Tan', license: TYSON_LICENSE, note: 'System-settings / gear themed pose.' },
-  { id: 'konqi-utilities', name: 'Utilities Konqi', file: 'Mascot_konqi-app-utilities.png', author: 'Tyson Tan', license: TYSON_LICENSE, note: 'Engineering/tools pose already used by KDE Utils.' },
-  { id: 'konqi-frameworks', name: 'Frameworks Konqi', file: 'Mascot_konqi-base-framework.png', author: 'Tyson Tan', license: TYSON_LICENSE, note: 'Frameworks mascot pose.' },
-  { id: 'konqi-qt', name: 'Qt Konqi', file: 'Mascot_konqi-dev-qt.png', author: 'Tyson Tan', license: TYSON_LICENSE, note: 'Qt-under-the-hood developer pose.' },
-  { id: 'konqi-akademy', name: 'Akademy Konqi', file: 'Mascot_konqi-commu-akademy.png', author: 'Tyson Tan / KDE Community', license: TYSON_LICENSE, note: 'Lecture / conference pose.' },
-  { id: 'konqi-carrying', name: 'Carrying Konqi', file: 'Mascot_konqi-carrying_base.png', author: 'Julius Enriquez, based on Tyson Tan', license: COMMUNITY_LICENSE, note: 'Reusable carrying pose, published by KDE in 2024.' },
-  { id: 'konqi-box', name: 'Third-party Box Konqi', file: 'Mascot_konqi-3rdparty.png', author: 'Julius Enriquez, based on Tyson Tan', license: COMMUNITY_LICENSE, note: 'Konqi carrying a box of items.' },
+  { id: "konqi-classic", name: "Classic Konqi", file: "Mascot_konqi.png", author: "Tyson Tan / KDE Community", license: TYSON_LICENSE, note: "Classic modern Konqi mascot." },
+  { id: "konqi-kde-dev", name: "KDE Developer Konqi", file: "Mascot_konqi-dev-kde.png", author: "Tyson Tan", license: TYSON_LICENSE, note: "KDE development and engineering pose." },
+  { id: "katie-developer", name: "Developer Katie", file: "Mascot_konqi-app-dev-katie.png", author: "Tyson Tan", license: TYSON_LICENSE, note: "Katie with laptop; useful for coding responses." },
+  { id: "konqi-graphics", name: "Graphics Konqi", file: "Mascot_konqi-app-graphics.png", author: "Tyson Tan", license: TYSON_LICENSE, note: "Painting pose for image and creative tools." },
+  { id: "konqi-hardware", name: "Hardware Konqi", file: "Mascot_konqi-app-hardware.png", author: "Tyson Tan", license: TYSON_LICENSE, note: "Hardware / CPU / GPU themed pose." },
+  { id: "konqi-internet", name: "Internet Konqi", file: "Mascot_konqi-app-internet.png", author: "Tyson Tan", license: TYSON_LICENSE, note: "Internet and networking themed pose." },
+  { id: "konqi-presentation", name: "Presentation Konqi", file: "Mascot_konqi-app-presentation.png", author: "Tyson Tan", license: TYSON_LICENSE, note: "Presentation, teaching and mentoring pose." },
+  { id: "konqi-science", name: "Science Konqi", file: "Mascot_konqi-app-science.png", author: "Tyson Tan", license: TYSON_LICENSE, note: "Laboratory pose for experiments and AI work." },
+  { id: "konqi-system", name: "System Konqi", file: "Mascot_konqi-app-system.png", author: "Tyson Tan", license: TYSON_LICENSE, note: "System-settings / gear themed pose." },
+  { id: "konqi-utilities", name: "Utilities Konqi", file: "Mascot_konqi-app-utilities.png", author: "Tyson Tan", license: TYSON_LICENSE, note: "Engineering/tools pose already used by KDE Utils." },
+  { id: "konqi-frameworks", name: "Frameworks Konqi", file: "Mascot_konqi-base-framework.png", author: "Tyson Tan", license: TYSON_LICENSE, note: "Frameworks mascot pose." },
+  { id: "konqi-qt", name: "Qt Konqi", file: "Mascot_konqi-dev-qt.png", author: "Tyson Tan", license: TYSON_LICENSE, note: "Qt-under-the-hood developer pose." },
+  { id: "konqi-akademy", name: "Akademy Konqi", file: "Mascot_konqi-commu-akademy.png", author: "Tyson Tan / KDE Community", license: TYSON_LICENSE, note: "Lecture / conference pose." },
+  { id: "konqi-carrying", name: "Carrying Konqi", file: "Mascot_konqi-carrying_base.png", author: "Julius Enriquez, based on Tyson Tan", license: COMMUNITY_LICENSE, note: "Reusable carrying pose, published by KDE in 2024." },
+  { id: "konqi-box", name: "Third-party Box Konqi", file: "Mascot_konqi-3rdparty.png", author: "Julius Enriquez, based on Tyson Tan", license: COMMUNITY_LICENSE, note: "Konqi carrying a box of items." },
   // { id: 'konqi-pixel', name: 'Pixel Konqi', file: 'Konqi_Pixel.png', author: 'KDE Community', license: COMMUNITY_LICENSE, note: 'Compact pixel-art style character.' },
   // { id: 'konqi-gang', name: 'Konqi and the Gang', file: 'Konqi_and_the_Gang.png', author: 'KDE Community', license: COMMUNITY_LICENSE, note: 'Konqi, Katie and other KDE dragons.' },
-  { id: 'konqi-box-scene', name: 'Konqi and the Box', file: 'Konqi_and_the_box.png', author: 'KDE Community', license: COMMUNITY_LICENSE, note: 'Recent KDE Community Konqi artwork.' },
-]
+  { id: "konqi-box-scene", name: "Konqi and the Box", file: "Konqi_and_the_box.png", author: "KDE Community", license: COMMUNITY_LICENSE, note: "Recent KDE Community Konqi artwork." },
+];
 
-const imageUrl = (file: string) => `https://community.kde.org/Special:Redirect/file/${encodeURIComponent(file)}`
-const sourceUrl = (file: string) => `https://community.kde.org/File:${encodeURIComponent(file)}`
+const imageUrl = (file: string) => `https://community.kde.org/Special:Redirect/file/${encodeURIComponent(file)}`;
+const sourceUrl = (file: string) => `https://community.kde.org/File:${encodeURIComponent(file)}`;
 
 function readCurrentSource() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? String(JSON.parse(raw)?.assetSourceUrl || '') : ''
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? String(JSON.parse(raw)?.assetSourceUrl || "") : "";
   } catch {
-    return ''
+    return "";
   }
 }
 
 export function DesktopBuddyKdeLibrary() {
-  const [currentSource, setCurrentSource] = React.useState(readCurrentSource)
+  const [currentSource, setCurrentSource] = React.useState(readCurrentSource);
 
   const selectStarter = (starter: KdeStarter) => {
-    const source = sourceUrl(starter.file)
+    const source = sourceUrl(starter.file);
     try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      const previous = raw ? JSON.parse(raw) : {}
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        ...previous,
-        imageDataUrl: imageUrl(starter.file),
-        assetLabel: starter.name,
-        assetSourceUrl: source,
-        assetLicense: `${starter.license}; author: ${starter.author}`,
-      }))
-      setCurrentSource(source)
-      window.dispatchEvent(new Event('appforge:desktop-buddy-updated'))
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const previous = raw ? JSON.parse(raw) : {};
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          ...previous,
+          imageDataUrl: imageUrl(starter.file),
+          assetLabel: starter.name,
+          assetSourceUrl: source,
+          assetLicense: `${starter.license}; author: ${starter.author}`,
+        }),
+      );
+      setCurrentSource(source);
+      window.dispatchEvent(new Event("appforge:desktop-buddy-updated"));
     } catch {
       // Keep the current character if local browser storage is unavailable.
     }
-  }
+  };
 
   return (
     <section className="w-full rounded-xl border bg-card p-4 md:p-4">
@@ -77,31 +80,44 @@ export function DesktopBuddyKdeLibrary() {
           <h2 className="text-lg font-semibold">KDE Community library</h2>
           <p className="mt-2 max-w-3xl text-sm text-muted-foreground">Choose verified Konqi and Katie artwork from the KDE Community Wiki. Source, author and license metadata stay attached to the selected character.</p>
         </div>
-        <a href="https://community.kde.org/Promo/Material/Mascots" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-accent">KDE mascot catalog <ExternalLink className="h-3.5 w-3.5" /></a>
+        <a href="https://community.kde.org/Promo/Material/Mascots" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-accent">
+          KDE mascot catalog <ExternalLink className="h-3.5 w-3.5" />
+        </a>
       </div>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {KDE_BUDDY_LIBRARY.map((starter) => {
-          const source = sourceUrl(starter.file)
-          const active = currentSource === source
+          const source = sourceUrl(starter.file);
+          const active = currentSource === source;
           return (
-            <article key={starter.id} className={`flex h-full min-h-[20rem] flex-col overflow-hidden rounded-xl border bg-background/40 ${active ? 'ring-1 ring-primary/35' : ''}`}>
+            <article key={starter.id} className={`flex h-full min-h-[20rem] flex-col overflow-hidden rounded-xl border bg-background/40 ${active ? "ring-1 ring-primary/35" : ""}`}>
               <div className="grid h-36 place-items-center border-b border-border/60 bg-muted/20 p-4 sm:h-40">
                 <img src={imageUrl(starter.file)} alt={starter.name} loading="lazy" className="h-28 w-28 object-contain sm:h-32 sm:w-32" />
               </div>
               <div className="flex flex-1 flex-col p-4">
-                <div className="flex min-h-10 items-start justify-between gap-2"><h3 className="text-sm font-semibold">{starter.name}</h3>{active && <Check className="mt-2 h-4 w-4 shrink-0" />}</div>
-                <p className="mt-2 min-h-10 text-sm text-muted-foreground">{starter.note}</p>
-                <p className="mt-2 min-h-10 text-sm text-muted-foreground">{starter.author}<br />{starter.license}</p>
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-sm font-semibold">{starter.name}</h3>
+                  {active && <Check className="mt-2 h-4 w-4 shrink-0" />}
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">{starter.note}</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {starter.author}
+                  <br />
+                  {starter.license}
+                </p>
                 <div className="mt-auto flex gap-2 pt-4">
-                  <button type="button" onClick={() => selectStarter(starter)} className="flex-1 rounded-xl border px-2 py-2 text-sm font-semibold hover:bg-accent">{active ? 'Active' : 'Use character'}</button>
-                  <a href={source} target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-xl border text-muted-foreground hover:bg-accent hover:text-foreground" aria-label={`Open source page for ${starter.name}`}><ExternalLink className="h-3.5 w-3.5" /></a>
+                  <button type="button" onClick={() => selectStarter(starter)} className="flex-1 rounded-xl border px-2 py-2 text-sm font-semibold hover:bg-accent">
+                    {active ? "Active" : "Use character"}
+                  </button>
+                  <a href={source} target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-xl border text-muted-foreground hover:bg-accent hover:text-foreground" aria-label={`Open source page for ${starter.name}`}>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
                 </div>
               </div>
             </article>
-          )
+          );
         })}
       </div>
     </section>
-  )
+  );
 }
