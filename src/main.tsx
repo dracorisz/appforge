@@ -44,7 +44,10 @@ if (!localStorage.getItem('appforge-theme')) localStorage.setItem('appforge-them
 
 const docsSlugFromPath = (pathname: string, prefix = '') => {
   const relative = prefix && pathname.startsWith(prefix) ? pathname.slice(prefix.length) : pathname
-  return relative.replace(/^\/+|\/+$/g, '').replace(/\.html$/i, '').replace(/_/g, '-').toLowerCase() || 'index'
+  const clean = relative.replace(/^\/+|\/+$/g, '').replace(/\.(?:html|md)$/i, '')
+  if (clean === 'DESIGN_SYSTEM') return 'design-system-reference'
+  if (/^apps\/index$/i.test(clean) || clean.toLowerCase() === 'apps') return 'apps'
+  return clean.replace(/_/g, '-').toLowerCase() || 'index'
 }
 
 function RootApp() {
