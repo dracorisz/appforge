@@ -1,7 +1,7 @@
 import { AppHeading } from "@/components/layout/AppHeading";
 import React from "react";
 import { Copy, Download, Image as ImageIcon, RotateCcw, Upload } from "lucide-react";
-import { Button, Input } from "@/components/ui";
+import { Button, FileButton, Input } from "@/components/ui";
 
 const PREVIEW_SIZES = [16, 32, 180, 192, 512] as const;
 const MAX_UPLOAD_BYTES = 5_000_000;
@@ -223,10 +223,9 @@ export default function FaviconStudio() {
           </label>
 
           <div className="flex flex-wrap gap-2 pt-2">
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border bg-background px-4 text-sm font-medium hover:bg-accent">
+            <FileButton accept="image/*" onChange={onUpload}>
               <Upload className="h-4 w-4" /> Upload image
-              <Input type="file" accept="image/*" className="sr-only" onChange={onUpload} />
-            </label>
+            </FileButton>
             {imageData && (
               <Button
                 type="button"

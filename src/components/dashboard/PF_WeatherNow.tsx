@@ -414,9 +414,9 @@ export function PF_WeatherNow() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {sortedCities.map((weather) => (
-              <Card key={weather.location} className="relative overflow-hidden p-2">
+              <Card key={weather.location} className="relative overflow-hidden p-4">
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/25" />
-                <div className="relative p-4">
+                <div className="relative">
                   <div className="flex min-w-0 items-start justify-between gap-4">
                     <div className="flex min-w-0 items-center gap-2">
                       <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -450,7 +450,7 @@ export function PF_WeatherNow() {
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-2">
-                        <span className="flex h-14 w-14 items-center justify-center rounded-xl border border-border/60 bg-background/55 backdrop-blur-md">{weatherIcon(weather.condition)}</span>
+                        <span className="flex items-center justify-center">{weatherIcon(weather.condition)}</span>
                         <Badge color="slate">{weather.condition}</Badge>
                       </div>
                     </div>

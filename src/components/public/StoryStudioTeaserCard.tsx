@@ -18,7 +18,7 @@ export function StoryStudioTeaserCard() {
           <h3 className="text-sm font-semibold tracking-tight text-inverse sm:text-lg">Dragon Arena teaser</h3>
           <p className="mt-2 text-sm text-inverse/55">Visual storytelling showcase</p>
         </div>
-        <Badge className="pointer-events-none absolute left-3 top-3 inline-flex items-center gap-2 rounded-xl border border-inverse/15 bg-overlay/55 px-2 py-2 text-sm font-medium text-inverse backdrop-blur-sm">
+        <Badge className="pointer-events-none absolute left-3 top-3 inline-flex items-center gap-2 rounded-xl border border-inverse/15 bg-overlay/55 px-2 text-sm font-medium text-inverse backdrop-blur-sm">
           <Sparkles className="h-3 w-3" /> Teaser
         </Badge>
       </div>

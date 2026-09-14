@@ -15,6 +15,7 @@ test('button keeps canonical typography, geometry and direct icon size through s
   assert.match(tokens, /md:\s*["']h-9 min-h-9 max-h-9 px-4["']/)
   assert.match(tokens, /lg:\s*["']h-9 min-h-9 max-h-9 px-8["']/)
   assert.match(tokens, /\[&>svg\]:h-4 \[&>svg\]:w-4/)
+  assert.match(tokens, /has-\[img\]:h-auto has-\[img\]:max-h-none/)
   assert.match(tokens, /focus-visible:ring-1/)
 })
 
@@ -43,7 +44,7 @@ test('form controls share one canonical 36px token source and native fallbacks',
   assert.match(css, /--control-height:\s*2\.25rem/)
   assert.match(css, /--control-line-height:/)
   assert.match(css, /height:\s*var\(--control-height\)/)
-  assert.match(css, /input:not\(\[type='checkbox'\]\)/)
+  assert.match(css, /input:not\(\[type=["']checkbox["']\]\)/)
   assert.match(css, /select, textarea/)
   assert.match(tailwind, /9:\s*["']var\(--control-height\)["']/)
 })
@@ -83,8 +84,9 @@ test('semantic palette, radius, borders, shadow and height have central token so
   assert.match(tailwind, /inverse:/)
   assert.match(tailwind, /xl:\s*["']var\(--radius\)["']/)
   assert.match(tailwind, /xl:\s*["']var\(--shadow-xl\)["']/)
-  assert.match(css, /--radius:\s*0\.75rem/)
+  assert.match(css, /--radius:\s*0\.35rem/)
   assert.match(css, /--control-height:\s*2\.25rem/)
+  assert.match(css, /--pill-height:/)
   assert.match(css, /--border-opacity:/)
   assert.match(css, /--surface-border-opacity:/)
   assert.match(css, /--shadow-xl:/)
@@ -93,19 +95,29 @@ test('semantic palette, radius, borders, shadow and height have central token so
   assert.match(css, /--info:/)
 })
 
-test('badges use standard UI text and canonical 36px geometry', async () => {
+test('badges use standard UI text and centrally configured pill geometry', async () => {
   const badge = await read('src/components/ui/Badge.tsx')
   const buildBadge = await read('src/components/ui/BuildBadge.tsx')
-  assert.match(badge, /h-9 max-h-9.*rounded-xl.*border.*px-2 text-sm/)
-  assert.match(buildBadge, /h-9 max-h-9.*rounded-xl.*border.*px-2.*text-sm/)
+  const css = await read('src/index.css')
+  assert.match(badge, /app-pill.*rounded-xl.*border.*px-2 text-sm/)
+  assert.match(buildBadge, /app-pill.*rounded-xl.*border.*px-2.*text-sm/)
+  assert.match(css, /\.app-pill[\s\S]*height:\s*var\(--pill-height\)/)
 })
 
 test('Media Vault makes managed folders read-only for manual uploads', async () => {
   const source = await read('src/components/dashboard/PF_UserMediaVault.tsx')
-  assert.match(source, /folder === ["']desktop-buddies["'] \|\| folder === ["']Screenshots["']/)
+  assert.match(source, /MANAGED_FOLDERS = new Set\(\[["']desktop-buddies["'], ["']screenshots["'], ["']dragon-arena["'], ["']getter-pro["']\]\)/)
+  assert.match(source, /\{ value: ["']general["'], label: ["']General["'] \}/)
   assert.match(source, /Uploads are disabled in this managed folder/)
   assert.match(source, /Managed folder · uploads disabled/)
   assert.match(source, /uploadsRestricted \? \(/)
+})
+
+test('file picker actions use a button and keep the native input outside labels', async () => {
+  const source = await read('src/components/ui/FileButton.tsx')
+  assert.match(source, /<input ref=\{setRef\} type="file"/)
+  assert.match(source, /<Button/)
+  assert.doesNotMatch(source, /<label/)
 })
 
 test('folded sidebar keeps centered icons and a vertically scrollable app rail', async () => {

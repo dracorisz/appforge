@@ -309,7 +309,9 @@ export function PublicBlogArticlePage({ slug }: { slug: string }) {
         )}
       </main>
       <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2 rounded-xl border border-border/70 bg-background/95 p-2 shadow-xl backdrop-blur-xl" role="group" aria-label="Article layout">
-        <Switch checked={readingMode} onCheckedChange={setReadingMode} label="Reading mode" />
+        <span className={`text-sm ${readingMode ? "text-muted-foreground" : "font-semibold text-foreground"}`}>Normal</span>
+        <Switch checked={readingMode} onCheckedChange={setReadingMode} label="Toggle reading mode" />
+        <span className={`text-sm ${readingMode ? "font-semibold text-foreground" : "text-muted-foreground"}`}>Reading</span>
       </div>
       <PublicFooter />
     </div>

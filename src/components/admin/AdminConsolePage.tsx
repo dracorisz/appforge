@@ -197,7 +197,7 @@ export function AdminConsolePage() {
                     <div className="truncate text-sm text-muted-foreground">{item.email}</div>
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex w-full flex-wrap items-center justify-end gap-2 lg:ml-auto lg:w-auto">
                   <Select
                     value={item.role}
                     onChange={async (event) => {
@@ -210,7 +210,7 @@ export function AdminConsolePage() {
                         fail(roleError, "Role update failed.");
                       }
                     }}
-                    className="cursor-pointer rounded-xl border border-input bg-background/55 px-2 text-sm"
+                    className="w-full cursor-pointer rounded-xl border border-input bg-background/55 px-2 text-sm sm:w-auto"
                   >
                     <option value="user">user</option>
                     <option value="admin">admin</option>

@@ -3,7 +3,7 @@ import React from "react";
 import { Download, ExternalLink, ImagePlus, MessageCircle, Mic2, PackageOpen, Pause, Play, RotateCcw, Upload } from "lucide-react";
 import { APP_TOAST_EVENT, type AppToast, toast } from "@/lib/toast";
 import { isWidgetEnabled } from "@/lib/widgetPreferences";
-import { Button, Input, Select, Textarea } from "@/components/ui";
+import { Button, FileButton, Input, Select, Textarea } from "@/components/ui";
 
 type Provider = "huggingface" | "vertex" | "browser";
 type Activity = "idle" | "listening" | "speaking";
@@ -292,17 +292,15 @@ export function DesktopBuddy() {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+              <FileButton accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={onUpload}>
                 <Upload className="h-4 w-4" /> Upload character
-                <Input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={onUpload} />
-              </label>
+              </FileButton>
               <Button type="button" onClick={exportPack} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
                 <Download className="h-4 w-4" /> Export pack
               </Button>
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+              <FileButton accept="application/json,.json" onChange={importPack}>
                 <PackageOpen className="h-4 w-4" /> Import pack
-                <Input type="file" accept="application/json,.json" className="hidden" onChange={importPack} />
-              </label>
+              </FileButton>
               <Button type="button" onClick={() => void exportPng()} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
                 <ImagePlus className="h-4 w-4" /> Export PNG
               </Button>

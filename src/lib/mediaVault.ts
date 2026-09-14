@@ -329,7 +329,7 @@ const uploadMetadata = (opts: UploadOptions) => ({
 const assertManualUploadFolder = (opts: UploadOptions) => {
   if (opts.metadata?.source !== 'manual-upload') return
   const folder = String(opts.folder || opts.metadata?.folder || 'general').trim().toLowerCase()
-  if (folder === 'desktop-buddies' || folder === 'screenshots') {
+  if (['desktop-buddies', 'screenshots', 'dragon-arena', 'getter-pro'].includes(folder)) {
     throw new Error('This system-managed folder does not accept direct uploads. Choose General or one of your folders.')
   }
 }

@@ -32,6 +32,7 @@
     --inverse: 0 0% 100%;
     --radius: 0.35rem;
     --control-height: 2.25rem;
+    --pill-height: 1.75rem;
     --control-line-height: 1.25rem;
     --border-opacity: 0.99;
     --surface-border-opacity: 0.88;
@@ -172,6 +173,11 @@
 @layer components {
   .app-control {
     line-height: var(--control-line-height);
+  }
+  .app-pill {
+    height: var(--pill-height);
+    min-height: var(--pill-height);
+    max-height: var(--pill-height);
   }
   .surface-card,
   .surface-panel,

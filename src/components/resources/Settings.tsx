@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useSearchParams } from "react-router-dom";
 import { Check, Download, ImagePlus, KeyRound, Loader2, LockKeyhole, ShieldCheck, Trash2, Upload, UserRound } from "lucide-react";
-import { Badge, BuildBadge, Button, Card, Input, Tabs, Textarea } from "@/components/ui";
+import { Badge, BuildBadge, Button, Card, FileButton, Input, Tabs, Textarea } from "@/components/ui";
 import type { AppState } from "@/types";
 import { useAuth } from "@/auth/AuthProvider";
 import { supabase } from "@/lib/supabase";
@@ -343,22 +343,19 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
                 </div>
               </div>
             </div>
-            <label className="mt-4 inline-flex cursor-pointer">
-              <Input
-                type="file"
-                accept={PROFILE_IMAGE_ACCEPT}
-                className="hidden"
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (file) void uploadAvatar(file);
-                  event.currentTarget.value = "";
-                }}
-              />
-              <Badge className="inline-flex h-6 items-center gap-2 rounded-xl border border-border px-2 text-sm font-medium hover:bg-accent">
-                <ImagePlus className="h-4 w-4" />
-                {busy === "avatar" ? "Uploading…" : "Change avatar"}
-              </Badge>
-            </label>
+            <FileButton
+              className="mt-4"
+              accept={PROFILE_IMAGE_ACCEPT}
+              disabled={busy === "avatar"}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) void uploadAvatar(file);
+                event.currentTarget.value = "";
+              }}
+            >
+              <ImagePlus className="h-4 w-4" />
+              {busy === "avatar" ? "Uploading…" : "Change avatar"}
+            </FileButton>
           </Card>
           <Card className="p-4">
             <h2 className="text-sm font-semibold">Identity</h2>
@@ -454,12 +451,12 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
       {activeTab === "security" && (
         <div className="grid items-start gap-4 lg:grid-cols-2">
           <Card className="p-4">
-            <div className="flex items-start gap-2">
-              <KeyRound className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <h2 className="text-sm font-semibold">Email login password</h2>
-                <p className="mt-2 text-sm text-muted-foreground">Minimum 8 characters with lowercase, uppercase, a digit and a symbol.</p>
+            <div className="flex flex-col items-start gap-2">
+              <div className="flex items-center gap-2">
+                <KeyRound className="h-4 w-4 text-muted-foreground" />
+                <h1 className="text-lg font-semibold">Email login password</h1>
               </div>
+              <p className="text-sm text-muted-foreground">Minimum 8 characters with lowercase, uppercase, a digit and a symbol.</p>
             </div>
             <div className="mt-4 grid gap-2">
               <Input type="password" label="New password" autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
@@ -470,12 +467,12 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
             </div>
           </Card>
           <Card className="p-4">
-            <div className="flex items-start gap-2">
-              <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <h2 className="text-sm font-semibold">Two-factor authentication</h2>
-                <p className="mt-2 text-sm text-muted-foreground">Session assurance: {currentLevel || "unknown"}.</p>
+            <div className="flex flex-col items-start gap-2">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+                <h1 className="text-lg font-semibold">Two-factor authentication</h1>
               </div>
+              <p className="text-sm text-muted-foreground">Session assurance: {currentLevel || "unknown"}.</p>
             </div>
             <div className="mt-4 space-y-2">
               {verifiedTotp.map((factor) => (
@@ -515,12 +512,12 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
             </Card>
           )}
           <Card className="border-destructive/35 bg-destructive/5 p-4 lg:col-span-2">
-            <div className="flex items-start gap-2">
-              <Trash2 className="h-4 w-4 text-destructive" />
-              <div>
-                <h2 className="text-sm font-semibold text-destructive">Danger zone</h2>
-                <p className="mt-2 text-sm text-muted-foreground">Permanently delete your Supabase Auth account and account-owned database records. This cannot be undone.</p>
+            <div className="flex flex-col items-start gap-2">
+              <div className="flex items-center gap-2">
+                <Trash2 className="h-4 w-4 text-destructive" />
+                <h1 className="text-lg font-semibold text-destructive">Danger zone</h1>
               </div>
+              <p className="text-sm text-muted-foreground">Permanently delete your Supabase Auth account and account-owned database records. This cannot be undone.</p>
             </div>
             <div className="mt-4 grid gap-2 sm:grid-cols-[minmax(0,260px)_auto] sm:items-end">
               <Input label="Type DELETE to confirm" value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} placeholder="DELETE" />
@@ -568,21 +565,17 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
           <Card className="p-4">
             <h2 className="text-sm font-semibold">Import workspace</h2>
             <p className="mt-2 text-sm text-muted-foreground">Preview a backup before applying it. Maximum 5 MB.</p>
-            <label className="mt-4 inline-flex cursor-pointer">
-              <Input
-                type="file"
-                accept="application/json,.json"
-                className="hidden"
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (file) importWorkspace(file);
-                  event.currentTarget.value = "";
-                }}
-              />
-              <Badge className="inline-flex h-9 items-center gap-2 rounded-xl border border-border px-2 text-sm font-medium hover:bg-accent">
-                <Upload className="h-4 w-4" /> Choose JSON
-              </Badge>
-            </label>
+            <FileButton
+              className="mt-4"
+              accept="application/json,.json"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) importWorkspace(file);
+                event.currentTarget.value = "";
+              }}
+            >
+              <Upload className="h-4 w-4" /> Choose JSON
+            </FileButton>
             {importFileName && <div className="mt-2 text-sm text-muted-foreground">{importFileName}</div>}
             {importPreview && (
               <div className="mt-4 rounded-xl border border-border/70 p-2 text-sm">

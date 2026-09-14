@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 import { supabase } from "@/lib/supabase";
 import { createFrontendContent, deleteFrontendContent, loadAllFrontendContent, updateFrontendContent, uploadFrontendContentMedia, type FrontendContentDraft, type FrontendContentRecord, type FrontendContentType } from "@/lib/frontendContent";
-import { Button, Input, Textarea } from "@/components/ui";
+import { Button, FileButton, Input, Textarea } from "@/components/ui";
 
 const LANDING_SLUG = "appforge-walkthrough";
 const MANAGED_TYPES: FrontendContentType[] = ["blog_article", "video_teaser"];
@@ -464,17 +464,17 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
                 />
               </label>
             </div>
-            <label className="block text-sm font-medium text-muted-foreground">
-              <span className="flex items-center justify-between">
-                <span>Summary</span>
+            <div className="text-sm font-medium text-muted-foreground">
+              <div className="flex items-center justify-between">
+                <label htmlFor="admin-content-summary">Summary</label>
                 {draft.content_type === "blog_article" && (
                   <Button type="button" onClick={() => setDraft((current) => ({ ...current, summary: generateSummary(current.body, current.title) }))} className="text-sm text-foreground hover:underline">
                     Generate
                   </Button>
                 )}
-              </span>
-              <Textarea value={draft.summary || ""} onChange={(event) => setDraft((current) => ({ ...current, summary: event.target.value }))} rows={2} className="mt-2 w-full rounded-xl border border-input bg-background p-4 text-sm text-foreground" />
-            </label>
+              </div>
+              <Textarea id="admin-content-summary" value={draft.summary || ""} onChange={(event) => setDraft((current) => ({ ...current, summary: event.target.value }))} rows={2} className="mt-2 w-full rounded-xl border border-input bg-background p-4 text-sm text-foreground" />
+            </div>
             {draft.content_type === "blog_article" && (
               <label className="block text-sm font-medium text-muted-foreground">
                 Body (Markdown)
@@ -492,20 +492,18 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
               </label>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border/70 px-4 py-2 text-sm font-medium hover:bg-accent">
+              <FileButton
+                accept="image/*,video/*"
+                disabled={busy === "upload"}
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) void uploadMedia(file);
+                  event.currentTarget.value = "";
+                }}
+              >
                 <Upload className="h-4 w-4" />
-                <Input
-                  type="file"
-                  className="hidden"
-                  accept="image/*,video/*"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    if (file) void uploadMedia(file);
-                    event.currentTarget.value = "";
-                  }}
-                />
                 {busy === "upload" ? "Uploading…" : "Upload media"}
-              </label>
+              </FileButton>
               {draft.content_type === "blog_article" && (
                 <label className="inline-flex items-center gap-2 text-sm">
                   <Input type="checkbox" checked={draft.published} onChange={(event) => setDraft((current) => ({ ...current, published: event.target.checked }))} /> Published

@@ -335,11 +335,14 @@ export function TaskList() {
             <Button variant="ghost" size="sm" onClick={() => void clearCompleted()} disabled={!completed}>
               <Trash2 className="h-4 w-4" /> Clear completed
             </Button>
-            <Select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)} className="rounded-xl border border-input bg-background px-2 text-sm">
-              <option value="newest">Newest first</option>
-              <option value="oldest">Oldest first</option>
-              <option value="active-first">Active first</option>
-            </Select>
+            <div className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">
+              <span>Sort</span>
+              <Select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)} className="rounded-xl border border-input bg-background px-2 text-sm text-foreground">
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="active-first">Active first</option>
+              </Select>
+            </div>
           </div>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">

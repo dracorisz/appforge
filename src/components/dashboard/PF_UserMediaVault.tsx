@@ -18,6 +18,7 @@ const SYSTEM_FOLDERS: { id: VaultFolder | "all"; label: string; icon: React.Comp
   { id: "getter-pro", label: "Getter Pro", icon: Search },
 ];
 const RESERVED_FOLDERS = new Set(SYSTEM_FOLDERS.filter((item) => item.id !== "all").map((item) => String(item.id).toLowerCase()));
+const MANAGED_FOLDERS = new Set(["desktop-buddies", "screenshots", "dragon-arena", "getter-pro"]);
 
 const kindIcon = (kind: VaultMedia["kind"]) => (kind === "video" ? FileVideo : kind === "image" ? FileImage : FileText);
 const kindBadge = (kind: VaultMedia["kind"]) => <Badge color={kind === "video" ? "blue" : kind === "image" ? "green" : "slate"}>{kind}</Badge>;
@@ -234,8 +235,8 @@ export function PF_UserMediaVault() {
     }
   };
 
-  const uploadsRestricted = folder === "desktop-buddies" || folder === "Screenshots";
-  const uploadTarget = !uploadsRestricted && folder !== "all" && folder !== "dragon-arena" && folder !== "getter-pro" ? folder : "general";
+  const uploadsRestricted = MANAGED_FOLDERS.has(String(folder).toLowerCase());
+  const uploadTarget = folder !== "all" && !uploadsRestricted ? folder : "general";
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
     const files = Array.from(input.files || []);
@@ -272,7 +273,8 @@ export function PF_UserMediaVault() {
   };
 
   const moveItem = async (item: VaultMedia, destination: string) => {
-    if (isPinnedAsset(item) || destination === "desktop-buddies" || destination === "Desktop Buddies" || !destination || destination === vaultFolder(item)) return;
+    const destinationIsAllowed = destination.toLowerCase() === "general" || userFolders.some((entry) => entry.name === destination);
+    if (isPinnedAsset(item) || !destinationIsAllowed || destination === vaultFolder(item)) return;
     try {
       await updateVaultMedia(item.id, { metadata: { ...(item.metadata || {}), folder: destination } });
       await refresh();
@@ -305,8 +307,8 @@ export function PF_UserMediaVault() {
 
   const allFolderOptions = React.useMemo(
     () => [
-      ...SYSTEM_FOLDERS.filter((item) => !["all", "dragon-arena", "desktop-buddies"].includes(String(item.id)) && item.label !== "Desktop Buddies").map((item) => ({ value: String(item.id), label: item.label })),
-      ...userFolders.filter((item) => item.name !== "Desktop Buddies").map((item) => ({ value: item.name, label: item.name })),
+      { value: "general", label: "General" },
+      ...userFolders.map((item) => ({ value: item.name, label: item.name })),
     ],
     [userFolders],
   );
@@ -504,6 +506,7 @@ export function PF_UserMediaVault() {
                     <span className="text-sm text-muted-foreground">{new Date(item.created_at).toLocaleString()}</span>
                     {!isPinnedAsset(item) && (
                       <Select aria-label="Move file to folder" value={vaultFolder(item)} onChange={(event) => void moveItem(item, event.target.value)} className="h-9 max-w-44 rounded-xl border border-input bg-background px-2 text-sm text-foreground">
+                        {!allFolderOptions.some((option) => option.value === vaultFolder(item)) && <option value={vaultFolder(item)} disabled>{vaultFolder(item)}</option>}
                         {allFolderOptions.map((option) => (
                           <option key={option.value} value={option.value}>
                             {option.label}

@@ -34,7 +34,7 @@ function ToolCard({ app, favorite, onFavorite, onOpen }: { app: AppDefinition; f
           </div>
           <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{app.description}</p>
         </div>
-        <Button type="button" onClick={onOpen} className="mt-4 inline-flex items-center justify-end gap-2 border-t border-border/60 pt-4 text-sm font-medium text-foreground hover:text-primary">
+        <Button type="button" onClick={onOpen} className="mt-4 inline-flex h-auto min-h-9 max-h-none items-center justify-end gap-2 border-t border-border/60 pt-4 text-sm font-medium text-foreground hover:text-primary">
           Open <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
@@ -283,9 +283,9 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: { state:
                 {categories
                   .filter((category) => getAppsByCategory(category.id).length > 0)
                   .map((category) => (
-                    <Button key={category.id} onClick={() => navigate(`/category/${category.id}`)} className="flex items-center justify-between rounded-xl border border-border/60 p-4 text-left text-sm hover:bg-accent">
+                    <Button key={category.id} onClick={() => navigate(`/category/${category.id}`)} className="flex items-center justify-start rounded-xl border border-border/60 p-4 text-left text-sm hover:bg-accent">
                       <span>{category.name}</span>
-                      <span className="text-sm text-muted-foreground">{getAppsByCategory(category.id).length}</span>
+                      <span className="ml-auto text-sm text-muted-foreground">{getAppsByCategory(category.id).length}</span>
                     </Button>
                   ))}
               </div>

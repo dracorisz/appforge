@@ -1,6 +1,6 @@
 import React from "react";
 import { Check, Download, ImagePlus, Loader2, Upload } from "lucide-react";
-import { Button, Input } from "@/components/ui";
+import { Button, FileButton } from "@/components/ui";
 
 const BUDDY_STORAGE_KEY = "appforge-desktop-buddy-v1";
 const MAX_SOURCE_BYTES = 12 * 1024 * 1024;
@@ -186,21 +186,18 @@ export function DesktopBuddyAssetLab() {
           </div>
           <p className="mt-2 max-w-3xl text-sm text-muted-foreground">Prepare lightweight character assets entirely in your browser. AppForge fits the source inside transparent square canvases and exports 128, 256 and 512 pixel PNGs, with WebP alternatives when the browser supports them.</p>
         </div>
-        <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent">
+        <FileButton
+          disabled={processing}
+          accept="image/*"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) void optimize(file);
+            event.currentTarget.value = "";
+          }}
+        >
           {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
           {processing ? "Optimizing…" : "Choose source image"}
-          <Input
-            type="file"
-            accept="image/*"
-            disabled={processing}
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) void optimize(file);
-              event.target.value = "";
-            }}
-          />
-        </label>
+        </FileButton>
       </div>
 
       <div aria-live="polite" className="mt-4 text-sm text-muted-foreground">

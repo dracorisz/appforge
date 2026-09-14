@@ -1,7 +1,7 @@
 import { AppHeading } from "@/components/layout/AppHeading";
 import React from "react";
 import { ArrowDown, ArrowUp, Download, Image as ImageIcon, Plus, Save, Trash2, Upload } from "lucide-react";
-import { Button, Input, Select, Textarea } from "@/components/ui";
+import { Button, FileButton, Input, Select, Textarea } from "@/components/ui";
 
 type SectionKind = "hero" | "features" | "gallery" | "cta" | "faq" | "footer";
 type LandingSection = { id: string; kind: SectionKind; title: string; body: string; linkLabel?: string; linkUrl?: string; image?: string };
@@ -298,18 +298,15 @@ export default function LandingBuilder() {
                   </div>
                 )}
                 {section.kind === "gallery" && (
-                  <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border text-sm font-medium hover:bg-accent">
+                  <FileButton
+                    accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
+                    onChange={(event) => {
+                      uploadImage(section.id, event.target.files?.[0]);
+                      event.currentTarget.value = "";
+                    }}
+                  >
                     <ImageIcon className="h-4 w-4" /> Local image
-                    <Input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
-                      className="sr-only"
-                      onChange={(event) => {
-                        uploadImage(section.id, event.target.files?.[0]);
-                        event.currentTarget.value = "";
-                      }}
-                    />
-                  </label>
+                  </FileButton>
                 )}
               </div>
             </article>
@@ -327,18 +324,15 @@ export default function LandingBuilder() {
           >
             <Download className="h-4 w-4" /> Project JSON
           </Button>
-          <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
+          <FileButton
+            accept="application/json,.json"
+            onChange={(event) => {
+              importProject(event.target.files?.[0]);
+              event.currentTarget.value = "";
+            }}
+          >
             <Upload className="h-4 w-4" /> Import JSON
-            <Input
-              type="file"
-              accept="application/json,.json"
-              className="sr-only"
-              onChange={(event) => {
-                importProject(event.target.files?.[0]);
-                event.currentTarget.value = "";
-              }}
-            />
-          </label>
+          </FileButton>
           <Button
             type="button"
             onClick={() => downloadText(buildHtml(project), `${project.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() || "landing"}.html`, "text/html;charset=utf-8")}

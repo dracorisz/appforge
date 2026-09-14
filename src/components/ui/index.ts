@@ -1,4 +1,5 @@
 export { Button } from './Button'
+export { FileButton } from './FileButton'
 export { IconButton } from './IconButton'
 export { Card } from './Card'
 export { Surface, Stack } from './Surface'

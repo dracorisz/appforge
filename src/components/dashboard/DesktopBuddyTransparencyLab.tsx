@@ -1,7 +1,7 @@
 import React from "react";
 import { Check, Download, Eraser, ImagePlus, Loader2, WandSparkles } from "lucide-react";
 import { safeCanvasImageSource } from "@/lib/imageTransparency";
-import { Button, Input } from "@/components/ui";
+import { Button, FileButton, Input } from "@/components/ui";
 
 const BUDDY_STORAGE_KEY = "appforge-desktop-buddy-v1";
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
@@ -242,19 +242,16 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
               <WandSparkles className="h-4 w-4" /> Use active Buddy
             </Button>
           )}
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent">
+          <FileButton
+            accept="image/*"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) void importImage(file);
+              event.currentTarget.value = "";
+            }}
+          >
             <ImagePlus className="h-4 w-4" /> Choose image
-            <Input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) void importImage(file);
-                event.currentTarget.value = "";
-              }}
-            />
-          </label>
+          </FileButton>
         </div>
       </div>
 

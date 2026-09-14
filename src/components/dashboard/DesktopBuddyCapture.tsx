@@ -1,7 +1,7 @@
 import React from "react";
 import { Camera, Check, Download, ImagePlus, Loader2, MonitorUp, Save } from "lucide-react";
 import { uploadVaultMedia } from "@/lib/mediaVault";
-import { Button, Input } from "@/components/ui";
+import { Button, FileButton } from "@/components/ui";
 
 const MAX_CAPTURE_EDGE = 2560;
 
@@ -172,19 +172,16 @@ export function DesktopBuddyCapture() {
           <Button type="button" disabled={Boolean(busy)} onClick={() => void captureScreen()} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">
             {busy === "capture" ? <Loader2 className="h-4 w-4 animate-spin" /> : <MonitorUp className="h-4 w-4" />} Capture screen
           </Button>
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent">
+          <FileButton
+            accept="image/png,image/jpeg,image/webp"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) void importScreenshot(file);
+              event.currentTarget.value = "";
+            }}
+          >
             <ImagePlus className="h-4 w-4" /> Import screenshot
-            <Input
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              className="hidden"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) void importScreenshot(file);
-                event.currentTarget.value = "";
-              }}
-            />
-          </label>
+          </FileButton>
         </div>
       </div>
 

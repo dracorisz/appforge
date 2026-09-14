@@ -232,7 +232,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
         {user && (
           <>
             {accountOpen && (
-              <div className={`absolute z-[80] w-56 rounded-xl border border-border/70 bg-background p-2 shadow-xl ${isCollapsed ? "bottom-0 left-[calc(100%+0.5rem)]" : "bottom-[calc(100%-0.25rem)] left-3 right-3 w-auto"}`}>
+              <div className={`absolute bottom-full z-[80] mb-2 rounded-xl border border-border/70 bg-background p-2 shadow-xl ${isCollapsed ? "left-2 w-56" : "left-4 right-4 w-auto"}`}>
                 <div className="px-2 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Appearance</div>
                 <div className="grid grid-cols-3 gap-2 px-2 pb-2">
                   {(["light", "dark", "system"] as const).map((mode) => (
@@ -265,7 +265,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
                 <a href="https://github.com/dracorisz/appforge/issues" target="_blank" rel="noreferrer" onClick={() => setAccountOpen(false)} className="flex items-center gap-2 rounded-xl px-2 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground">
                   <HeartHandshake className="h-4 w-4" /> Support
                 </a>
-                <Button onClick={() => void handleSignOut()} disabled={signingOut} className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-60">
+                <Button onClick={() => void handleSignOut()} disabled={signingOut} className="flex w-full items-center justify-start gap-2 rounded-xl px-2 py-2 text-left text-sm text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-60">
                   <LogOut className="h-4 w-4" />
                   {signingOut ? "Signing out…" : "Sign out"}
                 </Button>
@@ -274,7 +274,8 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
             <Button
               type="button"
               onClick={() => setAccountOpen((value) => !value)}
-              className={`flex w-full items-center gap-2 rounded-xl border border-border/60 bg-background/35 p-2 text-left hover:border-foreground/15 ${isCollapsed ? "justify-center" : ""}`}
+              className={`flex h-auto max-h-none w-full items-center gap-2 rounded-xl border border-border/60 bg-background/35 px-2 text-left hover:border-foreground/15 ${isCollapsed ? "justify-center group-hover/sidebar:justify-start" : ""}`}
+              style={{ paddingBlock: "0.25rem" }}
               title={isCollapsed ? String(displayName) : undefined}
               aria-expanded={accountOpen}
               aria-haspopup="menu"
@@ -282,15 +283,11 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
               <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-accent text-sm font-semibold text-foreground">
                 {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : initial}
               </div>
-              {!isCollapsed && (
-                <>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium text-foreground">{String(displayName)}</div>
-                    {user.email && <div className="truncate text-sm text-muted-foreground">{user.email}</div>}
-                  </div>
-                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${accountOpen ? "rotate-180" : ""}`} />
-                </>
-              )}
+              <div className={`min-w-0 flex-1 ${isCollapsed ? "hidden group-hover/sidebar:block" : ""}`}>
+                <div className="truncate text-sm font-medium text-foreground">{String(displayName)}</div>
+                {user.email && <div className="truncate text-sm text-muted-foreground">{user.email}</div>}
+              </div>
+              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${accountOpen ? "rotate-180" : ""} ${isCollapsed ? "hidden group-hover/sidebar:block" : ""}`} />
             </Button>
           </>
         )}

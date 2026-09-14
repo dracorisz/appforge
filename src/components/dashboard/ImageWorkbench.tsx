@@ -2,7 +2,7 @@ import { AppHeading } from "@/components/layout/AppHeading";
 import React from "react";
 import { useLocation } from "react-router-dom";
 import { Check, Copy, Download, Image as ImageIcon, RefreshCw, Upload, Wand2 } from "lucide-react";
-import { Badge, Button, Card, Input, Select } from "@/components/ui";
+import { Badge, Button, Card, FileButton, Input, Select } from "@/components/ui";
 
 type Mode = "resize" | "convert" | "compress" | "metadata";
 type ImageInfo = { file: File; url: string; width: number; height: number };
@@ -341,20 +341,15 @@ export function ImageWorkbench() {
                     <Download className="h-4 w-4" /> Download
                   </Button>
                 )}
-                <label>
-                  <Input
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
-                    className="hidden"
-                    onChange={(event) => {
-                      void acceptFile(event.target.files?.[0]);
-                      event.currentTarget.value = "";
-                    }}
-                  />
-                  <span className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border/70 px-4 py-2 text-sm font-medium hover:bg-accent">
-                    <ImageIcon className="h-4 w-4" /> Replace image
-                  </span>
-                </label>
+                <FileButton
+                  accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
+                  onChange={(event) => {
+                    void acceptFile(event.target.files?.[0]);
+                    event.currentTarget.value = "";
+                  }}
+                >
+                  <ImageIcon className="h-4 w-4" /> Replace image
+                </FileButton>
               </div>
             </div>
           </div>

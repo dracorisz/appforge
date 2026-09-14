@@ -51,4 +51,4 @@ Respect `prefers-reduced-motion`; shared surfaces and previews already reduce tr
 
 ## Central theme controls
 
-Core geometry is centralized in `src/index.css` and mapped through `tailwind.config.js`. `--radius` controls `rounded-xl`; `--control-height` controls the shared `h-9` scale; `--border-opacity` and `--surface-border-opacity` control structural border prominence; `--shadow-xl` controls the sole project shadow. Shared Button, Input, Select, Textarea and Badge primitives consume these values. New page-level native button/input/select/textarea elements are not permitted.
+Core geometry is centralized in `src/index.css` and mapped through `tailwind.config.js`. `--radius` controls `rounded-xl`; `--control-height` controls the shared `h-9` scale; `--pill-height` controls Badge and build-pill height; `--border-opacity` and `--surface-border-opacity` control structural border prominence; `--shadow-xl` controls the sole project shadow. Shared Button, Input, Select, Textarea and Badge primitives consume these values. New page-level native button/input/select/textarea elements are not permitted.
