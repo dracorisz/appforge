@@ -7,6 +7,22 @@ import { PublicHeader } from "./PublicHeader";
 
 type InlinePart = { type: "text" | "code" | "strong" | "link"; value: string; href?: string };
 
+const docsBase = () => window.location.hostname.toLowerCase() === "docs.sstoken.space" ? "" : "/docs";
+const legacyDocSlug = (value: string) => {
+  const clean = value.replace(/^\.\//, "").replace(/^\/+/g, "").replace(/\.md$/i, "").replace(/\/+$/g, "");
+  if (clean === "DESIGN_SYSTEM") return "design-system-reference";
+  if (/^apps\/index$/i.test(clean)) return "apps";
+  return clean.replace(/_/g, "-").toLowerCase() || "index";
+};
+const normalizeInternalHref = (href: string) => {
+  if (/^(https?:|mailto:|#)/i.test(href)) return href;
+  if (href.startsWith("../")) return `https://github.com/dracorisz/appforge/blob/main/${href.replace(/^\.\.\//, "")}`;
+  const [path, hash = ""] = href.split("#", 2);
+  const slug = legacyDocSlug(path);
+  const route = slug === "index" ? docsBase() || "/" : `${docsBase()}/${slug}`;
+  return hash ? `${route}#${hash}` : route;
+};
+
 const inlineParts = (text: string): InlinePart[] => {
   const parts: InlinePart[] = [];
   const pattern = /(`[^`]+`|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g;
@@ -32,8 +48,9 @@ const InlineMarkdown = ({ text }: { text: string }) => (
       if (part.type === "code") return <code key={index} className="rounded-xl bg-muted px-2 py-2 font-mono text-sm">{part.value}</code>;
       if (part.type === "strong") return <strong key={index} className="font-semibold text-foreground">{part.value}</strong>;
       if (part.type === "link") {
-        const external = /^https?:\/\//.test(part.href || "");
-        return external ? <a key={index} href={part.href} target="_blank" rel="noopener noreferrer" className="font-medium text-foreground underline underline-offset-4">{part.value}</a> : <Link key={index} to={part.href || "/docs"} className="font-medium text-foreground underline underline-offset-4">{part.value}</Link>;
+        const href = normalizeInternalHref(part.href || "");
+        const external = /^https?:\/\//.test(href);
+        return external ? <a key={index} href={href} target="_blank" rel="noopener noreferrer" className="font-medium text-foreground underline underline-offset-4">{part.value}</a> : <Link key={index} to={href} className="font-medium text-foreground underline underline-offset-4">{part.value}</Link>;
       }
       return <React.Fragment key={index}>{part.value}</React.Fragment>;
     })}
@@ -41,7 +58,8 @@ const InlineMarkdown = ({ text }: { text: string }) => (
 );
 
 function MarkdownDocument({ body }: { body: string }) {
-  const lines = body.replace(/\r\n/g, "\n").split("\n");
+  const markdown = body.replace(/^---\s*\n[\s\S]*?\n---\s*\n?/, "");
+  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const nodes: React.ReactNode[] = [];
   let paragraph: string[] = [];
   let list: { ordered: boolean; items: string[] } | null = null;
@@ -122,7 +140,7 @@ function MarkdownDocument({ body }: { body: string }) {
 }
 
 const normalizeDocsSlug = (value: string) => value.replace(/^\/+|\/+$/g, "") || "index";
-const docsHref = (slug: string) => slug === "index" ? "/docs" : `/docs/${slug}`;
+const docsHref = (slug: string) => slug === "index" ? docsBase() || "/" : `${docsBase()}/${slug}`;
 
 export function DocsPage({ slug }: { slug?: string }) {
   const requestedSlug = normalizeDocsSlug(slug || "index");
@@ -162,7 +180,7 @@ export function DocsPage({ slug }: { slug?: string }) {
       <main className="mx-auto grid w-full max-w-7xl flex-1 gap-8 px-4 py-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:px-8">
         <aside className="lg:sticky lg:top-24 lg:self-start" aria-label="Documentation navigation">
           <div className="rounded-xl border border-border/70 bg-background/40 p-4">
-            <Link to="/docs" className="flex items-center gap-2 text-sm font-semibold"><FileText className="h-4 w-4" /> AppForge Docs</Link>
+            <Link to={docsHref("index")} className="flex items-center gap-2 text-sm font-semibold"><FileText className="h-4 w-4" /> AppForge Docs</Link>
             <nav className="mt-4 space-y-2">
               {navigation.map((item) => {
                 const active = normalizeDocsSlug(item.slug) === requestedSlug;
@@ -174,7 +192,7 @@ export function DocsPage({ slug }: { slug?: string }) {
         <section className="min-w-0">
           {loading && <div className="flex min-h-[40vh] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>}
           {!loading && error && <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</div>}
-          {!loading && !error && !page && <div className="rounded-xl border border-border/70 bg-background/40 p-8 text-center"><h1 className="text-lg font-semibold">Documentation page not found</h1><Link to="/docs" className="mt-4 inline-flex text-sm font-semibold underline">Back to docs</Link></div>}
+          {!loading && !error && !page && <div className="rounded-xl border border-border/70 bg-background/40 p-8 text-center"><h1 className="text-lg font-semibold">Documentation page not found</h1><Link to={docsHref("index")} className="mt-4 inline-flex text-sm font-semibold underline">Back to docs</Link></div>}
           {!loading && page && <article className="rounded-xl border border-border/70 bg-background/35 p-4 sm:p-8"><MarkdownDocument body={page.body || page.summary || ""} /></article>}
         </section>
       </main>
