@@ -53,11 +53,11 @@ const normalize = (source) => {
     totals.weights += 1
     return 'font-normal'
   })
-  next = next.replace(/\s+leading-(?:none|tight|snug|normal|relaxed|loose|\d+|\[[^\]]+\])/g, () => {
+  next = next.replace(/\s+(?:[a-z-]+:)*leading-(?:none|tight|snug|normal|relaxed|loose|\d+|\[[^\]]+\])/g, () => {
     totals.lineHeights += 1
     return ''
   })
-  next = next.replace(colorUtility, (_match, variants, utility, kind, family, opacity = '') => {
+  next = next.replace(colorUtility, (_match, variants, _utility, kind, family, opacity = '') => {
     totals.palette += 1
     return `${variants}${kind}-${semanticColor(kind, family)}${opacity}`
   })
@@ -117,7 +117,7 @@ const nextTree = await api('/git/trees', {
 const commit = await api('/git/commits', {
   method: 'POST',
   body: JSON.stringify({
-    message: 'style: normalize typography and semantic colors project-wide',
+    message: 'style: finish responsive typography normalization',
     tree: nextTree.sha,
     parents: [parentSha],
   }),
