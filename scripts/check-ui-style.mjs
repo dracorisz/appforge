@@ -16,26 +16,58 @@ walk(root)
 
 const radius = /(?:^|[\s"'`])((?:[a-z-]+:)*rounded-[^\s"'`}>]+)/g
 const shadow = /(?:^|[\s"'`])((?:[a-z-]+:)*shadow(?:-[^\s"'`}>]+)?)/g
-const violations = []
+const fontSize = /(?:^|[\s"'`])((?:[a-z-]+:)*text-(?:xs|sm|base|lg|xl|[2-9]xl|\[[^\]]+\]))(?=$|[\s"'`}])/g
+const spacing = /(?:^|[\s"'`])((?:[a-z-]+:)*-?(?:m[trblxy]?|p[trblxy]?|space-[xy]|gap(?:-[xy])?)-(?:\[[^\]]+\]|\d+(?:\.5)?))(?=$|[\s"'`}])/g
+const ringWidth = /(?:^|[\s"'`])((?:[a-z-]+:)*ring-(?:0|1|2|4|8))(?=$|[\s"'`}])/g
+
+const hardViolations = []
+const auditFindings = []
+const allowedFontSizes = new Set(['text-5xl', 'text-lg', 'text-sm', 'text-xs'])
+const allowedSpacing = new Set(['2', '4', '8'])
+
+const utilityPart = (token) => token.slice(token.lastIndexOf(':') + 1)
 
 for (const file of files) {
   const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/)
   lines.forEach((line, index) => {
     for (const match of line.matchAll(radius)) {
       const token = match[1]
-      const utility = token.slice(token.lastIndexOf(':') + 1)
-      if (utility !== 'rounded-xl') violations.push(`${file}:${index + 1}: forbidden radius ${token}`)
+      if (utilityPart(token) !== 'rounded-xl') hardViolations.push(`${file}:${index + 1}: forbidden radius ${token}`)
     }
     for (const match of line.matchAll(shadow)) {
       const token = match[1]
-      const utility = token.slice(token.lastIndexOf(':') + 1)
-      if (utility !== 'shadow-xl') violations.push(`${file}:${index + 1}: forbidden shadow ${token}`)
+      if (utilityPart(token) !== 'shadow-xl') hardViolations.push(`${file}:${index + 1}: forbidden shadow ${token}`)
+    }
+    for (const match of line.matchAll(fontSize)) {
+      const token = match[1]
+      if (!allowedFontSizes.has(utilityPart(token))) auditFindings.push(`${file}:${index + 1}: noncanonical font size ${token}`)
+    }
+    for (const match of line.matchAll(spacing)) {
+      const token = match[1]
+      const utility = utilityPart(token).replace(/^-/, '')
+      const value = utility.slice(utility.lastIndexOf('-') + 1)
+      if (!allowedSpacing.has(value)) auditFindings.push(`${file}:${index + 1}: noncanonical spacing ${token}`)
+    }
+    for (const match of line.matchAll(ringWidth)) {
+      const token = match[1]
+      if (utilityPart(token) !== 'ring-1') auditFindings.push(`${file}:${index + 1}: forbidden ring width ${token}`)
     }
   })
 }
 
-if (violations.length) {
-  console.error(violations.join('\n'))
+if (auditFindings.length) {
+  const counts = auditFindings.reduce((acc, finding) => {
+    const kind = finding.includes('font size') ? 'typography' : finding.includes('spacing') ? 'spacing' : 'ring'
+    acc[kind] = (acc[kind] || 0) + 1
+    return acc
+  }, {})
+  console.log(`Design audit report: ${auditFindings.length} findings (${Object.entries(counts).map(([key, value]) => `${key}=${value}`).join(', ')}).`)
+  console.log(auditFindings.slice(0, 300).join('\n'))
+  if (auditFindings.length > 300) console.log(`… ${auditFindings.length - 300} additional findings omitted from log.`)
+}
+
+if (hardViolations.length) {
+  console.error(hardViolations.join('\n'))
   process.exit(1)
 }
-console.log(`UI style contract OK across ${files.length} source files: rounded-xl only; shadow-xl only.`)
+console.log(`UI style contract OK across ${files.length} source files: rounded-xl only; shadow-xl only. Typography, spacing and ring widths are audited above until the normalization pass is complete.`)
