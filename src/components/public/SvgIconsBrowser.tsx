@@ -253,7 +253,7 @@ export default function SvgIconsBrowser() {
               </div>
               <div className="mt-4 grid grid-cols-4 gap-2">
                 <Button type="button" onClick={() => void copyImport(icon)} className="grid place-items-center rounded-xl border hover:bg-accent" title="Copy import">
-                  <Copy className="h-3.5 w-3.5" />
+                  <Copy className="h-4 w-4" />
                 </Button>
                 <Button type="button" onClick={() => void copyJsx(icon)} className="grid place-items-center rounded-xl border text-sm font-semibold hover:bg-accent" title="Copy JSX">
                   JSX
@@ -262,11 +262,11 @@ export default function SvgIconsBrowser() {
                   SVG
                 </Button>
                 <Button type="button" onClick={() => toggleFavorite(icon)} className="grid place-items-center rounded-xl border hover:bg-accent" title={favorite ? "Remove favorite" : "Favorite"}>
-                  {favorite ? <Heart className="h-3.5 w-3.5 fill-current" /> : <Star className="h-3.5 w-3.5" />}
+                  {favorite ? <Heart className="h-4 w-4 fill-current" /> : <Star className="h-4 w-4" />}
                 </Button>
               </div>
               <Button type="button" onClick={() => void downloadSvg(icon)} className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-medium hover:bg-accent">
-                <Download className="h-3.5 w-3.5" /> Download SVG
+                <Download className="h-4 w-4" /> Download SVG
               </Button>
             </article>
           );

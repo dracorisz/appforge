@@ -206,13 +206,13 @@ export function DesktopBuddyCapture() {
             </div>
             <div className="flex flex-wrap gap-2">
               <Button type="button" onClick={() => downloadCapture(capture)} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
-                <Download className="h-3.5 w-3.5" /> Download PNG
+                <Download className="h-4 w-4" /> Download PNG
               </Button>
               <Button type="button" disabled={Boolean(busy)} onClick={() => void saveToVault()} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent disabled:opacity-50">
-                {busy === "save" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} Save to Media Vault
+                {busy === "save" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save to Media Vault
               </Button>
               <span className="inline-flex items-center gap-2 rounded-xl border border-success/25 bg-success/5 px-4 text-sm text-success dark:text-success">
-                <Check className="h-3.5 w-3.5" /> Local preview
+                <Check className="h-4 w-4" /> Local preview
               </span>
             </div>
           </div>

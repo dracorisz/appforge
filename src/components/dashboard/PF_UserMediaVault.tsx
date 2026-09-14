@@ -397,10 +397,10 @@ export function PF_UserMediaVault() {
               {userFolder && (
                 <>
                   <Button type="button" onClick={() => void renameFolder(userFolder)} className="rounded-xl p-2 text-muted-foreground hover:bg-background hover:text-foreground" aria-label={`Rename ${label}`}>
-                    <Pencil className="h-3.5 w-3.5" />
+                    <Pencil className="h-4 w-4" />
                   </Button>
                   <Button type="button" onClick={() => void deleteFolder(userFolder)} className="rounded-xl p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label={`Delete ${label}`}>
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </>
               )}

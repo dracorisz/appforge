@@ -82,7 +82,7 @@ export function DesktopBuddyKdeLibrary() {
           <p className="mt-2 max-w-3xl text-sm text-muted-foreground">Choose verified Konqi and Katie artwork from the KDE Community Wiki. Source, author and license metadata stay attached to the selected character.</p>
         </div>
         <a href="https://community.kde.org/Promo/Material/Mascots" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-accent">
-          KDE mascot catalog <ExternalLink className="h-3.5 w-3.5" />
+          KDE mascot catalog <ExternalLink className="h-4 w-4" />
         </a>
       </div>
 
@@ -111,7 +111,7 @@ export function DesktopBuddyKdeLibrary() {
                     {active ? "Active" : "Use character"}
                   </Button>
                   <a href={source} target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-xl border text-muted-foreground hover:bg-accent hover:text-foreground" aria-label={`Open source page for ${starter.name}`}>
-                    <ExternalLink className="h-3.5 w-3.5" />
+                    <ExternalLink className="h-4 w-4" />
                   </a>
                 </div>
               </div>

@@ -322,7 +322,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
       <Tabs tabs={tabs} active={activeTab} onChange={(id) => selectTab(id as TabId)} ariaLabel="Settings sections" />
       {message && (
         <Card className="border-success/25 bg-success/5 p-2 text-sm text-success dark:text-success">
-          <Check className="mr-2 inline h-3.5 w-3.5" />
+          <Check className="mr-2 inline h-4 w-4" />
           {message}
         </Card>
       )}
@@ -355,7 +355,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
                 }}
               />
               <Badge className="inline-flex h-6 items-center gap-2 rounded-xl border border-border px-2 text-sm font-medium hover:bg-accent">
-                <ImagePlus className="h-3.5 w-3.5" />
+                <ImagePlus className="h-4 w-4" />
                 {busy === "avatar" ? "Uploading…" : "Change avatar"}
               </Badge>
             </label>
@@ -464,7 +464,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
             <div className="mt-4 grid gap-2">
               <Input type="password" label="New password" autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
               <Input type="password" label="Confirm password" autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-              <Button onClick={() => void saveLoginPassword()} disabled={busy === "password"}>
+              <Button className="mr-auto" onClick={() => void saveLoginPassword()} disabled={busy === "password"}>
                 Update password
               </Button>
             </div>
@@ -524,7 +524,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
             </div>
             <div className="mt-4 grid gap-2 sm:grid-cols-[minmax(0,260px)_auto] sm:items-end">
               <Input label="Type DELETE to confirm" value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} placeholder="DELETE" />
-              <Button variant="destructive" onClick={() => void deleteAccount()} disabled={deleteConfirm !== "DELETE" || busy === "delete-account"}>
+              <Button className="mr-auto" variant="destructive" onClick={() => void deleteAccount()} disabled={deleteConfirm !== "DELETE" || busy === "delete-account"}>
                 {busy === "delete-account" ? <Loader2 className="animate-spin" /> : <Trash2 />} Delete account
               </Button>
             </div>

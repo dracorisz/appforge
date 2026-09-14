@@ -231,7 +231,7 @@ export function DesktopBuddyAssetLab() {
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <Button type="button" onClick={() => downloadUrl(variant.pngUrl, `${safeStem(sourceName)}-${variant.size}.png`)} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
-                      <Download className="h-3.5 w-3.5" /> PNG
+                      <Download className="h-4 w-4" /> PNG
                     </Button>
                     <Button
                       type="button"
@@ -239,7 +239,7 @@ export function DesktopBuddyAssetLab() {
                       onClick={() => variant.webpUrl && downloadUrl(variant.webpUrl, `${safeStem(sourceName)}-${variant.size}.webp`)}
                       className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent disabled:opacity-40"
                     >
-                      <Download className="h-3.5 w-3.5" /> WebP
+                      <Download className="h-4 w-4" /> WebP
                     </Button>
                   </div>
                 </div>

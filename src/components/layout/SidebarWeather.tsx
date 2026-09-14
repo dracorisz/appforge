@@ -159,8 +159,8 @@ export function SidebarWeather({ collapsed }: { collapsed: boolean }) {
     <div className="rounded-xl border border-border/60 bg-background/45 p-2">
       <div className="flex items-start gap-2">
         <Link to="/apps/weather-now" className="min-w-0 flex-1 rounded-xl focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-          <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-            <CloudSun className="h-3.5 w-3.5" /> Weather
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <CloudSun className="h-4 w-4" /> Weather
           </div>
           {weather ? (
             <>
@@ -177,7 +177,7 @@ export function SidebarWeather({ collapsed }: { collapsed: boolean }) {
           )}
         </Link>
         <Button type="button" onClick={() => void refresh()} disabled={loading} className="rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-60" aria-label="Refresh sidebar weather">
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
         </Button>
       </div>
     </div>

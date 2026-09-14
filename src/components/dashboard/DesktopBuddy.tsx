@@ -396,7 +396,7 @@ export function DesktopBuddy() {
             <h2 className="font-semibold">Agent response + voice</h2>
           </div>
           <Textarea className="min-h-24 w-full rounded-xl border bg-background p-4 text-sm outline-none" value={message} onChange={(event) => setMessage(event.target.value)} />
-          <label className="rounded-xl border p-4 text-sm">
+          <label className="rounded-xl p-4 text-sm">
             <span className="text-sm text-muted-foreground">Voice</span>
             <Select className="mt-2 w-full cursor-pointer bg-transparent outline-none" value={config.voiceName} onChange={(event) => setConfig((current) => ({ ...current, voiceName: event.target.value }))}>
               <option value="">System default</option>
@@ -407,7 +407,7 @@ export function DesktopBuddy() {
               ))}
             </Select>
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mt-5">
             <Button type="button" onClick={speak} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
               <Mic2 className="h-4 w-4" /> Speak text
             </Button>

@@ -185,10 +185,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-background">
                       <img src={APPFORGE_MARK} alt="" className="h-9 w-9 rounded-xl" decoding="async" />
                     </div>
-                    <div>
-                      <div className="text-sm font-semibold">AppForge</div>
-                      <div className="text-sm text-muted-foreground">Public tools + private workspace</div>
-                    </div>
+                    <div className="text-sm font-semibold">AppForge</div>
                   </div>
                   <ShieldCheck className="h-5 w-5 shrink-0 text-muted-foreground" />
                 </div>
@@ -220,21 +217,10 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
             </section>
           </div>
 
-          {/* <section className="border-t border-border/60 py-8 sm:py-8" aria-labelledby="about-appforge-title">
-            <div className="md:col-span-1 m-auto text-center">
-              <h2 id="about-appforge-title" className="text-lg font-semibold tracking-tight">Open source. Private by design.</h2>
-              <p className="mt-2 text-sm text-muted-foreground">AppForge combines public tools with an authenticated workspace, keeping local work in-browser where practical and using protected persistence only where it adds value.</p>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2 mt-4">
-              <div className="rounded-xl border border-inverse/10 bg-inverse/5 p-4"><div className="text-sm font-semibold">Consistent tools</div><p className="mt-2 text-sm text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p></div>
-              <div className="rounded-xl border border-inverse/10 bg-inverse/5 p-4"><div className="text-sm font-semibold">Transparent project</div><p className="mt-2 text-sm text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p></div>
-            </div>
-          </section> */}
-
-          <section className="border-t border-border/60 py-8 sm:py-8" aria-labelledby="walkthrough-title">
+          <section className="py-8 sm:py-8" aria-labelledby="walkthrough-title">
             <div className="grid gap-4 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
               <div className="lg:pr-4">
-                <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   <PlayCircle className="h-4 w-4" /> Walkthrough
                 </div>
                 <h2 id="walkthrough-title" className="mt-2 text-lg font-semibold tracking-tight sm:text-lg">
@@ -260,6 +246,25 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                 ) : (
                   <video key={videoUrl} src={videoUrl} title="AppForge product walkthrough" className="aspect-video w-full bg-overlay object-contain" controls preload="metadata" playsInline />
                 )}
+              </div>
+            </div>
+          </section>
+
+          <section className="pt-40 sm:pt-40 pb-8 sm:pb-8" aria-labelledby="about-appforge-title">
+            <div className="md:col-span-1 m-auto text-left">
+              <h2 id="about-appforge-title" className="text-lg font-semibold tracking-tight">
+                Open source. Private by design.
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">AppForge combines public tools with an authenticated workspace, keeping local work in-browser where practical and using protected persistence only where it adds value.</p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 mt-4">
+              <div className="rounded-xl border border-inverse/10 bg-inverse/5 p-4">
+                <div className="text-sm font-semibold">Consistent tools</div>
+                <p className="mt-2 text-sm text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p>
+              </div>
+              <div className="rounded-xl border border-inverse/10 bg-inverse/5 p-4">
+                <div className="text-sm font-semibold">Transparent project</div>
+                <p className="mt-2 text-sm text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p>
               </div>
             </div>
           </section>
@@ -313,7 +318,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
               >
                 <Input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="h-9 w-full rounded-xl border border-input bg-background px-4 text-sm" />
                 <Input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" className="h-9 w-full rounded-xl border border-input bg-background px-4 text-sm" />
-                <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-sm mt-2">
                   <Link to="/auth/forgot-password" onClick={() => setAuthOpen(false)} className="font-medium text-foreground hover:underline">
                     Forgot password?
                   </Link>

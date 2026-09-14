@@ -62,8 +62,8 @@ function Metric({ icon: Icon, label, value }: { icon: React.ComponentType<{ clas
   return (
     <div className="group rounded-xl border border-border/70 bg-background/45 p-4 backdrop-blur-sm transition-colors hover:border-foreground/15 hover:bg-accent/35">
       <div className="flex items-center gap-2 text-muted-foreground">
-        <Icon className="h-3.5 w-3.5" />
-        <span className="text-sm font-semibold uppercase tracking-[0.12em]">{label}</span>
+        <Icon className="h-4 w-4" />
+        <span className="text-xs font-semibold uppercase tracking-[0.12em]">{label}</span>
       </div>
       <p className="mt-2 text-sm font-semibold tabular-nums text-foreground">{value}</p>
     </div>
@@ -74,8 +74,8 @@ function ListMetric({ icon: Icon, label, value }: { icon: React.ComponentType<{ 
   return (
     <div className="min-w-0 px-4 py-2 lg:border-l lg:border-border/55">
       <div className="flex items-center gap-2 text-muted-foreground">
-        <Icon className="h-3.5 w-3.5 shrink-0" />
-        <span className="text-sm font-semibold uppercase tracking-[0.12em]">{label}</span>
+        <Icon className="h-4 w-4 shrink-0" />
+        <span className="text-xs font-semibold uppercase tracking-[0.12em]">{label}</span>
       </div>
       <p className="mt-2 truncate text-sm font-medium tabular-nums text-foreground">{value}</p>
     </div>
@@ -302,7 +302,7 @@ export function PF_WeatherNow() {
           </div>
           <div className="mt-4 grid gap-4 border-t border-border/60 pt-4 lg:grid-cols-2">
             <div>
-              <div className="mb-2 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">Europe · add 3 at a time</div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Europe · add 3 at a time</div>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {EU_SETS.map((set, index) => (
                   <Button key={`eu-${index}`} variant="secondary" size="sm" onClick={() => void addPresetSet(set)} disabled={loading}>
@@ -312,7 +312,7 @@ export function PF_WeatherNow() {
               </div>
             </div>
             <div>
-              <div className="mb-2 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">United States · add 3 at a time</div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">United States · add 3 at a time</div>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {US_SETS.map((set, index) => (
                   <Button key={`us-${index}`} variant="secondary" size="sm" onClick={() => void addPresetSet(set)} disabled={loading}>
@@ -325,7 +325,7 @@ export function PF_WeatherNow() {
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_auto_auto_auto] md:items-center">
-          <label className="min-w-0 text-sm text-muted-foreground">
+          <label className="mb-7 min-w-0 text-sm text-muted-foreground">
             <span className="mb-2 block font-medium text-foreground">Sidebar weather city</span>
             <Select value={sidebarLocation} onChange={(event) => chooseSidebarCity(event.target.value)} className="w-full rounded-xl border border-input bg-background px-2 py-2 text-sm text-foreground">
               <option value="">First saved city</option>
@@ -337,7 +337,7 @@ export function PF_WeatherNow() {
             </Select>
           </label>
           <div className="flex items-center gap-2">
-            <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+            <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
             <Select value={sortBy} onChange={(event) => setSortBy(event.target.value as SortBy)} className="rounded-xl border border-input bg-background px-2 py-2 text-sm text-foreground">
               <option value="name">Name</option>
               <option value="temp">Temperature</option>
@@ -345,23 +345,23 @@ export function PF_WeatherNow() {
               <option value="wind">Wind</option>
             </Select>
           </div>
-          <div className="flex items-center gap-2 rounded-xl border border-border p-2">
+          <div className="flex items-center gap-2 rounded-xl border border-border h-9">
             {(["c", "f"] as Unit[]).map((value) => (
               <Button key={value} onClick={() => setUnit(value)} className={`rounded-xl px-2 py-2 text-sm font-medium ${unit === value ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
                 °{value.toUpperCase()}
               </Button>
             ))}
           </div>
-          <div className="flex items-center gap-2 rounded-xl border border-border p-2">
+          <div className="flex items-center gap-2 rounded-xl border border-border h-9">
             <Button onClick={() => setViewMode("grid")} aria-label="Grid view" className={`rounded-xl p-2 ${viewMode === "grid" ? "bg-accent" : "text-muted-foreground hover:text-foreground"}`}>
-              <LayoutGrid className="h-3.5 w-3.5" />
+              <LayoutGrid className="h-4 w-4" />
             </Button>
             <Button onClick={() => setViewMode("list")} aria-label="List view" className={`rounded-xl p-2 ${viewMode === "list" ? "bg-accent" : "text-muted-foreground hover:text-foreground"}`}>
-              <List className="h-3.5 w-3.5" />
+              <List className="h-4 w-4" />
             </Button>
           </div>
         </div>
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="-mt-2 flex flex-wrap gap-2">
           <Button variant="secondary" size="sm" onClick={() => void refreshAll()} disabled={!cities.length || loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh all
           </Button>
@@ -381,7 +381,7 @@ export function PF_WeatherNow() {
                   <div className="min-w-0 py-2 lg:pr-4">
                     <div className="flex items-center gap-2">
                       <h3 className="truncate text-lg font-semibold text-foreground">{weather.location}</h3>
-                      {sidebarLocation === weather.location && <Star className="h-3.5 w-3.5 fill-current text-warning" />}
+                      {sidebarLocation === weather.location && <Star className="h-4 w-4 fill-current text-warning" />}
                     </div>
                     {weather.local_time && <p className="mt-2 truncate text-sm text-muted-foreground">Local: {weather.local_time.replace("T", " ")}</p>}
                     <p className="mt-2 truncate text-sm text-muted-foreground">{freshnessLabel(weather)}</p>
@@ -398,13 +398,13 @@ export function PF_WeatherNow() {
                   <ListMetric icon={Wind} label="Wind" value={`${weather.wind_kph.toFixed(1)} km/h`} />
                   <div className="flex items-center justify-end gap-2 py-2 lg:border-l lg:border-border/55 lg:pl-4">
                     <Button variant="ghost" size="sm" onClick={() => chooseSidebarCity(weather.location)} title="Show in sidebar">
-                      <Star className={`h-3.5 w-3.5 ${sidebarLocation === weather.location ? "fill-current text-warning" : ""}`} />
+                      <Star className={`h-4 w-4 ${sidebarLocation === weather.location ? "fill-current text-warning" : ""}`} />
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => void refreshCity(weather)} disabled={refreshing === weather.location} title="Refresh">
-                      {refreshing === weather.location ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                      {refreshing === weather.location ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => removeCity(weather.location)} title="Remove">
-                      <X className="h-3.5 w-3.5" />
+                      <X className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -423,7 +423,7 @@ export function PF_WeatherNow() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <h3 className="truncate font-semibold text-foreground">{weather.location}</h3>
-                          {sidebarLocation === weather.location && <Star className="h-3.5 w-3.5 fill-current text-warning" />}
+                          {sidebarLocation === weather.location && <Star className="h-4 w-4 fill-current text-warning" />}
                         </div>
                         {weather.local_time && <p className="mt-2 text-sm text-muted-foreground">Local: {weather.local_time.replace("T", " ")}</p>}
                         <p className="mt-2 text-sm text-muted-foreground">{freshnessLabel(weather)}</p>
@@ -431,13 +431,13 @@ export function PF_WeatherNow() {
                     </div>
                     <div className="flex shrink-0 gap-2">
                       <Button variant="ghost" size="sm" onClick={() => chooseSidebarCity(weather.location)} title="Show in sidebar">
-                        <Star className={`h-3.5 w-3.5 ${sidebarLocation === weather.location ? "fill-current text-warning" : ""}`} />
+                        <Star className={`h-4 w-4 ${sidebarLocation === weather.location ? "fill-current text-warning" : ""}`} />
                       </Button>
                       <Button variant="ghost" size="sm" onClick={() => void refreshCity(weather)} disabled={refreshing === weather.location} title="Refresh">
-                        {refreshing === weather.location ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                        {refreshing === weather.location ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                       </Button>
                       <Button variant="ghost" size="sm" onClick={() => removeCity(weather.location)} title="Remove">
-                        <X className="h-3.5 w-3.5" />
+                        <X className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -446,7 +446,7 @@ export function PF_WeatherNow() {
                       <div>
                         <p className="text-lg font-semibold tracking-[-0.04em] text-foreground">{displayTemp(weather.temp_c)}</p>
                         <p className="mt-2 inline-flex items-center gap-2 text-sm text-muted-foreground">
-                          <Thermometer className="h-3.5 w-3.5" /> Feels like {displayTemp(weather.feelslike_c)}
+                          <Thermometer className="h-4 w-4" /> Feels like {displayTemp(weather.feelslike_c)}
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-2">

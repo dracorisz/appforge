@@ -102,14 +102,14 @@ export function MediaShowbox({
             <div className="flex shrink-0 gap-2">
               {onDownload && (
                 <Button variant="secondary" size="sm" onClick={onDownload} disabled={downloading}>
-                  {downloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                  {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                   {downloadLabel}
                 </Button>
               )}
               {originalUrl && (
                 <a href={originalUrl} target="_blank" rel="noopener noreferrer">
                   <Button variant="secondary" size="sm">
-                    <ExternalLink className="h-3.5 w-3.5" /> Source
+                    <ExternalLink className="h-4 w-4" /> Source
                   </Button>
                 </a>
               )}

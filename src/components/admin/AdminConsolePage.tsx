@@ -120,12 +120,12 @@ export function AdminConsolePage() {
   if (!aal2)
     return (
       <Card className="mx-auto max-w-lg p-4">
-        <div className="flex items-start gap-4">
-          <KeyRound className="mt-2 h-4 w-4 text-muted-foreground" />
-          <div>
+        <div className="flex flex-col items-start gap-2">
+          <div className="flex items-center gap-2">
+            <KeyRound className="h-4 w-4 text-muted-foreground" />
             <h1 className="text-lg font-semibold">Verify this admin session</h1>
-            <p className="mt-2 text-sm text-muted-foreground">Enter the current authenticator code to elevate this session to AAL2.</p>
           </div>
+          <p className="text-sm text-muted-foreground">Enter the current authenticator code to elevate this session to AAL2.</p>
         </div>
         {factorId ? (
           <div className="mt-4 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
@@ -141,7 +141,7 @@ export function AdminConsolePage() {
               placeholder="123456"
             />
             <Button onClick={() => void verifyAdminSession()} disabled={busy === "totp" || totpCode.length < 6}>
-              {busy === "totp" ? <Loader2 className="animate-spin" /> : <ShieldCheck />} Verify & open Admin
+              {busy === "totp" ? <Loader2 className="animate-spin" /> : <ShieldCheck />} Verify
             </Button>
           </div>
         ) : (

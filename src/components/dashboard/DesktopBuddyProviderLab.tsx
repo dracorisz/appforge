@@ -312,7 +312,7 @@ export function DesktopBuddyProviderLab() {
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">Choose Hugging Face or the private Vertex AI bridge. Every generation is normalized to a PNG and archived to your private Desktop Buddies Media Vault folder.</p>
           </div>
           <Button type="button" onClick={() => void refreshStatus()} disabled={loadingStatus} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent disabled:opacity-50">
-            <RefreshCw className={`h-3.5 w-3.5 ${loadingStatus ? "animate-spin" : ""}`} /> Provider status
+            <RefreshCw className={`h-4 w-4 ${loadingStatus ? "animate-spin" : ""}`} /> Provider status
           </Button>
         </div>
 
@@ -327,13 +327,13 @@ export function DesktopBuddyProviderLab() {
           </Button>
           <Button type="button" onClick={() => setProvider("vertex")} className={`rounded-xl border p-4 text-left ${provider === "vertex" ? "ring-1 ring-primary/30" : "bg-background/45"}`}>
             <p className="flex items-center gap-2 text-sm font-semibold">
-              <Cloud className="h-3.5 w-3.5" /> Vertex AI
+              <Cloud className="h-4 w-4" /> Vertex AI
             </p>
             <p className="mt-2 text-sm text-muted-foreground">{vertexStatus === null ? "Checking secure bridge…" : vertexStatus.configured ? `Secure bridge configured · ${vertexStatus.model || "Gemini Image"}` : "Bridge code ready; production WIF/IAM values still required"}</p>
           </Button>
           <div className="rounded-xl border bg-background/45 p-4">
             <p className="flex items-center gap-2 text-sm font-semibold">
-              <KeyRound className="h-3.5 w-3.5" /> Personal HF
+              <KeyRound className="h-4 w-4" /> Personal HF
             </p>
             <p className="mt-2 text-sm text-muted-foreground">{personalTokens ? `${personalTokens} local token${personalTokens === 1 ? "" : "s"} available from Story Studio` : "Optional; configure in Story Studio provider settings"}</p>
           </div>
@@ -378,10 +378,10 @@ export function DesktopBuddyProviderLab() {
             {result?.imageDataUrl && (
               <div className="grid grid-cols-2 gap-2 border-t p-4">
                 <Button type="button" onClick={useResult} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
-                  <Check className="h-3.5 w-3.5" /> Use in Buddy
+                  <Check className="h-4 w-4" /> Use in Buddy
                 </Button>
                 <Button type="button" onClick={() => downloadDataUrl(result.imageDataUrl!, "desktop-buddy-generated.png")} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
-                  <Download className="h-3.5 w-3.5" /> PNG
+                  <Download className="h-4 w-4" /> PNG
                 </Button>
               </div>
             )}
@@ -400,10 +400,10 @@ export function DesktopBuddyProviderLab() {
           </div>
           <div className="flex gap-2">
             <Button type="button" onClick={() => void refreshGallery()} disabled={galleryLoading} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent disabled:opacity-50">
-              <RefreshCw className={`h-3.5 w-3.5 ${galleryLoading ? "animate-spin" : ""}`} /> Refresh
+              <RefreshCw className={`h-4 w-4 ${galleryLoading ? "animate-spin" : ""}`} /> Refresh
             </Button>
             <a href="/apps/media-vault" className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
-              <FolderOpen className="h-3.5 w-3.5" /> Media Vault
+              <FolderOpen className="h-4 w-4" /> Media Vault
             </a>
           </div>
         </div>

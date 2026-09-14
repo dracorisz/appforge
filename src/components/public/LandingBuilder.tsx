@@ -263,7 +263,7 @@ export default function LandingBuilder() {
           <div className="grid grid-cols-3 gap-2">
             {(["hero", "features", "gallery", "cta", "faq", "footer"] as SectionKind[]).map((kind) => (
               <Button key={kind} type="button" onClick={() => add(kind)} className="inline-flex items-center justify-center gap-2 rounded-xl border px-2 text-sm font-medium capitalize hover:bg-accent">
-                <Plus className="h-3.5 w-3.5" /> {kind}
+                <Plus className="h-4 w-4" /> {kind}
               </Button>
             ))}
           </div>
@@ -278,13 +278,13 @@ export default function LandingBuilder() {
                 </span>
                 <div className="flex gap-2">
                   <Button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="grid h-9 w-9 place-items-center rounded-xl border disabled:opacity-40" aria-label={`Move ${section.kind} up`}>
-                    <ArrowUp className="h-3.5 w-3.5" />
+                    <ArrowUp className="h-4 w-4" />
                   </Button>
                   <Button type="button" onClick={() => move(index, 1)} disabled={index === project.sections.length - 1} className="grid h-9 w-9 place-items-center rounded-xl border disabled:opacity-40" aria-label={`Move ${section.kind} down`}>
-                    <ArrowDown className="h-3.5 w-3.5" />
+                    <ArrowDown className="h-4 w-4" />
                   </Button>
                   <Button type="button" onClick={() => remove(section.id)} className="grid h-9 w-9 place-items-center rounded-xl border hover:bg-destructive/10" aria-label={`Remove ${section.kind}`}>
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -299,7 +299,7 @@ export default function LandingBuilder() {
                 )}
                 {section.kind === "gallery" && (
                   <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border text-sm font-medium hover:bg-accent">
-                    <ImageIcon className="h-3.5 w-3.5" /> Local image
+                    <ImageIcon className="h-4 w-4" /> Local image
                     <Input
                       type="file"
                       accept="image/png,image/jpeg,image/webp,image/gif,image/avif"

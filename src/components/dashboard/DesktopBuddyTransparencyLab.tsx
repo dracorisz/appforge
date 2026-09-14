@@ -332,11 +332,11 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
           </div>
           <div className="flex flex-wrap gap-2">
             <Button type="button" onClick={() => downloadResult(result, source.name)} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
-              <Download className="h-3.5 w-3.5" /> Download PNG
+              <Download className="h-4 w-4" /> Download PNG
             </Button>
             {!standalone && (
               <Button type="button" onClick={applyToBuddy} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">
-                <Check className="h-3.5 w-3.5" /> Use in Buddy
+                <Check className="h-4 w-4" /> Use in Buddy
               </Button>
             )}
           </div>

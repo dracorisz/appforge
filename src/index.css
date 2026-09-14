@@ -2,351 +2,367 @@
 @config "../tailwind.config.js";
 
 @layer base {
-    :root {
-        --background: 0 0% 100%;
-        --foreground: 240 10% 3.9%;
-        --card: 0 0% 100%;
-        --card-foreground: 240 10% 3.9%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 240 10% 3.9%;
-        --primary: 240 5.9% 10%;
-        --primary-foreground: 0 0% 98%;
-        --secondary: 240 4.8% 95.9%;
-        --secondary-foreground: 240 5.9% 10%;
-        --muted: 240 4.8% 95.9%;
-        --muted-foreground: 240 3.8% 46.1%;
-        --accent: 240 4.8% 95.9%;
-        --accent-foreground: 240 5.9% 10%;
-        --destructive: 0 72% 45%;
-        --destructive-foreground: 0 0% 98%;
-        --success: 142 72% 29%;
-        --success-foreground: 0 0% 98%;
-        --warning: 38 92% 40%;
-        --warning-foreground: 24 10% 10%;
-        --info: 217 91% 45%;
-        --info-foreground: 0 0% 98%;
-        --border: 240 5.9% 90%;
-        --input: 240 5.9% 90%;
-        --ring: 240 5.9% 10%;
-        --overlay: 240 10% 3.9%;
-        --inverse: 0 0% 100%;
-        --radius: 0.75rem;
-        --control-height: 2.25rem;
-        --control-line-height: 1.25rem;
-        --border-opacity: 0.92;
-        --surface-border-opacity: 0.88;
-        --shadow-xl: 0 18px 45px hsl(var(--glass-shadow) / 0.18);
-        --glass-bg: 0 0% 100%;
-        --glass-highlight: 0 0% 100%;
-        --glass-shadow: 240 10% 3.9%;
-    }
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 142 72% 29%;
+    --success-foreground: 0 0% 98%;
+    --warning: 38 92% 40%;
+    --warning-foreground: 24 10% 10%;
+    --info: 217 91% 45%;
+    --info-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --overlay: 240 10% 3.9%;
+    --inverse: 0 0% 100%;
+    --radius: 0.35rem;
+    --control-height: 2.25rem;
+    --control-line-height: 1.25rem;
+    --border-opacity: 0.99;
+    --surface-border-opacity: 0.88;
+    --shadow-xl: 0 18px 45px hsl(var(--glass-shadow) / 0.18);
+    --glass-bg: 0 0% 100%;
+    --glass-highlight: 0 0% 100%;
+    --glass-shadow: 240 10% 3.9%;
+  }
 
-    .dark {
-        --background: 240 10% 3.9%;
-        --foreground: 0 0% 98%;
-        --card: 240 10% 3.9%;
-        --card-foreground: 0 0% 98%;
-        --popover: 240 10% 3.9%;
-        --popover-foreground: 0 0% 98%;
-        --primary: 0 0% 98%;
-        --primary-foreground: 240 5.9% 10%;
-        --secondary: 240 3.7% 15.9%;
-        --secondary-foreground: 0 0% 98%;
-        --muted: 240 3.7% 15.9%;
-        --muted-foreground: 240 3.8% 64.9%;
-        --accent: 240 3.7% 15.9%;
-        --accent-foreground: 0 0% 98%;
-        --destructive: 0 72% 60%;
-        --destructive-foreground: 0 0% 98%;
-        --success: 142 70% 55%;
-        --success-foreground: 144 80% 10%;
-        --warning: 43 96% 56%;
-        --warning-foreground: 26 83% 14%;
-        --info: 213 94% 68%;
-        --info-foreground: 224 71% 4%;
-        --border: 240 3.7% 15.9%;
-        --input: 240 3.7% 15.9%;
-        --ring: 240 4.9% 83.9%;
-        --overlay: 0 0% 0%;
-        --inverse: 0 0% 100%;
-        --glass-bg: 240 8% 9%;
-        --glass-highlight: 0 0% 100%;
-        --glass-shadow: 240 50% 1%;
-    }
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 3.8% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 72% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 142 70% 55%;
+    --success-foreground: 144 80% 10%;
+    --warning: 43 96% 56%;
+    --warning-foreground: 26 83% 14%;
+    --info: 213 94% 68%;
+    --info-foreground: 224 71% 4%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    --overlay: 0 0% 0%;
+    --inverse: 0 0% 100%;
+    --glass-bg: 240 8% 9%;
+    --glass-highlight: 0 0% 100%;
+    --glass-shadow: 240 50% 1%;
+  }
 }
 
 @layer base {
-    * {
-        border-color: hsl(var(--border));
-    }
+  * {
+    border-color: hsl(var(--border));
+  }
 
-    html {
-        font-size: 16px;
-    }
+  html {
+    font-size: 16px;
+  }
 
-    body {
-        background-color: hsl(var(--background));
-        color: hsl(var(--foreground));
-        font-size: 0.875rem;
-        line-height: 1.5rem;
-        font-feature-settings: "rlig" 1, "calt" 1;
-        text-rendering: optimizeLegibility;
-    }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-size: 0.875rem;
+    line-height: 1.5rem;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+    text-rendering: optimizeLegibility;
+  }
 
-    ::selection {
-        background-color: hsl(var(--accent));
-        color: hsl(var(--accent-foreground));
-    }
+  ::selection {
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
 
-    :where(a[href], button:not(:disabled), select:not(:disabled), summary, [role='button']:not([aria-disabled='true']), [role='tab']:not([aria-disabled='true']), input[type='checkbox']:not(:disabled), input[type='radio']:not(:disabled), input[type='range']:not(:disabled), input[type='file']:not(:disabled), label[for]) {
-        cursor: pointer;
-    }
+  :where(
+    a[href],
+    button:not(:disabled),
+    select:not(:disabled),
+    summary,
+    [role="button"]:not([aria-disabled="true"]),
+    [role="tab"]:not([aria-disabled="true"]),
+    input[type="checkbox"]:not(:disabled),
+    input[type="radio"]:not(:disabled),
+    input[type="range"]:not(:disabled),
+    input[type="file"]:not(:disabled),
+    label[for]
+  ) {
+    cursor: pointer;
+  }
 
-    :where(button:disabled, select:disabled, [aria-disabled='true']) {
-        cursor: not-allowed;
-    }
+  :where(button:disabled, select:disabled, [aria-disabled="true"]) {
+    cursor: not-allowed;
+  }
 
-    :where(button, [role='button'], [role='tab']) {
-        font-size: 0.875rem;
-        line-height: 1.25rem;
-    }
+  :where(button, [role="button"], [role="tab"]) {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
 
-    :where(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']), select, textarea) {
-        height: var(--control-height);
-        min-height: var(--control-height);
-        max-height: var(--control-height);
-        border: 1px solid hsl(var(--input) / var(--border-opacity));
-        border-radius: var(--radius);
-        background: hsl(var(--background));
-        color: hsl(var(--foreground));
-        padding: 0 1rem;
-        font-size: 0.875rem;
-        line-height: var(--control-line-height);
-        transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
-    }
+  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]), select, textarea) {
+    height: var(--control-height);
+    min-height: var(--control-height);
+    max-height: var(--control-height);
+    border: 1px solid hsl(var(--input) / var(--border-opacity));
+    border-radius: var(--radius);
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    padding: 0 1rem;
+    font-size: 0.875rem;
+    line-height: var(--control-line-height);
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease,
+      background-color 150ms ease;
+  }
 
-    :where(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']), select, textarea):hover:not(:disabled) {
-        border-color: hsl(var(--foreground) / 0.2);
-    }
+  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]), select, textarea):hover:not(:disabled) {
+    border-color: hsl(var(--foreground) / 0.2);
+  }
 
-    :where(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']), select, textarea):focus-visible {
-        border-color: hsl(var(--ring) / 0.4);
-        outline: none;
-        box-shadow: 0 0 0 1px hsl(var(--ring) / 0.2);
-    }
+  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]), select, textarea):focus-visible {
+    border-color: hsl(var(--ring) / 0.4);
+    outline: none;
+    box-shadow: 0 0 0 1px hsl(var(--ring) / 0.2);
+  }
 
-    :where(input, select, textarea):disabled {
-        cursor: not-allowed;
-        opacity: 0.5;
-    }
+  :where(input, select, textarea):disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
 
-    :where(input, textarea)::placeholder {
-        color: hsl(var(--muted-foreground));
-    }
+  :where(input, textarea)::placeholder {
+    color: hsl(var(--muted-foreground));
+  }
 
-    textarea {
-        height: auto;
-        min-height: 6rem;
-        max-height: 7rem;
-        resize: vertical;
-    }
+  textarea {
+    height: auto;
+    min-height: 6rem;
+    max-height: 7rem;
+    resize: vertical;
+  }
 }
 
 @layer components {
-    .app-control {
-        line-height: var(--control-line-height);
-    }
-    .surface-card,
-    .surface-panel,
-    .surface-popover,
-    .surface-muted {
-        border: 1px solid hsl(var(--border) / var(--surface-border-opacity));
-        border-radius: var(--radius);
-    }
+  .app-control {
+    line-height: var(--control-line-height);
+  }
+  .surface-card,
+  .surface-panel,
+  .surface-popover,
+  .surface-muted {
+    border: 1px solid hsl(var(--border) / var(--surface-border-opacity));
+    border-radius: var(--radius);
+  }
 
-    .surface-card {
-        background:
-            linear-gradient(180deg, hsl(var(--glass-highlight) / 0.035), transparent 42%),
-            hsl(var(--glass-bg) / 0.78);
-        backdrop-filter: blur(12px) saturate(115%);
-        -webkit-backdrop-filter: blur(12px) saturate(115%);
-    }
+  .surface-card {
+    background: linear-gradient(180deg, hsl(var(--glass-highlight) / 0.035), transparent 42%), hsl(var(--glass-bg) / 0.78);
+    backdrop-filter: blur(12px) saturate(115%);
+    -webkit-backdrop-filter: blur(12px) saturate(115%);
+  }
 
-    .surface-panel {
-        background: hsl(var(--card) / 0.88);
-    }
+  .surface-panel {
+    background: hsl(var(--card) / 0.88);
+  }
 
-    .surface-popover {
-        background: hsl(var(--popover) / 0.96);
-        box-shadow: var(--shadow-xl);
-    }
+  .surface-popover {
+    background: hsl(var(--popover) / 0.96);
+    box-shadow: var(--shadow-xl);
+  }
 
-    .surface-muted {
-        background: hsl(var(--muted) / 0.55);
-    }
+  .surface-muted {
+    background: hsl(var(--muted) / 0.55);
+  }
 
-    .surface-card:hover,
-    .surface-panel:hover {
-        border-color: hsl(var(--foreground) / 0.16);
-    }
+  .surface-card:hover,
+  .surface-panel:hover {
+    border-color: hsl(var(--foreground) / 0.16);
+  }
 
-    .surface-card:focus-within,
-    .surface-panel:focus-within,
-    .surface-popover:focus-within {
-        border-color: hsl(var(--ring) / 0.3);
-    }
+  .surface-card:focus-within,
+  .surface-panel:focus-within,
+  .surface-popover:focus-within {
+    border-color: hsl(var(--ring) / 0.3);
+  }
 
-    .preview-card {
-        position: relative;
-        isolation: isolate;
-        overflow: hidden;
-        background: hsl(var(--card) / 0.72);
-    }
+  .preview-card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: hsl(var(--card) / 0.72);
+  }
 
-    .preview-card>a:first-child {
-        position: relative;
-        display: block;
-        height: 15rem;
-        border-bottom: 0;
-        background:
-            radial-gradient(circle at 30% 20%, hsl(var(--foreground) / 0.06), transparent 42%),
-            hsl(var(--muted) / 0.72);
-    }
+  .preview-card > a:first-child {
+    position: relative;
+    display: block;
+    height: 15rem;
+    border-bottom: 0;
+    background: radial-gradient(circle at 30% 20%, hsl(var(--foreground) / 0.06), transparent 42%), hsl(var(--muted) / 0.72);
+  }
 
-    .preview-card>a:first-child::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        background: linear-gradient(to top, hsl(var(--background) / 0.52), transparent 48%);
-        opacity: 0.72;
-        transition: opacity 180ms ease;
-    }
+  .preview-card > a:first-child::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(to top, hsl(var(--background) / 0.52), transparent 48%);
+    opacity: 0.72;
+    transition: opacity 180ms ease;
+  }
 
-    .preview-card img {
-        transition: transform 260ms ease, filter 220ms ease, opacity 220ms ease;
-    }
+  .preview-card img {
+    transition:
+      transform 260ms ease,
+      filter 220ms ease,
+      opacity 220ms ease;
+  }
 
-    .preview-card:hover img {
-        transform: scale(1.025);
-        filter: saturate(1.03) contrast(1.02);
-    }
+  .preview-card:hover img {
+    transform: scale(1.025);
+    filter: saturate(1.03) contrast(1.02);
+  }
 
+  figure:has(img[alt*="Dragon Arena scene"]) {
+    width: min(100%, 27rem) !important;
+    max-width: 27rem !important;
+    margin-inline: 0 auto !important;
+    border-radius: var(--radius) !important;
+  }
+
+  figure:has(img[alt*="Dragon Arena scene"]) > a {
+    height: 10.5rem !important;
+  }
+
+  figure:has(img[alt*="Dragon Arena scene"]) img {
+    width: 100% !important;
+    height: 10.5rem !important;
+    max-height: 10.5rem !important;
+    aspect-ratio: auto !important;
+    object-fit: cover !important;
+  }
+
+  figure:has(img[alt*="Dragon Arena scene"]) figcaption {
+    padding-block: 0.5rem !important;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .preview-card:hover > a:first-child::after,
+    .preview-card:focus-within > a:first-child::after {
+      opacity: 0.92;
+    }
+  }
+
+  @media (max-width: 640px) {
     figure:has(img[alt*="Dragon Arena scene"]) {
-        width: min(100%, 27rem) !important;
-        max-width: 27rem !important;
-        margin-inline: 0 auto !important;
-        border-radius: var(--radius) !important;
+      width: 100% !important;
+      max-width: 100% !important;
     }
 
-    figure:has(img[alt*="Dragon Arena scene"])>a {
-        height: 10.5rem !important;
-    }
-
+    figure:has(img[alt*="Dragon Arena scene"]) > a,
     figure:has(img[alt*="Dragon Arena scene"]) img {
-        width: 100% !important;
-        height: 10.5rem !important;
-        max-height: 10.5rem !important;
-        aspect-ratio: auto !important;
-        object-fit: cover !important;
+      height: 9rem !important;
+      max-height: 9rem !important;
     }
+  }
 
-    figure:has(img[alt*="Dragon Arena scene"]) figcaption {
-        padding-block: 0.5rem !important;
+  @media (prefers-reduced-motion: reduce) {
+    .surface-card,
+    .surface-card *,
+    .surface-panel,
+    .surface-panel *,
+    .surface-popover,
+    .surface-popover *,
+    .surface-muted,
+    .surface-muted *,
+    .preview-card,
+    .preview-card * {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
     }
-
-    @media (hover: hover) and (pointer: fine) {
-        .preview-card:hover>a:first-child::after,
-        .preview-card:focus-within>a:first-child::after {
-            opacity: 0.92;
-        }
-    }
-
-    @media (max-width: 640px) {
-        figure:has(img[alt*="Dragon Arena scene"]) {
-            width: 100% !important;
-            max-width: 100% !important;
-        }
-
-        figure:has(img[alt*="Dragon Arena scene"])>a,
-        figure:has(img[alt*="Dragon Arena scene"]) img {
-            height: 9rem !important;
-            max-height: 9rem !important;
-        }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        .surface-card,
-        .surface-card *,
-        .surface-panel,
-        .surface-panel *,
-        .surface-popover,
-        .surface-popover *,
-        .surface-muted,
-        .surface-muted *,
-        .preview-card,
-        .preview-card * {
-            transition-duration: 0.01ms !important;
-            animation-duration: 0.01ms !important;
-        }
-    }
+  }
 }
 
 @media print {
-    .no-print {
-        display: none !important;
-    }
+  .no-print {
+    display: none !important;
+  }
 
-    .print-break {
-        page-break-inside: avoid;
-    }
+  .print-break {
+    page-break-inside: avoid;
+  }
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade-in {
-    animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
 @keyframes pulse-subtle {
-    0%,
-    100% {
-        opacity: 0.8;
-    }
+  0%,
+  100% {
+    opacity: 0.8;
+  }
 
-    50% {
-        opacity: 1;
-    }
+  50% {
+    opacity: 1;
+  }
 }
 
 .animate-pulse-subtle {
-    animation: pulse-subtle 2s ease-in-out infinite;
+  animation: pulse-subtle 2s ease-in-out infinite;
 }
 
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background-color: hsl(var(--muted));
+  background-color: hsl(var(--muted));
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--muted-foreground) / 0.45);
-    border-radius: var(--radius);
+  background-color: hsl(var(--muted-foreground) / 0.45);
+  border-radius: var(--radius);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: hsl(var(--muted-foreground) / 0.7);
+  background-color: hsl(var(--muted-foreground) / 0.7);
 }

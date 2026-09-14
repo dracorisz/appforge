@@ -372,7 +372,7 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
           <p className="mt-2 text-sm text-muted-foreground">{filterType === "blog_article" ? "Draft and publish public blog articles." : "Manage the public landing page walkthrough and presentation."}</p>
         </div>
         <div className="inline-flex items-center gap-2 text-sm text-success dark:text-success">
-          <CheckCircle2 className="h-3.5 w-3.5" /> Admin · TOTP
+          <CheckCircle2 className="h-4 w-4" /> Admin · TOTP
         </div>
       </div>
       {!contentType && (

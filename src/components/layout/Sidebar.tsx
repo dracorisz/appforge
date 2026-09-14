@@ -173,7 +173,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
         </div>
       )}
       <nav className={`scrollbar-hide min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-2 ${isCollapsed ? "px-2" : "px-4"}`}>
-        {!isCollapsed && <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">System</h3>}
+        {!isCollapsed && <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">System</h3>}
         <div className="space-y-2">
           {coreItems.map((item) => {
             const Icon = item.icon;
@@ -189,7 +189,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
           <div className="mt-4">
             {!isCollapsed && (
               <div className="mb-2 flex items-center justify-between">
-                <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">Workspace</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Workspace</h3>
                 <NavLink to="/workspace" onClick={onClose} className="text-sm text-muted-foreground hover:text-foreground">
                   Customize
                 </NavLink>
@@ -233,7 +233,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
           <>
             {accountOpen && (
               <div className={`absolute z-[80] w-56 rounded-xl border border-border/70 bg-background p-2 shadow-xl ${isCollapsed ? "bottom-0 left-[calc(100%+0.5rem)]" : "bottom-[calc(100%-0.25rem)] left-3 right-3 w-auto"}`}>
-                <div className="px-2 py-2 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">Appearance</div>
+                <div className="px-2 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Appearance</div>
                 <div className="grid grid-cols-3 gap-2 px-2 pb-2">
                   {(["light", "dark", "system"] as const).map((mode) => (
                     <Button

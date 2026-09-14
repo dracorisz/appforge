@@ -54,7 +54,7 @@ export function PeoplePage() {
   return (
     <div className="space-y-4 pb-8">
       <div>
-        <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           <HeartHandshake className="h-4 w-4" /> Community
         </div>
         <h1 className="mt-2 text-lg font-semibold tracking-tight text-foreground">People</h1>
@@ -117,22 +117,22 @@ export function PeoplePage() {
                   <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-border/60 pt-4 text-sm text-muted-foreground">
                     {profile.location && (
                       <span className="inline-flex items-center gap-2">
-                        <MapPin className="h-3.5 w-3.5" /> {profile.location}
+                        <MapPin className="h-4 w-4" /> {profile.location}
                       </span>
                     )}
                     {profile.show_github !== false && profile.github_username && (
                       <a href={`https://github.com/${encodeURIComponent(profile.github_username)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-foreground">
-                        <Github className="h-3.5 w-3.5" /> GitHub
+                        <Github className="h-4 w-4" /> GitHub
                       </a>
                     )}
                     {profile.show_website !== false && profile.website && (
                       <a href={profile.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-foreground">
-                        <ExternalLink className="h-3.5 w-3.5" /> Website
+                        <ExternalLink className="h-4 w-4" /> Website
                       </a>
                     )}
                     {profile.show_email && profile.public_email && (
                       <a href={`mailto:${profile.public_email}`} className="inline-flex items-center gap-2 hover:text-foreground">
-                        <Mail className="h-3.5 w-3.5" /> Email
+                        <Mail className="h-4 w-4" /> Email
                       </a>
                     )}
                   </div>

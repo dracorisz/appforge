@@ -228,7 +228,7 @@ export function ColorPickerTool() {
           {palette.length > 0 && (
             <div className="mt-4">
               <div className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <Palette className="h-3.5 w-3.5" /> Extracted palette
+                <Palette className="h-4 w-4" /> Extracted palette
               </div>
               <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
                 {palette.map((color) => (

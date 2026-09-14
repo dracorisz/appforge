@@ -217,7 +217,7 @@ export function PF_CryptoTrack() {
             onClick={() => setWatchlistOnly((value) => !value)}
             className={`inline-flex items-center gap-2 rounded-xl border px-2 py-2 text-sm font-medium ${watchlistOnly ? "border-warning/40 bg-warning/10 text-warning dark:text-warning" : "border-border text-muted-foreground hover:text-foreground"}`}
           >
-            <Star className={`h-3.5 w-3.5 ${watchlistOnly ? "fill-current" : ""}`} /> Watchlist {watchlist.size}
+            <Star className={`h-4 w-4 ${watchlistOnly ? "fill-current" : ""}`} /> Watchlist {watchlist.size}
           </Button>
           <div className="flex items-center gap-2 rounded-xl border border-border p-2">
             {(["all", "gainers", "losers"] as MarketView[]).map((value) => (
@@ -308,7 +308,7 @@ export function PF_CryptoTrack() {
                     </div>
                     <p className="text-right text-sm font-semibold text-foreground">{formatUsd(coin.price)}</p>
                     <p className={`flex items-center justify-end gap-2 text-right text-sm font-medium ${positive ? "text-success dark:text-success" : "text-destructive dark:text-destructive"}`}>
-                      {positive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+                      {positive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
                       {positive ? "+" : ""}
                       {coin.change24h.toFixed(2)}%
                     </p>

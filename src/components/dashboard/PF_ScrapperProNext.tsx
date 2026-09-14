@@ -332,10 +332,10 @@ export function PF_ScrapperProNext() {
           ariaLabel="Getter Pro result types"
         />
         <div className="flex flex-wrap gap-2">
-          <Button type="button" onClick={toggleAllVisible} disabled={!visibleResults.length} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold disabled:opacity-40">
+          <Button type="button" onClick={toggleAllVisible} disabled={!visibleResults.length} variant="ghost" size="sm" className="px-4" aria-pressed={allVisibleSelected}>
             {allVisibleSelected ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />} {allVisibleSelected ? "Clear visible" : "Select visible"}
           </Button>
-          <Button type="button" onClick={() => void saveSelectedVault()} disabled={!selectedResults.length} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold disabled:opacity-40">
+          <Button type="button" onClick={() => void saveSelectedVault()} disabled={!selectedResults.length} variant="ghost" size="sm" className="px-4">
             <Archive className="h-4 w-4" /> Media Vault
           </Button>
         </div>
@@ -374,16 +374,16 @@ export function PF_ScrapperProNext() {
                   {result.provenance && <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{provenanceText(result)}</p>}
                   <div className="mt-auto grid grid-cols-[1fr_auto_auto_auto] gap-2 pt-4">
                     <a href={result.url} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
-                      Open <ExternalLink className="h-3.5 w-3.5" />
+                      Open <ExternalLink className="h-4 w-4" />
                     </a>
                     <Button type="button" onClick={() => void saveOneVault(result)} disabled={saving} className="grid w-9 place-items-center rounded-xl border hover:bg-accent disabled:opacity-50" aria-label="Save to Media Vault" title="Save to Media Vault">
-                      {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className={`h-3.5 w-3.5 ${savedVault ? "text-primary" : ""}`} />}
+                      {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Archive className={`h-4 w-4 ${savedVault ? "text-primary" : ""}`} />}
                     </Button>
                     <Button type="button" onClick={() => void downloadResult(result)} disabled={!downloadable} className="grid w-9 place-items-center rounded-xl border hover:bg-accent disabled:cursor-not-allowed disabled:opacity-35" aria-label="Download result media" title="Download media">
-                      <Download className="h-3.5 w-3.5" />
+                      <Download className="h-4 w-4" />
                     </Button>
                     <Button type="button" onClick={() => void copyUrl(result.url)} className="grid w-9 place-items-center rounded-xl border hover:bg-accent" aria-label="Copy source URL" title="Copy source URL">
-                      <Copy className="h-3.5 w-3.5" />
+                      <Copy className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>

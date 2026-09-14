@@ -40,7 +40,7 @@ export function PublicAppsPage() {
         <section className="mx-auto mt-8 max-w-3xl border-y border-border/60 py-4" aria-label="Filter apps">
           <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_200px]">
             <label className="relative block">
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search apps…" className="w-full rounded-xl border border-border/70 h-9 bg-background/45 pl-8 pr-8 text-sm outline-none focus:ring-1 focus:ring-ring/30" />
               {query && (
                 <Button type="button" onClick={() => setQuery("")} aria-label="Clear search" className="absolute right-1.5 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-xl text-muted-foreground hover:bg-inverse/10 hover:text-inverse">
@@ -70,12 +70,12 @@ export function PublicAppsPage() {
               {app.coverImage && <img src={app.coverImage} alt="" className="-mx-4 -mt-4 mb-4 h-24 w-[calc(100%+2rem)] rounded-xl object-cover" loading="lazy" />}
               <div className="min-w-0">
                 <div className="truncate text-sm font-semibold">{app.name}</div>
-                <div className="mt-2 text-sm uppercase tracking-[0.12em] text-muted-foreground">{categoryName(app.category)}</div>
+                <div className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{categoryName(app.category)}</div>
               </div>
               <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{app.description}</p>
               <div className="mt-auto flex items-center justify-end pt-4">
                 <span className="inline-flex items-center gap-2 text-sm font-semibold">
-                  Open <ArrowRight className="h-3.5 w-3.5" />
+                  Open <ArrowRight className="h-4 w-4" />
                 </span>
               </div>
             </Link>
