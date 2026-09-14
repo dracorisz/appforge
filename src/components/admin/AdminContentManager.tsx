@@ -52,19 +52,20 @@ const generateSummary = (body: string | null | undefined, title: string) => {
   return `${source.slice(0, 177).trim()}…`
 }
 
-type Props = { embedded?: boolean; adminVerified?: boolean }
+type Props = { embedded?: boolean; adminVerified?: boolean; contentType?: Extract<FrontendContentType, 'blog_article' | 'video_teaser'> }
 
-export function AdminContentManager({ embedded = false, adminVerified = false }: Props) {
+export function AdminContentManager({ embedded = false, adminVerified = false, contentType }: Props) {
   const { user, loading: authLoading } = useAuth()
+  const initialType = contentType || 'blog_article'
   const [checking, setChecking] = React.useState(!embedded)
   const [isAdmin, setIsAdmin] = React.useState(embedded && adminVerified)
   const [aal2, setAal2] = React.useState(embedded && adminVerified)
   const [factorId, setFactorId] = React.useState('')
   const [totpCode, setTotpCode] = React.useState('')
   const [items, setItems] = React.useState<FrontendContentRecord[]>([])
-  const [filterType, setFilterType] = React.useState<FrontendContentType>('blog_article')
+  const [filterType, setFilterType] = React.useState<FrontendContentType>(initialType)
   const [selectedId, setSelectedId] = React.useState<string | null>(null)
-  const [draft, setDraft] = React.useState<FrontendContentDraft>(() => makeDraft())
+  const [draft, setDraft] = React.useState<FrontendContentDraft>(() => makeDraft(initialType))
   const [busy, setBusy] = React.useState('')
   const [vertexTopic, setVertexTopic] = React.useState('')
   const [message, setMessage] = React.useState('')
@@ -118,6 +119,19 @@ export function AdminContentManager({ embedded = false, adminVerified = false }:
 
   const landingTeaser = items.find((item) => item.content_type === 'video_teaser' && item.slug === LANDING_SLUG)
     || items.find((item) => item.content_type === 'video_teaser' && item.published)
+
+  React.useEffect(() => {
+    if (!contentType) return
+    setFilterType(contentType)
+    if (contentType === 'video_teaser' && landingTeaser) {
+      setSelectedId(landingTeaser.id)
+      setDraft(toDraft(landingTeaser))
+    } else {
+      setSelectedId(null)
+      setDraft(makeDraft(contentType))
+    }
+    setError('')
+  }, [contentType, landingTeaser?.id])
 
   const saveLandingCount = async (show: boolean) => {
     if (!user || !aal2 || !isAdmin) return
@@ -237,12 +251,12 @@ export function AdminContentManager({ embedded = false, adminVerified = false }:
   if (!aal2) return <div className="rounded-xl border border-border/70 p-6"><KeyRound className="h-7 w-7" /><h2 className="mt-3 text-lg font-semibold">Verify TOTP</h2>{factorId ? <form onSubmit={verifyTotp} className="mt-4 flex max-w-md gap-2"><input value={totpCode} onChange={(event) => setTotpCode(event.target.value.replace(/\D/g, '').slice(0, 8))} inputMode="numeric" className="h-10 min-w-0 flex-1 rounded-xl border border-input bg-background px-3" placeholder="Authenticator code" /><button disabled={busy === 'totp' || !totpCode} className="rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">Verify</button></form> : <p className="mt-2 text-sm text-muted-foreground">Enroll TOTP in Settings → Security first.</p>}</div>
 
   return <div className="w-full space-y-4">
-    <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-sm font-semibold">Content</h2><p className="mt-1 text-xs text-muted-foreground">Publish blog articles and manage the homepage walkthrough.</p></div><div className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400"><CheckCircle2 className="h-3.5 w-3.5" /> Admin · TOTP</div></div>
-    <div className="flex flex-wrap gap-1">{MANAGED_TYPES.map((type) => <button key={type} onClick={() => { setFilterType(type); setSelectedId(null); setDraft(type === 'video_teaser' && landingTeaser ? toDraft(landingTeaser) : makeDraft(type)); if (type === 'video_teaser' && landingTeaser) setSelectedId(landingTeaser.id) }} className={`rounded-xl px-3 py-1.5 text-xs font-medium ${filterType === type ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{type === 'blog_article' ? 'Blog' : 'Video'}</button>)}</div>
+    <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-sm font-semibold">{filterType === 'blog_article' ? 'Blog content' : 'Landing content'}</h2><p className="mt-1 text-xs text-muted-foreground">{filterType === 'blog_article' ? 'Draft and publish public blog articles.' : 'Manage the public landing page walkthrough and presentation.'}</p></div><div className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400"><CheckCircle2 className="h-3.5 w-3.5" /> Admin · TOTP</div></div>
+    {!contentType && <div className="flex flex-wrap gap-1">{MANAGED_TYPES.map((type) => <button key={type} onClick={() => { setFilterType(type); setSelectedId(null); setDraft(type === 'video_teaser' && landingTeaser ? toDraft(landingTeaser) : makeDraft(type)); if (type === 'video_teaser' && landingTeaser) setSelectedId(landingTeaser.id) }} className={`rounded-xl px-3 py-1.5 text-xs font-medium ${filterType === type ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{type === 'blog_article' ? 'Blog' : 'Landing'}</button>)}</div>}
     {message && <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-2 text-xs text-emerald-600 dark:text-emerald-400">{message}</div>}
     {error && <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive">{error}</div>}
 
-    <section className="rounded-xl border border-border/70 p-4" aria-label="Landing page presentation"><h3 className="text-sm font-semibold">Landing page</h3><label className="mt-3 flex items-center gap-3 text-sm"><input type="checkbox" checked={landingTeaser?.metadata.show_active_app_count !== false} disabled={Boolean(busy)} onChange={(event) => void saveLandingCount(event.target.checked)} />Show active app count and open-source row</label><p className="mt-2 text-xs text-muted-foreground">Applies to the public landing and sign-in pages. Changes save immediately.</p></section>
+    {filterType === 'video_teaser' && <section className="rounded-xl border border-border/70 p-4" aria-label="Landing page presentation"><h3 className="text-sm font-semibold">Landing page</h3><label className="mt-3 flex items-center gap-3 text-sm"><input type="checkbox" checked={landingTeaser?.metadata.show_active_app_count !== false} disabled={Boolean(busy)} onChange={(event) => void saveLandingCount(event.target.checked)} />Show active app count and open-source row</label><p className="mt-2 text-xs text-muted-foreground">Applies to the public landing and sign-in pages. Changes save immediately.</p></section>}
     <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
       <aside className="rounded-xl border border-border/70 bg-background/40 p-3"><button onClick={newItem} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-border/70 text-sm font-semibold hover:bg-accent"><Plus className="h-4 w-4" /> {filterType === 'video_teaser' && landingTeaser ? 'Open walkthrough' : 'New'}</button><div className="mt-3 space-y-2">{visible.map((item) => <button key={item.id} onClick={() => selectItem(item)} className={`w-full rounded-xl border p-3 text-left ${selectedId === item.id ? 'border-foreground/30 bg-accent/50' : 'border-border/60 hover:bg-accent/25'}`}><div className="truncate text-sm font-medium">{item.title}</div><div className="mt-1 truncate text-[11px] text-muted-foreground">{item.slug}</div></button>)}{!visible.length && <div className="p-4 text-center text-xs text-muted-foreground">No items.</div>}</div></aside>
 
