@@ -144,6 +144,7 @@ export function DesktopBuddyOverlay() {
 
   React.useEffect(() => {
     const onAgentResponse = (event: Event) => {
+      if (window.location.pathname === '/apps/desktop-buddy') return
       const detail = (event as CustomEvent<{ text?: string; createdAt?: string }>).detail
       present(String(detail?.text || ''), detail?.createdAt || '')
     }
