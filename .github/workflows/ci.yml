@@ -31,7 +31,7 @@ jobs:
           cache: npm
 
       - name: Normalize design source once
-        if: github.event_name == 'push' && github.event.head_commit.message == 'chore(design): run source normalizer'
+        if: "github.event_name == 'push' && github.event.head_commit.message == 'chore(design): run source normalizer'"
         run: |
           node scripts/normalize-design.mjs --write
           if ! git diff --quiet -- src; then
