@@ -7,6 +7,11 @@ import { PublicHeader } from "./PublicHeader";
 
 type InlinePart = { type: "text" | "code" | "strong" | "link"; value: string; href?: string };
 
+type TableBlock = {
+  headers: string[];
+  rows: string[][];
+};
+
 const docsBase = () => window.location.hostname.toLowerCase() === "docs.sstoken.space" ? "" : "/docs";
 const legacyDocSlug = (value: string) => {
   const clean = value.replace(/^\.\//, "").replace(/^\/+/g, "").replace(/\.md$/i, "").replace(/\/+$/g, "");
@@ -57,6 +62,9 @@ const InlineMarkdown = ({ text }: { text: string }) => (
   </>
 );
 
+const parseTableRow = (line: string) => line.trim().replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim());
+const isTableSeparator = (line: string) => /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
+
 function MarkdownDocument({ body }: { body: string }) {
   const markdown = body.replace(/^---\s*\n[\s\S]*?\n---\s*\n?/, "");
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
@@ -65,17 +73,18 @@ function MarkdownDocument({ body }: { body: string }) {
   let list: { ordered: boolean; items: string[] } | null = null;
   let code: string[] | null = null;
   let codeLanguage = "";
+  let table: TableBlock | null = null;
 
   const flushParagraph = () => {
     if (!paragraph.length) return;
     const text = paragraph.join(" ").trim();
-    if (text) nodes.push(<p key={`p-${nodes.length}`} className="text-sm leading-7 text-muted-foreground"><InlineMarkdown text={text} /></p>);
+    if (text) nodes.push(<p key={`p-${nodes.length}`} className="text-sm text-muted-foreground"><InlineMarkdown text={text} /></p>);
     paragraph = [];
   };
   const flushList = () => {
     if (!list) return;
     const Tag = list.ordered ? "ol" : "ul";
-    nodes.push(<Tag key={`l-${nodes.length}`} className={`${list.ordered ? "list-decimal" : "list-disc"} space-y-2 pl-8 text-sm leading-7 text-muted-foreground`}>{list.items.map((item, index) => <li key={index}><InlineMarkdown text={item} /></li>)}</Tag>);
+    nodes.push(<Tag key={`l-${nodes.length}`} className={`${list.ordered ? "list-decimal" : "list-disc"} space-y-2 pl-8 text-sm text-muted-foreground`}>{list.items.map((item, index) => <li key={index}><InlineMarkdown text={item} /></li>)}</Tag>);
     list = null;
   };
   const flushCode = () => {
@@ -84,8 +93,25 @@ function MarkdownDocument({ body }: { body: string }) {
     code = null;
     codeLanguage = "";
   };
+  const flushTable = () => {
+    if (!table) return;
+    nodes.push(
+      <div key={`t-${nodes.length}`} className="overflow-x-auto rounded-xl border border-border/70">
+        <table className="w-full min-w-[640px] border-collapse text-left text-sm">
+          <thead className="bg-muted/40 text-foreground">
+            <tr>{table.headers.map((cell, index) => <th key={index} className="border-b border-border/70 p-4 font-semibold"><InlineMarkdown text={cell} /></th>)}</tr>
+          </thead>
+          <tbody className="text-muted-foreground">
+            {table.rows.map((row, rowIndex) => <tr key={rowIndex} className="border-b border-border/50 last:border-b-0">{row.map((cell, cellIndex) => <td key={cellIndex} className="p-4 align-top"><InlineMarkdown text={cell} /></td>)}</tr>)}
+          </tbody>
+        </table>
+      </div>,
+    );
+    table = null;
+  };
 
-  for (const line of lines) {
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
     if (code) {
       if (line.trim().startsWith("```")) flushCode();
       else code.push(line);
@@ -94,9 +120,25 @@ function MarkdownDocument({ body }: { body: string }) {
     if (line.trim().startsWith("```")) {
       flushParagraph();
       flushList();
+      flushTable();
       code = [];
       codeLanguage = line.trim().slice(3).trim();
       continue;
+    }
+    if (line.includes("|") && index + 1 < lines.length && isTableSeparator(lines[index + 1])) {
+      flushParagraph();
+      flushList();
+      flushTable();
+      table = { headers: parseTableRow(line), rows: [] };
+      index += 1;
+      continue;
+    }
+    if (table) {
+      if (line.trim() && line.includes("|")) {
+        table.rows.push(parseTableRow(line));
+        continue;
+      }
+      flushTable();
     }
     const heading = line.match(/^(#{1,3})\s+(.+)$/);
     if (heading) {
@@ -104,7 +146,7 @@ function MarkdownDocument({ body }: { body: string }) {
       flushList();
       const level = heading[1].length;
       const text = heading[2].replace(/\s+#+$/, "").trim();
-      if (level === 1) nodes.push(<h1 key={`h-${nodes.length}`} className="text-3xl font-semibold tracking-[-0.04em]"><InlineMarkdown text={text} /></h1>);
+      if (level === 1) nodes.push(<h1 key={`h-${nodes.length}`} className="text-lg font-semibold tracking-[-0.04em]"><InlineMarkdown text={text} /></h1>);
       else if (level === 2) nodes.push(<h2 key={`h-${nodes.length}`} className="pt-4 text-lg font-semibold tracking-[-0.02em]"><InlineMarkdown text={text} /></h2>);
       else nodes.push(<h3 key={`h-${nodes.length}`} className="pt-2 text-sm font-semibold"><InlineMarkdown text={text} /></h3>);
       continue;
@@ -123,12 +165,13 @@ function MarkdownDocument({ body }: { body: string }) {
     if (line.startsWith("> ")) {
       flushParagraph();
       flushList();
-      nodes.push(<blockquote key={`q-${nodes.length}`} className="rounded-xl border border-border/70 bg-muted/30 p-4 text-sm leading-7 text-muted-foreground"><InlineMarkdown text={line.slice(2)} /></blockquote>);
+      nodes.push(<blockquote key={`q-${nodes.length}`} className="rounded-xl border border-border/70 bg-muted/30 p-4 text-sm text-muted-foreground"><InlineMarkdown text={line.slice(2)} /></blockquote>);
       continue;
     }
     if (!line.trim()) {
       flushParagraph();
       flushList();
+      flushTable();
       continue;
     }
     paragraph.push(line.trim());
@@ -136,6 +179,7 @@ function MarkdownDocument({ body }: { body: string }) {
   flushParagraph();
   flushList();
   flushCode();
+  flushTable();
   return <div className="space-y-4">{nodes}</div>;
 }
 
@@ -179,7 +223,7 @@ export function DocsPage({ slug }: { slug?: string }) {
       <PublicHeader />
       <main className="mx-auto grid w-full max-w-7xl flex-1 gap-8 px-4 py-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:px-8">
         <aside className="lg:sticky lg:top-24 lg:self-start" aria-label="Documentation navigation">
-          <div className="rounded-xl border border-border/70 bg-background/40 p-4">
+          <div className="surface-panel p-4">
             <Link to={docsHref("index")} className="flex items-center gap-2 text-sm font-semibold"><FileText className="h-4 w-4" /> AppForge Docs</Link>
             <nav className="mt-4 space-y-2">
               {navigation.map((item) => {
@@ -191,9 +235,9 @@ export function DocsPage({ slug }: { slug?: string }) {
         </aside>
         <section className="min-w-0">
           {loading && <div className="flex min-h-[40vh] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>}
-          {!loading && error && <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</div>}
-          {!loading && !error && !page && <div className="rounded-xl border border-border/70 bg-background/40 p-8 text-center"><h1 className="text-lg font-semibold">Documentation page not found</h1><Link to={docsHref("index")} className="mt-4 inline-flex text-sm font-semibold underline">Back to docs</Link></div>}
-          {!loading && page && <article className="rounded-xl border border-border/70 bg-background/35 p-4 sm:p-8"><MarkdownDocument body={page.body || page.summary || ""} /></article>}
+          {!loading && error && <div className="surface-panel p-4 text-sm text-destructive">{error}</div>}
+          {!loading && !error && !page && <div className="surface-panel p-8 text-center"><h1 className="text-lg font-semibold">Documentation page not found</h1><Link to={docsHref("index")} className="mt-4 inline-flex text-sm font-semibold underline">Back to docs</Link></div>}
+          {!loading && page && <article className="surface-card p-4 sm:p-8"><MarkdownDocument body={page.body || page.summary || ""} /></article>}
         </section>
       </main>
       <PublicFooter />
