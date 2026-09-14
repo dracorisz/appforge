@@ -202,13 +202,13 @@ export function PF_CreatorSVG() {
   }, [previewUrl])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <AppHeading />
           <h2 className="text-lg font-semibold text-foreground dark:text-foreground">Configuration</h2>
-          <div className="mt-3 flex flex-wrap gap-2"><Button variant="secondary" size="sm" onClick={() => applyPreset('portfolio')}>Portfolio</Button><Button variant="secondary" size="sm" onClick={() => applyPreset('consulting')}>Consulting</Button><Button variant="secondary" size="sm" onClick={() => applyPreset('open-source')}>Open source</Button></div>
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 flex flex-wrap gap-2"><Button variant="secondary" size="sm" onClick={() => applyPreset('portfolio')}>Portfolio</Button><Button variant="secondary" size="sm" onClick={() => applyPreset('consulting')}>Consulting</Button><Button variant="secondary" size="sm" onClick={() => applyPreset('open-source')}>Open source</Button></div>
+          <div className="mt-4 space-y-4">
             <Input label="Name" value={config.name} onChange={(e) => update({ name: e.target.value })} />
             <Input label="Title" value={config.title} onChange={(e) => update({ title: e.target.value })} />
             <Input label="Experience" value={config.experience} onChange={(e) => update({ experience: e.target.value })} />

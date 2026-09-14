@@ -166,7 +166,7 @@ export function AuthEmailFlowPage({ mode }: { mode: Mode }) {
       <Card className="w-full p-8 shadow-xl">
         <div className="flex items-start gap-4">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border/70 bg-accent/50">{mode === 'confirm' ? <MailCheck className="h-4 w-4" /> : <KeyRound className="h-4 w-4" />}</div>
-          <div><h1 className="text-xl font-semibold tracking-tight">{title}</h1><p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p></div>
+          <div><h1 className="text-lg font-semibold tracking-tight">{title}</h1><p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p></div>
         </div>
 
         {state === 'loading' && mode !== 'forgot' && <div className="mt-4 flex items-center gap-2 rounded-xl border border-border/70 p-4 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Verifying secure email session…</div>}

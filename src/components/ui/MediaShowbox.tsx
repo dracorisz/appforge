@@ -70,9 +70,9 @@ export function MediaShowbox({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-[60] flex h-[100dvh] min-h-[100dvh] w-screen items-center justify-center overflow-y-auto bg-black/85 p-2 backdrop-blur-sm sm:p-3" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-[60] flex h-[100dvh] min-h-[100dvh] w-screen items-center justify-center overflow-y-auto bg-black/85 p-2 backdrop-blur-sm sm:p-4" onMouseDown={onClose}>
       <section role="dialog" aria-modal="true" aria-label={title} onMouseDown={(event) => event.stopPropagation()} className="flex max-h-[calc(100dvh-1rem)] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-white/10 bg-background sm:max-h-[calc(100dvh-1.5rem)]">
-        <header className="flex min-h-10 items-center gap-3 border-b border-border/70 px-3">
+        <header className="flex min-h-10 items-center gap-4 border-b border-border/70 px-4">
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-sm font-semibold text-foreground">{title}</h2>
             <p className="truncate text-xs text-muted-foreground">{source}</p>
@@ -88,11 +88,11 @@ export function MediaShowbox({
           ) : mediaUrl ? (
             <video src={mediaUrl} poster={thumbnail} controls autoPlay preload="metadata" className="max-h-[62dvh] max-w-full bg-black" />
           ) : (
-            <div className="py-20 text-center text-sm text-muted-foreground">Preview unavailable for this source.</div>
+            <div className="py-8 text-center text-sm text-muted-foreground">Preview unavailable for this source.</div>
           )}
         </div>
 
-        {(note || onDownload || originalUrl) && <footer className="flex flex-col gap-2 border-t border-border/70 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+        {(note || onDownload || originalUrl) && <footer className="flex flex-col gap-2 border-t border-border/70 px-4 py-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0 text-xs text-muted-foreground">{note || 'Preview'}</div>
           <div className="flex shrink-0 gap-2">
             {onDownload && <Button variant="secondary" size="sm" onClick={onDownload} disabled={downloading}>{downloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}{downloadLabel}</Button>}

@@ -6,8 +6,8 @@ export function Footer({ version: _version }: { version?: string }) {
   const navigate = useNavigate()
 
   return (
-    <footer className="no-print border-t border-border/70 bg-background/72 py-2.5 backdrop-blur-xl">
-      <div className="flex flex-col gap-1.5 px-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+    <footer className="no-print border-t border-border/70 bg-background/72 py-2 backdrop-blur-xl">
+      <div className="flex flex-col gap-2 px-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <span className="truncate">AppForge — Simple, powerful tools</span>
         <button
           onClick={() => navigate('/')}

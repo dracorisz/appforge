@@ -30,9 +30,9 @@ export function Button({
     destructive: "border border-destructive/90 bg-destructive text-destructive-foreground hover:bg-destructive/90",
   };
   const sizes = {
-    sm: "min-h-8 max-h-8 px-3 py-0 text-xs",
+    sm: "min-h-8 max-h-8 px-4 py-2 text-xs",
     md: "min-h-10 px-4 py-2 text-sm",
-    lg: "min-h-11 px-6 py-2.5 text-sm",
+    lg: "min-h-11 px-4 py-2 text-sm",
   };
   return (
     <button {...props} type={type} title={title} className={`${base} ${variants[variant]} ${sizes[size]} ${className}`} disabled={disabled} onClick={onClick}>

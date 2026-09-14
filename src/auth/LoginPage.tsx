@@ -147,31 +147,31 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
 
         <PublicHeader className="shrink-0" />
 
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-8 pt-3 sm:px-6 sm:pt-6 lg:px-8">
-          <div className="grid items-center gap-8 lg:min-h-[calc(100dvh-8rem)] lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] lg:gap-10 xl:gap-12">
+        <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-8 pt-4 sm:px-4 sm:pt-4 lg:px-8">
+          <div className="grid items-center gap-8 lg:min-h-[calc(100dvh-8rem)] lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] lg:gap-8 xl:gap-8">
             <section className="max-w-4xl py-4 lg:py-8">
-              <h1 className="max-w-4xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-6xl lg:text-[4.15rem] lg:leading-[1.02] xl:text-[4.55rem]">
+              <h1 className="max-w-4xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-5xl lg:text-5xl lg:leading-[1.02] xl:text-5xl">
                 Build useful things.<span className="block text-muted-foreground">Own the workflow.</span>
               </h1>
-              <p className="mt-5 max-w-2xl text-pretty text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">Practical tools in one consistent workspace.</p>
-              <div className="mt-7 flex flex-wrap gap-3" aria-busy={Boolean(busyProvider) || loading}>
+              <p className="mt-4 max-w-2xl text-pretty text-sm leading-7 text-muted-foreground sm:text-lg sm:leading-8">Practical tools in one consistent workspace.</p>
+              <div className="mt-8 flex flex-wrap gap-4" aria-busy={Boolean(busyProvider) || loading}>
                 {user ? (
-                  <Button className="h-11 px-5" onClick={() => navigate("/")} disabled={loading}>
+                  <Button className="h-11 px-4" onClick={() => navigate("/")} disabled={loading}>
                     Open workspace <ArrowRight className="h-4 w-4" />
                   </Button>
                 ) : (
-                  <Button className="h-11 px-5" onClick={() => setAuthOpen(true)} disabled={loading}>
+                  <Button className="h-11 px-4" onClick={() => setAuthOpen(true)} disabled={loading}>
                     Sign in <ArrowRight className="h-4 w-4" />
                   </Button>
                 )}
               </div>
               {error && (
-                <div role="alert" aria-live="polite" className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                <div role="alert" aria-live="polite" className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-2 text-sm text-destructive">
                   {error}
                 </div>
               )}
               {showAppCount && (
-                <p className="mt-8 border-t border-border/60 pt-5 text-xs text-muted-foreground">
+                <p className="mt-8 border-t border-border/60 pt-4 text-xs text-muted-foreground">
                   <strong className="font-semibold text-foreground">{appCount}</strong> active apps · open source
                 </p>
               )}
@@ -179,9 +179,9 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
 
             <section className="relative mx-auto w-full max-w-xl lg:max-w-none" aria-label="Public tools and workspace access">
               <div aria-hidden="true" className="absolute inset-8 -z-10 rounded-xl border border-border/50 bg-accent/25 blur-2xl" />
-              <div className="rounded-xl border border-border/70 bg-background/80 p-4 backdrop-blur-xl sm:p-5">
+              <div className="rounded-xl border border-border/70 bg-background/80 p-4 backdrop-blur-xl sm:p-4">
                 <div className="flex items-center justify-between gap-4 border-b border-border/60 pb-4">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-background">
                       <img src={APPFORGE_MARK} alt="" className="h-9 w-9 rounded-xl" decoding="async" />
                     </div>
@@ -194,7 +194,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                 </div>
                 <div className="grid gap-2 py-4">
                   {publicTools.map(({ label, description, path, icon: Icon }) => (
-                    <Link key={path} to={path} className="group flex min-h-14 items-center gap-3 rounded-xl border border-border/70 px-3 py-3 transition-colors hover:border-border/70 hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                    <Link key={path} to={path} className="group flex min-h-14 items-center gap-4 rounded-xl border border-border/70 px-4 py-4 transition-colors hover:border-border/70 hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-background">
                         <Icon className="h-4 w-4" />
                       </span>
@@ -206,11 +206,11 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                     </Link>
                   ))}
                 </div>
-                <Link to="/explore" className="group flex min-h-12 items-center justify-between rounded-xl border border-border/70 bg-background/65 px-3 py-3 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                <Link to="/explore" className="group flex min-h-12 items-center justify-between rounded-xl border border-border/70 bg-background/65 px-4 py-4 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                   <span>Browse all public apps</span>
                   <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                 </Link>
-                <Link to="/huggingface" className="group flex min-h-12 items-center justify-between rounded-xl border border-border/70 bg-background/65 px-3 py-3 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                <Link to="/huggingface" className="group flex min-h-12 items-center justify-between rounded-xl border border-border/70 bg-background/65 px-4 py-4 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                   <span className="flex items-center gap-2">
                     <HuggingFaceLogo className="h-4 w-4 text-[#FF9D00]" /> Hugging Face integration
                   </span>
@@ -220,24 +220,24 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
             </section>
           </div>
 
-          {/* <section className="border-t border-border/60 py-8 sm:py-10" aria-labelledby="about-appforge-title">
+          {/* <section className="border-t border-border/60 py-8 sm:py-8" aria-labelledby="about-appforge-title">
             <div className="md:col-span-1 m-auto text-center">
-              <h2 id="about-appforge-title" className="text-xl font-semibold tracking-tight">Open source. Private by design.</h2>
+              <h2 id="about-appforge-title" className="text-lg font-semibold tracking-tight">Open source. Private by design.</h2>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">AppForge combines public tools with an authenticated workspace, keeping local work in-browser where practical and using protected persistence only where it adds value.</p>
             </div>
-            <div className="grid gap-4 md:grid-cols-2 mt-3">
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4"><div className="text-sm font-semibold">Consistent tools</div><p className="mt-1 text-xs leading-5 text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p></div>
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4"><div className="text-sm font-semibold">Transparent project</div><p className="mt-1 text-xs leading-5 text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p></div>
+            <div className="grid gap-4 md:grid-cols-2 mt-4">
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4"><div className="text-sm font-semibold">Consistent tools</div><p className="mt-2 text-xs leading-5 text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p></div>
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4"><div className="text-sm font-semibold">Transparent project</div><p className="mt-2 text-xs leading-5 text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p></div>
             </div>
           </section> */}
 
-          <section className="border-t border-border/60 py-8 sm:py-10" aria-labelledby="walkthrough-title">
-            <div className="grid gap-5 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
-              <div className="lg:pr-3">
+          <section className="border-t border-border/60 py-8 sm:py-8" aria-labelledby="walkthrough-title">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
+              <div className="lg:pr-4">
                 <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   <PlayCircle className="h-4 w-4" /> Walkthrough
                 </div>
-                <h2 id="walkthrough-title" className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+                <h2 id="walkthrough-title" className="mt-2 text-lg font-semibold tracking-tight sm:text-lg">
                   {videoTitle}
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{videoSummary}</p>
@@ -275,17 +275,17 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
               if (event.target === event.currentTarget) setAuthOpen(false);
             }}
           >
-            <div className="w-full max-w-md rounded-xl border border-border/70 bg-background p-5 shadow-xl">
-              <div className="flex items-start justify-between gap-3">
+            <div className="w-full max-w-md rounded-xl border border-border/70 bg-background p-4 shadow-xl">
+              <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-semibold">Sign in to AppForge</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">Use email or a connected provider.</p>
+                  <h2 className="text-lg font-semibold">Sign in to AppForge</h2>
+                  <p className="mt-2 text-sm text-muted-foreground">Use email or a connected provider.</p>
                 </div>
                 <button type="button" onClick={() => setAuthOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close sign in">
                   <span aria-hidden="true">×</span>
                 </button>
               </div>
-              <div className="mt-5 grid gap-2 grid-cols-2">
+              <div className="mt-4 grid gap-2 grid-cols-2">
                 <Button onClick={() => void login("google")} disabled={Boolean(busyProvider) || loading}>
                   <Google className="h-4 w-4" /> Continue with Google
                 </Button>
@@ -293,7 +293,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                   <Github className="h-4 w-4" /> Continue with GitHub
                 </Button>
               </div>
-              <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="my-4 flex items-center gap-4 text-xs text-muted-foreground">
                 <span className="h-px flex-1 bg-border" />
                 or email
                 <span className="h-px flex-1 bg-border" />
@@ -311,15 +311,15 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                   }
                 }}
               >
-                <input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm" />
-                <input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm" />
+                <input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="h-10 w-full rounded-xl border border-input bg-background px-4 text-sm" />
+                <input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" className="h-10 w-full rounded-xl border border-input bg-background px-4 text-sm" />
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs"><Link to="/auth/forgot-password" onClick={() => setAuthOpen(false)} className="font-medium text-foreground hover:underline">Forgot password?</Link><Link to="/auth/confirm" onClick={() => setAuthOpen(false)} className="text-muted-foreground hover:text-foreground hover:underline">Resend confirmation</Link></div>
                 <Button type="submit" className="w-full" disabled={!email.trim() || !password}>
                   Sign in with email
                 </Button>
               </form>
               {error && (
-                <div role="alert" className="mt-3 rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                <div role="alert" className="mt-4 rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-2 text-sm text-destructive">
                   {error}
                 </div>
               )}

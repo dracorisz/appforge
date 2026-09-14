@@ -38,16 +38,16 @@ export function WidgetPreferencePanel({ kind }: { kind: Kind }) {
 
   const Icon = item.icon
   return (
-    <Card className="mb-5 p-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-start gap-2.5">
-          <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+    <Card className="mb-4 p-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-start gap-2">
+          <Icon className="mt-2 h-4 w-4 shrink-0 text-muted-foreground" />
           <div className="min-w-0">
             <h2 className="text-sm font-semibold text-foreground">{item.title}</h2>
-            <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">{item.description}</p>
+            <p className="mt-2 max-w-2xl text-xs leading-5 text-muted-foreground">{item.description}</p>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-3 self-end sm:self-auto">
+        <div className="flex shrink-0 items-center gap-4 self-end sm:self-auto">
           <span className="text-xs font-medium text-muted-foreground">{enabled ? 'On' : 'Off'}</span>
           <Switch checked={enabled} onCheckedChange={(checked) => { setWidgetEnabled(item.preference, checked); setEnabled(checked) }} label={item.label} />
         </div>

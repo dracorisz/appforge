@@ -8,15 +8,15 @@ const LAST_UPDATED = 'September 11, 2026'
 function LegalShell({ title, intro, children }: { title: string; intro: string; children: React.ReactNode }) {
   return (
     <div className="dark flex min-h-screen flex-col bg-background text-foreground"><PublicHeader />
-      <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-4 lg:px-8">
         <main className="py-8">
           <div className="mb-8">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-xl border border-border/70 bg-background/55 px-3 py-1.5 text-xs font-medium text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5" /> Public beta policy</div>
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">{intro}</p>
+            <div className="mb-4 inline-flex items-center gap-2 rounded-xl border border-border/70 bg-background/55 px-4 py-2 text-xs font-medium text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5" /> Public beta policy</div>
+            <h1 className="text-lg font-semibold tracking-tight sm:text-lg">{title}</h1>
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-sm">{intro}</p>
             <p className="mt-2 text-xs text-muted-foreground">Last updated: {LAST_UPDATED}</p>
           </div>
-          <div className="surface-card space-y-7 rounded-xl border p-5 text-sm leading-7 sm:p-7 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_p]:text-muted-foreground [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:text-muted-foreground">{children}</div>
+          <div className="surface-card space-y-8 rounded-xl border p-4 text-sm leading-7 sm:p-8 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_p]:text-muted-foreground [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:text-muted-foreground">{children}</div>
         </main>
       </div>
       <PublicFooter />

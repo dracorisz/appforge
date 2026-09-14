@@ -6,13 +6,13 @@ import { BUILD_INFO } from '@/lib/buildInfo'
 
 const APPFORGE_MARK = '/favicon.svg?v=2'
 
-const navItemClass = 'inline-flex h-9 items-center gap-2 rounded-xl border border-border/70 bg-background/70 px-3 text-xs font-semibold text-muted-foreground transition-[border-color,background-color,color,box-shadow] hover:border-foreground/25 hover:text-foreground hover:focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+const navItemClass = 'inline-flex h-9 items-center gap-2 rounded-xl border border-border/70 bg-background/70 px-4 text-xs font-semibold text-muted-foreground transition-[border-color,background-color,color,box-shadow] hover:border-foreground/25 hover:text-foreground hover:focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
 
 export function PublicHeader({ className = '' }: { className?: string }) {
   return (
     <header className={`sticky top-0 z-40 border-b border-border/60 bg-black/90 backdrop-blur-xl ${className}`}>
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <Link to="/landing" className="group inline-flex items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-4 lg:px-8">
+        <Link to="/landing" className="group inline-flex items-center gap-4 rounded-xl focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
           <img src={APPFORGE_MARK} alt="AppForge" className="h-10 w-10 shrink-0 rounded-xl" decoding="async" />
           <span className="text-sm font-semibold tracking-tight">AppForge</span>
         </Link>
@@ -33,7 +33,7 @@ export function PublicHeader({ className = '' }: { className?: string }) {
             <span className="hidden sm:inline">Support</span>
           </a>
           
-          {/* <span className="inline-flex h-9 items-center rounded-xl border border-border/70 bg-background/70 px-3 text-xs font-semibold text-muted-foreground">v{BUILD_INFO.version}</span> */}
+          {/* <span className="inline-flex h-9 items-center rounded-xl border border-border/70 bg-background/70 px-4 text-xs font-semibold text-muted-foreground">v{BUILD_INFO.version}</span> */}
         </nav>
       </div>
     </header>

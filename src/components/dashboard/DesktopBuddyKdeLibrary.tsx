@@ -71,29 +71,29 @@ export function DesktopBuddyKdeLibrary() {
   }
 
   return (
-    <section className="w-full rounded-xl border bg-card p-5 md:p-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+    <section className="w-full rounded-xl border bg-card p-4 md:p-4">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold">KDE Community library</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Choose verified Konqi and Katie artwork from the KDE Community Wiki. Source, author and license metadata stay attached to the selected character.</p>
         </div>
-        <a href="https://community.kde.org/Promo/Material/Mascots" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium hover:bg-accent">KDE mascot catalog <ExternalLink className="h-3.5 w-3.5" /></a>
+        <a href="https://community.kde.org/Promo/Material/Mascots" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-xs font-medium hover:bg-accent">KDE mascot catalog <ExternalLink className="h-3.5 w-3.5" /></a>
       </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {KDE_BUDDY_LIBRARY.map((starter) => {
           const source = sourceUrl(starter.file)
           const active = currentSource === source
           return (
             <article key={starter.id} className={`flex h-full min-h-[20rem] flex-col overflow-hidden rounded-xl border bg-background/40 ${active ? 'ring-1 ring-primary/35' : ''}`}>
-              <div className="grid h-36 place-items-center border-b border-border/60 bg-muted/20 p-3 sm:h-40">
+              <div className="grid h-36 place-items-center border-b border-border/60 bg-muted/20 p-4 sm:h-40">
                 <img src={imageUrl(starter.file)} alt={starter.name} loading="lazy" className="h-28 w-28 object-contain sm:h-32 sm:w-32" />
               </div>
-              <div className="flex flex-1 flex-col p-3">
-                <div className="flex min-h-10 items-start justify-between gap-2"><h3 className="text-sm font-semibold leading-5">{starter.name}</h3>{active && <Check className="mt-0.5 h-4 w-4 shrink-0" />}</div>
-                <p className="mt-1 min-h-10 text-[11px] leading-5 text-muted-foreground">{starter.note}</p>
-                <p className="mt-2 min-h-10 text-[10px] leading-4 text-muted-foreground">{starter.author}<br />{starter.license}</p>
-                <div className="mt-auto flex gap-2 pt-3">
+              <div className="flex flex-1 flex-col p-4">
+                <div className="flex min-h-10 items-start justify-between gap-2"><h3 className="text-sm font-semibold leading-5">{starter.name}</h3>{active && <Check className="mt-2 h-4 w-4 shrink-0" />}</div>
+                <p className="mt-2 min-h-10 text-xs leading-5 text-muted-foreground">{starter.note}</p>
+                <p className="mt-2 min-h-10 text-xs leading-4 text-muted-foreground">{starter.author}<br />{starter.license}</p>
+                <div className="mt-auto flex gap-2 pt-4">
                   <button type="button" onClick={() => selectStarter(starter)} className="flex-1 rounded-xl border px-2 py-2 text-xs font-semibold hover:bg-accent">{active ? 'Active' : 'Use character'}</button>
                   <a href={source} target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-xl border text-muted-foreground hover:bg-accent hover:text-foreground" aria-label={`Open source page for ${starter.name}`}><ExternalLink className="h-3.5 w-3.5" /></a>
                 </div>

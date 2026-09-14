@@ -54,7 +54,7 @@ export function Layout({ children, currentVersion }: { children: React.ReactNode
             {showProjectPulse && <ProjectPulse />}
             <div className={isAppRoute ? 'app-unified-shell w-full' : 'w-full'}>
               {isAppRoute && (
-                <section className="app-page-header surface-card mb-5 rounded-xl border border-border/80 p-4 sm:p-5">
+                <section className="app-page-header surface-card mb-4 rounded-xl border border-border/80 p-4 sm:p-4">
                   <AppHeading />
                 </section>
               )}

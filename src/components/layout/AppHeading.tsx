@@ -14,9 +14,9 @@ export function AppHeading() {
   if (!app) return null
   const Icon = app.id === 'ai-dragon-arena' ? DragonArenaIcon : icons[app.icon as keyof typeof icons] || Wrench
   return <header className="app-heading w-full min-w-0">
-    <div className="flex min-w-0 items-center gap-2.5">
+    <div className="flex min-w-0 items-center gap-2">
       <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
-      <h1 className="min-w-0 text-2xl font-semibold tracking-tight text-foreground">{app.name}</h1>
+      <h1 className="min-w-0 text-lg font-semibold tracking-tight text-foreground">{app.name}</h1>
     </div>
     <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground text-left">{app.description}</p>
   </header>

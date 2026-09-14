@@ -2,7 +2,7 @@ import { DesktopBuddyTransparencyLab } from '@/components/dashboard/DesktopBuddy
 
 export default function BackgroundRemover() {
   return (
-    <div className="w-full space-y-5">
+    <div className="w-full space-y-4">
       <DesktopBuddyTransparencyLab standalone />
     </div>
   )

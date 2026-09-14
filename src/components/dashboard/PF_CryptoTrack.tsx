@@ -182,25 +182,25 @@ export function PF_CryptoTrack() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <AppHeading />
 
       <Card>
-        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-end">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-end">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">Search market</label>
+            <label className="mb-2 block text-sm font-medium text-foreground">Search market</label>
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Bitcoin, ETH, SOL…"
-                className="pl-9"
+                className="pl-8"
               />
             </div>
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">Provider</label>
+            <label className="mb-2 block text-sm font-medium text-foreground">Provider</label>
             <select
               value={provider}
               onChange={(event) => {
@@ -208,16 +208,16 @@ export function PF_CryptoTrack() {
                 setProvider(next)
                 fetchCoins(next)
               }}
-              className="h-9 rounded-xl border border-input bg-background px-3 text-sm text-foreground"
+              className="h-9 rounded-xl border border-input bg-background px-4 text-sm text-foreground"
             >
               <option value="auto">Auto fallback</option>
               <option value="coingecko">CoinGecko</option>
               <option value="coinpaprika">CoinPaprika</option>
             </select>
           </div>
-          <div className="flex items-center gap-1 rounded-xl border border-border p-1">
-            <button onClick={() => setViewMode('list')} aria-label="List view" className={`rounded-xl p-1.5 ${viewMode === 'list' ? 'bg-accent' : 'text-muted-foreground hover:text-foreground'}`}><List className="h-4 w-4" /></button>
-            <button onClick={() => setViewMode('grid')} aria-label="Grid view" className={`rounded-xl p-1.5 ${viewMode === 'grid' ? 'bg-accent' : 'text-muted-foreground hover:text-foreground'}`}><LayoutGrid className="h-4 w-4" /></button>
+          <div className="flex items-center gap-2 rounded-xl border border-border p-2">
+            <button onClick={() => setViewMode('list')} aria-label="List view" className={`rounded-xl p-2 ${viewMode === 'list' ? 'bg-accent' : 'text-muted-foreground hover:text-foreground'}`}><List className="h-4 w-4" /></button>
+            <button onClick={() => setViewMode('grid')} aria-label="Grid view" className={`rounded-xl p-2 ${viewMode === 'grid' ? 'bg-accent' : 'text-muted-foreground hover:text-foreground'}`}><LayoutGrid className="h-4 w-4" /></button>
           </div>
         </div>
 
@@ -226,27 +226,27 @@ export function PF_CryptoTrack() {
           <button
             type="button"
             onClick={() => setWatchlistOnly((value) => !value)}
-            className={`inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-medium ${watchlistOnly ? 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'border-border text-muted-foreground hover:text-foreground'}`}
+            className={`inline-flex items-center gap-2 rounded-xl border px-2 py-2 text-xs font-medium ${watchlistOnly ? 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'border-border text-muted-foreground hover:text-foreground'}`}
           >
             <Star className={`h-3.5 w-3.5 ${watchlistOnly ? 'fill-current' : ''}`} /> Watchlist {watchlist.size}
           </button>
-          <div className="flex items-center gap-1 rounded-xl border border-border p-1">{(['all', 'gainers', 'losers'] as MarketView[]).map((value) => <button key={value} type="button" onClick={() => setMarketView(value)} className={`rounded-xl px-2 py-1 text-xs font-medium capitalize ${marketView === value ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{value}</button>)}</div>
-          <span className="ml-1 text-xs text-muted-foreground">Sort:</span>
-          <select value={sortBy} onChange={(event) => setSortBy(event.target.value as SortBy)} className="rounded-xl border border-input bg-background px-2 py-1.5 text-xs text-foreground">
+          <div className="flex items-center gap-2 rounded-xl border border-border p-2">{(['all', 'gainers', 'losers'] as MarketView[]).map((value) => <button key={value} type="button" onClick={() => setMarketView(value)} className={`rounded-xl px-2 py-2 text-xs font-medium capitalize ${marketView === value ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{value}</button>)}</div>
+          <span className="ml-2 text-xs text-muted-foreground">Sort:</span>
+          <select value={sortBy} onChange={(event) => setSortBy(event.target.value as SortBy)} className="rounded-xl border border-input bg-background px-2 py-2 text-xs text-foreground">
             <option value="marketCap">Market cap</option>
             <option value="price">Price</option>
             <option value="change24h">24h change</option>
             <option value="name">Name</option>
           </select>
-          <button onClick={() => setSortDir((value) => value === 'asc' ? 'desc' : 'asc')} className="rounded-xl border border-border px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+          <button onClick={() => setSortDir((value) => value === 'asc' ? 'desc' : 'asc')} className="rounded-xl border border-border px-2 py-2 text-xs text-muted-foreground hover:text-foreground">
             {sortDir === 'desc' ? 'Descending' : 'Ascending'}
           </button>
-          <div className="ml-auto flex flex-wrap items-center gap-3 text-xs text-muted-foreground">{resolvedProvider && <span>Source: {resolvedProvider}</span>}{updatedAt && <span>Updated {new Date(updatedAt).toLocaleTimeString()}</span>}</div>
+          <div className="ml-auto flex flex-wrap items-center gap-4 text-xs text-muted-foreground">{resolvedProvider && <span>Source: {resolvedProvider}</span>}{updatedAt && <span>Updated {new Date(updatedAt).toLocaleTimeString()}</span>}</div>
         </div>
 
         {error && (
-          <div className="mt-4 flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <div className="mt-4 flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm text-destructive-foreground">
+            <AlertCircle className="mt-2 h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
@@ -254,45 +254,45 @@ export function PF_CryptoTrack() {
 
       {loading && coins.length === 0 ? (
         <Card>
-          <div className="flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground">
+          <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
             <RefreshCw className="h-4 w-4 animate-spin" /> Loading live market data…
           </div>
         </Card>
       ) : visible.length > 0 ? (
         <>
-          <div className={viewMode === 'grid' ? 'grid gap-3 sm:grid-cols-2 xl:grid-cols-3' : 'space-y-2'}>
+          <div className={viewMode === 'grid' ? 'grid gap-4 sm:grid-cols-2 xl:grid-cols-3' : 'space-y-2'}>
             {visible.map((coin) => {
               const positive = coin.change24h >= 0
               const watching = watchlist.has(coin.id)
 
               return viewMode === 'grid' ? (
                 <Card key={coin.id}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex min-w-0 items-center gap-4">
                       {renderLogo(coin)}
                       <div className="min-w-0">
                         <h2 className="truncate font-semibold text-foreground">{coin.name}</h2>
                         <p className="text-xs font-medium text-muted-foreground">{coin.symbol}</p>
                       </div>
                     </div>
-                    <button onClick={() => toggleWatchlist(coin.id)} aria-label={watching ? 'Remove from watchlist' : 'Add to watchlist'} className={`rounded-xl p-1.5 ${watching ? 'text-amber-500' : 'text-muted-foreground hover:text-foreground'}`}>
+                    <button onClick={() => toggleWatchlist(coin.id)} aria-label={watching ? 'Remove from watchlist' : 'Add to watchlist'} className={`rounded-xl p-2 ${watching ? 'text-amber-500' : 'text-muted-foreground hover:text-foreground'}`}>
                       <Star className={`h-4 w-4 ${watching ? 'fill-current' : ''}`} />
                     </button>
                   </div>
-                  <p className="mt-5 text-2xl font-bold tracking-tight text-foreground">{formatUsd(coin.price)}</p>
-                  <div className={`mt-1 inline-flex items-center gap-1 text-sm font-medium ${positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                  <p className="mt-4 text-lg font-bold tracking-tight text-foreground">{formatUsd(coin.price)}</p>
+                  <div className={`mt-2 inline-flex items-center gap-2 text-sm font-medium ${positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
                     {positive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
                     {positive ? '+' : ''}{coin.change24h.toFixed(2)}%
                   </div>
-                  <div className="mt-5 grid grid-cols-2 gap-2 border-t border-border pt-4">
-                    <div><p className="text-[11px] uppercase tracking-wide text-muted-foreground">Market cap</p><p className="mt-1 text-sm font-medium text-foreground">{formatCompactUsd(coin.marketCap)}</p></div>
-                    <div><p className="text-[11px] uppercase tracking-wide text-muted-foreground">24h volume</p><p className="mt-1 text-sm font-medium text-foreground">{formatCompactUsd(coin.volume24h)}</p></div>
+                  <div className="mt-4 grid grid-cols-2 gap-2 border-t border-border pt-4">
+                    <div><p className="text-xs uppercase tracking-wide text-muted-foreground">Market cap</p><p className="mt-2 text-sm font-medium text-foreground">{formatCompactUsd(coin.marketCap)}</p></div>
+                    <div><p className="text-xs uppercase tracking-wide text-muted-foreground">24h volume</p><p className="mt-2 text-sm font-medium text-foreground">{formatCompactUsd(coin.volume24h)}</p></div>
                   </div>
                 </Card>
               ) : (
-                <Card key={coin.id} className="p-3">
-                  <div className="grid grid-cols-[minmax(160px,1fr)_minmax(100px,.6fr)_minmax(90px,.5fr)_auto] items-center gap-3">
-                    <div className="flex min-w-0 items-center gap-3">
+                <Card key={coin.id} className="p-4">
+                  <div className="grid grid-cols-[minmax(160px,1fr)_minmax(100px,.6fr)_minmax(90px,.5fr)_auto] items-center gap-4">
+                    <div className="flex min-w-0 items-center gap-4">
                       {renderLogo(coin)}
                       <div className="min-w-0">
                         <h2 className="truncate text-sm font-semibold text-foreground">{coin.name}</h2>
@@ -300,11 +300,11 @@ export function PF_CryptoTrack() {
                       </div>
                     </div>
                     <p className="text-right text-sm font-semibold text-foreground">{formatUsd(coin.price)}</p>
-                    <p className={`flex items-center justify-end gap-1 text-right text-sm font-medium ${positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                    <p className={`flex items-center justify-end gap-2 text-right text-sm font-medium ${positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
                       {positive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
                       {positive ? '+' : ''}{coin.change24h.toFixed(2)}%
                     </p>
-                    <button onClick={() => toggleWatchlist(coin.id)} aria-label={watching ? 'Remove from watchlist' : 'Add to watchlist'} className={`rounded-xl p-1.5 ${watching ? 'text-amber-500' : 'text-muted-foreground hover:text-foreground'}`}>
+                    <button onClick={() => toggleWatchlist(coin.id)} aria-label={watching ? 'Remove from watchlist' : 'Add to watchlist'} className={`rounded-xl p-2 ${watching ? 'text-amber-500' : 'text-muted-foreground hover:text-foreground'}`}>
                       <Star className={`h-4 w-4 ${watching ? 'fill-current' : ''}`} />
                     </button>
                   </div>
@@ -315,7 +315,7 @@ export function PF_CryptoTrack() {
 
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, sorted.length)} of {sorted.length}</p>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={() => setPage((value) => Math.max(1, value - 1))} disabled={page === 1}><ChevronLeft className="h-4 w-4" /></Button>
               <span className="px-2 text-xs text-muted-foreground">{page} / {totalPages}</span>
               <Button variant="ghost" size="sm" onClick={() => setPage((value) => Math.min(totalPages, value + 1))} disabled={page >= totalPages}><ChevronRight className="h-4 w-4" /></Button>
@@ -324,10 +324,10 @@ export function PF_CryptoTrack() {
         </>
       ) : (
         <Card>
-          <div className="py-12 text-center">
+          <div className="py-8 text-center">
             <TrendingUp className="mx-auto h-7 w-7 text-muted-foreground" />
-            <h2 className="mt-3 text-sm font-medium text-foreground">{error ? 'Market data unavailable' : watchlistOnly ? 'Your watchlist is empty' : 'No matching assets'}</h2>
-            <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+            <h2 className="mt-4 text-sm font-medium text-foreground">{error ? 'Market data unavailable' : watchlistOnly ? 'Your watchlist is empty' : 'No matching assets'}</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
               {error ? 'Try Auto fallback again. SSToken will use the next provider when the primary source is unavailable.' : watchlistOnly ? 'Star assets from the full market list to keep a lightweight watchlist on this device.' : 'Try a different coin name or symbol.'}
             </p>
           </div>

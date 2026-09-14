@@ -26,10 +26,10 @@ export function PublicAppsPage() {
   return (
     <div className="dark flex min-h-dvh flex-col bg-black text-foreground" style={{ colorScheme: 'dark', '--background': '0 0% 0%' } as React.CSSProperties}>
       <PublicHeader />
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-12 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-4 lg:px-8">
         <header className="mx-auto max-w-2xl text-center">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Apps</div>
-          <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">Useful tools, ready to open.</h1>
+          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Apps</div>
+          <h1 className="mt-4 text-lg font-semibold tracking-[-0.04em] sm:text-5xl">Useful tools, ready to open.</h1>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-muted-foreground">Browse the public AppForge catalog.</p>
         </header>
 
@@ -42,20 +42,20 @@ export function PublicAppsPage() {
             </label>
             <select value={category} onChange={(event) => setCategory(event.target.value)} className="rounded-xl border border-border/70 bg-background/45 px-2 text-xs h-8 outline-none focus:ring-1 focus:ring-ring/30"><option value="all">All categories</option>{categories.map((id) => <option key={id} value={id}>{categoryName(id)}</option>)}</select>
           </div>
-          <div className="mt-2 text-center text-[11px] text-muted-foreground">{visible.length} apps found.</div>
+          <div className="mt-2 text-center text-xs text-muted-foreground">{visible.length} apps found.</div>
         </section>
 
-        <section className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
+        <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
           {visible.map((app) => (
             <Link key={app.id} to={app.route} className="group flex min-h-36 flex-col rounded-xl border border-border/65 bg-background/35 p-4 transition-[border-color,background-color,box-shadow] hover:border-foreground/20 hover:bg-accent/25 hover:shadow-xl focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-              {app.coverImage && <img src={app.coverImage} alt="" className="-mx-4 -mt-4 mb-3 h-24 w-[calc(100%+2rem)] rounded-xl object-cover" loading="lazy" />}
-              <div className="min-w-0"><div className="truncate text-base font-semibold">{app.name}</div><div className="mt-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{categoryName(app.category)}</div></div>
+              {app.coverImage && <img src={app.coverImage} alt="" className="-mx-4 -mt-4 mb-4 h-24 w-[calc(100%+2rem)] rounded-xl object-cover" loading="lazy" />}
+              <div className="min-w-0"><div className="truncate text-sm font-semibold">{app.name}</div><div className="mt-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">{categoryName(app.category)}</div></div>
               <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">{app.description}</p>
-              <div className="mt-auto flex items-center justify-end pt-3"><span className="inline-flex items-center gap-1 text-xs font-semibold">Open <ArrowRight className="h-3.5 w-3.5" /></span></div>
+              <div className="mt-auto flex items-center justify-end pt-4"><span className="inline-flex items-center gap-2 text-xs font-semibold">Open <ArrowRight className="h-3.5 w-3.5" /></span></div>
             </Link>
           ))}
         </section>
-        {!visible.length && <div className="mt-7 rounded-xl border border-border/70 p-8 text-center text-sm text-muted-foreground">No apps match.</div>}
+        {!visible.length && <div className="mt-8 rounded-xl border border-border/70 p-8 text-center text-sm text-muted-foreground">No apps match.</div>}
       </main>
       <PublicFooter />
     </div>

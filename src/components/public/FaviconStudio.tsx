@@ -170,8 +170,8 @@ export default function FaviconStudio() {
   }
 
   return (
-    <div className="mx-auto grid w-full max-w-6xl gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-      <section className="surface-card rounded-xl border p-5 sm:p-6">
+    <div className="mx-auto grid w-full max-w-6xl gap-4 p-4 sm:p-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+      <section className="surface-card rounded-xl border p-4 sm:p-4">
         <div>
 
           <AppHeading />
@@ -179,19 +179,19 @@ export default function FaviconStudio() {
         </div>
 
         <div className="grid gap-4">
-          <div className="grid gap-3 sm:grid-cols-2"><label className="grid gap-1.5 text-sm font-medium">App name<input value={appName} maxLength={80} onChange={(event) => setAppName(event.target.value)} className="h-11 rounded-xl border bg-background px-3 text-sm" /></label><label className="grid gap-1.5 text-sm font-medium">Short name<input value={shortName} maxLength={30} onChange={(event) => setShortName(event.target.value)} className="h-11 rounded-xl border bg-background px-3 text-sm" /></label></div>
-          <label className="grid gap-1.5 text-sm font-medium">
+          <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-2 text-sm font-medium">App name<input value={appName} maxLength={80} onChange={(event) => setAppName(event.target.value)} className="h-11 rounded-xl border bg-background px-4 text-sm" /></label><label className="grid gap-2 text-sm font-medium">Short name<input value={shortName} maxLength={30} onChange={(event) => setShortName(event.target.value)} className="h-11 rounded-xl border bg-background px-4 text-sm" /></label></div>
+          <label className="grid gap-2 text-sm font-medium">
             Text or emoji
-            <input value={text} onChange={(event) => { setText(event.target.value.slice(0, 4)); setImageData(null) }} className="h-11 rounded-xl border bg-background px-3 text-base" aria-label="Favicon text or emoji" />
+            <input value={text} onChange={(event) => { setText(event.target.value.slice(0, 4)); setImageData(null) }} className="h-11 rounded-xl border bg-background px-4 text-sm" aria-label="Favicon text or emoji" />
           </label>
-          <div className="grid grid-cols-2 gap-3">
-            <label className="grid gap-1.5 text-sm font-medium">Background<input type="color" value={background} onChange={(event) => setBackground(event.target.value)} className="h-11 w-full rounded-xl border bg-background p-1" /></label>
-            <label className="grid gap-1.5 text-sm font-medium">Foreground<input type="color" value={foreground} onChange={(event) => setForeground(event.target.value)} className="h-11 w-full rounded-xl border bg-background p-1" disabled={Boolean(imageData)} /></label>
+          <div className="grid grid-cols-2 gap-4">
+            <label className="grid gap-2 text-sm font-medium">Background<input type="color" value={background} onChange={(event) => setBackground(event.target.value)} className="h-11 w-full rounded-xl border bg-background p-2" /></label>
+            <label className="grid gap-2 text-sm font-medium">Foreground<input type="color" value={foreground} onChange={(event) => setForeground(event.target.value)} className="h-11 w-full rounded-xl border bg-background p-2" disabled={Boolean(imageData)} /></label>
           </div>
-          <label className="grid gap-1.5 text-sm font-medium">Corner radius <span className="text-xs font-normal text-muted-foreground">{radius}%</span><input type="range" min="0" max="50" value={radius} onChange={(event) => setRadius(Number(event.target.value))} /></label>
-          <label className="grid gap-1.5 text-sm font-medium">Glyph size <span className="text-xs font-normal text-muted-foreground">{Math.round(fontScale * 100)}%</span><input type="range" min="0.28" max="0.8" step="0.01" value={fontScale} onChange={(event) => setFontScale(Number(event.target.value))} disabled={Boolean(imageData)} /></label>
+          <label className="grid gap-2 text-sm font-medium">Corner radius <span className="text-xs font-normal text-muted-foreground">{radius}%</span><input type="range" min="0" max="50" value={radius} onChange={(event) => setRadius(Number(event.target.value))} /></label>
+          <label className="grid gap-2 text-sm font-medium">Glyph size <span className="text-xs font-normal text-muted-foreground">{Math.round(fontScale * 100)}%</span><input type="range" min="0.28" max="0.8" step="0.01" value={fontScale} onChange={(event) => setFontScale(Number(event.target.value))} disabled={Boolean(imageData)} /></label>
 
-          <div className="flex flex-wrap gap-2 pt-1">
+          <div className="flex flex-wrap gap-2 pt-2">
             <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border bg-background px-4 text-sm font-medium hover:bg-accent">
               <Upload className="h-4 w-4" /> Upload image
               <input type="file" accept="image/*" className="sr-only" onChange={onUpload} />
@@ -200,19 +200,19 @@ export default function FaviconStudio() {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-2 sm:grid-cols-2">
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
           <button type="button" onClick={() => void exportSet()} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground"><Download className="h-4 w-4" /> Download favicon set</button>
           <button type="button" onClick={() => void copy(htmlLinks, 'HTML tags')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent"><Copy className="h-4 w-4" /> Copy HTML tags</button>
         </div>
-        <div aria-live="polite" className="mt-3 min-h-5 text-xs text-muted-foreground">{message}</div>
+        <div aria-live="polite" className="mt-4 min-h-5 text-xs text-muted-foreground">{message}</div>
       </section>
 
-      <section className="grid gap-5">
-        <div className="surface-card rounded-xl border p-5 sm:p-6">
-          <div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="font-semibold">Live previews</h2><p className="text-xs text-muted-foreground">Actual target sizes, enlarged where needed for inspection.</p></div><ImageIcon className="h-5 w-5 text-muted-foreground" /></div>
+      <section className="grid gap-4">
+        <div className="surface-card rounded-xl border p-4 sm:p-4">
+          <div className="mb-4 flex items-center justify-between gap-4"><div><h2 className="font-semibold">Live previews</h2><p className="text-xs text-muted-foreground">Actual target sizes, enlarged where needed for inspection.</p></div><ImageIcon className="h-5 w-5 text-muted-foreground" /></div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
             {PREVIEW_SIZES.map((size) => (
-              <button key={size} type="button" onClick={() => void exportPreview(size)} className="group grid min-h-28 place-items-center gap-2 rounded-xl border bg-background p-3 text-xs text-muted-foreground hover:bg-accent" title={`Download ${size}×${size} PNG`}>
+              <button key={size} type="button" onClick={() => void exportPreview(size)} className="group grid min-h-28 place-items-center gap-2 rounded-xl border bg-background p-4 text-xs text-muted-foreground hover:bg-accent" title={`Download ${size}×${size} PNG`}>
                 <img src={svgDataUrl} alt={`${size} by ${size} favicon preview`} width={Math.min(size, 72)} height={Math.min(size, 72)} className="rounded-xl" />
                 <span>{size}×{size}</span>
               </button>
@@ -220,9 +220,9 @@ export default function FaviconStudio() {
           </div>
         </div>
 
-        <div className="surface-card rounded-xl border p-5 sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold">Manifest & SVG</h2><p className="text-xs text-muted-foreground">Copy-ready project assets.</p></div><div className="flex gap-2"><button type="button" onClick={() => void copy(svg, 'SVG')} className="rounded-xl border px-3 py-2 text-xs font-medium hover:bg-accent">Copy SVG</button><button type="button" onClick={() => void copy(manifest, 'Manifest')} className="rounded-xl border px-3 py-2 text-xs font-medium hover:bg-accent">Copy manifest</button></div></div>
-          <pre className="mt-4 max-h-64 overflow-auto rounded-xl border bg-background p-3 text-xs leading-5">{manifest}</pre>
+        <div className="surface-card rounded-xl border p-4 sm:p-4">
+          <div className="flex flex-wrap items-center justify-between gap-4"><div><h2 className="font-semibold">Manifest & SVG</h2><p className="text-xs text-muted-foreground">Copy-ready project assets.</p></div><div className="flex gap-2"><button type="button" onClick={() => void copy(svg, 'SVG')} className="rounded-xl border px-4 py-2 text-xs font-medium hover:bg-accent">Copy SVG</button><button type="button" onClick={() => void copy(manifest, 'Manifest')} className="rounded-xl border px-4 py-2 text-xs font-medium hover:bg-accent">Copy manifest</button></div></div>
+          <pre className="mt-4 max-h-64 overflow-auto rounded-xl border bg-background p-4 text-xs leading-5">{manifest}</pre>
         </div>
       </section>
     </div>

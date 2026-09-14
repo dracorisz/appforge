@@ -26,7 +26,7 @@ export function DataTable<T>({
               onClick={() => onRowClick?.(row)}
               className={`border-b border-border/60 transition-[background-color,box-shadow] last:border-b-0 hover:bg-accent/45 ${onRowClick ? 'cursor-pointer' : ''}`}
             >
-              {columns.map((col) => <td key={col.key} className="px-4 py-3 text-foreground">{col.render ? col.render(row) : (row as Record<string, unknown>)[col.key] as React.ReactNode}</td>)}
+              {columns.map((col) => <td key={col.key} className="px-4 py-4 text-foreground">{col.render ? col.render(row) : (row as Record<string, unknown>)[col.key] as React.ReactNode}</td>)}
             </tr>
           ))}
         </tbody>

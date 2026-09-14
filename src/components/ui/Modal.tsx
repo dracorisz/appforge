@@ -16,11 +16,11 @@ export function Modal({ open, onClose, title, children }: { open: boolean; onClo
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <button type="button" aria-label="Close modal" className="fixed inset-0 cursor-default bg-black/70" onClick={onClose} />
       <section role="dialog" aria-modal="true" aria-label={title} className="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-auto rounded-xl border border-border bg-background">
-        <header className="sticky top-0 flex min-h-12 items-center justify-between gap-3 border-b border-border bg-background px-4 py-2">
-          <h2 className="text-base font-semibold text-foreground">{title}</h2>
+        <header className="sticky top-0 flex min-h-12 items-center justify-between gap-4 border-b border-border bg-background px-4 py-2">
+          <h2 className="text-sm font-semibold text-foreground">{title}</h2>
           <button onClick={onClose} className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close"><X className="h-4 w-4" /></button>
         </header>
-        <div className="p-4 sm:p-5">{children}</div>
+        <div className="p-4 sm:p-4">{children}</div>
       </section>
     </div>
   )
