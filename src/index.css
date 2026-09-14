@@ -174,11 +174,13 @@
   .app-control {
     line-height: var(--control-line-height);
   }
+
   .app-pill {
     height: var(--pill-height);
     min-height: var(--pill-height);
     max-height: var(--pill-height);
   }
+
   .surface-card,
   .surface-panel,
   .surface-popover,
@@ -217,6 +219,29 @@
     border-color: hsl(var(--ring) / 0.3);
   }
 
+  .app-unified-shell .app-page-header,
+  .app-unified-shell .surface-card {
+    transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+  }
+
+  .app-unified-shell .app-content .app-heading {
+    display: none !important;
+  }
+
+  .surface-card:hover,
+  .app-page-header:hover {
+    transform: none !important;
+  }
+
+  .app-unified-shell :where(button, a)[class*="border"] {
+    transition-property: border-color, box-shadow, background-color, color;
+    transition-duration: 180ms;
+  }
+
+  .app-unified-shell :where(button, a)[class*="border"]:hover {
+    transform: none !important;
+  }
+
   .preview-card {
     position: relative;
     isolation: isolate;
@@ -243,15 +268,21 @@
   }
 
   .preview-card img {
-    transition:
-      transform 260ms ease,
-      filter 220ms ease,
-      opacity 220ms ease;
+    transition: filter 220ms ease, opacity 220ms ease;
   }
 
-  .preview-card:hover img {
-    transform: scale(1.025);
-    filter: saturate(1.03) contrast(1.02);
+  .preview-card,
+  .preview-card:hover,
+  .preview-card:focus-within,
+  .preview-card img,
+  .preview-card:hover img,
+  .preview-card:focus-within img {
+    transform: none !important;
+  }
+
+  .preview-card:hover img,
+  .preview-card:focus-within img {
+    filter: saturate(1.02) contrast(1.01);
   }
 
   figure:has(img[alt*="Dragon Arena scene"]) {
@@ -306,6 +337,7 @@
     .surface-popover *,
     .surface-muted,
     .surface-muted *,
+    .app-unified-shell *,
     .preview-card,
     .preview-card * {
       transition-duration: 0.01ms !important;
