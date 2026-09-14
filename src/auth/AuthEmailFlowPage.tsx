@@ -166,11 +166,11 @@ export function AuthEmailFlowPage({ mode }: { mode: Mode }) {
       <Card className="w-full p-8 shadow-xl">
         <div className="flex items-start gap-4">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border/70 bg-accent/50">{mode === 'confirm' ? <MailCheck className="h-4 w-4" /> : <KeyRound className="h-4 w-4" />}</div>
-          <div><h1 className="text-lg font-semibold tracking-tight">{title}</h1><p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p></div>
+          <div><h1 className="text-lg font-semibold tracking-tight">{title}</h1><p className="mt-2 text-sm text-muted-foreground">{description}</p></div>
         </div>
 
         {state === 'loading' && mode !== 'forgot' && <div className="mt-4 flex items-center gap-2 rounded-xl border border-border/70 p-4 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Verifying secure email session…</div>}
-        {message && <div role={state === 'error' ? 'alert' : 'status'} className={`mt-4 rounded-xl border p-4 text-sm ${state === 'error' ? 'border-destructive/30 bg-destructive/5 text-destructive' : 'border-emerald-500/30 bg-emerald-500/5 text-foreground'}`}>{message}</div>}
+        {message && <div role={state === 'error' ? 'alert' : 'status'} className={`mt-4 rounded-xl border p-4 text-sm ${state === 'error' ? 'border-destructive/30 bg-destructive/5 text-destructive' : 'border-success/30 bg-success/5 text-foreground'}`}>{message}</div>}
 
         {mode === 'forgot' && state !== 'success' && <form onSubmit={requestReset} className="mt-4 grid gap-4"><Input label="Email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required /><Button type="submit" disabled={state === 'loading' || !email.trim()}>{state === 'loading' ? <Loader2 className="animate-spin" /> : <RefreshCw />} Send recovery email</Button></form>}
 

@@ -62,20 +62,20 @@ export function PwaLifecycle() {
   const showStatus = needRefresh || offlineReady || !online || showInstall
   if (!showStatus) return null
 
-  const primaryActionClass = 'rounded-xl border border-white bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
-  const secondaryActionClass = 'rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/70'
+  const primaryActionClass = 'rounded-xl border border-inverse bg-inverse px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inverse/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+  const secondaryActionClass = 'rounded-xl border border-inverse/20 bg-inverse/5 px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-inverse/10 hover:text-inverse focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inverse/70'
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100] w-[min(24rem,calc(100vw-2rem))] rounded-xl border border-white/15 bg-slate-950/95 p-4 text-white backdrop-blur-xl" style={{ colorScheme: 'dark' }}>
+    <div className="fixed bottom-4 right-4 z-[100] w-[min(24rem,calc(100vw-2rem))] rounded-xl border border-inverse/15 bg-muted/95 p-4 text-inverse backdrop-blur-xl" style={{ colorScheme: 'dark' }}>
       <div className="flex items-start gap-4">
-        <div className="mt-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white">
+        <div className="mt-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-inverse/15 bg-inverse/5 text-inverse">
           {needRefresh ? <RefreshCw className="h-4 w-4" /> : !online ? <WifiOff className="h-4 w-4" /> : <Download className="h-4 w-4" />}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-semibold text-white">
+          <div className="text-sm font-semibold text-inverse">
             {needRefresh ? 'New AppForge build ready' : !online ? 'You are offline' : showInstall ? 'Install AppForge' : 'Offline shell ready'}
           </div>
-          <div className="mt-2 text-sm leading-5 text-slate-300">
+          <div className="mt-2 text-sm text-muted-foreground">
             {needRefresh
               ? 'Reload once to use the newest deployment and matching build fingerprint.'
               : !online
@@ -91,7 +91,7 @@ export function PwaLifecycle() {
             {showInstall && <button className={secondaryActionClass} onClick={dismissInstall}>Not now</button>}
           </div>
         </div>
-        <button aria-label="Dismiss PWA message" className="rounded-xl p-2 text-slate-300 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/70" onClick={() => { setNeedRefresh(false); setOfflineReady(false); if (showInstall) dismissInstall() }}><X className="h-4 w-4" /></button>
+        <button aria-label="Dismiss PWA message" className="rounded-xl p-2 text-muted-foreground transition-colors hover:bg-inverse/10 hover:text-inverse focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inverse/70" onClick={() => { setNeedRefresh(false); setOfflineReady(false); if (showInstall) dismissInstall() }}><X className="h-4 w-4" /></button>
       </div>
     </div>
   )

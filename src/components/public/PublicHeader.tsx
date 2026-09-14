@@ -9,7 +9,7 @@ const navItemClass = 'inline-flex h-9 items-center gap-2 rounded-xl border borde
 
 export function PublicHeader({ className = '' }: { className?: string }) {
   return (
-    <header className={`sticky top-0 z-40 border-b border-border/60 bg-black/90 backdrop-blur-xl ${className}`}>
+    <header className={`sticky top-0 z-40 border-b border-border/60 bg-overlay/90 backdrop-blur-xl ${className}`}>
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 lg:px-8">
         <Link to="/landing" className="group inline-flex items-center gap-4 rounded-xl focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
           <img src={APPFORGE_MARK} alt="AppForge" className="h-10 w-10 shrink-0 rounded-xl" decoding="async" />

@@ -25,15 +25,15 @@ export function ToastViewport() {
       {toasts.map((item) => {
         const Icon = item.tone === 'success' ? CheckCircle2 : item.tone === 'error' ? AlertCircle : Info
         const tone = item.tone === 'success'
-          ? 'border-emerald-500/30 bg-emerald-950/90 text-emerald-50'
+          ? 'border-success/30 bg-success/90 text-success'
           : item.tone === 'error'
-            ? 'border-destructive/40 bg-red-950/90 text-red-50'
+            ? 'border-destructive/40 bg-destructive/90 text-destructive'
             : 'border-border/80 bg-popover/95 text-popover-foreground'
         return (
           <div key={item.id} className={`pointer-events-auto flex items-start gap-4 rounded-xl border px-4 py-4 backdrop-blur ${tone}`}>
             <Icon className="mt-2 h-4 w-4 shrink-0" />
-            <div className="min-w-0 flex-1 text-sm leading-5">{item.message}</div>
-            <button type="button" onClick={() => setToasts((current) => current.filter((toast) => toast.id !== item.id))} className="rounded-xl p-2 opacity-70 hover:bg-white/10 hover:opacity-100" aria-label="Dismiss notification"><X className="h-4 w-4" /></button>
+            <div className="min-w-0 flex-1 text-sm">{item.message}</div>
+            <button type="button" onClick={() => setToasts((current) => current.filter((toast) => toast.id !== item.id))} className="rounded-xl p-2 opacity-70 hover:bg-inverse/10 hover:opacity-100" aria-label="Dismiss notification"><X className="h-4 w-4" /></button>
           </div>
         )
       })}

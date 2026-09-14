@@ -218,7 +218,7 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex items-center gap-2"><Eraser className="h-5 w-5" /><h2 className="font-semibold">{standalone ? 'Remove image background' : 'Transparency repair'}</h2></div>
-          <p className="mt-2 max-w-3xl text-sm leading-5 text-muted-foreground">Some image models draw a checkerboard pattern even when asked for transparency. This local tool samples dominant edge colors, removes matching background pixels, feathers the edge, and exports a PNG with a real alpha channel. Nothing is uploaded.</p>
+          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">Some image models draw a checkerboard pattern even when asked for transparency. This local tool samples dominant edge colors, removes matching background pixels, feathers the edge, and exports a PNG with a real alpha channel. Nothing is uploaded.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {!standalone && <button type="button" onClick={() => void loadActiveBuddy()} className="inline-flex min-h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent"><WandSparkles className="h-4 w-4" /> Use active Buddy</button>}
@@ -230,7 +230,7 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
         <div className="rounded-xl border bg-background/45 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2"><div className="text-sm font-medium text-foreground">Background tolerance: {tolerance}</div><div className="flex flex-wrap gap-2">{[[24, 'Preserve'], [38, 'Balanced'], [56, 'Aggressive']].map(([value, label]) => <button key={String(label)} type="button" onClick={() => { setTolerance(Number(value)); setResult(null) }} className={`rounded-xl border px-2 py-2 text-sm ${tolerance === Number(value) ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{String(label)}</button>)}</div></div>
           <input type="range" min="14" max="78" step="2" value={tolerance} onChange={(event) => { setTolerance(Number(event.target.value)); setResult(null) }} className="mt-2 w-full" />
-          <p className="mt-2 text-sm leading-5 text-muted-foreground">Lower values preserve more of the character; higher values remove more checkerboard/flat background. Re-run repair after changing this value.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Lower values preserve more of the character; higher values remove more checkerboard/flat background. Re-run repair after changing this value.</p>
         </div>
         <button type="button" disabled={!source || processing} onClick={() => void runRepair()} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eraser className="h-4 w-4" />} Repair background</button>
       </div>

@@ -40,7 +40,7 @@ export function VertexBridgeStatus() {
             <Cloud className="h-5 w-5 text-muted-foreground" />
             <h2 className="text-sm font-semibold text-foreground">Vertex AI secure bridge</h2>
           </div>
-          <p className="mt-2 max-w-xl text-sm leading-5 text-muted-foreground">Server status only. Google project, Workload Identity, service-account and bucket identifiers remain deployment configuration and are never profile fields.</p>
+          <p className="mt-2 max-w-xl text-sm text-muted-foreground">Server status only. Google project, Workload Identity, service-account and bucket identifiers remain deployment configuration and are never profile fields.</p>
         </div>
         <Button variant="secondary" size="sm" onClick={() => void refresh()} disabled={loading}>
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh
@@ -51,7 +51,7 @@ export function VertexBridgeStatus() {
         {status?.recoverableJobs && <Badge color="slate">Recoverable jobs</Badge>}
         {status?.requiresSignIn && <Badge color="slate">User auth required</Badge>}
       </div>
-      <div className="mt-4 rounded-xl border border-border/60 bg-background/35 p-4 text-sm leading-5 text-muted-foreground">
+      <div className="mt-4 rounded-xl border border-border/60 bg-background/35 p-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-2 font-medium text-foreground">
           <ShieldCheck className="h-4 w-4" /> Keyless server identity
         </div>

@@ -170,7 +170,7 @@ export function DesktopBuddyAssetLab() {
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="flex items-center gap-2"><ImagePlus className="h-5 w-5" /><h2 className="font-semibold">Local asset optimizer</h2></div>
-          <p className="mt-2 max-w-3xl text-sm leading-5 text-muted-foreground">Prepare lightweight character assets entirely in your browser. AppForge fits the source inside transparent square canvases and exports 128, 256 and 512 pixel PNGs, with WebP alternatives when the browser supports them.</p>
+          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">Prepare lightweight character assets entirely in your browser. AppForge fits the source inside transparent square canvases and exports 128, 256 and 512 pixel PNGs, with WebP alternatives when the browser supports them.</p>
         </div>
         <label className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent">
           {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
@@ -199,7 +199,7 @@ export function DesktopBuddyAssetLab() {
             ))}
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-background/45 p-4">
-            <p className="max-w-2xl text-sm leading-5 text-muted-foreground">Use the optimized 512px PNG as the persistent companion image. This updates only browser-local Desktop Buddy storage and keeps your source file on this device.</p>
+            <p className="max-w-2xl text-sm text-muted-foreground">Use the optimized 512px PNG as the persistent companion image. This updates only browser-local Desktop Buddy storage and keeps your source file on this device.</p>
             <button type="button" onClick={() => void applyToBuddy()} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground"><Check className="h-4 w-4" /> Use 512px in Buddy</button>
           </div>
         </>

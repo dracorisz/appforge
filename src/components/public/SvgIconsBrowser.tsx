@@ -180,7 +180,7 @@ export default function SvgIconsBrowser() {
       {!loading && filtered.length === 0 && <div className="surface-card rounded-xl border p-8 text-center text-sm text-muted-foreground">No icons in this pack match “{query}”.</div>}
       {visible < filtered.length && <div className="mt-4 flex justify-center"><button type="button" onClick={() => setVisible((value) => value + 120)} className="min-h-11 rounded-xl border bg-background px-4 text-sm font-semibold hover:bg-accent">Load 120 more</button></div>}
 
-      <section className="mt-4 rounded-xl border border-border/70 bg-background/60 p-4 text-sm leading-5 text-muted-foreground"><strong className="text-foreground">Licensing:</strong> react-icons aggregates upstream icon projects with different licenses. AppForge does not own those icon sets. Before redistributing a copied/exported SVG, review the source pack license and attribution requirements published by react-icons/upstream. Brand icons may also be subject to trademark rules.</section>
+      <section className="mt-4 rounded-xl border border-border/70 bg-background/60 p-4 text-sm text-muted-foreground"><strong className="text-foreground">Licensing:</strong> react-icons aggregates upstream icon projects with different licenses. AppForge does not own those icon sets. Before redistributing a copied/exported SVG, review the source pack license and attribution requirements published by react-icons/upstream. Brand icons may also be subject to trademark rules.</section>
     </div>
   )
 }

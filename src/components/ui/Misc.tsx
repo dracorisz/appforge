@@ -45,7 +45,7 @@ export function EmptyState({ title, description }: { title: string; description?
   return (
     <div className="flex min-h-32 flex-col items-center justify-center rounded-xl border border-dashed border-border/70 px-4 py-8 text-center">
       <p className="text-lg font-semibold tracking-tight text-foreground">{title}</p>
-      {description && <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">{description}</p>}
+      {description && <p className="mt-2 max-w-md text-sm text-muted-foreground">{description}</p>}
     </div>
   )
 }

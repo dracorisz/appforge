@@ -36,7 +36,7 @@ export function Heading({
         </div>
         {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
       </div>
-      {description && <div className="max-w-3xl text-sm leading-6 text-muted-foreground">{description}</div>}
+      {description && <div className="max-w-3xl text-sm text-muted-foreground">{description}</div>}
     </header>
   )
 }

@@ -70,8 +70,8 @@ export function MediaShowbox({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-[60] flex h-[100dvh] min-h-[100dvh] w-screen items-center justify-center overflow-y-auto bg-black/85 p-2 backdrop-blur-sm sm:p-4" onMouseDown={onClose}>
-      <section role="dialog" aria-modal="true" aria-label={title} onMouseDown={(event) => event.stopPropagation()} className="flex max-h-[calc(100dvh-1rem)] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-white/10 bg-background sm:max-h-[calc(100dvh-1.5rem)]">
+    <div className="fixed inset-0 z-[60] flex h-[100dvh] min-h-[100dvh] w-screen items-center justify-center overflow-y-auto bg-overlay/85 p-2 backdrop-blur-sm sm:p-4" onMouseDown={onClose}>
+      <section role="dialog" aria-modal="true" aria-label={title} onMouseDown={(event) => event.stopPropagation()} className="flex max-h-[calc(100dvh-1rem)] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-inverse/10 bg-background sm:max-h-[calc(100dvh-1.5rem)]">
         <header className="flex min-h-10 items-center gap-4 border-b border-border/70 px-4">
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-sm font-semibold text-foreground">{title}</h2>
@@ -80,13 +80,13 @@ export function MediaShowbox({
           <button onClick={onClose} className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close preview"><X className="h-4 w-4" /></button>
         </header>
 
-        <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-black p-2 sm:p-4">
+        <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-overlay p-2 sm:p-4">
           {type === 'image' ? (
             <img src={mediaUrl || thumbnail || originalUrl} alt={title} className="max-h-[62dvh] max-w-full object-contain" />
           ) : ytId ? (
-            <div className="aspect-video w-full max-w-5xl overflow-hidden bg-black"><iframe src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0`} title={title} className="h-full w-full" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen /></div>
+            <div className="aspect-video w-full max-w-5xl overflow-hidden bg-overlay"><iframe src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0`} title={title} className="h-full w-full" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen /></div>
           ) : mediaUrl ? (
-            <video src={mediaUrl} poster={thumbnail} controls autoPlay preload="metadata" className="max-h-[62dvh] max-w-full bg-black" />
+            <video src={mediaUrl} poster={thumbnail} controls autoPlay preload="metadata" className="max-h-[62dvh] max-w-full bg-overlay" />
           ) : (
             <div className="py-8 text-center text-sm text-muted-foreground">Preview unavailable for this source.</div>
           )}

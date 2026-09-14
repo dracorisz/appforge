@@ -44,7 +44,7 @@ export function WidgetPreferencePanel({ kind }: { kind: Kind }) {
           <Icon className="mt-2 h-4 w-4 shrink-0 text-muted-foreground" />
           <div className="min-w-0">
             <h2 className="text-sm font-semibold text-foreground">{item.title}</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-5 text-muted-foreground">{item.description}</p>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{item.description}</p>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-4 self-end sm:self-auto">

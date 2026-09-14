@@ -138,7 +138,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
   };
 
   return (
-    <div className="dark min-h-dvh overflow-x-hidden bg-black text-foreground" style={{ colorScheme: "dark", "--background": "0 0% 0%" } as React.CSSProperties}>
+    <div className="dark min-h-dvh overflow-x-hidden bg-overlay text-foreground" style={{ colorScheme: "dark", "--background": "0 0% 0%" } as React.CSSProperties}>
       <div className="relative isolate flex min-h-dvh flex-col overflow-hidden">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute left-1/2 top-[-28rem] h-[52rem] w-[52rem] -translate-x-1/2 rounded-xl border border-border/35 bg-accent/20 blur-3xl" />
@@ -153,7 +153,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
               <h1 className="max-w-4xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-5xl lg:text-5xl lg:leading-[1.02] xl:text-5xl">
                 Build useful things.<span className="block text-muted-foreground">Own the workflow.</span>
               </h1>
-              <p className="mt-4 max-w-2xl text-pretty text-sm leading-7 text-muted-foreground sm:text-lg sm:leading-8">Practical tools in one consistent workspace.</p>
+              <p className="mt-4 max-w-2xl text-pretty text-sm text-muted-foreground sm:text-lg sm:leading-8">Practical tools in one consistent workspace.</p>
               <div className="mt-8 flex flex-wrap gap-4" aria-busy={Boolean(busyProvider) || loading}>
                 {user ? (
                   <Button className="h-11 px-4" onClick={() => navigate("/")} disabled={loading}>
@@ -223,11 +223,11 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
           {/* <section className="border-t border-border/60 py-8 sm:py-8" aria-labelledby="about-appforge-title">
             <div className="md:col-span-1 m-auto text-center">
               <h2 id="about-appforge-title" className="text-lg font-semibold tracking-tight">Open source. Private by design.</h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">AppForge combines public tools with an authenticated workspace, keeping local work in-browser where practical and using protected persistence only where it adds value.</p>
+              <p className="mt-2 text-sm text-muted-foreground">AppForge combines public tools with an authenticated workspace, keeping local work in-browser where practical and using protected persistence only where it adds value.</p>
             </div>
             <div className="grid gap-4 md:grid-cols-2 mt-4">
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4"><div className="text-sm font-semibold">Consistent tools</div><p className="mt-2 text-sm leading-5 text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p></div>
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4"><div className="text-sm font-semibold">Transparent project</div><p className="mt-2 text-sm leading-5 text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p></div>
+              <div className="rounded-xl border border-inverse/10 bg-inverse/5 p-4"><div className="text-sm font-semibold">Consistent tools</div><p className="mt-2 text-sm text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p></div>
+              <div className="rounded-xl border border-inverse/10 bg-inverse/5 p-4"><div className="text-sm font-semibold">Transparent project</div><p className="mt-2 text-sm text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p></div>
             </div>
           </section> */}
 
@@ -240,12 +240,12 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                 <h2 id="walkthrough-title" className="mt-2 text-lg font-semibold tracking-tight sm:text-lg">
                   {videoTitle}
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{videoSummary}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{videoSummary}</p>
                 <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                   Open video <ArrowRight className="h-4 w-4" />
                 </a>
               </div>
-              <div className="overflow-hidden rounded-xl border border-border/70 bg-black">
+              <div className="overflow-hidden rounded-xl border border-border/70 bg-overlay">
                 {videoEmbedUrl ? (
                   <iframe
                     key={videoEmbedUrl}
@@ -258,7 +258,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                     referrerPolicy="strict-origin-when-cross-origin"
                   />
                 ) : (
-                  <video key={videoUrl} src={videoUrl} title="AppForge product walkthrough" className="aspect-video w-full bg-black object-contain" controls preload="metadata" playsInline />
+                  <video key={videoUrl} src={videoUrl} title="AppForge product walkthrough" className="aspect-video w-full bg-overlay object-contain" controls preload="metadata" playsInline />
                 )}
               </div>
             </div>
@@ -267,7 +267,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
 
         {authOpen && !user && (
           <div
-            className="fixed inset-0 z-[100] flex min-h-[100dvh] items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex min-h-[100dvh] items-center justify-center bg-overlay/75 p-4 backdrop-blur-sm"
             role="dialog"
             aria-modal="true"
             aria-label="Sign in to AppForge"

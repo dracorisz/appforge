@@ -13,10 +13,10 @@ function LegalShell({ title, intro, children }: { title: string; intro: string; 
           <div className="mb-8">
             <div className="mb-4 inline-flex items-center gap-2 rounded-xl border border-border/70 bg-background/55 px-4 py-2 text-sm font-medium text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5" /> Public beta policy</div>
             <h1 className="text-lg font-semibold tracking-tight sm:text-lg">{title}</h1>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-sm">{intro}</p>
+            <p className="mt-4 max-w-2xl text-sm text-muted-foreground sm:text-sm">{intro}</p>
             <p className="mt-2 text-sm text-muted-foreground">Last updated: {LAST_UPDATED}</p>
           </div>
-          <div className="surface-card space-y-8 rounded-xl border p-4 text-sm leading-7 sm:p-8 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_p]:text-muted-foreground [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:text-muted-foreground">{children}</div>
+          <div className="surface-card space-y-8 rounded-xl border p-4 text-sm sm:p-8 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_p]:text-muted-foreground [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:text-muted-foreground">{children}</div>
         </main>
       </div>
       <PublicFooter />

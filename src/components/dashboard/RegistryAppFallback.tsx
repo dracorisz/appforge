@@ -24,10 +24,10 @@ export function RegistryAppFallback() {
       <Card className="p-4">
         <div className="flex flex-wrap items-center gap-2"><Badge color="slate">{app.status}</Badge><Badge color="slate">v{app.version}</Badge><Badge color="slate">{app.category.replace('-', ' ')}</Badge></div>
         <h1 className="mt-4 text-lg font-semibold">{app.name}</h1>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">{app.description}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{app.description}</p>
         <div className="mt-4 rounded-xl border border-border/60 bg-background/45 p-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2 font-medium text-foreground"><Construction className="h-4 w-4" /> Unavailable app surface</div>
-          <p className="mt-2 leading-6">This route does not currently have a dedicated implementation.</p>
+          <p className="mt-2">This route does not currently have a dedicated implementation.</p>
         </div>
         <div className="mt-4 flex flex-wrap gap-4">
           <Link to="/apps" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"><ArrowLeft className="h-4 w-4" /> All apps</Link>

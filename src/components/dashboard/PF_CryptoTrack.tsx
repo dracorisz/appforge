@@ -158,7 +158,7 @@ export function PF_CryptoTrack() {
   const renderLogo = (coin: CryptoCoin) => {
     if (failedImages.has(coin.id)) {
       return (
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted text-sm font-bold text-foreground">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted text-sm font-semibold text-foreground">
           {coin.symbol.slice(0, 3)}
         </div>
       )
@@ -226,7 +226,7 @@ export function PF_CryptoTrack() {
           <button
             type="button"
             onClick={() => setWatchlistOnly((value) => !value)}
-            className={`inline-flex items-center gap-2 rounded-xl border px-2 py-2 text-sm font-medium ${watchlistOnly ? 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'border-border text-muted-foreground hover:text-foreground'}`}
+            className={`inline-flex items-center gap-2 rounded-xl border px-2 py-2 text-sm font-medium ${watchlistOnly ? 'border-warning/40 bg-warning/10 text-warning dark:text-warning' : 'border-border text-muted-foreground hover:text-foreground'}`}
           >
             <Star className={`h-3.5 w-3.5 ${watchlistOnly ? 'fill-current' : ''}`} /> Watchlist {watchlist.size}
           </button>
@@ -275,12 +275,12 @@ export function PF_CryptoTrack() {
                         <p className="text-sm font-medium text-muted-foreground">{coin.symbol}</p>
                       </div>
                     </div>
-                    <button onClick={() => toggleWatchlist(coin.id)} aria-label={watching ? 'Remove from watchlist' : 'Add to watchlist'} className={`rounded-xl p-2 ${watching ? 'text-amber-500' : 'text-muted-foreground hover:text-foreground'}`}>
+                    <button onClick={() => toggleWatchlist(coin.id)} aria-label={watching ? 'Remove from watchlist' : 'Add to watchlist'} className={`rounded-xl p-2 ${watching ? 'text-warning' : 'text-muted-foreground hover:text-foreground'}`}>
                       <Star className={`h-4 w-4 ${watching ? 'fill-current' : ''}`} />
                     </button>
                   </div>
-                  <p className="mt-4 text-lg font-bold tracking-tight text-foreground">{formatUsd(coin.price)}</p>
-                  <div className={`mt-2 inline-flex items-center gap-2 text-sm font-medium ${positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                  <p className="mt-4 text-lg font-semibold tracking-tight text-foreground">{formatUsd(coin.price)}</p>
+                  <div className={`mt-2 inline-flex items-center gap-2 text-sm font-medium ${positive ? 'text-success dark:text-success' : 'text-destructive dark:text-destructive'}`}>
                     {positive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
                     {positive ? '+' : ''}{coin.change24h.toFixed(2)}%
                   </div>
@@ -300,11 +300,11 @@ export function PF_CryptoTrack() {
                       </div>
                     </div>
                     <p className="text-right text-sm font-semibold text-foreground">{formatUsd(coin.price)}</p>
-                    <p className={`flex items-center justify-end gap-2 text-right text-sm font-medium ${positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                    <p className={`flex items-center justify-end gap-2 text-right text-sm font-medium ${positive ? 'text-success dark:text-success' : 'text-destructive dark:text-destructive'}`}>
                       {positive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
                       {positive ? '+' : ''}{coin.change24h.toFixed(2)}%
                     </p>
-                    <button onClick={() => toggleWatchlist(coin.id)} aria-label={watching ? 'Remove from watchlist' : 'Add to watchlist'} className={`rounded-xl p-2 ${watching ? 'text-amber-500' : 'text-muted-foreground hover:text-foreground'}`}>
+                    <button onClick={() => toggleWatchlist(coin.id)} aria-label={watching ? 'Remove from watchlist' : 'Add to watchlist'} className={`rounded-xl p-2 ${watching ? 'text-warning' : 'text-muted-foreground hover:text-foreground'}`}>
                       <Star className={`h-4 w-4 ${watching ? 'fill-current' : ''}`} />
                     </button>
                   </div>

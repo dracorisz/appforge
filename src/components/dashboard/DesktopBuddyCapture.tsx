@@ -152,7 +152,7 @@ export function DesktopBuddyCapture() {
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <div className="flex items-center gap-2"><Camera className="h-5 w-5" /><h2 className="font-semibold">Screen capture</h2></div>
-          <p className="mt-2 max-w-3xl text-sm leading-5 text-muted-foreground">Use the browser screen-share API on supported desktop browsers. If Brave or an installed PWA blocks it, import a screenshot instead and continue with the same download/Media Vault workflow.</p>
+          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">Use the browser screen-share API on supported desktop browsers. If Brave or an installed PWA blocks it, import a screenshot instead and continue with the same download/Media Vault workflow.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button type="button" disabled={Boolean(busy)} onClick={() => void captureScreen()} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">
@@ -169,7 +169,7 @@ export function DesktopBuddyCapture() {
 
       {capture && (
         <div className="mt-4 overflow-hidden rounded-xl border bg-background/45">
-          <div className="grid max-h-[520px] place-items-center overflow-auto bg-black/90 p-4">
+          <div className="grid max-h-[520px] place-items-center overflow-auto bg-overlay/90 p-4">
             <img src={capture.url} alt="Screenshot preview" className="max-h-[480px] max-w-full object-contain" />
           </div>
           <div className="flex flex-col gap-4 border-t p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -177,7 +177,7 @@ export function DesktopBuddyCapture() {
             <div className="flex flex-wrap gap-2">
               <button type="button" onClick={() => downloadCapture(capture)} className="inline-flex min-h-9 items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent"><Download className="h-3.5 w-3.5" /> Download PNG</button>
               <button type="button" disabled={Boolean(busy)} onClick={() => void saveToVault()} className="inline-flex min-h-9 items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent disabled:opacity-50">{busy === 'save' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} Save to Media Vault</button>
-              <span className="inline-flex min-h-9 items-center gap-2 rounded-xl border border-emerald-500/25 bg-emerald-500/5 px-4 text-sm text-emerald-600 dark:text-emerald-400"><Check className="h-3.5 w-3.5" /> Local preview</span>
+              <span className="inline-flex min-h-9 items-center gap-2 rounded-xl border border-success/25 bg-success/5 px-4 text-sm text-success dark:text-success"><Check className="h-3.5 w-3.5" /> Local preview</span>
             </div>
           </div>
         </div>
