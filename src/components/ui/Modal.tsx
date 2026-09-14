@@ -21,8 +21,8 @@ export function Modal({ open, onClose, title, children }: { open: boolean; onClo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <button type="button" aria-label="Close modal" className="fixed inset-0 cursor-default bg-overlay/70" onClick={onClose} />
-      <section role="dialog" aria-modal="true" aria-label={title} className="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-auto rounded-xl border border-border bg-card shadow-xl">
-        <header className="sticky top-0 flex items-center justify-between gap-4 border-b border-border bg-card px-4 py-2">
+      <section role="dialog" aria-modal="true" aria-label={title} className="surface-popover relative z-10 max-h-[90vh] w-full max-w-2xl overflow-auto">
+        <header className="sticky top-0 flex items-center justify-between gap-4 border-b border-border bg-popover px-4 py-2">
           <h2 className="text-lg font-semibold tracking-tight text-foreground">{title}</h2>
           <IconButton label="Close" icon={<X />} onClick={onClose} />
         </header>
