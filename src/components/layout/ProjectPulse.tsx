@@ -76,7 +76,7 @@ export function ProjectPulse() {
               <div className="flex items-center gap-2 font-medium text-foreground">
                 <Rocket className="h-4 w-4" /> Shared release gates
               </div>
-              <div className="mt-8 space-y-3">
+              <div className="mt-8 space-y-4">
                 {["Installable manifest + icons", "Service-worker app shell", "Responsive tool routes", "GitHub Pages path-safe build", "Registry-backed release status"].map((item) => (
                   <div key={item} className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 shrink-0 text-foreground" />
