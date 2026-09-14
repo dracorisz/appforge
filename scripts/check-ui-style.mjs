@@ -14,16 +14,16 @@ const walk = (dir) => {
 }
 walk(root)
 
-const boundary = String.raw`(?:^|[\s"'` + '`' + String.raw`{}])`
-const radius = new RegExp(`${boundary}((?:[a-z-]+:)*rounded-[^\\s"'` + '`' + String.raw`}>]+)`, 'g')
-const shadow = new RegExp(`${boundary}((?:[a-z-]+:)*shadow(?:-[^\\s"'` + '`' + String.raw`}>]+)?)`, 'g')
-const fontSize = new RegExp(`${boundary}((?:[a-z-]+:)*text-(?:xs|sm|base|lg|xl|[2-9]xl|\\[-?\\d+(?:\\.\\d+)?(?:px|rem|em)\\]))(?=$|[\\s"'` + '`' + String.raw`{}])`, 'g')
-const spacing = new RegExp(`${boundary}((?:[a-z-]+:)*-?(?:m[trblxy]?|p[trblxy]?|space-[xy]|gap(?:-[xy])?)-(?:\\[[^\\]]+\\]|\\d+(?:\\.5)?))(?=$|[\\s"'` + '`' + String.raw`{}])`, 'g')
-const ringWidth = new RegExp(`${boundary}((?:[a-z-]+:)*ring-(?:0|1|2|4|8))(?=$|[\\s"'` + '`' + String.raw`{}])`, 'g')
+const radius = /(?:^|[\s"'`{}])((?:[a-z-]+:)*rounded-[^\s"'`}>]+)/g
+const shadow = /(?:^|[\s"'`{}])((?:[a-z-]+:)*shadow(?:-[^\s"'`}>]+)?)/g
+const fontSize = /(?:^|[\s"'`{}])((?:[a-z-]+:)*text-(?:xs|sm|base|lg|xl|[2-9]xl|\[-?\d+(?:\.\d+)?(?:px|rem|em)\]))(?=$|[\s"'`{}])/g
+const spacing = /(?:^|[\s"'`{}])((?:[a-z-]+:)*-?(?:m[trblxy]?|p[trblxy]?|space-[xy]|gap(?:-[xy])?)-(?:\[[^\]]+\]|\d+(?:\.5)?))(?=$|[\s"'`{}])/g
+const ringWidth = /(?:^|[\s"'`{}])((?:[a-z-]+:)*ring-(?:0|1|2|4|8))(?=$|[\s"'`{}])/g
 
 const violations = []
 const allowedFontSizes = new Set(['text-5xl', 'text-lg', 'text-sm', 'text-xs'])
 const allowedSpacing = new Set(['2', '4', '8'])
+const fontUsage = new Map([...allowedFontSizes].map((size) => [size, 0]))
 const utilityPart = (token) => token.slice(token.lastIndexOf(':') + 1)
 
 for (const file of files) {
@@ -39,7 +39,9 @@ for (const file of files) {
     }
     for (const match of line.matchAll(fontSize)) {
       const token = match[1]
-      if (!allowedFontSizes.has(utilityPart(token))) violations.push(`${file}:${index + 1}: noncanonical font size ${token}`)
+      const utility = utilityPart(token)
+      if (!allowedFontSizes.has(utility)) violations.push(`${file}:${index + 1}: noncanonical font size ${token}`)
+      else fontUsage.set(utility, (fontUsage.get(utility) || 0) + 1)
     }
     for (const match of line.matchAll(spacing)) {
       const token = match[1]
@@ -61,4 +63,5 @@ if (violations.length) {
   process.exit(1)
 }
 
+console.log(`Typography distribution: ${[...fontUsage.entries()].map(([size, count]) => `${size}=${count}`).join(', ')}`)
 console.log(`UI style contract OK across ${files.length} source files: typography text-5xl/text-lg/text-sm/text-xs only; spacing 2/4/8 only; rounded-xl only; shadow-xl only; ring-1 only.`)
