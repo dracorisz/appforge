@@ -14,11 +14,12 @@ const walk = (dir) => {
 }
 walk(root)
 
-const radius = /(?:^|[\s"'`])((?:[a-z-]+:)*rounded-[^\s"'`}>]+)/g
-const shadow = /(?:^|[\s"'`])((?:[a-z-]+:)*shadow(?:-[^\s"'`}>]+)?)/g
-const fontSize = /(?:^|[\s"'`])((?:[a-z-]+:)*text-(?:xs|sm|base|lg|xl|[2-9]xl|\[-?\d+(?:\.\d+)?(?:px|rem|em)\]))(?=$|[\s"'`}])/g
-const spacing = /(?:^|[\s"'`])((?:[a-z-]+:)*-?(?:m[trblxy]?|p[trblxy]?|space-[xy]|gap(?:-[xy])?)-(?:\[[^\]]+\]|\d+(?:\.5)?))(?=$|[\s"'`}])/g
-const ringWidth = /(?:^|[\s"'`])((?:[a-z-]+:)*ring-(?:0|1|2|4|8))(?=$|[\s"'`}])/g
+const boundary = String.raw`(?:^|[\s"'` + '`' + String.raw`{}])`
+const radius = new RegExp(`${boundary}((?:[a-z-]+:)*rounded-[^\\s"'` + '`' + String.raw`}>]+)`, 'g')
+const shadow = new RegExp(`${boundary}((?:[a-z-]+:)*shadow(?:-[^\\s"'` + '`' + String.raw`}>]+)?)`, 'g')
+const fontSize = new RegExp(`${boundary}((?:[a-z-]+:)*text-(?:xs|sm|base|lg|xl|[2-9]xl|\\[-?\\d+(?:\\.\\d+)?(?:px|rem|em)\\]))(?=$|[\\s"'` + '`' + String.raw`{}])`, 'g')
+const spacing = new RegExp(`${boundary}((?:[a-z-]+:)*-?(?:m[trblxy]?|p[trblxy]?|space-[xy]|gap(?:-[xy])?)-(?:\\[[^\\]]+\\]|\\d+(?:\\.5)?))(?=$|[\\s"'` + '`' + String.raw`{}])`, 'g')
+const ringWidth = new RegExp(`${boundary}((?:[a-z-]+:)*ring-(?:0|1|2|4|8))(?=$|[\\s"'` + '`' + String.raw`{}])`, 'g')
 
 const violations = []
 const allowedFontSizes = new Set(['text-5xl', 'text-lg', 'text-sm', 'text-xs'])
