@@ -93,30 +93,35 @@
   [data-route="/apps/image-labeler"] .grid:has(img) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* Weather cards react to the condition icon while retaining semantic app colors. */
+/* Weather cards react only to their primary condition icon, not metric icons. */
 [data-weather-now] .surface-card { transition: background 220ms ease, border-color 220ms ease, box-shadow 220ms ease; }
-[data-weather-now] .surface-card:has(.lucide-sun) {
+[data-weather-now] .surface-card:has(.flex.flex-col.items-end .lucide-sun),
+[data-weather-now] .surface-card:has(.flex.min-w-0.items-center.gap-4 .lucide-sun) {
   border-color: hsl(var(--warning) / 0.42);
   background: linear-gradient(145deg, hsl(var(--warning) / 0.16), hsl(var(--card) / 0.9) 58%);
 }
-[data-weather-now] .surface-card:has(.lucide-cloud-rain) {
+[data-weather-now] .surface-card:has(.flex.flex-col.items-end .lucide-cloud-rain),
+[data-weather-now] .surface-card:has(.flex.min-w-0.items-center.gap-4 .lucide-cloud-rain) {
   border-color: hsl(var(--info) / 0.42);
   background: linear-gradient(145deg, hsl(var(--info) / 0.16), hsl(var(--card) / 0.9) 58%);
 }
-[data-weather-now] .surface-card:has(.lucide-snowflake) {
+[data-weather-now] .surface-card:has(.flex.flex-col.items-end .lucide-snowflake),
+[data-weather-now] .surface-card:has(.flex.min-w-0.items-center.gap-4 .lucide-snowflake) {
   border-color: hsl(var(--info) / 0.32);
   background: linear-gradient(145deg, hsl(var(--info) / 0.1), hsl(var(--background) / 0.94) 58%);
 }
-[data-weather-now] .surface-card:has(.lucide-cloud) {
+[data-weather-now] .surface-card:has(.flex.flex-col.items-end .lucide-cloud),
+[data-weather-now] .surface-card:has(.flex.min-w-0.items-center.gap-4 .lucide-cloud) {
   border-color: hsl(var(--muted-foreground) / 0.3);
   background: linear-gradient(145deg, hsl(var(--muted) / 0.72), hsl(var(--card) / 0.9) 58%);
 }
-[data-weather-now] .surface-card:has(.lucide-wind) {
+[data-weather-now] .surface-card:has(.flex.flex-col.items-end .lucide-wind),
+[data-weather-now] .surface-card:has(.flex.min-w-0.items-center.gap-4 .lucide-wind) {
   border-color: hsl(var(--foreground) / 0.2);
   background: linear-gradient(145deg, hsl(var(--accent) / 0.55), hsl(var(--card) / 0.9) 58%);
 }
 
-/* Docs keeps the primary sections visible and reveals a deep page when it is active. */
+/* Keep the docs sidebar to the primary entry points; a selected deep page remains visible. */
 aside[aria-label="Documentation navigation"] nav a:first-child { display: none; }
 aside[aria-label="Documentation navigation"] nav a:nth-child(n + 9):not([class*="bg-accent"]) { display: none; }
 
