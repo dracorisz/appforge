@@ -3,8 +3,7 @@ import path from 'node:path'
 
 const root = path.resolve('src')
 const extensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.css'])
-let filesChanged = 0
-let replacements = 0
+const findings = []
 
 const walk = (dir) => {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -12,15 +11,15 @@ const walk = (dir) => {
     if (entry.isDirectory()) walk(full)
     else if (extensions.has(path.extname(entry.name))) {
       const source = fs.readFileSync(full, 'utf8')
-      const matches = source.match(/text-xs/g)
-      if (!matches?.length) continue
-      const next = source.replace(/text-xs/g, 'text-sm')
-      fs.writeFileSync(full, next)
-      filesChanged += 1
-      replacements += matches.length
+      const count = source.match(/text-xs/g)?.length || 0
+      if (count) findings.push({ file: path.relative(process.cwd(), full).replaceAll('\\', '/'), count })
     }
   }
 }
 
 walk(root)
-console.log(`Promoted ${replacements} text-xs utilities to text-sm across ${filesChanged} files.`)
+const total = findings.reduce((sum, item) => sum + item.count, 0)
+console.log(`text-xs audit: ${total} occurrence${total === 1 ? '' : 's'} across ${findings.length} file${findings.length === 1 ? '' : 's'}.`)
+for (const item of findings.sort((a, b) => b.count - a.count || a.file.localeCompare(b.file))) console.log(`${item.count}× ${item.file}`)
+
+if (process.argv.includes('--check') && total > 0) process.exit(1)
