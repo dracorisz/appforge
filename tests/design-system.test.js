@@ -106,7 +106,7 @@ test('badges use standard UI text and centrally configured pill geometry', async
 })
 
 test('Media Vault makes managed folders read-only for manual uploads', async () => {
-  const source = await read('src/components/dashboard/PF_UserMediaVault.tsx')
+  const source = await read('src/components/dashboard/MediaVault.tsx')
   assert.match(source, /MANAGED_FOLDERS = new Set\(\[["']desktop-buddies["'], ["']screenshots["'], ["']dragon-arena["'], ["']getter-pro["']\]\)/)
   assert.match(source, /\{ value: ["']general["'], label: ["']General["'] \}/)
   assert.match(source, /Uploads are disabled in this managed folder/)
@@ -127,7 +127,7 @@ test('file picker actions use a button and keep the native input outside labels'
 
   const favicon = await read('src/components/public/FaviconStudio.tsx')
   assert.match(favicon, /grid grid-cols-2 gap-2 pt-2/)
-  assert.match(favicon, /grid grid-cols-5 gap-2/)
+  assert.doesNotMatch(favicon, /grid grid-cols-5 gap-2/)
   assert.match(favicon, /width=\{16\} height=\{16\}/)
 })
 
