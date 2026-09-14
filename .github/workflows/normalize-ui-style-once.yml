@@ -1,0 +1,42 @@
+name: Normalize UI style once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/normalize-ui-style-once.mjs
+      - .github/workflows/normalize-ui-style-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Normalize canonical UI tokens
+        run: node scripts/normalize-ui-style-once.mjs
+      - name: Remove one-time helper
+        run: rm scripts/normalize-ui-style-once.mjs .github/workflows/normalize-ui-style-once.yml
+      - name: Verify style contract
+        run: npm run check:ui-style
+      - name: Commit normalization
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "style: normalize UI contract"
+          git push origin HEAD:main
