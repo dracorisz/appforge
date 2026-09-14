@@ -115,7 +115,7 @@ test('Media Vault makes managed folders read-only for manual uploads', async () 
   assert.match(source, /padding=\{list \? 4 : 0\}/)
   assert.match(source, /style=\{\{ padding: 0 \}\}/)
   assert.match(source, /\["desktop-buddies", "screenshots", "getter-pro"\]\.includes\(vaultFolder\(item\)\)/)
-  assert.match(source, /mt-2 flex flex-wrap items-center gap-2/)
+  assert.match(source, /className="(?=[^"]*mt-2)(?=[^"]*flex)(?=[^"]*flex-wrap)(?=[^"]*items-center)(?=[^"]*gap-2)[^"]*"/)
   assert.match(source, /sourceLabel\(item\)/)
 })
 
