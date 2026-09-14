@@ -1,21 +1,23 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BuildBadge } from '@/components/ui'
+import { BuildBadge, Button } from '@/components/ui'
 
 export function Footer({ version: _version }: { version?: string }) {
   const navigate = useNavigate()
 
   return (
-    <footer className="no-print border-t border-border/70 bg-background/72 py-2 backdrop-blur-xl">
-      <div className="flex flex-col gap-2 px-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+    <footer className="no-print border-t border-border/70 bg-background/70 py-2 backdrop-blur-xl">
+      <div className="flex flex-col gap-2 px-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <span className="truncate">AppForge — Simple, powerful tools</span>
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => navigate('/')}
-          className="w-fit shrink-0 rounded-xl transition-opacity hover:opacity-80 focus:outline-none focus:ring-1 focus:ring-ring/30"
           aria-label="Open AppForge dashboard"
+          className="w-fit"
         >
           <BuildBadge />
-        </button>
+        </Button>
       </div>
     </footer>
   )
