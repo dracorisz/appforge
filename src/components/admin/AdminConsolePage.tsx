@@ -21,7 +21,7 @@ import { AppAdminPage } from '@/components/dashboard/AppAdminPage'
 import MarketingStudio from '@/components/resources/MarketingStudio'
 
 type Section = 'users' | 'content' | 'apps' | 'marketing'
-type ContentSection = 'editor' | 'images'
+type ContentSection = 'blog' | 'landing' | 'images'
 
 export function AdminConsolePage() {
   const { user } = useAuth()
@@ -33,7 +33,8 @@ export function AdminConsolePage() {
   const [params, setParams] = useSearchParams()
   const requestedSection = params.get('section')
   const section: Section = requestedSection === 'content' || requestedSection === 'apps' || requestedSection === 'marketing' ? requestedSection : 'users'
-  const contentSection: ContentSection = params.get('contentTab') === 'images' ? 'images' : 'editor'
+  const requestedContentSection = params.get('contentTab')
+  const contentSection: ContentSection = requestedContentSection === 'landing' || requestedContentSection === 'images' ? requestedContentSection : 'blog'
   const [users, setUsers] = React.useState<AdminUser[]>([])
   const [busy, setBusy] = React.useState('')
 
@@ -47,7 +48,7 @@ export function AdminConsolePage() {
   const setContentSection = React.useCallback((value: ContentSection) => {
     const next = new URLSearchParams(params)
     next.set('section', 'content')
-    if (value === 'editor') next.delete('contentTab')
+    if (value === 'blog') next.delete('contentTab')
     else next.set('contentTab', value)
     setParams(next, { replace: true })
   }, [params, setParams])
@@ -96,11 +97,11 @@ export function AdminConsolePage() {
   return (
     <div className="w-full space-y-4 pb-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><h1 className="text-2xl font-semibold tracking-tight">Admin</h1><p className="mt-2 text-sm text-muted-foreground">Users, content, app presentation and internal marketing tools.</p></div><Link to="/settings" className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">Back to Settings</Link></div>
-      <Tabs tabs={[{ id: 'users', label: 'Users' }, { id: 'content', label: 'Content Manager' }, { id: 'apps', label: 'Apps' }, { id: 'marketing', label: 'Marketing Studio' }]} active={section} onChange={(id) => setSection(id as Section)} ariaLabel="Admin sections" />
+      <Tabs tabs={[{ id: 'users', label: 'Users' }, { id: 'content', label: 'Content' }, { id: 'apps', label: 'Apps' }, { id: 'marketing', label: 'Marketing Studio' }]} active={section} onChange={(id) => setSection(id as Section)} ariaLabel="Admin sections" />
 
       {section === 'users' && <div className="space-y-4"><div className="flex items-center justify-between"><h2 className="text-sm font-semibold">Users</h2><Button variant="secondary" size="sm" onClick={() => void refreshUsers()} disabled={busy === 'users'}><RefreshCw className={busy === 'users' ? 'animate-spin' : ''} /> Refresh</Button></div>{users.map((item) => <Card key={item.id} className="p-4"><div className="flex flex-col gap-4 lg:flex-row lg:items-center"><div className="flex min-w-0 flex-1 items-center gap-4"><div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted">{item.avatar_url ? <img src={item.avatar_url} alt="" className="h-full w-full object-cover" /> : <UserRound className="h-4 w-4" />}</div><div className="min-w-0"><div className="truncate text-sm font-medium">{item.display_name || item.email || item.id}</div><div className="truncate text-xs text-muted-foreground">{item.email}</div></div></div><div className="flex flex-wrap items-center gap-2"><select value={item.role} onChange={async (event) => { const nextRole = event.target.value as 'user' | 'admin'; try { await adminSetRole(item.id, nextRole); setUsers((rows) => rows.map((row) => row.id === item.id ? { ...row, role: nextRole } : row)); toast.success('Role updated.') } catch (roleError) { fail(roleError, 'Role update failed.') } }} className="min-h-9 cursor-pointer rounded-xl border border-input bg-background/55 px-2 text-xs"><option value="user">user</option><option value="admin">admin</option></select><Button variant="secondary" size="sm" onClick={async () => { try { await adminUpdateProfile(item.id, { display_name: item.display_name, username: item.username, is_public: !item.is_public }); setUsers((rows) => rows.map((row) => row.id === item.id ? { ...row, is_public: !row.is_public } : row)); toast.success('Visibility updated.') } catch (profileError) { fail(profileError, 'Update failed.') } }}>{item.is_public ? 'Public' : 'Private'}</Button>{item.id !== user.id && <Button variant="ghost" size="sm" onClick={async () => { if (!confirm(`Delete ${item.email || 'this user'}?`)) return; try { await adminDeleteUser(item.id); setUsers((rows) => rows.filter((row) => row.id !== item.id)); toast.success('User deleted.') } catch (deleteError) { fail(deleteError, 'Delete failed.') } }}><Trash2 /></Button>}</div></div></Card>)}</div>}
 
-      {section === 'content' && <div className="space-y-4"><Tabs tabs={[{ id: 'editor', label: 'Blog & landing' }, { id: 'images', label: 'Images' }]} active={contentSection} onChange={(id) => setContentSection(id as ContentSection)} ariaLabel="Content manager sections" />{contentSection === 'editor' ? <div className="space-y-4"><AdminBlogFeaturedControl /><AdminContentManager embedded adminVerified /></div> : <AdminImageManager />}</div>}
+      {section === 'content' && <div className="space-y-4"><Tabs tabs={[{ id: 'blog', label: 'Blog' }, { id: 'landing', label: 'Landing' }, { id: 'images', label: 'Images' }]} active={contentSection} onChange={(id) => setContentSection(id as ContentSection)} ariaLabel="Content sections" />{contentSection === 'blog' && <div className="space-y-4"><AdminBlogFeaturedControl /><AdminContentManager embedded adminVerified contentType="blog_article" /></div>}{contentSection === 'landing' && <AdminContentManager embedded adminVerified contentType="video_teaser" />}{contentSection === 'images' && <AdminImageManager />}</div>}
       {section === 'apps' && <AppAdminPage />}
       {section === 'marketing' && <MarketingStudio />}
     </div>
