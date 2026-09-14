@@ -125,6 +125,43 @@
 aside[aria-label="Documentation navigation"] nav a:first-child { display: none; }
 aside[aria-label="Documentation navigation"] nav a:nth-child(n + 9):not([class*="bg-accent"]) { display: none; }
 
+/* Theme-wide contrast normalization: softer in light mode, clearer in dark mode. */
+:root {
+  --border: 240 5.9% 88%;
+  --input: 240 5.9% 88%;
+  --ring: 240 5.9% 70%;
+  --border-opacity: 0.84;
+  --surface-border-opacity: 0.82;
+}
+
+.dark {
+  --border: 240 4.5% 28%;
+  --input: 240 4.5% 28%;
+  --ring: 240 4.9% 72%;
+  --border-opacity: 0.78;
+  --surface-border-opacity: 0.82;
+}
+
+.surface-card:hover,
+.surface-panel:hover {
+  border-color: hsl(var(--foreground) / 0.26);
+}
+
+.surface-card:focus-within,
+.surface-panel:focus-within,
+.surface-popover:focus-within {
+  border-color: hsl(var(--ring) / 0.56);
+}
+
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]), select, textarea):hover:not(:disabled) {
+  border-color: hsl(var(--foreground) / 0.26);
+}
+
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]), select, textarea):focus-visible {
+  border-color: hsl(var(--ring) / 0.62);
+  box-shadow: 0 0 0 1px hsl(var(--ring) / 0.24);
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-route="/apps/scrapper-pro"] .surface-card,
   [data-route="/apps/scrapper-pro"] .surface-card *,
