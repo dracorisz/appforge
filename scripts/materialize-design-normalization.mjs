@@ -12,7 +12,57 @@ if (!token || !repository || !parentSha) {
 const root = path.resolve('src')
 const extensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.css'])
 const changed = []
-let replacements = 0
+const totals = { xs: 0, weights: 0, lineHeights: 0, palette: 0 }
+
+const neutralFamilies = new Set(['slate', 'gray', 'zinc', 'neutral', 'stone'])
+const destructiveFamilies = new Set(['red', 'rose'])
+const warningFamilies = new Set(['orange', 'amber', 'yellow'])
+const successFamilies = new Set(['lime', 'green', 'emerald'])
+const infoFamilies = new Set(['teal', 'cyan', 'sky', 'blue'])
+const primaryFamilies = new Set(['indigo', 'violet', 'purple', 'fuchsia', 'pink'])
+const colorFamilies = [...neutralFamilies, ...destructiveFamilies, ...warningFamilies, ...successFamilies, ...infoFamilies, ...primaryFamilies, 'black', 'white']
+const colorUtility = new RegExp(`\\b((?:[a-zA-Z0-9_\\-\\[\\]&]+:)*)((text|bg|border|ring|from|via|to|fill|stroke)-(${colorFamilies.join('|')})(?:-[0-9]{2,3})?(\\/[0-9]{1,3})?)\\b`, 'g')
+
+const semanticColor = (kind, family) => {
+  if (neutralFamilies.has(family)) {
+    if (kind === 'text' || kind === 'fill' || kind === 'stroke') return 'muted-foreground'
+    if (kind === 'border') return 'border'
+    if (kind === 'ring') return 'ring'
+    return 'muted'
+  }
+  if (destructiveFamilies.has(family)) return 'destructive'
+  if (warningFamilies.has(family)) return 'warning'
+  if (successFamilies.has(family)) return 'success'
+  if (infoFamilies.has(family)) return 'info'
+  if (primaryFamilies.has(family)) return 'primary'
+  if (family === 'black') return 'overlay'
+  return 'inverse'
+}
+
+const normalize = (source) => {
+  let next = source
+  next = next.replace(/\btext-xs\b/g, () => {
+    totals.xs += 1
+    return 'text-sm'
+  })
+  next = next.replace(/\bfont-(?:bold|extrabold|black)\b/g, () => {
+    totals.weights += 1
+    return 'font-semibold'
+  })
+  next = next.replace(/\bfont-(?:thin|extralight|light)\b/g, () => {
+    totals.weights += 1
+    return 'font-normal'
+  })
+  next = next.replace(/\s+leading-(?:none|tight|snug|normal|relaxed|loose|\d+|\[[^\]]+\])/g, () => {
+    totals.lineHeights += 1
+    return ''
+  })
+  next = next.replace(colorUtility, (_match, variants, utility, kind, family, opacity = '') => {
+    totals.palette += 1
+    return `${variants}${kind}-${semanticColor(kind, family)}${opacity}`
+  })
+  return next
+}
 
 const walk = (dir) => {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -20,19 +70,17 @@ const walk = (dir) => {
     if (entry.isDirectory()) walk(full)
     else if (extensions.has(path.extname(entry.name))) {
       const source = fs.readFileSync(full, 'utf8')
-      const matches = source.match(/text-xs/g)
-      if (!matches?.length) continue
-      const next = source.replace(/text-xs/g, 'text-sm')
+      const next = normalize(source)
+      if (next === source) continue
       fs.writeFileSync(full, next)
       changed.push(path.relative(process.cwd(), full).replaceAll('\\', '/'))
-      replacements += matches.length
     }
   }
 }
 walk(root)
 
 if (!changed.length) {
-  console.log('No text-xs utilities remain; no normalization commit is needed.')
+  console.log('No design-token normalization changes are needed.')
   process.exit(0)
 }
 
@@ -69,13 +117,14 @@ const nextTree = await api('/git/trees', {
 const commit = await api('/git/commits', {
   method: 'POST',
   body: JSON.stringify({
-    message: 'style: promote ordinary xs typography project-wide',
+    message: 'style: normalize typography and semantic colors project-wide',
     tree: nextTree.sha,
     parents: [parentSha],
   }),
   headers: { 'Content-Type': 'application/json' },
 })
 
-console.log(`Normalized ${replacements} text-xs utilities across ${changed.length} files.`)
+console.log(`Normalized ${changed.length} source files.`)
+console.log(`Design token replacements: xs=${totals.xs}, weights=${totals.weights}, line-heights=${totals.lineHeights}, palette=${totals.palette}.`)
 console.log(`NORMALIZED_COMMIT_SHA=${commit.sha}`)
 console.log(`NORMALIZED_TREE_SHA=${nextTree.sha}`)
