@@ -1,7 +1,7 @@
 import React from 'react'
 import { Camera, MessageCircle, Move, Volume2, X } from 'lucide-react'
 import { uploadVaultMedia } from '@/lib/mediaVault'
-import { APP_TOAST_EVENT, type AppToast, toast } from '@/lib/toast'
+import { APP_BUDDY_NOTIFICATION_EVENT, type AppToast, toast } from '@/lib/toast'
 import { isWidgetEnabled, setWidgetEnabled, subscribeWidgetPreferences } from '@/lib/widgetPreferences'
 
 const STORAGE_KEY = 'appforge-desktop-buddy-v1'
@@ -79,6 +79,8 @@ export function DesktopBuddyOverlay() {
   const [savingScreenshot, setSavingScreenshot] = React.useState(false)
   const [status, setStatus] = React.useState('Drag the character anywhere on the page.')
   const dragRef = React.useRef<{ pointerId: number; startX: number; startY: number; originX: number; originY: number } | null>(null)
+  const dismissTimerRef = React.useRef<number | null>(null)
+  const lastPresentationRef = React.useRef<{ id: string; text: string; at: number } | null>(null)
 
   const syncBuddy = React.useCallback(() => setBuddy(readBuddy()), [])
 
@@ -105,8 +107,13 @@ export function DesktopBuddyOverlay() {
     return () => window.removeEventListener('resize', onResize)
   }, [])
 
+  React.useEffect(() => () => {
+    if (dismissTimerRef.current !== null) window.clearTimeout(dismissTimerRef.current)
+    window.speechSynthesis?.cancel()
+  }, [])
+
   const speakText = React.useCallback((text: string) => {
-    if (!('speechSynthesis' in window) || !text.trim()) return
+    if (!buddy.voiceEnabled || !enabled || !('speechSynthesis' in window) || !text.trim()) return
     window.speechSynthesis.cancel()
     const utterance = new SpeechSynthesisUtterance(text)
     const voice = window.speechSynthesis.getVoices().find((candidate) => candidate.name === buddy.voiceName)
@@ -115,28 +122,42 @@ export function DesktopBuddyOverlay() {
     utterance.onend = () => setSpeaking(false)
     utterance.onerror = () => setSpeaking(false)
     window.speechSynthesis.speak(utterance)
-  }, [buddy.voiceName])
+  }, [buddy.voiceEnabled, buddy.voiceName, enabled])
+
+  const present = React.useCallback((text: string, id = '', duration = 5000) => {
+    if (!enabled) return
+    const clean = text.trim()
+    if (!clean) return
+    const now = Date.now()
+    const previous = lastPresentationRef.current
+    if ((id && previous?.id === id) || (previous?.text === clean && now - previous.at < 1500)) return
+    lastPresentationRef.current = { id, text: clean, at: now }
+    setMessage(clean.slice(0, 1000))
+    setShowMessage(true)
+    if (dismissTimerRef.current !== null) window.clearTimeout(dismissTimerRef.current)
+    dismissTimerRef.current = window.setTimeout(() => {
+      setShowMessage(false)
+      dismissTimerRef.current = null
+    }, Math.max(4000, Math.min(6000, duration || 5000)))
+    speakText(clean)
+  }, [enabled, speakText])
 
   React.useEffect(() => {
-    const present = (text: string) => {
-      const clean = text.trim()
-      if (!clean) return
-      setMessage(clean.slice(0, 1000))
-      setShowMessage(true)
-      if (buddy.voiceEnabled) speakText(clean)
+    const onAgentResponse = (event: Event) => {
+      const detail = (event as CustomEvent<{ text?: string; createdAt?: string }>).detail
+      present(String(detail?.text || ''), detail?.createdAt || '')
     }
-    const onAgentResponse = (event: Event) => present(String((event as CustomEvent<{ text?: string }>).detail?.text || ''))
-    const onToast = (event: Event) => {
+    const onBuddyNotification = (event: Event) => {
       const notification = (event as CustomEvent<AppToast>).detail
-      if (notification?.message) present(notification.message)
+      if (notification?.message) present(notification.message, notification.id, notification.duration)
     }
     window.addEventListener('appforge:agent-response', onAgentResponse)
-    window.addEventListener(APP_TOAST_EVENT, onToast)
+    window.addEventListener(APP_BUDDY_NOTIFICATION_EVENT, onBuddyNotification)
     return () => {
       window.removeEventListener('appforge:agent-response', onAgentResponse)
-      window.removeEventListener(APP_TOAST_EVENT, onToast)
+      window.removeEventListener(APP_BUDDY_NOTIFICATION_EVENT, onBuddyNotification)
     }
-  }, [buddy.voiceEnabled, speakText])
+  }, [present])
 
   const startDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     dragRef.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, originX: position.x, originY: position.y }
