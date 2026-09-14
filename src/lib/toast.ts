@@ -1,3 +1,5 @@
+import { isWidgetEnabled } from '@/lib/widgetPreferences'
+
 export type ToastTone = 'success' | 'error' | 'info'
 
 export type AppToast = {
@@ -8,11 +10,18 @@ export type AppToast = {
 }
 
 export const APP_TOAST_EVENT = 'appforge:toast'
+export const APP_BUDDY_NOTIFICATION_EVENT = 'appforge:desktop-buddy-notification'
 
 const emit = (message: string, tone: ToastTone, duration = 3200) => {
   if (typeof window === 'undefined' || !message.trim()) return
-  const detail: AppToast = { id: crypto.randomUUID(), message: message.trim(), tone, duration }
-  window.dispatchEvent(new CustomEvent<AppToast>(APP_TOAST_EVENT, { detail }))
+  const buddyEnabled = isWidgetEnabled('desktop-buddy')
+  const detail: AppToast = {
+    id: crypto.randomUUID(),
+    message: message.trim(),
+    tone,
+    duration: buddyEnabled ? 5000 : duration,
+  }
+  window.dispatchEvent(new CustomEvent<AppToast>(buddyEnabled ? APP_BUDDY_NOTIFICATION_EVENT : APP_TOAST_EVENT, { detail }))
 }
 
 export const toast = {
