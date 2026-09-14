@@ -1,130 +1,144 @@
-import React from 'react'
-import { ArrowLeftRight, ArrowRight, Cloud, PlayCircle, ShieldCheck } from 'lucide-react'
-import { SiGithub as Github, SiGoogle as Google } from 'react-icons/si'
-import { Link, useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui'
-import { getAllApps } from '@/lib/registry'
-import { PublicFooter } from '@/components/public/PublicFooter'
-import { FRONTEND_CONTENT_UPDATED_EVENT, loadPublishedFrontendContent } from '@/lib/frontendContent'
-import { PublicHeader } from '@/components/public/PublicHeader'
-import { useAuth } from './AuthProvider'
-import { consumeReturnPath, normalizeReturnPath } from './returnPath'
-import { SiHuggingface as HuggingFaceLogo } from 'react-icons/si'
+import React from "react";
+import { ArrowLeftRight, ArrowRight, Cloud, PlayCircle, ShieldCheck } from "lucide-react";
+import { SiGithub as Github, SiGoogle as Google } from "react-icons/si";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui";
+import { getAllApps } from "@/lib/registry";
+import { PublicFooter } from "@/components/public/PublicFooter";
+import { FRONTEND_CONTENT_UPDATED_EVENT, loadPublishedFrontendContent } from "@/lib/frontendContent";
+import { PublicHeader } from "@/components/public/PublicHeader";
+import { useAuth } from "./AuthProvider";
+import { consumeReturnPath, normalizeReturnPath } from "./returnPath";
+import { SiHuggingface as HuggingFaceLogo } from "react-icons/si";
 
-const DEFAULT_VIDEO_URL = 'https://www.youtube.com/watch?v=5dAQXJXbvhI'
-const DEFAULT_VIDEO_EMBED_URL = 'https://www.youtube-nocookie.com/embed/5dAQXJXbvhI?rel=0&modestbranding=1'
-const LANDING_SLUG = 'appforge-walkthrough'
-const APPFORGE_MARK = '/favicon.svg?v=2'
+const DEFAULT_VIDEO_URL = "https://www.youtube.com/watch?v=5dAQXJXbvhI";
+const DEFAULT_VIDEO_EMBED_URL = "https://www.youtube-nocookie.com/embed/5dAQXJXbvhI?rel=0&modestbranding=1";
+const LANDING_SLUG = "appforge-walkthrough";
+const APPFORGE_MARK = "/favicon.svg?v=2";
 
 const publicTools = [
-  { label: 'Weather Now', description: 'Live weather lookup', path: '/apps/weather-now', icon: Cloud },
-  { label: 'Data Converter', description: 'Local format conversion', path: '/apps/data-converter', icon: ArrowLeftRight },
-]
+  { label: "Weather Now", description: "Live weather lookup", path: "/apps/weather-now", icon: Cloud },
+  { label: "Data Converter", description: "Local format conversion", path: "/apps/data-converter", icon: ArrowLeftRight },
+];
 
-type AuthProviderName = 'google' | 'github'
+type AuthProviderName = "google" | "github";
 
 const safeExternalUrl = (value: string) => {
   try {
-    const parsed = new URL(value)
-    return parsed.protocol === 'https:' || parsed.protocol === 'http:' ? parsed.toString() : ''
-  } catch { return '' }
-}
+    const parsed = new URL(value);
+    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.toString() : "";
+  } catch {
+    return "";
+  }
+};
 
 const youtubeEmbed = (url: string) => {
   try {
-    const parsed = new URL(url)
-    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return ''
-    const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '')
-    const supportedHost = hostname === 'youtube.com' || hostname === 'm.youtube.com' || hostname === 'youtu.be' || hostname === 'youtube-nocookie.com'
-    if (!supportedHost) return ''
-    const id = hostname === 'youtu.be' ? parsed.pathname.slice(1) : parsed.searchParams.get('v') || (parsed.pathname.startsWith('/embed/') ? parsed.pathname.split('/')[2] : '')
-    return id && /^[\w-]{6,}$/.test(id) ? `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1` : ''
-  } catch { return '' }
-}
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return "";
+    const hostname = parsed.hostname.toLowerCase().replace(/^www\./, "");
+    const supportedHost = hostname === "youtube.com" || hostname === "m.youtube.com" || hostname === "youtu.be" || hostname === "youtube-nocookie.com";
+    if (!supportedHost) return "";
+    const id = hostname === "youtu.be" ? parsed.pathname.slice(1) : parsed.searchParams.get("v") || (parsed.pathname.startsWith("/embed/") ? parsed.pathname.split("/")[2] : "");
+    return id && /^[\w-]{6,}$/.test(id) ? `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1` : "";
+  } catch {
+    return "";
+  }
+};
 
-export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: string; landingOnly?: boolean }) {
-  const navigate = useNavigate()
-  const { user, loading, signInWithGoogle, signInWithGitHub, signInWithEmail } = useAuth()
-  const [busyProvider, setBusyProvider] = React.useState<AuthProviderName | null>(null)
-  const [error, setError] = React.useState('')
-  const [authOpen, setAuthOpen] = React.useState(!landingOnly)
-  const [email, setEmail] = React.useState('')
-  const [password, setPassword] = React.useState('')
-  const [videoUrl, setVideoUrl] = React.useState(DEFAULT_VIDEO_URL)
-  const [videoEmbedUrl, setVideoEmbedUrl] = React.useState(DEFAULT_VIDEO_EMBED_URL)
-  const [showAppCount, setShowAppCount] = React.useState(true)
-  const [videoTitle, setVideoTitle] = React.useState('See AppForge in action')
-  const [videoSummary, setVideoSummary] = React.useState('A short walkthrough of the current AppForge experience.')
-  const [appCount, setAppCount] = React.useState(() => getAllApps().length)
+export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: string; landingOnly?: boolean }) {
+  const navigate = useNavigate();
+  const { user, loading, signInWithGoogle, signInWithGitHub, signInWithEmail } = useAuth();
+  const [busyProvider, setBusyProvider] = React.useState<AuthProviderName | null>(null);
+  const [error, setError] = React.useState("");
+  const [authOpen, setAuthOpen] = React.useState(!landingOnly);
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [videoUrl, setVideoUrl] = React.useState(DEFAULT_VIDEO_URL);
+  const [videoEmbedUrl, setVideoEmbedUrl] = React.useState(DEFAULT_VIDEO_EMBED_URL);
+  const [showAppCount, setShowAppCount] = React.useState(true);
+  const [videoTitle, setVideoTitle] = React.useState("See AppForge in action");
+  const [videoSummary, setVideoSummary] = React.useState("A short walkthrough of the current AppForge experience.");
+  const [appCount, setAppCount] = React.useState(() => getAllApps().length);
 
   React.useEffect(() => {
-    if (landingOnly || loading || !user) return
-    navigate(consumeReturnPath(returnTo), { replace: true })
-  }, [landingOnly, loading, navigate, returnTo, user])
+    if (landingOnly || loading || !user) return;
+    navigate(consumeReturnPath(returnTo), { replace: true });
+  }, [landingOnly, loading, navigate, returnTo, user]);
 
   const refreshLandingContent = React.useCallback(async () => {
     try {
-      const records = await loadPublishedFrontendContent('video_teaser')
-      const teaser = records.find((record) => record.slug === LANDING_SLUG) || records[0]
+      const records = await loadPublishedFrontendContent("video_teaser");
+      const teaser = records.find((record) => record.slug === LANDING_SLUG) || records[0];
       if (!teaser) {
-        setShowAppCount(true)
-        setVideoTitle('See AppForge in action')
-        setVideoSummary('A short walkthrough of the current AppForge experience.')
-        setVideoUrl(DEFAULT_VIDEO_URL)
-        setVideoEmbedUrl(DEFAULT_VIDEO_EMBED_URL)
-        return
+        setShowAppCount(true);
+        setVideoTitle("See AppForge in action");
+        setVideoSummary("A short walkthrough of the current AppForge experience.");
+        setVideoUrl(DEFAULT_VIDEO_URL);
+        setVideoEmbedUrl(DEFAULT_VIDEO_EMBED_URL);
+        return;
       }
-      setShowAppCount(teaser.metadata?.show_active_app_count !== false)
-      setVideoTitle(teaser.title || 'See AppForge in action')
-      setVideoSummary(teaser.summary || 'A short walkthrough of the current AppForge experience.')
-      const safeUrl = teaser.video_url ? safeExternalUrl(teaser.video_url) : ''
+      setShowAppCount(teaser.metadata?.show_active_app_count !== false);
+      setVideoTitle(teaser.title || "See AppForge in action");
+      setVideoSummary(teaser.summary || "A short walkthrough of the current AppForge experience.");
+      const safeUrl = teaser.video_url ? safeExternalUrl(teaser.video_url) : "";
       if (safeUrl) {
-        setVideoUrl(safeUrl)
-        setVideoEmbedUrl(youtubeEmbed(safeUrl))
+        setVideoUrl(safeUrl);
+        setVideoEmbedUrl(youtubeEmbed(safeUrl));
       } else {
-        setVideoUrl(DEFAULT_VIDEO_URL)
-        setVideoEmbedUrl(DEFAULT_VIDEO_EMBED_URL)
+        setVideoUrl(DEFAULT_VIDEO_URL);
+        setVideoEmbedUrl(DEFAULT_VIDEO_EMBED_URL);
       }
     } catch (teaserError) {
-      console.warn('AppForge video teaser unavailable; using bundled walkthrough.', teaserError)
+      console.warn("AppForge video teaser unavailable; using bundled walkthrough.", teaserError);
     }
-  }, [])
+  }, []);
 
   React.useEffect(() => {
-    const refresh = () => { setAppCount(getAllApps().length); void refreshLandingContent() }
-    const onStorage = (event: StorageEvent) => { if (event.key === 'appforge-frontend-content-updated-at') refresh() }
-    const onVisibility = () => { if (document.visibilityState === 'visible') refresh() }
-    refresh()
-    window.addEventListener(FRONTEND_CONTENT_UPDATED_EVENT, refresh)
-    window.addEventListener('appforge:app-overrides-updated', refresh)
-    window.addEventListener('focus', refresh)
-    window.addEventListener('storage', onStorage)
-    document.addEventListener('visibilitychange', onVisibility)
+    const refresh = () => {
+      setAppCount(getAllApps().length);
+      void refreshLandingContent();
+    };
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === "appforge-frontend-content-updated-at") refresh();
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    refresh();
+    window.addEventListener(FRONTEND_CONTENT_UPDATED_EVENT, refresh);
+    window.addEventListener("appforge:app-overrides-updated", refresh);
+    window.addEventListener("focus", refresh);
+    window.addEventListener("storage", onStorage);
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
-      window.removeEventListener(FRONTEND_CONTENT_UPDATED_EVENT, refresh)
-      window.removeEventListener('appforge:app-overrides-updated', refresh)
-      window.removeEventListener('focus', refresh)
-      window.removeEventListener('storage', onStorage)
-      document.removeEventListener('visibilitychange', onVisibility)
-    }
-  }, [refreshLandingContent])
+      window.removeEventListener(FRONTEND_CONTENT_UPDATED_EVENT, refresh);
+      window.removeEventListener("appforge:app-overrides-updated", refresh);
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("storage", onStorage);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [refreshLandingContent]);
 
   const login = async (provider: AuthProviderName) => {
-    if (user) { navigate('/'); return }
-    setBusyProvider(provider)
-    setError('')
-    try {
-      const normalized = normalizeReturnPath(returnTo)
-      if (provider === 'github') await signInWithGitHub(normalized)
-      else await signInWithGoogle(normalized)
-    } catch (loginError) {
-      setError(loginError instanceof Error ? loginError.message : `${provider === 'github' ? 'GitHub' : 'Google'} sign-in could not start.`)
-      setBusyProvider(null)
+    if (user) {
+      navigate("/");
+      return;
     }
-  }
+    setBusyProvider(provider);
+    setError("");
+    try {
+      const normalized = normalizeReturnPath(returnTo);
+      if (provider === "github") await signInWithGitHub(normalized);
+      else await signInWithGoogle(normalized);
+    } catch (loginError) {
+      setError(loginError instanceof Error ? loginError.message : `${provider === "github" ? "GitHub" : "Google"} sign-in could not start.`);
+      setBusyProvider(null);
+    }
+  };
 
   return (
-    <div className="dark min-h-dvh overflow-x-hidden bg-black text-foreground" style={{ colorScheme: 'dark', '--background': '0 0% 0%' } as React.CSSProperties}>
+    <div className="dark min-h-dvh overflow-x-hidden bg-black text-foreground" style={{ colorScheme: "dark", "--background": "0 0% 0%" } as React.CSSProperties}>
       <div className="relative isolate flex min-h-dvh flex-col overflow-hidden">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute left-1/2 top-[-28rem] h-[52rem] w-[52rem] -translate-x-1/2 rounded-xl border border-border/35 bg-accent/20 blur-3xl" />
@@ -136,23 +150,70 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-8 pt-3 sm:px-6 sm:pt-6 lg:px-8">
           <div className="grid items-center gap-8 lg:min-h-[calc(100dvh-8rem)] lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] lg:gap-10 xl:gap-12">
             <section className="max-w-4xl py-4 lg:py-8">
-              <h1 className="max-w-4xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-6xl lg:text-[4.15rem] lg:leading-[1.02] xl:text-[4.55rem]">Build useful things.<span className="block text-muted-foreground">Own the workflow.</span></h1>
+              <h1 className="max-w-4xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-6xl lg:text-[4.15rem] lg:leading-[1.02] xl:text-[4.55rem]">
+                Build useful things.<span className="block text-muted-foreground">Own the workflow.</span>
+              </h1>
               <p className="mt-5 max-w-2xl text-pretty text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">Practical tools in one consistent workspace.</p>
               <div className="mt-7 flex flex-wrap gap-3" aria-busy={Boolean(busyProvider) || loading}>
-                {user ? <Button className="h-11 px-5" onClick={() => navigate('/')} disabled={loading}>Open workspace <ArrowRight className="h-4 w-4" /></Button> : <Button className="h-11 px-5" onClick={() => setAuthOpen(true)} disabled={loading}>Sign in <ArrowRight className="h-4 w-4" /></Button>}
+                {user ? (
+                  <Button className="h-11 px-5" onClick={() => navigate("/")} disabled={loading}>
+                    Open workspace <ArrowRight className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button className="h-11 px-5" onClick={() => setAuthOpen(true)} disabled={loading}>
+                    Sign in <ArrowRight className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
-              {error && <div role="alert" aria-live="polite" className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}
-              {showAppCount && <p className="mt-8 border-t border-border/60 pt-5 text-xs text-muted-foreground"><strong className="font-semibold text-foreground">{appCount}</strong> active apps · open source</p>}
+              {error && (
+                <div role="alert" aria-live="polite" className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
+              {showAppCount && (
+                <p className="mt-8 border-t border-border/60 pt-5 text-xs text-muted-foreground">
+                  <strong className="font-semibold text-foreground">{appCount}</strong> active apps · open source
+                </p>
+              )}
             </section>
 
             <section className="relative mx-auto w-full max-w-xl lg:max-w-none" aria-label="Public tools and workspace access">
               <div aria-hidden="true" className="absolute inset-8 -z-10 rounded-xl border border-border/50 bg-accent/25 blur-2xl" />
               <div className="rounded-xl border border-border/70 bg-background/80 p-4 backdrop-blur-xl sm:p-5">
-                <div className="flex items-center justify-between gap-4 border-b border-border/60 pb-4"><div className="flex items-center gap-3"><div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-background"><img src={APPFORGE_MARK} alt="" className="h-9 w-9 rounded-xl" decoding="async" /></div><div><div className="text-sm font-semibold">AppForge</div><div className="text-xs text-muted-foreground">Public tools + private workspace</div></div></div><ShieldCheck className="h-5 w-5 shrink-0 text-muted-foreground" /></div>
-                <div className="grid gap-2 py-4">{publicTools.map(({ label, description, path, icon: Icon }) => <Link key={path} to={path} className="group flex min-h-14 items-center gap-3 rounded-xl border border-border/70 px-3 py-3 transition-colors hover:border-border/70 hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-background"><Icon className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-medium">{label}</span><span className="block text-xs text-muted-foreground">{description}</span></span><ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" /></Link>)}</div>
-                <Link to="/explore" className="group flex min-h-12 items-center justify-between rounded-xl border border-border/70 bg-background/65 px-3 py-3 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"><span>Browse all public apps</span><ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" /></Link>
+                <div className="flex items-center justify-between gap-4 border-b border-border/60 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-background">
+                      <img src={APPFORGE_MARK} alt="" className="h-9 w-9 rounded-xl" decoding="async" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold">AppForge</div>
+                      <div className="text-xs text-muted-foreground">Public tools + private workspace</div>
+                    </div>
+                  </div>
+                  <ShieldCheck className="h-5 w-5 shrink-0 text-muted-foreground" />
+                </div>
+                <div className="grid gap-2 py-4">
+                  {publicTools.map(({ label, description, path, icon: Icon }) => (
+                    <Link key={path} to={path} className="group flex min-h-14 items-center gap-3 rounded-xl border border-border/70 px-3 py-3 transition-colors hover:border-border/70 hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-background">
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-medium">{label}</span>
+                        <span className="block text-xs text-muted-foreground">{description}</span>
+                      </span>
+                      <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                  ))}
+                </div>
+                <Link to="/explore" className="group flex min-h-12 items-center justify-between rounded-xl border border-border/70 bg-background/65 px-3 py-3 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                  <span>Browse all public apps</span>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                </Link>
                 <Link to="/huggingface" className="group flex min-h-12 items-center justify-between rounded-xl border border-border/70 bg-background/65 px-3 py-3 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                  <span className="flex items-center gap-2"><HuggingFaceLogo className="h-4 w-4 text-[#FF9D00]" /> Hugging Face integration</span>
+                  <span className="flex items-center gap-2">
+                    <HuggingFaceLogo className="h-4 w-4 text-[#FF9D00]" /> Hugging Face integration
+                  </span>
                   <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                 </Link>
               </div>
@@ -172,16 +233,100 @@ export function LoginPage({ returnTo = '/', landingOnly = false }: { returnTo?: 
 
           <section className="border-t border-border/60 py-8 sm:py-10" aria-labelledby="walkthrough-title">
             <div className="grid gap-5 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
-              <div className="lg:pr-3"><div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"><PlayCircle className="h-4 w-4" /> Walkthrough</div><h2 id="walkthrough-title" className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{videoTitle}</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{videoSummary}</p><a href={videoUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">Open video <ArrowRight className="h-4 w-4" /></a></div>
-              <div className="overflow-hidden rounded-xl border border-border/70 bg-black">{videoEmbedUrl ? <iframe key={videoEmbedUrl} src={videoEmbedUrl} title="AppForge product walkthrough" className="aspect-video w-full border-0" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <video key={videoUrl} src={videoUrl} title="AppForge product walkthrough" className="aspect-video w-full bg-black object-contain" controls preload="metadata" playsInline />}</div>
+              <div className="lg:pr-3">
+                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <PlayCircle className="h-4 w-4" /> Walkthrough
+                </div>
+                <h2 id="walkthrough-title" className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+                  {videoTitle}
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{videoSummary}</p>
+                <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                  Open video <ArrowRight className="h-4 w-4" />
+                </a>
+              </div>
+              <div className="overflow-hidden rounded-xl border border-border/70 bg-black">
+                {videoEmbedUrl ? (
+                  <iframe
+                    key={videoEmbedUrl}
+                    src={videoEmbedUrl}
+                    title="AppForge product walkthrough"
+                    className="aspect-video w-full border-0"
+                    loading="lazy"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    referrerPolicy="strict-origin-when-cross-origin"
+                  />
+                ) : (
+                  <video key={videoUrl} src={videoUrl} title="AppForge product walkthrough" className="aspect-video w-full bg-black object-contain" controls preload="metadata" playsInline />
+                )}
+              </div>
             </div>
           </section>
         </main>
 
-
-        {authOpen && !user && <div className="fixed inset-0 z-[100] flex min-h-[100dvh] items-center justify-center bg-black/75 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Sign in to AppForge" onMouseDown={(event) => { if (event.target === event.currentTarget) setAuthOpen(false) }}><div className="w-full max-w-md rounded-xl border border-border/70 bg-background p-5 shadow-xl"><div className="flex items-start justify-between gap-3"><div><h2 className="text-xl font-semibold">Sign in to AppForge</h2><p className="mt-1 text-sm text-muted-foreground">Use email or a connected provider.</p></div><button type="button" onClick={() => setAuthOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close sign in"><span aria-hidden="true">×</span></button></div><div className="mt-5 grid gap-2"><Button onClick={() => void login('google')} disabled={Boolean(busyProvider) || loading}><Google className="h-4 w-4" /> Continue with Google</Button><Button variant="secondary" onClick={() => void login('github')} disabled={Boolean(busyProvider) || loading}><Github className="h-4 w-4" /> Continue with GitHub</Button></div><div className="my-4 flex items-center gap-3 text-xs text-muted-foreground"><span className="h-px flex-1 bg-border" />or email<span className="h-px flex-1 bg-border" /></div><form className="space-y-3" onSubmit={async (event) => { event.preventDefault(); setError(''); try { await signInWithEmail(email, password); navigate(consumeReturnPath(returnTo), { replace: true }) } catch (emailError) { setError(emailError instanceof Error ? emailError.message : 'Email sign-in failed.') } }}><input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm" /><input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm" /><Button type="submit" className="w-full" disabled={!email.trim() || !password}>Sign in with email</Button></form>{error && <div role="alert" className="mt-3 rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</div>}</div></div>}
+        {authOpen && !user && (
+          <div
+            className="fixed inset-0 z-[100] flex min-h-[100dvh] items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Sign in to AppForge"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setAuthOpen(false);
+            }}
+          >
+            <div className="w-full max-w-md rounded-xl border border-border/70 bg-background p-5 shadow-xl">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-xl font-semibold">Sign in to AppForge</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">Use email or a connected provider.</p>
+                </div>
+                <button type="button" onClick={() => setAuthOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close sign in">
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div className="mt-5 grid gap-2 grid-cols-2">
+                <Button onClick={() => void login("google")} disabled={Boolean(busyProvider) || loading}>
+                  <Google className="h-4 w-4" /> Continue with Google
+                </Button>
+                <Button variant="secondary" onClick={() => void login("github")} disabled={Boolean(busyProvider) || loading}>
+                  <Github className="h-4 w-4" /> Continue with GitHub
+                </Button>
+              </div>
+              <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="h-px flex-1 bg-border" />
+                or email
+                <span className="h-px flex-1 bg-border" />
+              </div>
+              <form
+                className="grid gap-2 grid-cols-1"
+                onSubmit={async (event) => {
+                  event.preventDefault();
+                  setError("");
+                  try {
+                    await signInWithEmail(email, password);
+                    navigate(consumeReturnPath(returnTo), { replace: true });
+                  } catch (emailError) {
+                    setError(emailError instanceof Error ? emailError.message : "Email sign-in failed.");
+                  }
+                }}
+              >
+                <input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm" />
+                <input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm" />
+                <Button type="submit" className="w-full" disabled={!email.trim() || !password}>
+                  Sign in with email
+                </Button>
+              </form>
+              {error && (
+                <div role="alert" className="mt-3 rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         <PublicFooter />
       </div>
     </div>
-  )
+  );
 }

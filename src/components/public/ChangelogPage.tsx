@@ -27,7 +27,7 @@ export function ChangelogPage() {
   return (
     <div className="dark flex min-h-dvh flex-col bg-black text-foreground" style={{ colorScheme: 'dark', '--background': '0 0% 0%' } as React.CSSProperties}>
       <PublicHeader />
-      <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <section className="border-b border-border/60 pb-8">
           <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground"><FileText className="h-4 w-4" /> Release history</div>
           <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">What changed in AppForge.</h1>
