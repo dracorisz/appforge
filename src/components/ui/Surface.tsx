@@ -7,7 +7,7 @@ const surfaceClasses: Record<SurfaceVariant, string> = {
   card: 'surface-card',
   panel: 'surface-panel',
   muted: 'surface-muted',
-  popover: 'surface-popover shadow-xl',
+  popover: 'surface-popover',
 }
 
 const paddingClasses: Record<SpaceScale, string> = {
