@@ -4,13 +4,25 @@ import test from 'node:test'
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8')
 
-test('button keeps canonical typography, geometry and direct icon size', async () => {
-  const source = await read('src/components/ui/Button.tsx')
-  assert.match(source, /text-sm/)
-  assert.match(source, /sm: "h-8 px-2"/)
-  assert.match(source, /md: "h-10 px-4"/)
-  assert.match(source, /\[&>svg\]:h-4 \[&>svg\]:w-4/)
-  assert.match(source, /focus-visible:ring-1/)
+test('button keeps canonical typography, geometry and direct icon size through shared tokens', async () => {
+  const button = await read('src/components/ui/Button.tsx')
+  const tokens = await read('src/components/ui/buttonStyles.ts')
+  assert.match(button, /buttonBaseClass/)
+  assert.match(button, /buttonVariantClasses/)
+  assert.match(button, /buttonSizeClasses/)
+  assert.match(tokens, /text-sm/)
+  assert.match(tokens, /sm: 'h-8 px-2'/)
+  assert.match(tokens, /md: 'h-10 px-4'/)
+  assert.match(tokens, /\[&>svg\]:h-4 \[&>svg\]:w-4/)
+  assert.match(tokens, /focus-visible:ring-1/)
+})
+
+test('icon button uses the same variants, focus treatment and icon sizing', async () => {
+  const source = await read('src/components/ui/IconButton.tsx')
+  assert.match(source, /buttonBaseClass/)
+  assert.match(source, /buttonVariantClasses/)
+  assert.match(source, /iconButtonSizeClasses/)
+  assert.match(source, /aria-label=\{label\}/)
 })
 
 test('form controls share one canonical token source', async () => {
