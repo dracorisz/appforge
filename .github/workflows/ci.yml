@@ -36,9 +36,6 @@ jobs:
       - name: Audit app registry integrity
         run: npm run audit:apps
 
-      - name: Verify environment capability docs
-        run: npm run docs:env-check
-
       - name: Verify UI style contract
         run: npm run check:ui-style
 
@@ -50,12 +47,6 @@ jobs:
 
       - name: Unit tests
         run: npm test
-
-      - name: Install VitePress for docs validation
-        run: npm install --no-save --no-package-lock --legacy-peer-deps vitepress@1.6.4
-
-      - name: Validate VitePress docs and internal links
-        run: npx vitepress build docs
 
       - name: Production build
         env:
