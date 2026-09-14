@@ -12,7 +12,7 @@ export function PublicToolShell({ children }: { children: React.ReactNode; toolN
           <section className="app-page-header surface-card mx-auto mb-4 rounded-xl border border-border/65 bg-background/35 p-4 text-center sm:p-4">
             <AppHeading />
           </section>
-          <div className="app-content mx-auto w-full [&_.app-heading]:hidden [&>div:first-child]:!mx-0 [&>div:first-child]:!w-full [&>div:first-child]:!max-w-none [&>div:first-child]:!p-0">{children}</div>
+          <div className="app-content mx-auto w-full [&_.app-heading]:hidden [&>div:first-child]:!mx-0 [&>div:first-child]:!w-full [&>div:first-child]:!max-w-none [&>div:first-child]:!">{children}</div>
         </div>
       </main>
       <PublicFooter />

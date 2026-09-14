@@ -167,7 +167,7 @@ function ArticleCard({ article, compact = false }: { article: BlogArticle; compa
       <div className="flex flex-1 flex-col p-4">
         <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{article.appName}</div> {/* design-xs-ok: compact article metadata */}
         <h2 className={compact ? "mt-2 text-sm font-semibold tracking-[-0.02em]" : "mt-2 text-lg font-semibold tracking-[-0.025em]"}>{article.title}</h2>
-        {!compact && <p className="mt-1 text-sm text-muted-foreground">{article.description}</p>}
+        {!compact && <p className="mt-2 text-sm text-muted-foreground">{article.description}</p>}
         <div className="mt-auto flex items-center justify-between gap-4 pt-4 text-sm text-muted-foreground">
           <span>
             {article.publishedAt} · {article.readTime}

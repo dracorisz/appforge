@@ -54,7 +54,7 @@ export function AdminBlogFeaturedControl() {
         <Star className="mt-2 h-4 w-4 text-muted-foreground" />
         <div>
           <h2 className="text-sm font-semibold">Featured blog article</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Choose the single published article highlighted on the public Blog landing page.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Choose the single published article highlighted on the public Blog landing page.</p>
         </div>
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">

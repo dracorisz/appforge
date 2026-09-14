@@ -415,7 +415,7 @@ export function TaskList() {
           <Card className="flex flex-col items-center justify-center py-8 text-center">
             <ClipboardList className="h-9 w-9 text-muted-foreground" />
             <div className="mt-4 text-sm font-medium">{tasks.length ? "No tasks match this view" : "No tasks yet"}</div>
-            <div className="mt-1 text-sm text-muted-foreground">{tasks.length ? "Change the filter or search text." : "Add your next task to get started."}</div>
+            <div className="mt-2 text-sm text-muted-foreground">{tasks.length ? "Change the filter or search text." : "Add your next task to get started."}</div>
           </Card>
         )}
       </div>

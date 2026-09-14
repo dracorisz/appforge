@@ -192,7 +192,7 @@ export function ColorPickerTool() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 className="text-sm font-semibold text-foreground">Color sampling</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Pick from your screen when supported, or sample a loaded image pixel.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Pick from your screen when supported, or sample a loaded image pixel.</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button variant="secondary" size="sm" onClick={() => void pickFromScreen()} disabled={!eyeDropperSupported}>

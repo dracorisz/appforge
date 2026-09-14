@@ -100,8 +100,8 @@ export function DesktopBuddyKdeLibrary() {
                   <h3 className="text-sm font-semibold">{starter.name}</h3>
                   {active && <Check className="mt-2 h-4 w-4 shrink-0" />}
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">{starter.note}</p>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-2 text-sm text-muted-foreground">{starter.note}</p>
+                <p className="mt-2 text-sm text-muted-foreground">
                   {starter.author}
                   <br />
                   {starter.license}

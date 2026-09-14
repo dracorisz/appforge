@@ -165,7 +165,7 @@ export function AuthEmailFlowPage({ mode }: { mode: Mode }) {
             <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-border bg-accent/50">{mode === "confirm" ? <MailCheck className="h-4 w-4" /> : <KeyRound className="h-4 w-4" />}</div>
             <div>
               <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
-              <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+              <p className="mt-2 text-sm text-muted-foreground">{description}</p>
             </div>
           </div>
 

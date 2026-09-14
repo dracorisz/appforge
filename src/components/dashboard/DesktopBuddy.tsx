@@ -332,7 +332,7 @@ export function DesktopBuddy() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="font-semibold">KDE dragon starters</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Starter artwork keeps source and license metadata inside the buddy pack.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Starter artwork keeps source and license metadata inside the buddy pack.</p>
           </div>
           <a href="https://community.kde.org/Promo/Material/Mascots" target="_blank" rel="noreferrer" className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
             KDE mascot wiki <ExternalLink className="h-4 w-4" />
@@ -348,7 +348,7 @@ export function DesktopBuddy() {
                 </div>
                 <div className="flex flex-1 flex-col p-4">
                   <div className="text-sm font-semibold">{starter.name}</div>
-                  <p className="mt-1 text-sm text-muted-foreground">{starter.note}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">{starter.note}</p>
                   <p className="mt-4 text-sm text-muted-foreground">{starter.license}</p>
                 </div>
               </Button>

@@ -294,7 +294,7 @@ export function PF_AIDragonArenaStudioV2() {
               sessions.map((session) => (
                 <Button key={session.id} type="button" onClick={() => void loadSession(session)} className={`rounded-xl border p-2 text-left text-sm hover:bg-accent ${session.id === sessionId ? "border-primary/50 bg-accent/50" : "border-border"}`}>
                   <div className="font-semibold">{session.title || "Untitled story"}</div>
-                  <div className="mt-1 text-sm text-muted-foreground">
+                  <div className="mt-2 text-sm text-muted-foreground">
                     {session.turn_count} turns · {new Date(session.updated_at).toLocaleDateString()}
                   </div>
                 </Button>

@@ -58,7 +58,7 @@ export function Layout({ children, currentVersion }: { children: React.ReactNode
                   <AppHeading />
                 </section>
               )}
-              <div className={`app-content w-full [&>div:first-child]:!mx-0 [&>div:first-child]:!w-full [&>div:first-child]:!max-w-none [&>div:first-child]:!p-0 ${isAppRoute ? '[&_.app-heading]:hidden' : ''}`}>
+              <div className={`app-content w-full [&>div:first-child]:!mx-0 [&>div:first-child]:!w-full [&>div:first-child]:!max-w-none [&>div:first-child]:! ${isAppRoute ? '[&_.app-heading]:hidden' : ''}`}>
                 {children}
               </div>
             </div>

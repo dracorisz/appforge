@@ -127,7 +127,7 @@ export default function MarketingStudio() {
             {demos.map((demo) => (
               <Button key={demo.id} type="button" onClick={() => setSelectedDemoId(demo.id)} className={`rounded-xl border p-4 text-left ${selectedDemo?.id === demo.id ? "bg-accent" : "bg-background/50 hover:bg-accent/60"}`}>
                 <div className="text-sm font-semibold">{demo.appName}</div>
-                <div className="mt-1 text-sm text-muted-foreground">
+                <div className="mt-2 text-sm text-muted-foreground">
                   {demo.status} · {demo.appVersion}
                 </div>
               </Button>
@@ -142,7 +142,7 @@ export default function MarketingStudio() {
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold">{selectedDemo.title}</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">{selectedDemo.buildFingerprint}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">{selectedDemo.buildFingerprint}</p>
                 </div>
                 <label className="grid gap-2 text-sm font-medium text-muted-foreground">
                   Recording status
@@ -224,7 +224,7 @@ export default function MarketingStudio() {
                 <article key={record.id} className="surface-card rounded-xl border p-4 sm:p-4">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                      <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      <div className="text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                         {" "}
                         {/* design-xs-ok: compact status label */}
                         {record.channel} · {record.format}

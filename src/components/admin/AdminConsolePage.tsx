@@ -162,7 +162,7 @@ export function AdminConsolePage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-lg font-semibold tracking-tight">Admin</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Users, content, app presentation and internal marketing tools.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Users, content, app presentation and internal marketing tools.</p>
         </div>
         <Link to="/settings" className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
           Back to Settings

@@ -73,7 +73,7 @@ export function PwaLifecycle() {
         <div className="mt-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-inverse/15 bg-inverse/5 text-inverse">{needRefresh ? <RefreshCw className="h-4 w-4" /> : !online ? <WifiOff className="h-4 w-4" /> : <Download className="h-4 w-4" />}</div>
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold text-inverse">{needRefresh ? "New AppForge build ready" : !online ? "You are offline" : showInstall ? "Install AppForge" : "Offline shell ready"}</div>
-          <div className="mt-1 text-sm text-muted-foreground">
+          <div className="mt-2 text-sm text-muted-foreground">
             {needRefresh
               ? "Reload once to use the newest deployment and matching build fingerprint."
               : !online

@@ -225,7 +225,7 @@ export function ImageWorkbench() {
               <Upload className="h-5 w-5 text-muted-foreground" />
             </div>
             <h2 className="mt-4 text-sm font-semibold text-foreground">Drop an image here</h2>
-            <p className="mt-1 text-sm text-muted-foreground">or click to choose a local file · max 25 MB / 50 MP</p>
+            <p className="mt-2 text-sm text-muted-foreground">or click to choose a local file · max 25 MB / 50 MP</p>
           </label>
         ) : (
           <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">

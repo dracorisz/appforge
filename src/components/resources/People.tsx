@@ -54,7 +54,7 @@ export function PeoplePage() {
   return (
     <div className="space-y-4 pb-8">
       <div>
-        <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           {" "}
           {/* design-xs-ok: compact section eyebrow */}
           <HeartHandshake className="h-4 w-4" /> Community
@@ -72,7 +72,7 @@ export function PeoplePage() {
             <HeartHandshake className="h-4 w-4" /> Open to collaborate
           </Button>
         </div>
-        <div className="mt-1 text-sm text-muted-foreground">
+        <div className="mt-2 text-sm text-muted-foreground">
           {visible.length} of {profiles.length} public profiles shown
         </div>
       </Card>
@@ -83,14 +83,14 @@ export function PeoplePage() {
         <Card className="p-8 text-center">
           <UserRound className="mx-auto h-6 w-6 text-muted-foreground" />
           <h2 className="mt-4 text-sm font-medium text-foreground">No matching profiles</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Try a broader search or turn off the collaboration filter.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Try a broader search or turn off the collaboration filter.</p>
         </Card>
       ) : (
         <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
           {visible.map((profile) => {
             const cover = coverFor(profile.id);
             return (
-              <Card key={profile.id} className="overflow-hidden p-0">
+              <Card key={profile.id} className="overflow-hidden ">
                 {cover?.source_url ? <img src={cover.source_url} alt="" className="h-24 w-full object-cover" loading="lazy" /> : null}
                 <div className="p-4">
                   <div className="flex items-start gap-4">

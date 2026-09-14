@@ -157,7 +157,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
           <div className="relative">
             <SearchInput value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onClear={() => setSearchQuery("")} placeholder="Search apps…" aria-label="Search apps" />
             {searchResults.length > 0 && (
-              <div className="surface-card mt-1 max-h-52 space-y-1 overflow-y-auto rounded-xl border p-2 shadow-xl">
+              <div className="surface-card mt-2 max-h-52 space-y-2 overflow-y-auto rounded-xl border p-2 shadow-xl">
                 {searchResults.slice(0, 8).map((app) => {
                   const Icon = iconMap[app.id === "ai-dragon-arena" ? "DragonArena" : app.icon] || Wrench;
                   return (
@@ -174,7 +174,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
       )}
       <nav className={`scrollbar-hide min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-2 ${isCollapsed ? "px-2" : "px-4"}`}>
         {!isCollapsed && <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">System</h3>} {/* design-xs-ok: compact navigation heading */}
-        <div className="space-y-1">
+        <div className="space-y-2">
           {coreItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -195,7 +195,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
                 </NavLink>
               </div>
             )}
-            <div className="space-y-1">
+            <div className="space-y-2">
               {sidebarCategories.map((category) => {
                 const Icon = iconMap[category.icon] || Wrench;
                 const path = `/category/${category.id}`;
@@ -208,7 +208,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
               })}
             </div>
             {sidebarApps.length > 0 && (
-              <div className={`${sidebarCategories.length > 0 ? "mt-1 " : ""}space-y-1`}>
+              <div className={`${sidebarCategories.length > 0 ? "mt-2 " : ""}space-y-2`}>
                 {sidebarApps.map((app) => {
                   const Icon = iconMap[app.id === "ai-dragon-arena" ? "DragonArena" : app.icon] || Wrench;
                   return (
@@ -246,7 +246,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
                         document.documentElement.style.colorScheme = dark ? "dark" : "light";
                         setAccountOpen(false);
                       }}
-                      className="rounded-xl px-2 text-xs !min-h-6 !max-h-6 !h-6 !py-0 capitalize text-muted-foreground hover:bg-accent hover:text-foreground"
+                      className="rounded-xl px-2 text-sm !min-h-6 !max-h-6 !h-6 !py-0 capitalize text-muted-foreground hover:bg-accent hover:text-foreground"
                     >
                       {mode}
                     </Button>

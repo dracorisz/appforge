@@ -430,7 +430,7 @@ export function PF_UserMediaVault() {
         <div className="mt-2 h-2 overflow-hidden rounded-xl bg-muted">
           <div className="h-full rounded-xl bg-foreground transition-all" style={{ width: `${usedPct}%` }} />
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">{formatBytes(quota.remaining_bytes)} remaining. Linked Story Studio assets and Getter Pro references are not double-counted against upload storage.</p>
+        <p className="mt-2 text-sm text-muted-foreground">{formatBytes(quota.remaining_bytes)} remaining. Linked Story Studio assets and Getter Pro references are not double-counted against upload storage.</p>
       </Card>
       {error && <Card className="border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</Card>}
 

@@ -107,7 +107,7 @@ export function AdminImageManager() {
           <h2 id="content-images-title" className="text-sm font-semibold">
             Images
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">Manage the editable images merged into the public Hugging Face gallery.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Manage the editable images merged into the public Hugging Face gallery.</p>
         </div>
         <Button
           variant="secondary"

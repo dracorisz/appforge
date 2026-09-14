@@ -40,7 +40,7 @@ export function DesktopBuddyWorkspace() {
     <div className="w-full space-y-4 pb-8">
       <WidgetPreferencePanel kind="desktop-buddy" />
       <Tabs tabs={tabs} active={activeTab} onChange={(id) => selectTab(id as WorkspaceTab)} ariaLabel="Desktop Buddy workspace" className="sticky top-0 z-20 bg-background/90 backdrop-blur" />
-      <div className="min-h-[42rem] w-full [&>div:first-child]:!mx-0 [&>div:first-child]:!max-w-none [&>div:first-child]:!p-0 [&>section:first-child]:!mx-0 [&>section:first-child]:!mt-0 [&>section:first-child]:!max-w-none">
+      <div className="min-h-[42rem] w-full [&>div:first-child]:!mx-0 [&>div:first-child]:!max-w-none [&>div:first-child]:! [&>section:first-child]:!mx-0 [&>section:first-child]:! [&>section:first-child]:!max-w-none">
         {activeTab === 'character' && <DesktopBuddy />}
         {activeTab === 'generate' && <DesktopBuddyProviderLab />}
         {activeTab === 'optimize' && <DesktopBuddyAssetLab />}

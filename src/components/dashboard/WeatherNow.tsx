@@ -425,8 +425,8 @@ export function PF_WeatherNow() {
                         <h3 className="truncate font-semibold text-foreground">{weather.location}</h3>
                         {sidebarLocation === weather.location && <Star className="h-4 w-4 fill-current text-warning" />}
                       </div>
-                      {weather.local_time && <p className="mt-1 text-sm text-muted-foreground">Local: {weather.local_time.replace("T", " ")}</p>}
-                      <p className="mt-1 text-sm text-muted-foreground">{freshnessLabel(weather)}</p>
+                      {weather.local_time && <p className="mt-2 text-sm text-muted-foreground">Local: {weather.local_time.replace("T", " ")}</p>}
+                      <p className="mt-2 text-sm text-muted-foreground">{freshnessLabel(weather)}</p>
                     </div>
                     <div className="flex shrink-0 gap-2">
                       <Button variant="ghost" size="sm" onClick={() => chooseSidebarCity(weather.location)} title="Show in sidebar">

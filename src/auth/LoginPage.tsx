@@ -220,7 +220,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
           <section className="py-8 sm:py-8" aria-labelledby="walkthrough-title">
             <div className="grid gap-4 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
               <div className="lg:pr-4">
-                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   {" "}
                   {/* design-xs-ok: compact eyebrow label */}
                   <PlayCircle className="h-4 w-4" /> Walkthrough
@@ -228,7 +228,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                 <h2 id="walkthrough-title" className="mt-2 text-lg font-semibold tracking-tight sm:text-lg">
                   {videoTitle}
                 </h2>
-                <p className="mt-1 text-sm text-muted-foreground">{videoSummary}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{videoSummary}</p>
                 <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                   Open video <ArrowRight className="h-4 w-4" />
                 </a>
@@ -257,16 +257,16 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
               <h2 id="about-appforge-title" className="text-lg font-semibold tracking-tight">
                 Open source. Private by design.
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground">AppForge combines public tools with an authenticated workspace, keeping local work in-browser where practical and using protected persistence only where it adds value.</p>
+              <p className="mt-2 text-sm text-muted-foreground">AppForge combines public tools with an authenticated workspace, keeping local work in-browser where practical and using protected persistence only where it adds value.</p>
             </div>
             <div className="grid gap-4 md:grid-cols-2 mt-4">
               <div className="rounded-xl border border-inverse/10 bg-inverse/5 p-4">
                 <div className="text-sm font-semibold">Consistent tools</div>
-                <p className="mt-1 text-sm text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p>
+                <p className="mt-2 text-sm text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p>
               </div>
               <div className="rounded-xl border border-inverse/10 bg-inverse/5 p-4">
                 <div className="text-sm font-semibold">Transparent project</div>
-                <p className="mt-1 text-sm text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p>
+                <p className="mt-2 text-sm text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p>
               </div>
             </div>
           </section>
@@ -286,14 +286,14 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold">Sign in to AppForge</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">Use email or a connected provider.</p>
+                  <p className="mt-2 text-sm text-muted-foreground">Use email or a connected provider.</p>
                 </div>
                 <Button type="button" onClick={() => setAuthOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close sign in">
                   <span aria-hidden="true">×</span>
                 </Button>
               </div>
               <div className="mt-4 grid gap-2 grid-cols-2">
-                <Button variant="primary" className="border bg-black text-white border-white/30" onClick={() => void login("google")} disabled={Boolean(busyProvider) || loading}>
+                <Button variant="primary" className="border bg-overlay text-inverse border-inverse/30" onClick={() => void login("google")} disabled={Boolean(busyProvider) || loading}>
                   <Google className="h-4 w-4" /> Continue with Google
                 </Button>
                 <Button variant="secondary" onClick={() => void login("github")} disabled={Boolean(busyProvider) || loading}>

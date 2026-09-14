@@ -359,7 +359,7 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
             </Button>
           </form>
         ) : (
-          <p className="mt-1 text-sm text-muted-foreground">Enroll TOTP in Settings → Security first.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Enroll TOTP in Settings → Security first.</p>
         )}
       </div>
     );
@@ -369,7 +369,7 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-sm font-semibold">{filterType === "blog_article" ? "Blog content" : "Landing content"}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{filterType === "blog_article" ? "Draft and publish public blog articles." : "Manage the public landing page walkthrough and presentation."}</p>
+          <p className="mt-2 text-sm text-muted-foreground">{filterType === "blog_article" ? "Draft and publish public blog articles." : "Manage the public landing page walkthrough and presentation."}</p>
         </div>
         <div className="inline-flex items-center gap-2 text-sm text-success dark:text-success">
           <CheckCircle2 className="h-4 w-4" /> Admin · TOTP
@@ -403,7 +403,7 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
             <Input type="checkbox" checked={landingTeaser?.metadata.show_active_app_count !== false} disabled={Boolean(busy)} onChange={(event) => void saveLandingCount(event.target.checked)} />
             Show active app count and open-source row
           </label>
-          <p className="mt-1 text-sm text-muted-foreground">Applies to the public landing and sign-in pages. Changes save immediately.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Applies to the public landing and sign-in pages. Changes save immediately.</p>
         </section>
       )}
       <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">

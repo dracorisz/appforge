@@ -291,7 +291,7 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
             }}
             className="mt-2 w-full"
           />
-          <p className="mt-1 text-sm text-muted-foreground">Lower values preserve more of the character; higher values remove more checkerboard/flat background. Re-run repair after changing this value.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Lower values preserve more of the character; higher values remove more checkerboard/flat background. Re-run repair after changing this value.</p>
         </div>
         <Button type="button" disabled={!source || processing} onClick={() => void runRepair()} className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">
           {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eraser className="h-4 w-4" />} Repair background

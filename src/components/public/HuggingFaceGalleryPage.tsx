@@ -202,7 +202,7 @@ export function HuggingFaceGalleryPage() {
           <div className="mb-2 flex items-end justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold tracking-tight">Public generated assets</h2>
-              <p className="mt-1 text-sm text-muted-foreground">One gallery for creator-selected Story Studio scenes and admin-managed images.</p>
+              <p className="mt-2 text-sm text-muted-foreground">One gallery for creator-selected Story Studio scenes and admin-managed images.</p>
             </div>
             <span className="text-sm text-muted-foreground">{assets.length} scenes</span>
           </div>
@@ -221,7 +221,7 @@ export function HuggingFaceGalleryPage() {
             <div className="flex items-center gap-2 text-sm font-semibold">
               <MessageSquareText className="h-4 w-4" /> Story-model rotation
             </div>
-            <p className="mt-1 text-sm text-muted-foreground">Shared requests rotate through available Hugging Face credentials and these text models until one succeeds.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Shared requests rotate through available Hugging Face credentials and these text models until one succeeds.</p>
             <div className="mt-4 space-y-2">
               {GAME_MASTER_MODELS.map((model, i) => (
                 <div key={model.id} className="rounded-xl border border-border bg-overlay/20 p-4">
@@ -229,7 +229,7 @@ export function HuggingFaceGalleryPage() {
                     {i + 1}. {model.id}
                   </div>
                   <div className="mt-2 text-sm font-medium">{model.role}</div>
-                  <div className="mt-1 text-sm text-muted-foreground">{model.note}</div>
+                  <div className="mt-2 text-sm text-muted-foreground">{model.note}</div>
                 </div>
               ))}
             </div>
@@ -238,7 +238,7 @@ export function HuggingFaceGalleryPage() {
             <div className="flex items-center gap-2 text-sm font-semibold">
               <ImageIcon className="h-4 w-4" /> Scene-model + provider rotation
             </div>
-            <p className="mt-1 text-sm text-muted-foreground">AppForge resolves each model’s current provider mapping and tries compatible providers within a bounded request.</p>
+            <p className="mt-2 text-sm text-muted-foreground">AppForge resolves each model’s current provider mapping and tries compatible providers within a bounded request.</p>
             <div className="mt-4 space-y-2">
               {IMAGE_MODELS.map((model, i) => (
                 <div key={model.id} className="rounded-xl border border-border bg-overlay/20 p-4">
@@ -246,7 +246,7 @@ export function HuggingFaceGalleryPage() {
                     {i + 1}. {model.id}
                   </div>
                   <div className="mt-2 text-sm font-medium">{model.role}</div>
-                  <div className="mt-1 text-sm text-muted-foreground">{model.note}</div>
+                  <div className="mt-2 text-sm text-muted-foreground">{model.note}</div>
                 </div>
               ))}
             </div>

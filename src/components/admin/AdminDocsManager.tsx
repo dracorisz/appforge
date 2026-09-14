@@ -117,7 +117,7 @@ export function AdminDocsManager() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-sm font-semibold">Documentation content</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Edit the database-backed pages served on the documentation site.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Edit the database-backed pages served on the documentation site.</p>
         </div>
         <div className="inline-flex items-center gap-2 text-sm text-success">
           <CheckCircle2 className="h-4 w-4" /> Admin · TOTP
@@ -135,7 +135,7 @@ export function AdminDocsManager() {
               <Button key={item.id} onClick={() => selectItem(item)} variant={selectedId === item.id ? "secondary" : "ghost"} className="h-auto w-full justify-start p-4 text-left">
                 <span className="min-w-0 py-2">
                   <span className="block truncate text-sm font-medium">{item.title}</span>
-                  <span className="mt-0 block truncate text-xs text-muted-foreground">{item.slug}</span>
+                  <span className=" block truncate text-sm text-muted-foreground">{item.slug}</span>
                 </span>
               </Button>
             ))}

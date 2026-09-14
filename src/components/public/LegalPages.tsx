@@ -21,7 +21,7 @@ function LegalShell({ title, intro, children }: { title: string; intro: string; 
               </p>
             </div>
           </div>
-          <div className="surface-card space-y-8 rounded-xl border p-4 text-sm sm:p-8 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_p]:text-muted-foreground [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:text-muted-foreground">{children}</div>
+          <div className="surface-card space-y-8 rounded-xl border p-4 text-sm sm:p-8 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_p]:text-muted-foreground [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5 [&_ul]:text-muted-foreground">{children}</div>
         </main>
       </div>
       <PublicFooter />
