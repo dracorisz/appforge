@@ -15,21 +15,26 @@ const walk = (dir) => {
 
 walk(root)
 
-const replaceToken = (source, from, to = '') => source.replace(new RegExp(`(^|\\s)${from.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}(?=\\s|["'\u0060{}])`, 'g'), (_, prefix) => `${prefix}${to}`)
+const tokenReplacements = [
+  ['mt-0', ''], ['p-0', ''], ['px-0', ''],
+  ['mt-1', 'mt-2'], ['mb-1', 'mb-2'], ['ml-1', 'ml-2'], ['mr-1', 'mr-2'],
+  ['gap-1', 'gap-2'], ['gap-x-1', 'gap-x-2'], ['gap-y-1', 'gap-y-2'],
+  ['space-y-1', 'space-y-2'], ['space-x-1', 'space-x-2'],
+  ['space-y-3', 'space-y-4'], ['space-x-3', 'space-x-4'],
+  ['py-3', 'py-4'], ['px-3', 'px-4'], ['p-3', 'p-4'], ['m-3', 'm-4'],
+]
+
+const replaceUtility = (source, from, to) => {
+  const escaped = from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return source.replace(new RegExp(`(?<![A-Za-z0-9_-])${escaped}(?![A-Za-z0-9_.-])`, 'g'), to)
+}
 
 let changed = 0
 for (const file of files) {
   const before = fs.readFileSync(file, 'utf8')
   let after = before
 
-  for (const [from, to] of [
-    ['mt-0', ''], ['p-0', ''], ['px-0', ''],
-    ['mt-1', 'mt-2'], ['mb-1', 'mb-2'], ['ml-1', 'ml-2'], ['mr-1', 'mr-2'],
-    ['gap-1', 'gap-2'], ['gap-x-1', 'gap-x-2'], ['gap-y-1', 'gap-y-2'],
-    ['space-y-1', 'space-y-2'], ['space-x-1', 'space-x-2'],
-    ['space-y-3', 'space-y-4'], ['space-x-3', 'space-x-4'],
-    ['py-3', 'py-4'], ['px-3', 'px-4'], ['p-3', 'p-4'], ['m-3', 'm-4'],
-  ]) after = replaceToken(after, from, to)
+  for (const [from, to] of tokenReplacements) after = replaceUtility(after, from, to)
 
   after = after.split(/\r?\n/).map((line) => {
     let next = line
