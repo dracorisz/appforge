@@ -313,6 +313,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
               >
                 <input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm" />
                 <input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm" />
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs"><Link to="/auth/forgot-password" onClick={() => setAuthOpen(false)} className="font-medium text-foreground hover:underline">Forgot password?</Link><Link to="/auth/confirm" onClick={() => setAuthOpen(false)} className="text-muted-foreground hover:text-foreground hover:underline">Resend confirmation</Link></div>
                 <Button type="submit" className="w-full" disabled={!email.trim() || !password}>
                   Sign in with email
                 </Button>
