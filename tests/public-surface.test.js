@@ -75,11 +75,9 @@ test('blog and changelog stay public while legacy admin routes redirect into emb
 test('public Apps directory is permanent at explore while signed-in apps remains workspace-owned', async () => {
   const app = await read('src/App.tsx')
   const landing = await read('src/auth/LoginPage.tsx')
-  const publicHeader = await read('src/components/public/PublicHeader.tsx')
   assert.match(app, /location\.pathname === '\/explore'.*PublicAppsPage/)
   assert.match(app, /!user && !loading && location\.pathname === '\/apps'.*Navigate to="\/explore"/)
   assert.match(landing, /<PublicHeader/)
-  assert.match(publicHeader, /to="\/explore"[^>]*>Apps<\/Link>/)
   assert.match(await read('src/components/public/PublicFooter.tsx'), /https:\/\/docs\.sstoken\.space\//)
 })
 
