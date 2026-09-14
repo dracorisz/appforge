@@ -114,7 +114,9 @@ test('Media Vault makes managed folders read-only for manual uploads', async () 
   assert.match(source, /uploadsRestricted \? \(/)
   assert.match(source, /padding=\{list \? 4 : 0\}/)
   assert.match(source, /style=\{\{ padding: 0 \}\}/)
-  assert.match(source, /flex shrink-0 flex-col items-start gap-2/)
+  assert.match(source, /\["desktop-buddies", "screenshots", "getter-pro"\]\.includes\(vaultFolder\(item\)\)/)
+  assert.match(source, /mt-2 flex flex-wrap items-center gap-2/)
+  assert.match(source, /sourceLabel\(item\)/)
 })
 
 test('file picker actions use a button and keep the native input outside labels', async () => {
@@ -125,7 +127,7 @@ test('file picker actions use a button and keep the native input outside labels'
 
   const favicon = await read('src/components/public/FaviconStudio.tsx')
   assert.match(favicon, /grid grid-cols-2 gap-2 pt-2/)
-  assert.match(favicon, /grid grid-cols-3 gap-4/)
+  assert.match(favicon, /grid grid-cols-5 gap-2/)
   assert.match(favicon, /width=\{16\} height=\{16\}/)
 })
 

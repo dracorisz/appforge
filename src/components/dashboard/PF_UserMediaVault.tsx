@@ -26,7 +26,7 @@ const formatBytes = (bytes: number) => (bytes < 1024 ? `${bytes} B` : bytes < 10
 const sourceLabel = (item: VaultMedia) => (item.source_app === "getter-pro" || item.source_app === "scrapper-pro" ? "reference" : item.source_bucket === "dragon-arena-assets" ? "story asset" : item.size_bytes ? formatBytes(item.size_bytes) : "stored");
 const metadataUrl = (item: VaultMedia, key: "media_url" | "thumbnail" | "original_url") => (typeof item.metadata?.[key] === "string" && String(item.metadata[key]).trim() ? String(item.metadata[key]).trim() : null);
 const uniqueUrls = (values: Array<string | null | undefined>) => [...new Set(values.filter((value): value is string => Boolean(value)))];
-const isPinnedAsset = (item: VaultMedia) => item.metadata?.source_table === "dragon_arena_assets" || vaultFolder(item) === "desktop-buddies";
+const isPinnedAsset = (item: VaultMedia) => item.metadata?.source_table === "dragon_arena_assets" || ["desktop-buddies", "screenshots", "getter-pro"].includes(vaultFolder(item));
 const youtubeId = (value: string | null | undefined) => {
   if (!value) return "";
   try {
@@ -493,29 +493,29 @@ export function PF_UserMediaVault() {
                       {list && <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />}
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{item.title || item.file_name || "Untitled"}</p>
-                        <div className="mt-2 flex items-start gap-4">
-                          <div className="flex shrink-0 flex-col items-start gap-2">
-                            {kindBadge(item.kind)}
-                            <Badge color="slate">{vaultFolder(item)}</Badge>
-                          </div>
-                          <span className="text-sm text-muted-foreground">{sourceLabel(item)}</span>
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          {kindBadge(item.kind)}
+                          <Badge color="slate">{vaultFolder(item)}</Badge>
                         </div>
                       </div>
                     </div>
                     <VaultActions item={item} onPreview={() => void openPreview(item)} onDelete={() => void handleDelete(item)} />
                   </div>
-                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                  <div className="mt-2 flex flex-wrap items-end justify-between gap-2">
                     <span className="text-sm text-muted-foreground">{new Date(item.created_at).toLocaleString()}</span>
-                    {!isPinnedAsset(item) && (
-                      <Select aria-label="Move file to folder" value={vaultFolder(item)} onChange={(event) => void moveItem(item, event.target.value)} className="h-9 max-w-44 rounded-xl border border-input bg-background px-2 text-sm text-foreground">
-                        {!allFolderOptions.some((option) => option.value === vaultFolder(item)) && <option value={vaultFolder(item)} disabled>{vaultFolder(item)}</option>}
-                        {allFolderOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </Select>
-                    )}
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      <span className="text-sm text-muted-foreground">{sourceLabel(item)}</span>
+                      {!isPinnedAsset(item) && (
+                        <Select aria-label="Move file to folder" value={vaultFolder(item)} onChange={(event) => void moveItem(item, event.target.value)} className="h-9 max-w-44 rounded-xl border border-input bg-background px-2 text-sm text-foreground">
+                          {!allFolderOptions.some((option) => option.value === vaultFolder(item)) && <option value={vaultFolder(item)} disabled>{vaultFolder(item)}</option>}
+                          {allFolderOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </Select>
+                      )}
+                    </div>
                   </div>
                 </div>
               </Card>

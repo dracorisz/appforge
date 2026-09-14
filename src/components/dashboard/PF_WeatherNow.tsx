@@ -325,9 +325,9 @@ export function PF_WeatherNow() {
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_auto_auto_auto] md:items-center">
-          <label className="min-w-0 text-sm text-muted-foreground">
-            <span className="mb-2 block font-medium text-foreground">Sidebar weather city</span>
-            <Select value={sidebarLocation} onChange={(event) => chooseSidebarCity(event.target.value)} className="w-full rounded-xl border border-input bg-background px-2 py-2 text-sm text-foreground">
+          <label className="flex min-w-0 flex-col items-start gap-2 text-sm text-muted-foreground md:flex-row md:items-center">
+            <span className="shrink-0 font-medium text-foreground">Sidebar weather city</span>
+            <Select value={sidebarLocation} onChange={(event) => chooseSidebarCity(event.target.value)} className="w-full flex-1 rounded-xl border border-input bg-background px-2 py-2 text-sm text-foreground">
               <option value="">First saved city</option>
               {cities.map((weather) => (
                 <option key={weather.location} value={weather.location}>
@@ -380,6 +380,7 @@ export function PF_WeatherNow() {
                 <div className="relative grid items-center gap-2 px-4 py-2 sm:grid-cols-2 lg:grid-cols-[minmax(180px,1.45fr)_minmax(145px,.9fr)_repeat(3,minmax(105px,.7fr))_108px] lg:px-4">
                   <div className="min-w-0 py-2 lg:pr-4">
                     <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
                       <h3 className="truncate text-lg font-semibold text-foreground">{weather.location}</h3>
                       {sidebarLocation === weather.location && <Star className="h-4 w-4 fill-current text-warning" />}
                     </div>
@@ -418,16 +419,14 @@ export function PF_WeatherNow() {
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/25" />
                 <div className="relative">
                   <div className="flex min-w-0 items-start justify-between gap-4">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="truncate font-semibold text-foreground">{weather.location}</h3>
-                          {sidebarLocation === weather.location && <Star className="h-4 w-4 fill-current text-warning" />}
-                        </div>
-                        {weather.local_time && <p className="mt-2 text-sm text-muted-foreground">Local: {weather.local_time.replace("T", " ")}</p>}
-                        <p className="mt-2 text-sm text-muted-foreground">{freshnessLabel(weather)}</p>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <h3 className="truncate font-semibold text-foreground">{weather.location}</h3>
+                        {sidebarLocation === weather.location && <Star className="h-4 w-4 fill-current text-warning" />}
                       </div>
+                      {weather.local_time && <p className="mt-2 text-sm text-muted-foreground">Local: {weather.local_time.replace("T", " ")}</p>}
+                      <p className="mt-2 text-sm text-muted-foreground">{freshnessLabel(weather)}</p>
                     </div>
                     <div className="flex shrink-0 gap-2">
                       <Button variant="ghost" size="sm" onClick={() => chooseSidebarCity(weather.location)} title="Show in sidebar">

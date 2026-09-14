@@ -25,9 +25,9 @@ export function ToastViewport() {
       {toasts.map((item) => {
         const Icon = item.tone === 'success' ? CheckCircle2 : item.tone === 'error' ? AlertCircle : Info
         const tone = item.tone === 'success'
-          ? 'border-success/30 bg-success/90 text-success'
+          ? 'border-success/30 bg-success/90 text-success-foreground'
           : item.tone === 'error'
-            ? 'border-destructive/40 bg-destructive/90 text-destructive'
+            ? 'border-destructive/40 bg-destructive/90 text-destructive-foreground'
             : 'border-border/80 bg-popover/95 text-popover-foreground'
         return (
           <div key={item.id} className={`pointer-events-auto flex items-start gap-4 rounded-xl border px-4 py-4 backdrop-blur ${tone}`}>
