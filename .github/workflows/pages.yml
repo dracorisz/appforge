@@ -5,7 +5,13 @@ on:
   push:
     branches: [main]
     paths:
-      - 'docs/**'
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'tailwind.config.js'
       - '.github/workflows/pages.yml'
 
 permissions:
@@ -19,7 +25,7 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-  DOCS_OUT_DIR: docs/.vitepress/dist
+  DOCS_OUT_DIR: dist
 
 jobs:
   build:
@@ -34,24 +40,24 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install application dependencies
+      - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Install VitePress for docs build
-        run: npm install --no-save --no-package-lock --legacy-peer-deps vitepress@1.6.4
+      - name: Build custom documentation app
+        env:
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build
 
-      - name: Build VitePress documentation
-        run: npx vitepress build docs --outDir "$DOCS_OUT_DIR"
+      - name: Preserve custom documentation domain
+        run: printf '%s\n' 'docs.sstoken.space' > "$DOCS_OUT_DIR/CNAME"
 
       - name: Verify documentation artifact
         run: |
           test -f "$DOCS_OUT_DIR/index.html"
           test -f "$DOCS_OUT_DIR/favicon.svg"
           test -d "$DOCS_OUT_DIR/assets"
-          if grep -R -nE '(src|href)="/appforge/' "$DOCS_OUT_DIR" --include='*.html'; then
-            echo 'Documentation build contains stale /appforge/ paths.' >&2
-            exit 1
-          fi
+          test "$(cat "$DOCS_OUT_DIR/CNAME")" = 'docs.sstoken.space'
 
       - name: Configure Pages
         uses: actions/configure-pages@v6
@@ -59,7 +65,7 @@ jobs:
       - name: Upload documentation artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: docs/.vitepress/dist
+          path: dist
 
   deploy:
     environment:
