@@ -28,7 +28,7 @@ jobs:
         run: rm scripts/normalize-ui-style-once.mjs .github/workflows/normalize-ui-style-once.yml
       - name: Verify style contract
         run: npm run check:ui-style
-      - name: Commit normalization
+      - name: Publish verified transfer commit
         shell: bash
         run: |
           set -euo pipefail
@@ -39,4 +39,5 @@ jobs:
             exit 0
           fi
           git commit -m "style: normalize UI contract"
-          git push origin HEAD:main
+          git tag "ui-normalization-transfer-${GITHUB_SHA}"
+          git push origin "ui-normalization-transfer-${GITHUB_SHA}"
