@@ -11,7 +11,7 @@ import { PublicBlogArticlePage, PublicBlogPage } from './components/public/Publi
 import { ToastViewport } from './components/ui/ToastViewport'
 import { updateSeo } from './lib/seo'
 import './index.css'
-import './media.css'
+import './presentation.css'
 
 type ThemeMode = 'light' | 'dark' | 'system'
 
