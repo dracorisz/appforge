@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { Copy, Check, X } from 'lucide-react'
+import { Button } from './Button'
+import { IconButton } from './IconButton'
 
 export type TabItem = {
   id: string
@@ -52,9 +54,7 @@ export function Toast({ message, onClose }: { message: string; onClose: () => vo
   return (
     <div role="status" aria-live="polite" className="fixed bottom-4 right-4 z-50 flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-xl border border-border/70 bg-card px-4 py-2 text-sm text-foreground shadow-xl">
       <span className="min-w-0 flex-1">{message}</span>
-      <button type="button" onClick={onClose} className="inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" aria-label="Dismiss notification">
-        <X className="h-4 w-4" aria-hidden="true" />
-      </button>
+      <IconButton label="Dismiss notification" icon={<X />} onClick={onClose} />
     </div>
   )
 }
@@ -84,9 +84,9 @@ export function CopyButton({ text, label }: { text: string; label?: string }) {
     }
   }
   return (
-    <button type="button" onClick={copy} className="inline-flex h-8 cursor-pointer items-center gap-2 rounded-xl border border-transparent px-2 text-sm text-muted-foreground hover:border-border/70 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" aria-label={label ? `Copy ${label}` : 'Copy text'}>
-      {copied ? <Check className="h-4 w-4" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
+    <Button variant="ghost" size="sm" onClick={copy} aria-label={label ? `Copy ${label}` : 'Copy text'}>
+      {copied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
       {copied ? 'Copied' : label || 'Copy'}
-    </button>
+    </Button>
   )
 }
