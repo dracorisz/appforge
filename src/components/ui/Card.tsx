@@ -1,13 +1,26 @@
 import React from 'react'
+import { Surface, type SurfaceVariant } from './Surface'
 
-export function Card({ children, className = '', onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) {
+export function Card({
+  children,
+  className = '',
+  onClick,
+  variant = 'card',
+}: {
+  children: React.ReactNode
+  className?: string
+  onClick?: () => void
+  variant?: SurfaceVariant
+}) {
   const hasExplicitPadding = /(?:^|\s)(?:p|px|py|pt|pb|pl|pr)-/.test(className)
   return (
-    <div
+    <Surface
+      variant={variant}
+      padding={hasExplicitPadding ? 0 : 4}
       onClick={onClick}
-      className={`surface-card rounded-xl border border-border/70 text-card-foreground transition-[border-color,background-color,box-shadow] duration-200 ${hasExplicitPadding ? '' : 'p-4'} ${className}`}
+      className={`text-card-foreground transition-[border-color,background-color,box-shadow] duration-200 ${className}`}
     >
       {children}
-    </div>
+    </Surface>
   )
 }
