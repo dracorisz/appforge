@@ -68,7 +68,7 @@ test('surface primitive owns canonical visual surface variants', async () => {
   assert.match(surface, /surface-card/)
   assert.match(surface, /surface-panel/)
   assert.match(surface, /surface-muted/)
-  assert.match(surface, /surface-popover shadow-xl/)
+  assert.match(surface, /popover:\s*["']surface-popover["']/)
   assert.match(surface, /p-2/)
   assert.match(surface, /p-4/)
   assert.match(surface, /p-8/)
