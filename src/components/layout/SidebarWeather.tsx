@@ -159,7 +159,7 @@ export function SidebarWeather({ collapsed }: { collapsed: boolean }) {
     <div className="rounded-xl border border-border/60 bg-background/45 p-2">
       <div className="flex items-start gap-2">
         <Link to="/apps/weather-now" className="min-w-0 flex-1 rounded-xl focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground"> {/* design-xs-ok: compact weather label */}
             <CloudSun className="h-4 w-4" /> Weather
           </div>
           {weather ? (

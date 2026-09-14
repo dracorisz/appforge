@@ -481,9 +481,9 @@ export function PF_UserMediaVault() {
             const list = viewMode === "list";
             const showcase = viewMode === "showcase";
             return (
-              <Card key={`${item.metadata?.source_table || item.source_app || "vault"}-${item.id}`} className={list ? "flex items-center gap-4 p-4" : `overflow-hidden p-2 ${showcase ? "bg-card/70" : ""}`}>
+              <Card key={`${item.metadata?.source_table || item.source_app || "vault"}-${item.id}`} padding={list ? 4 : 0} className={list ? "flex items-center gap-4" : `overflow-hidden ${showcase ? "bg-card/70" : ""}`}>
                 {!list && (
-                  <Button type="button" onClick={() => void openPreview(item)} className={`relative block w-full overflow-hidden bg-muted ${showcase ? "aspect-[16/10]" : "aspect-video"}`}>
+                  <Button type="button" onClick={() => void openPreview(item)} style={{ padding: 0 }} className={`relative block w-full overflow-hidden bg-muted ${showcase ? "aspect-[16/10]" : "aspect-video"}`}>
                     <VaultThumb item={item} />
                   </Button>
                 )}
@@ -493,9 +493,11 @@ export function PF_UserMediaVault() {
                       {list && <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />}
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{item.title || item.file_name || "Untitled"}</p>
-                        <div className="mt-2 flex flex-wrap items-center gap-2">
-                          {kindBadge(item.kind)}
-                          <Badge color="slate">{vaultFolder(item)}</Badge>
+                        <div className="mt-2 flex items-start gap-4">
+                          <div className="flex shrink-0 flex-col items-start gap-2">
+                            {kindBadge(item.kind)}
+                            <Badge color="slate">{vaultFolder(item)}</Badge>
+                          </div>
                           <span className="text-sm text-muted-foreground">{sourceLabel(item)}</span>
                         </div>
                       </div>

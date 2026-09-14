@@ -220,7 +220,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
           <section className="py-8 sm:py-8" aria-labelledby="walkthrough-title">
             <div className="grid gap-4 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
               <div className="lg:pr-4">
-                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground"> {/* design-xs-ok: compact eyebrow label */}
                   <PlayCircle className="h-4 w-4" /> Walkthrough
                 </div>
                 <h2 id="walkthrough-title" className="mt-2 text-lg font-semibold tracking-tight sm:text-lg">
@@ -250,7 +250,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
             </div>
           </section>
 
-          <section className="pt-40 sm:pt-40 pb-8 sm:pb-8" aria-labelledby="about-appforge-title">
+          <section className="pb-8 pt-8 sm:pb-8 sm:pt-8" aria-labelledby="about-appforge-title">
             <div className="md:col-span-1 m-auto text-left">
               <h2 id="about-appforge-title" className="text-lg font-semibold tracking-tight">
                 Open source. Private by design.

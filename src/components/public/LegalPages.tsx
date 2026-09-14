@@ -14,7 +14,7 @@ function LegalShell({ title, intro, children }: { title: string; intro: string; 
           <div className="mb-8">
             <h1 className="text-lg font-semibold tracking-tight sm:text-lg">{title}</h1>
             <p className="mt-4 max-w-2xl text-sm text-muted-foreground sm:text-sm">{intro}</p>
-            <div className="mt-2 flex items-center gap-5 text-sm text-muted-foreground sm:text-sm">
+            <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground sm:text-sm">
               <p>Last updated: {LAST_UPDATED}</p>
               <p className="inline-flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4" /> Public beta policy

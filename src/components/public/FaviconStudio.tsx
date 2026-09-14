@@ -222,10 +222,13 @@ export default function FaviconStudio() {
             <Input type="range" min="0.28" max="0.8" step="0.01" value={fontScale} onChange={(event) => setFontScale(Number(event.target.value))} disabled={Boolean(imageData)} />
           </label>
 
-          <div className="flex flex-wrap gap-2 pt-2">
-            <FileButton accept="image/*" onChange={onUpload}>
+          <div className="grid grid-cols-2 gap-2 pt-2">
+            <FileButton accept="image/*" onChange={onUpload} className="w-full">
               <Upload className="h-4 w-4" /> Upload image
             </FileButton>
+            <Button type="button" onClick={() => void copy(htmlLinks, "HTML tags")} className="w-full">
+              <Copy className="h-4 w-4" /> Copy HTML tags
+            </Button>
             {imageData && (
               <Button
                 type="button"
@@ -233,7 +236,7 @@ export default function FaviconStudio() {
                   setImageData(null);
                   setMessage("Returned to text/emoji mode.");
                 }}
-                className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent"
+                className="col-span-2 inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent"
               >
                 <RotateCcw className="h-4 w-4" /> Use text
               </Button>
@@ -241,12 +244,9 @@ export default function FaviconStudio() {
           </div>
         </div>
 
-        <div className="mt-4 grid gap-2 sm:grid-cols-2">
-          <Button type="button" onClick={() => void exportSet()} className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">
+        <div className="mt-4">
+          <Button type="button" onClick={() => void exportSet()} className="w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">
             <Download className="h-4 w-4" /> Download favicon set
-          </Button>
-          <Button type="button" onClick={() => void copy(htmlLinks, "HTML tags")} className="inline-flex items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
-            <Copy className="h-4 w-4" /> Copy HTML tags
           </Button>
         </div>
         <div aria-live="polite" className="mt-4 text-sm text-muted-foreground">
@@ -259,14 +259,14 @@ export default function FaviconStudio() {
           <div className="mb-4 flex items-center justify-between gap-4">
             <div>
               <h2 className="font-semibold">Live previews</h2>
-              <p className="text-sm text-muted-foreground">Actual target sizes, enlarged where needed for inspection.</p>
+              <p className="text-sm text-muted-foreground">Every export target is shown at a consistent 16×16 preview size.</p>
             </div>
             <ImageIcon className="h-5 w-5 text-muted-foreground" />
           </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+          <div className="grid grid-cols-3 gap-4">
             {PREVIEW_SIZES.map((size) => (
               <Button key={size} type="button" onClick={() => void exportPreview(size)} className="group grid min-h-24 place-items-center gap-2 rounded-xl border bg-background p-4 text-sm text-muted-foreground hover:bg-accent" title={`Download ${size}×${size} PNG`}>
-                <img src={svgDataUrl} alt={`${size} by ${size} favicon preview`} width={Math.min(size, 72)} height={Math.min(size, 72)} className="rounded-xl" />
+                <img src={svgDataUrl} alt={`${size} by ${size} favicon preview`} width={16} height={16} className="h-4 w-4 rounded-xl" />
                 <span>
                   {size}×{size}
                 </span>

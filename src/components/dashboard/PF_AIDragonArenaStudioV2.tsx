@@ -328,7 +328,7 @@ export function PF_AIDragonArenaStudioV2() {
         <div className="border-b border-border/70 p-4">
           <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_220px] sm:items-end">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">World seed</div>
+              <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">World seed</div> {/* design-xs-ok: compact metadata label */}
               <h2 className="mt-2 text-lg font-semibold">{opening.label}</h2>
               <p className="mt-2 max-h-32 max-w-3xl overflow-y-auto pr-2 text-sm text-muted-foreground">{opening.narrative}</p>
             </div>
@@ -354,7 +354,7 @@ export function PF_AIDragonArenaStudioV2() {
             const src = safeAssetUrl(scene);
             return (
               <section key={item.turnNumber} className="border-b border-border/60 pb-4 last:border-0">
-                <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">You · {item.playerAction}</div>
+                <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">You · {item.playerAction}</div> {/* design-xs-ok: compact turn label */}
                 <div className="mt-2 grid gap-4 md:grid-cols-[minmax(0,1fr)_180px] md:items-start">
                   <div className="whitespace-pre-line text-sm">{item.narrative}</div>
                   {src && (
@@ -376,7 +376,7 @@ export function PF_AIDragonArenaStudioV2() {
 
       {error && <Card className="border-destructive/30 bg-destructive/5 p-2 text-sm text-destructive">{error}</Card>}
       <Card className="p-4">
-        <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">What do you do?</div>
+        <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">What do you do?</div> {/* design-xs-ok: compact prompt label */}
         <div className="mt-2 flex flex-wrap gap-2">
           {choices.map((choice) => (
             <Button key={choice} variant="secondary" onClick={() => void play(choice)} disabled={loading}>

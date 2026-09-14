@@ -89,7 +89,7 @@ export default function MarketingStudio() {
       <section className="surface-card rounded-xl border p-4 sm:p-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Demo package + publication ledger</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Demo package + publication ledger</p> {/* design-xs-ok: compact section eyebrow */}
             <h1 className="mt-2 text-lg font-semibold tracking-tight">Marketing Studio</h1>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
               Generate repeatable walkthrough scripts and channel-neutral publication records from the canonical AppForge registry. YouTube publishing remains review-first; delegated upload stays disabled until the narrow upload scope is approved.
@@ -122,7 +122,7 @@ export default function MarketingStudio() {
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="surface-card self-start rounded-xl border p-4 xl:sticky xl:top-4">
-          <div className="px-2 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Demo packages</div>
+          <div className="px-2 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Demo packages</div> {/* design-xs-ok: compact navigation heading */}
           <div className="grid max-h-[70dvh] gap-2 overflow-auto">
             {demos.map((demo) => (
               <Button key={demo.id} type="button" onClick={() => setSelectedDemoId(demo.id)} className={`rounded-xl border p-4 text-left ${selectedDemo?.id === demo.id ? "bg-accent" : "bg-background/50 hover:bg-accent/60"}`}>
@@ -224,7 +224,7 @@ export default function MarketingStudio() {
                 <article key={record.id} className="surface-card rounded-xl border p-4 sm:p-4">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                      <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground"> {/* design-xs-ok: compact status label */}
                         {record.channel} · {record.format}
                       </div>
                       <h3 className="mt-2 font-semibold">{record.title}</h3>

@@ -62,7 +62,7 @@ export function PublicAppsPage() {
               {app.coverImage && <img src={app.coverImage} alt="" className="-mx-4 -mt-4 mb-4 h-24 w-[calc(100%+2rem)] rounded-xl object-cover" loading="lazy" />}
               <div className="min-w-0">
                 <div className="truncate text-sm font-semibold">{app.name}</div>
-                <div className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{categoryName(app.category)}</div>
+                <div className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{categoryName(app.category)}</div> {/* design-xs-ok: compact category label */}
               </div>
               <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{app.description}</p>
               <div className="mt-auto flex items-center justify-end pt-4">

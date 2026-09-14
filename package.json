@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node scripts/dev-api.js",
     "dev:vite": "vite",
-    "build": "tsc -b && vite build",
+    "build": "NODE_OPTIONS=--max-old-space-size=4096 tsc -b && NODE_OPTIONS=--max-old-space-size=4096 vite build",
     "preview": "vite preview",
     "lint": "eslint . --max-warnings 50",
     "typecheck": "tsc --noEmit",

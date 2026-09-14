@@ -16,6 +16,7 @@ test('button keeps canonical typography, geometry and direct icon size through s
   assert.match(tokens, /lg:\s*["']h-9 min-h-9 max-h-9 px-8["']/)
   assert.match(tokens, /\[&>svg\]:h-4 \[&>svg\]:w-4/)
   assert.match(tokens, /has-\[img\]:h-auto has-\[img\]:max-h-none/)
+  assert.match(tokens, /has-\[video\]:h-auto has-\[video\]:max-h-none/)
   assert.match(tokens, /focus-visible:ring-1/)
 })
 
@@ -111,6 +112,9 @@ test('Media Vault makes managed folders read-only for manual uploads', async () 
   assert.match(source, /Uploads are disabled in this managed folder/)
   assert.match(source, /Managed folder · uploads disabled/)
   assert.match(source, /uploadsRestricted \? \(/)
+  assert.match(source, /padding=\{list \? 4 : 0\}/)
+  assert.match(source, /style=\{\{ padding: 0 \}\}/)
+  assert.match(source, /flex shrink-0 flex-col items-start gap-2/)
 })
 
 test('file picker actions use a button and keep the native input outside labels', async () => {
@@ -118,6 +122,11 @@ test('file picker actions use a button and keep the native input outside labels'
   assert.match(source, /<input ref=\{setRef\} type="file"/)
   assert.match(source, /<Button/)
   assert.doesNotMatch(source, /<label/)
+
+  const favicon = await read('src/components/public/FaviconStudio.tsx')
+  assert.match(favicon, /grid grid-cols-2 gap-2 pt-2/)
+  assert.match(favicon, /grid grid-cols-3 gap-4/)
+  assert.match(favicon, /width=\{16\} height=\{16\}/)
 })
 
 test('folded sidebar keeps centered icons and a vertically scrollable app rail', async () => {
@@ -127,6 +136,7 @@ test('folded sidebar keeps centered icons and a vertically scrollable app rail',
   assert.match(source, /w-full justify-center px-2 group-hover\/sidebar:justify-start group-hover\/sidebar:px-4/)
   assert.match(source, /min-h-0 flex-1 overflow-y-auto overflow-x-hidden/)
   assert.match(source, /group-hover\/sidebar:block/)
+  assert.match(source, /group-hover\/sidebar:flex-row/)
 })
 
 test('UI style checker enforces the project token contract and bans page-level native controls', async () => {

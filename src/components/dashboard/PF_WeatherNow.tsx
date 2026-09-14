@@ -58,12 +58,12 @@ const readSidebarLocation = () => {
   }
 };
 
-function Metric({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string }) {
+function Metric({ icon: Icon, label, value, className = "" }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string; className?: string }) {
   return (
-    <div className="group rounded-xl border border-border/70 bg-background/45 p-4 backdrop-blur-sm transition-colors hover:border-foreground/15 hover:bg-accent/35">
+    <div className={`group min-w-0 rounded-xl border border-border/70 bg-background/45 p-4 backdrop-blur-sm transition-colors hover:border-foreground/15 hover:bg-accent/35 ${className}`}>
       <div className="flex items-center gap-2 text-muted-foreground">
-        <Icon className="h-4 w-4" />
-        <span className="text-xs font-semibold uppercase tracking-[0.12em]">{label}</span>
+        <Icon className="h-4 w-4 shrink-0" />
+        <span className="text-xs font-semibold uppercase tracking-[0.12em]">{label}</span> {/* design-xs-ok: compact metric label */}
       </div>
       <p className="mt-2 text-sm font-semibold tabular-nums text-foreground">{value}</p>
     </div>
@@ -75,7 +75,7 @@ function ListMetric({ icon: Icon, label, value }: { icon: React.ComponentType<{ 
     <div className="min-w-0 px-4 py-2 lg:border-l lg:border-border/55">
       <div className="flex items-center gap-2 text-muted-foreground">
         <Icon className="h-4 w-4 shrink-0" />
-        <span className="text-xs font-semibold uppercase tracking-[0.12em]">{label}</span>
+        <span className="text-xs font-semibold uppercase tracking-[0.12em]">{label}</span> {/* design-xs-ok: compact list metric label */}
       </div>
       <p className="mt-2 truncate text-sm font-medium tabular-nums text-foreground">{value}</p>
     </div>
@@ -302,7 +302,7 @@ export function PF_WeatherNow() {
           </div>
           <div className="mt-4 grid gap-4 border-t border-border/60 pt-4 lg:grid-cols-2">
             <div>
-              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Europe · add 3 at a time</div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Europe · add 3 at a time</div> {/* design-xs-ok: compact preset label */}
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {EU_SETS.map((set, index) => (
                   <Button key={`eu-${index}`} variant="secondary" size="sm" onClick={() => void addPresetSet(set)} disabled={loading}>
@@ -312,7 +312,7 @@ export function PF_WeatherNow() {
               </div>
             </div>
             <div>
-              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">United States · add 3 at a time</div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">United States · add 3 at a time</div> {/* design-xs-ok: compact preset label */}
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {US_SETS.map((set, index) => (
                   <Button key={`us-${index}`} variant="secondary" size="sm" onClick={() => void addPresetSet(set)} disabled={loading}>
@@ -325,7 +325,7 @@ export function PF_WeatherNow() {
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_auto_auto_auto] md:items-center">
-          <label className="mb-7 min-w-0 text-sm text-muted-foreground">
+          <label className="min-w-0 text-sm text-muted-foreground">
             <span className="mb-2 block font-medium text-foreground">Sidebar weather city</span>
             <Select value={sidebarLocation} onChange={(event) => chooseSidebarCity(event.target.value)} className="w-full rounded-xl border border-input bg-background px-2 py-2 text-sm text-foreground">
               <option value="">First saved city</option>
@@ -454,16 +454,14 @@ export function PF_WeatherNow() {
                         <Badge color="slate">{weather.condition}</Badge>
                       </div>
                     </div>
-                    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    <div className="mt-4 grid grid-cols-2 gap-2">
                       <Metric icon={Droplets} label="Humidity" value={`${weather.humidity}%`} />
                       <Metric icon={Wind} label="Wind" value={`${weather.wind_kph.toFixed(1)} km/h`} />
                       <Metric icon={Gauge} label="Pressure" value={typeof weather.pressure_hpa === "number" ? `${Math.round(weather.pressure_hpa)} hPa` : "—"} />
                       <Metric icon={CloudSun} label="Cloud cover" value={typeof weather.cloud_cover === "number" ? `${Math.round(weather.cloud_cover)}%` : "—"} />
-                      <Metric icon={Eye} label="Visibility" value={typeof weather.visibility_km === "number" ? `${weather.visibility_km.toFixed(1)} km` : "—"} />
-                      <div className="grid grid-cols-2 gap-2">
-                        <Metric icon={Sunrise} label="Sunrise" value={timeOnly(weather.sunrise)} />
-                        <Metric icon={Sunset} label="Sunset" value={timeOnly(weather.sunset)} />
-                      </div>
+                      <Metric icon={Sunrise} label="Sunrise" value={timeOnly(weather.sunrise)} />
+                      <Metric icon={Sunset} label="Sunset" value={timeOnly(weather.sunset)} />
+                      <Metric icon={Eye} label="Visibility" value={typeof weather.visibility_km === "number" ? `${weather.visibility_km.toFixed(1)} km` : "—"} className="col-span-2" />
                     </div>
                   </div>
                 </div>

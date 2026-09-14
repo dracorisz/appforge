@@ -405,7 +405,7 @@ export function DesktopBuddy() {
               ))}
             </Select>
           </label>
-          <div className="flex flex-wrap gap-2 mt-5">
+          <div className="mt-4 flex flex-wrap gap-2">
             <Button type="button" onClick={speak} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
               <Mic2 className="h-4 w-4" /> Speak text
             </Button>

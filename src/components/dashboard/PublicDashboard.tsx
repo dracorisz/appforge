@@ -34,9 +34,11 @@ function ToolCard({ app, favorite, onFavorite, onOpen }: { app: AppDefinition; f
           </div>
           <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{app.description}</p>
         </div>
-        <Button type="button" onClick={onOpen} className="mt-4 inline-flex h-auto min-h-9 max-h-none items-center justify-end gap-2 border-t border-border/60 pt-4 text-sm font-medium text-foreground hover:text-primary">
-          Open <ArrowRight className="h-4 w-4" />
-        </Button>
+        <div className="mt-4 flex min-h-9 items-center justify-end border-t border-border/60 pt-4">
+          <Button type="button" onClick={onOpen} variant="ghost" className="justify-end text-foreground hover:text-primary">
+            Open <ArrowRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </Card>
   );
@@ -220,7 +222,7 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: { state:
       <section className="surface-card rounded-xl border p-4 sm:p-4">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground"> {/* design-xs-ok: compact section eyebrow */}
               <LayoutGrid className="h-4 w-4" /> AppForge
             </div>
             <h1 className="mt-2 text-lg font-semibold tracking-tight sm:text-lg">{isWorkspace ? "Workspace" : isDashboard ? "Your tools" : title}</h1>

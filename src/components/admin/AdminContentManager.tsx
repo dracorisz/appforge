@@ -134,7 +134,10 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
     }
   };
 
-  const landingTeaser = items.find((item) => item.content_type === "video_teaser" && item.slug === LANDING_SLUG) || items.find((item) => item.content_type === "video_teaser" && item.published);
+  const landingTeaser = React.useMemo(
+    () => items.find((item) => item.content_type === "video_teaser" && item.slug === LANDING_SLUG) || items.find((item) => item.content_type === "video_teaser" && item.published),
+    [items],
+  );
 
   React.useEffect(() => {
     if (!contentType) return;
@@ -147,7 +150,7 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
       setDraft(makeDraft(contentType));
     }
     setError("");
-  }, [contentType, landingTeaser?.id]);
+  }, [contentType, landingTeaser]);
 
   const saveLandingCount = async (show: boolean) => {
     if (!user || !aal2 || !isAdmin) return;
