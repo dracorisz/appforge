@@ -40,6 +40,7 @@ import {
 import { BUILD_INFO } from './lib/buildInfo'
 import { useAuth } from './auth/AuthProvider'
 import { LoginPage } from './auth/LoginPage'
+import { AuthEmailFlowPage } from './auth/AuthEmailFlowPage'
 import { loadUserPreferences, saveUserPreferences } from './lib/preferences'
 import { loadCategoryOverrides, saveCategoryOverrides, setCategoryOverrideScope, subscribeCategoryOverrides } from './lib/categories'
 import { stripLegacyMiniAppCommerce } from './lib/legacyMiniApps'
@@ -212,6 +213,9 @@ function App() {
   const dashboard = <PublicDashboard state={state} onOpenApp={addToRecent} onToggleFavorite={toggleFavorite} />
   const requestedPath = `${location.pathname}${location.search}${location.hash}`
 
+  if (location.pathname === '/auth/forgot-password') return <AuthEmailFlowPage mode="forgot" />
+  if (location.pathname === '/auth/reset-password') return <AuthEmailFlowPage mode="reset" />
+  if (location.pathname === '/auth/confirm' || location.pathname === '/auth/email-confirmation') return <AuthEmailFlowPage mode="confirm" />
   if (!registryReady) return routeFallback
   const routeApp = getManageableApps().find((item) => item.route === location.pathname)
   if (routeApp?.visible === false) return <Navigate to={user ? '/' : '/explore'} replace />
@@ -233,7 +237,7 @@ function App() {
   }
 
   if (location.pathname === '/huggingface') return lazyPage(<HuggingFaceGalleryPage />)
-if (loading || !user) return <LoginPage returnTo={requestedPath} landingOnly />
+  if (loading || !user) return <LoginPage returnTo={requestedPath} landingOnly />
 
   return (
     <Layout currentVersion={BUILD_INFO.version}>
