@@ -21,21 +21,18 @@ const spacing = /(?:^|[\s"'`{}])((?:[a-z-]+:)*-?(?:m[trblxy]?|p[trblxy]?|space-[
 const ringWidth = /(?:^|[\s"'`{}])((?:[a-z-]+:)*ring-(?:0|1|2|4|8))(?=$|[\s"'`{}])/g
 const fontWeight = /(?:^|[\s"'`{}])((?:[a-z-]+:)*font-(?:thin|extralight|light|normal|medium|semibold|bold|extrabold|black))(?=$|[\s"'`{}])/g
 const lineHeight = /(?:^|[\s"'`{}])((?:[a-z-]+:)*leading-(?:none|tight|snug|normal|relaxed|loose|\d+|\[[^\]]+\]))(?=$|[\s"'`{}])/g
-const paletteUtility = /(?:^|[\s"'`{}])((?:[a-z-]+:)*(?:text|bg|border|ring)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|black|white)(?:\/\d+|-[0-9]{2,3}(?:\/\d+)?)?)(?=$|[\s"'`{}])/g
+const paletteUtility = /(?:^|[\s"'`{}])((?:[a-z-]+:)*(?:text|bg|border|ring|from|via|to|fill|stroke)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|black|white)(?:\/\d+|-[0-9]{2,3}(?:\/\d+)?)?)(?=$|[\s"'`{}])/g
 
 const violations = []
-const allowedFontSizes = new Set(['text-5xl', 'text-lg', 'text-sm', 'text-xs'])
+const allowedFontSizes = new Set(['text-5xl', 'text-lg', 'text-sm'])
 const allowedSpacing = new Set(['2', '4', '8'])
-const fontUsage = new Map([...allowedFontSizes].map((size) => [size, 0]))
+const allowedWeights = new Set(['font-normal', 'font-medium', 'font-semibold'])
+const fontUsage = new Map([...allowedFontSizes, 'text-xs'].map((size) => [size, 0]))
 const utilityPart = (token) => token.slice(token.lastIndexOf(':') + 1)
 const relative = (file) => path.relative(process.cwd(), file).replaceAll('\\', '/')
 
 const diagnostics = {
-  xs: new Map(),
   rawControls: new Map(),
-  weights: new Map(),
-  lineHeights: new Map(),
-  palette: new Map(),
   surfaces: new Map(),
 }
 const bump = (map, file, amount = 1) => map.set(file, (map.get(file) || 0) + amount)
@@ -56,10 +53,11 @@ for (const file of files) {
     for (const match of line.matchAll(fontSize)) {
       const token = match[1]
       const utility = utilityPart(token)
-      if (!allowedFontSizes.has(utility)) violations.push(`${filePath}:${index + 1}: noncanonical font size ${token}`)
-      else {
-        fontUsage.set(utility, (fontUsage.get(utility) || 0) + 1)
-        if (utility === 'text-xs') bump(diagnostics.xs, filePath)
+      fontUsage.set(utility, (fontUsage.get(utility) || 0) + 1)
+      if (utility === 'text-xs') {
+        if (!line.includes('design-xs-ok')) violations.push(`${filePath}:${index + 1}: text-xs requires an explicit design-xs-ok exception`)
+      } else if (!allowedFontSizes.has(utility)) {
+        violations.push(`${filePath}:${index + 1}: noncanonical font size ${token}`)
       }
     }
     for (const match of line.matchAll(spacing)) {
@@ -73,17 +71,21 @@ for (const file of files) {
       if (utilityPart(token) !== 'ring-1') violations.push(`${filePath}:${index + 1}: forbidden ring width ${token}`)
     }
     for (const match of line.matchAll(fontWeight)) {
-      const utility = utilityPart(match[1])
-      if (!['font-medium', 'font-semibold'].includes(utility)) bump(diagnostics.weights, filePath)
+      const token = match[1]
+      if (!allowedWeights.has(utilityPart(token))) violations.push(`${filePath}:${index + 1}: noncanonical font weight ${token}`)
     }
-    for (const _match of line.matchAll(lineHeight)) bump(diagnostics.lineHeights, filePath)
-    for (const _match of line.matchAll(paletteUtility)) bump(diagnostics.palette, filePath)
+    for (const match of line.matchAll(lineHeight)) {
+      if (!line.includes('design-leading-ok')) violations.push(`${filePath}:${index + 1}: page-local line height ${match[1]} requires design-leading-ok`)
+    }
+    for (const match of line.matchAll(paletteUtility)) {
+      if (!line.includes('design-palette-ok')) violations.push(`${filePath}:${index + 1}: hard-coded palette utility ${match[1]}`)
+    }
   })
 
   if (!filePath.startsWith('src/components/ui/')) {
     const rawControls = source.match(/<(?:button|input|select|textarea)\b/g)?.length || 0
     if (rawControls) bump(diagnostics.rawControls, filePath, rawControls)
-    const handmadeSurfaces = source.match(/rounded-xl[^"'`\n]{0,120}\bborder\b[^"'`\n]{0,120}\b(?:bg-card|bg-background|surface-card)\b/g)?.length || 0
+    const handmadeSurfaces = source.match(/rounded-xl[^"'`\n]{0,120}\bborder\b[^"'`\n]{0,120}\b(?:bg-card|bg-background|surface-card|surface-panel|surface-muted|surface-popover)\b/g)?.length || 0
     if (handmadeSurfaces) bump(diagnostics.surfaces, filePath, handmadeSurfaces)
   }
 }
@@ -93,14 +95,17 @@ const formatTop = (map, limit = 20) => [...map.entries()]
   .slice(0, limit)
   .map(([file, count]) => `${count}× ${file}`)
 
+const rawControlCount = [...diagnostics.rawControls.values()].reduce((a, b) => a + b, 0)
+const surfaceCount = [...diagnostics.surfaces.values()].reduce((a, b) => a + b, 0)
+const rawControlBudget = 250
+const surfaceBudget = 135
+if (rawControlCount > rawControlBudget) violations.push(`raw native control budget exceeded: ${rawControlCount} > ${rawControlBudget}`)
+if (surfaceCount > surfaceBudget) violations.push(`hand-built surface budget exceeded: ${surfaceCount} > ${surfaceBudget}`)
+
 console.log(`Typography distribution: ${[...fontUsage.entries()].map(([size, count]) => `${size}=${count}`).join(', ')}`)
-console.log(`Design consolidation inventory: xs=${[...diagnostics.xs.values()].reduce((a, b) => a + b, 0)}, raw-controls=${[...diagnostics.rawControls.values()].reduce((a, b) => a + b, 0)}, noncanonical-weights=${[...diagnostics.weights.values()].reduce((a, b) => a + b, 0)}, explicit-line-heights=${[...diagnostics.lineHeights.values()].reduce((a, b) => a + b, 0)}, hardcoded-palette=${[...diagnostics.palette.values()].reduce((a, b) => a + b, 0)}, handmade-surfaces=${[...diagnostics.surfaces.values()].reduce((a, b) => a + b, 0)}.`)
+console.log(`Structural migration inventory: raw-controls=${rawControlCount}/${rawControlBudget}, hand-built-surfaces=${surfaceCount}/${surfaceBudget}.`)
 for (const [label, map] of [
-  ['text-xs hotspots', diagnostics.xs],
   ['raw native control hotspots', diagnostics.rawControls],
-  ['noncanonical font-weight hotspots', diagnostics.weights],
-  ['explicit line-height hotspots', diagnostics.lineHeights],
-  ['hard-coded palette hotspots', diagnostics.palette],
   ['hand-built surface hotspots', diagnostics.surfaces],
 ]) {
   const top = formatTop(map)
@@ -114,4 +119,4 @@ if (violations.length) {
   process.exit(1)
 }
 
-console.log(`\nUI style contract OK across ${files.length} source files: typography text-5xl/text-lg/text-sm/text-xs only; spacing 2/4/8 only; rounded-xl only; shadow-xl only; ring-1 only.`)
+console.log(`\nUI style contract OK across ${files.length} source files: text-5xl/text-lg/text-sm by default; text-xs only by explicit exception; spacing 2/4/8; rounded-xl; shadow-xl; ring-1; semantic palette only.`)
