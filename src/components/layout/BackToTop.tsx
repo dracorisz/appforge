@@ -1,5 +1,6 @@
 import React from 'react'
 import { ArrowUp } from 'lucide-react'
+import { IconButton } from '@/components/ui'
 
 export function BackToTop() {
   const [visible, setVisible] = React.useState(false)
@@ -13,12 +14,13 @@ export function BackToTop() {
   if (!visible) return null
 
   return (
-    <button
+    <IconButton
+      label="Back to top"
+      icon={<ArrowUp />}
+      variant="primary"
+      size="md"
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      className="no-print fixed bottom-6 right-6 z-40 rounded-xl bg-primary p-4 text-white transition-all hover:bg-secondary hover:dark:bg-white dark:text-foreground dark:hover:bg-muted"
-      aria-label="Back to top"
-    >
-      <ArrowUp className="h-5 w-5" />
-    </button>
+      className="no-print fixed bottom-4 right-4 z-40 shadow-xl"
+    />
   )
 }
