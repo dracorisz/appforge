@@ -20,7 +20,7 @@ export function ProjectPulse() {
   const average = apps.length ? Math.round(apps.reduce((sum, app) => sum + readinessScore[app.status], 0) / apps.length) : 0
 
   return (
-    <div className="mb-4 rounded-xl border border-border/60 bg-background/45 text-xs text-muted-foreground backdrop-blur-lg">
+    <div className="mb-4 rounded-xl border border-border/60 bg-background/45 text-sm text-muted-foreground backdrop-blur-lg">
       <button
         type="button"
         className="flex w-full flex-col gap-2 px-4 py-2 text-left sm:flex-row sm:items-center sm:justify-between"
@@ -62,7 +62,7 @@ export function ProjectPulse() {
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
                           <div className="truncate font-medium text-foreground">{app.name}</div>
-                          <div className="mt-2 truncate text-xs">{app.status} · v{app.version}</div>
+                          <div className="mt-2 truncate text-sm">{app.status} · v{app.version}</div>
                         </div>
                         <span className="shrink-0 font-medium text-foreground">{score}%</span>
                       </div>

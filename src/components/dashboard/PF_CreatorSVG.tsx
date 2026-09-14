@@ -245,7 +245,7 @@ export function PF_CreatorSVG() {
                 value={svgCode}
                 readOnly
                 rows={8}
-                className="mt-2 font-mono text-xs"
+                className="mt-2 font-mono text-sm"
               />
             </div>
           </Card>

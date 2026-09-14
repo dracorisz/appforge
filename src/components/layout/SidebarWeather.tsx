@@ -131,11 +131,11 @@ export function SidebarWeather({ collapsed }: { collapsed: boolean }) {
     <div className="rounded-xl border border-border/60 bg-background/45 p-2">
       <div className="flex items-start gap-2">
         <Link to="/apps/weather-now" className="min-w-0 flex-1 rounded-xl focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground"><CloudSun className="h-3.5 w-3.5" /> Weather</div>
+          <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground"><CloudSun className="h-3.5 w-3.5" /> Weather</div>
           {weather ? <>
-            <div className="mt-2 flex items-end gap-2"><span className="text-lg font-semibold tabular-nums text-foreground">{Math.round(weather.temp_c)}°</span><span className="mb-2 truncate text-xs text-muted-foreground">{weather.condition}</span></div>
-            <div className="mt-2 flex items-center gap-2 truncate text-xs text-muted-foreground"><MapPin className="h-3 w-3 shrink-0" /> {weather.location}</div>
-          </> : <div className="mt-2 text-xs text-muted-foreground">{loading ? `Loading ${selectedLocation}…` : `Open Weather Now · ${selectedLocation}`}</div>}
+            <div className="mt-2 flex items-end gap-2"><span className="text-lg font-semibold tabular-nums text-foreground">{Math.round(weather.temp_c)}°</span><span className="mb-2 truncate text-sm text-muted-foreground">{weather.condition}</span></div>
+            <div className="mt-2 flex items-center gap-2 truncate text-sm text-muted-foreground"><MapPin className="h-3 w-3 shrink-0" /> {weather.location}</div>
+          </> : <div className="mt-2 text-sm text-muted-foreground">{loading ? `Loading ${selectedLocation}…` : `Open Weather Now · ${selectedLocation}`}</div>}
         </Link>
         <button type="button" onClick={() => void refresh()} disabled={loading} className="rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-60" aria-label="Refresh sidebar weather"><RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /></button>
       </div>

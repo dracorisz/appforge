@@ -170,7 +170,7 @@ export function DesktopBuddyAssetLab() {
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="flex items-center gap-2"><ImagePlus className="h-5 w-5" /><h2 className="font-semibold">Local asset optimizer</h2></div>
-          <p className="mt-2 max-w-3xl text-xs leading-5 text-muted-foreground">Prepare lightweight character assets entirely in your browser. AppForge fits the source inside transparent square canvases and exports 128, 256 and 512 pixel PNGs, with WebP alternatives when the browser supports them.</p>
+          <p className="mt-2 max-w-3xl text-sm leading-5 text-muted-foreground">Prepare lightweight character assets entirely in your browser. AppForge fits the source inside transparent square canvases and exports 128, 256 and 512 pixel PNGs, with WebP alternatives when the browser supports them.</p>
         </div>
         <label className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent">
           {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
@@ -179,8 +179,8 @@ export function DesktopBuddyAssetLab() {
         </label>
       </div>
 
-      <div aria-live="polite" className="mt-4 text-xs text-muted-foreground">{message}</div>
-      {sourceName && <div className="mt-2 text-xs text-muted-foreground">Source: {sourceName} · {formatBytes(sourceBytes)}</div>}
+      <div aria-live="polite" className="mt-4 text-sm text-muted-foreground">{message}</div>
+      {sourceName && <div className="mt-2 text-sm text-muted-foreground">Source: {sourceName} · {formatBytes(sourceBytes)}</div>}
 
       {variants.length > 0 && (
         <>
@@ -189,17 +189,17 @@ export function DesktopBuddyAssetLab() {
               <article key={variant.size} className="overflow-hidden rounded-xl border bg-background/45">
                 <div className="grid aspect-square place-items-center bg-muted/35 p-4"><img src={variant.pngUrl} alt={`${variant.size}px optimized preview`} className="h-full w-full object-contain" /></div>
                 <div className="space-y-4 p-4">
-                  <div><div className="text-sm font-semibold">{variant.size} × {variant.size}</div><div className="mt-2 text-xs text-muted-foreground">PNG {formatBytes(variant.pngBytes)} · WebP {formatBytes(variant.webpBytes)}</div></div>
+                  <div><div className="text-sm font-semibold">{variant.size} × {variant.size}</div><div className="mt-2 text-sm text-muted-foreground">PNG {formatBytes(variant.pngBytes)} · WebP {formatBytes(variant.webpBytes)}</div></div>
                   <div className="grid grid-cols-2 gap-2">
-                    <button type="button" onClick={() => downloadUrl(variant.pngUrl, `${safeStem(sourceName)}-${variant.size}.png`)} className="inline-flex min-h-9 items-center justify-center gap-2 rounded-xl border text-xs font-semibold hover:bg-accent"><Download className="h-3.5 w-3.5" /> PNG</button>
-                    <button type="button" disabled={!variant.webpUrl} onClick={() => variant.webpUrl && downloadUrl(variant.webpUrl, `${safeStem(sourceName)}-${variant.size}.webp`)} className="inline-flex min-h-9 items-center justify-center gap-2 rounded-xl border text-xs font-semibold hover:bg-accent disabled:opacity-40"><Download className="h-3.5 w-3.5" /> WebP</button>
+                    <button type="button" onClick={() => downloadUrl(variant.pngUrl, `${safeStem(sourceName)}-${variant.size}.png`)} className="inline-flex min-h-9 items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent"><Download className="h-3.5 w-3.5" /> PNG</button>
+                    <button type="button" disabled={!variant.webpUrl} onClick={() => variant.webpUrl && downloadUrl(variant.webpUrl, `${safeStem(sourceName)}-${variant.size}.webp`)} className="inline-flex min-h-9 items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent disabled:opacity-40"><Download className="h-3.5 w-3.5" /> WebP</button>
                   </div>
                 </div>
               </article>
             ))}
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-background/45 p-4">
-            <p className="max-w-2xl text-xs leading-5 text-muted-foreground">Use the optimized 512px PNG as the persistent companion image. This updates only browser-local Desktop Buddy storage and keeps your source file on this device.</p>
+            <p className="max-w-2xl text-sm leading-5 text-muted-foreground">Use the optimized 512px PNG as the persistent companion image. This updates only browser-local Desktop Buddy storage and keeps your source file on this device.</p>
             <button type="button" onClick={() => void applyToBuddy()} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground"><Check className="h-4 w-4" /> Use 512px in Buddy</button>
           </div>
         </>

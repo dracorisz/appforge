@@ -75,7 +75,7 @@ export function MediaShowbox({
         <header className="flex min-h-10 items-center gap-4 border-b border-border/70 px-4">
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-sm font-semibold text-foreground">{title}</h2>
-            <p className="truncate text-xs text-muted-foreground">{source}</p>
+            <p className="truncate text-sm text-muted-foreground">{source}</p>
           </div>
           <button onClick={onClose} className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close preview"><X className="h-4 w-4" /></button>
         </header>
@@ -93,7 +93,7 @@ export function MediaShowbox({
         </div>
 
         {(note || onDownload || originalUrl) && <footer className="flex flex-col gap-2 border-t border-border/70 px-4 py-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0 text-xs text-muted-foreground">{note || 'Preview'}</div>
+          <div className="min-w-0 text-sm text-muted-foreground">{note || 'Preview'}</div>
           <div className="flex shrink-0 gap-2">
             {onDownload && <Button variant="secondary" size="sm" onClick={onDownload} disabled={downloading}>{downloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}{downloadLabel}</Button>}
             {originalUrl && <a href={originalUrl} target="_blank" rel="noopener noreferrer"><Button variant="secondary" size="sm"><ExternalLink className="h-3.5 w-3.5" /> Source</Button></a>}

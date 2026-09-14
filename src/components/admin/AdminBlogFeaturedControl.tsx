@@ -39,7 +39,7 @@ export function AdminBlogFeaturedControl() {
   }
 
   return <Card className="p-4">
-    <div className="flex items-start gap-2"><Star className="mt-2 h-4 w-4 text-muted-foreground" /><div><h2 className="text-sm font-semibold">Featured blog article</h2><p className="mt-2 text-xs leading-4 text-muted-foreground">Choose the single published article highlighted on the public Blog landing page.</p></div></div>
+    <div className="flex items-start gap-2"><Star className="mt-2 h-4 w-4 text-muted-foreground" /><div><h2 className="text-sm font-semibold">Featured blog article</h2><p className="mt-2 text-sm leading-4 text-muted-foreground">Choose the single published article highlighted on the public Blog landing page.</p></div></div>
     <div className="mt-4 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
       <Select value={selected} onChange={(event) => setSelected(event.target.value)} disabled={loading || !articles.length} aria-label="Featured blog article">
         {!articles.length && <option value="">No published blog articles</option>}

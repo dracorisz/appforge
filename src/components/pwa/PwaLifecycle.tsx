@@ -62,8 +62,8 @@ export function PwaLifecycle() {
   const showStatus = needRefresh || offlineReady || !online || showInstall
   if (!showStatus) return null
 
-  const primaryActionClass = 'rounded-xl border border-white bg-white px-4 py-2 text-xs font-semibold text-slate-950 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
-  const secondaryActionClass = 'rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-xs font-medium text-slate-200 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/70'
+  const primaryActionClass = 'rounded-xl border border-white bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+  const secondaryActionClass = 'rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/70'
 
   return (
     <div className="fixed bottom-4 right-4 z-[100] w-[min(24rem,calc(100vw-2rem))] rounded-xl border border-white/15 bg-slate-950/95 p-4 text-white backdrop-blur-xl" style={{ colorScheme: 'dark' }}>
@@ -75,7 +75,7 @@ export function PwaLifecycle() {
           <div className="text-sm font-semibold text-white">
             {needRefresh ? 'New AppForge build ready' : !online ? 'You are offline' : showInstall ? 'Install AppForge' : 'Offline shell ready'}
           </div>
-          <div className="mt-2 text-xs leading-5 text-slate-300">
+          <div className="mt-2 text-sm leading-5 text-slate-300">
             {needRefresh
               ? 'Reload once to use the newest deployment and matching build fingerprint.'
               : !online

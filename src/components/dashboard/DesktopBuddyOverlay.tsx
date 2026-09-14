@@ -216,7 +216,7 @@ export function DesktopBuddyOverlay() {
   return (
     <aside className="fixed z-50 select-none" style={{ left: position.x, top: position.y }} aria-label="Movable Desktop Buddy widget">
       {showMessage && (
-        <button type="button" onClick={() => setShowMessage(false)} className="mb-2 block w-48 cursor-pointer rounded-xl border border-border bg-card/95 px-4 py-2 text-left text-xs leading-4 text-muted-foreground backdrop-blur-xl">
+        <button type="button" onClick={() => setShowMessage(false)} className="mb-2 block w-48 cursor-pointer rounded-xl border border-border bg-card/95 px-4 py-2 text-left text-sm leading-4 text-muted-foreground backdrop-blur-xl">
           <span className="font-semibold text-foreground">{buddy.name || 'Konqi Buddy'}</span>
           <span className="mt-2 line-clamp-3 block">{message}</span>
         </button>

@@ -171,7 +171,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                 </div>
               )}
               {showAppCount && (
-                <p className="mt-8 border-t border-border/60 pt-4 text-xs text-muted-foreground">
+                <p className="mt-8 border-t border-border/60 pt-4 text-sm text-muted-foreground">
                   <strong className="font-semibold text-foreground">{appCount}</strong> active apps · open source
                 </p>
               )}
@@ -187,7 +187,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                     </div>
                     <div>
                       <div className="text-sm font-semibold">AppForge</div>
-                      <div className="text-xs text-muted-foreground">Public tools + private workspace</div>
+                      <div className="text-sm text-muted-foreground">Public tools + private workspace</div>
                     </div>
                   </div>
                   <ShieldCheck className="h-5 w-5 shrink-0 text-muted-foreground" />
@@ -200,7 +200,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block text-sm font-medium">{label}</span>
-                        <span className="block text-xs text-muted-foreground">{description}</span>
+                        <span className="block text-sm text-muted-foreground">{description}</span>
                       </span>
                       <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                     </Link>
@@ -226,15 +226,15 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
               <p className="mt-2 text-sm leading-6 text-muted-foreground">AppForge combines public tools with an authenticated workspace, keeping local work in-browser where practical and using protected persistence only where it adds value.</p>
             </div>
             <div className="grid gap-4 md:grid-cols-2 mt-4">
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4"><div className="text-sm font-semibold">Consistent tools</div><p className="mt-2 text-xs leading-5 text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p></div>
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4"><div className="text-sm font-semibold">Transparent project</div><p className="mt-2 text-xs leading-5 text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p></div>
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4"><div className="text-sm font-semibold">Consistent tools</div><p className="mt-2 text-sm leading-5 text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p></div>
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4"><div className="text-sm font-semibold">Transparent project</div><p className="mt-2 text-sm leading-5 text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p></div>
             </div>
           </section> */}
 
           <section className="border-t border-border/60 py-8 sm:py-8" aria-labelledby="walkthrough-title">
             <div className="grid gap-4 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
               <div className="lg:pr-4">
-                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   <PlayCircle className="h-4 w-4" /> Walkthrough
                 </div>
                 <h2 id="walkthrough-title" className="mt-2 text-lg font-semibold tracking-tight sm:text-lg">
@@ -293,7 +293,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                   <Github className="h-4 w-4" /> Continue with GitHub
                 </Button>
               </div>
-              <div className="my-4 flex items-center gap-4 text-xs text-muted-foreground">
+              <div className="my-4 flex items-center gap-4 text-sm text-muted-foreground">
                 <span className="h-px flex-1 bg-border" />
                 or email
                 <span className="h-px flex-1 bg-border" />
@@ -313,7 +313,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
               >
                 <input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="h-10 w-full rounded-xl border border-input bg-background px-4 text-sm" />
                 <input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" className="h-10 w-full rounded-xl border border-input bg-background px-4 text-sm" />
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs"><Link to="/auth/forgot-password" onClick={() => setAuthOpen(false)} className="font-medium text-foreground hover:underline">Forgot password?</Link><Link to="/auth/confirm" onClick={() => setAuthOpen(false)} className="text-muted-foreground hover:text-foreground hover:underline">Resend confirmation</Link></div>
+                <div className="flex flex-wrap items-center justify-between gap-2 text-sm"><Link to="/auth/forgot-password" onClick={() => setAuthOpen(false)} className="font-medium text-foreground hover:underline">Forgot password?</Link><Link to="/auth/confirm" onClick={() => setAuthOpen(false)} className="text-muted-foreground hover:text-foreground hover:underline">Resend confirmation</Link></div>
                 <Button type="submit" className="w-full" disabled={!email.trim() || !password}>
                   Sign in with email
                 </Button>

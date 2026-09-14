@@ -315,18 +315,18 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-foreground">Settings</h1>
-          <p className="mt-2 text-xs text-muted-foreground">Profile, security, integrations, workspace and admin controls.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Profile, security, integrations, workspace and admin controls.</p>
         </div>
         <BuildBadge />
       </div>
       <Tabs tabs={tabs} active={activeTab} onChange={(id) => selectTab(id as TabId)} ariaLabel="Settings sections" />
       {message && (
-        <Card className="border-emerald-500/25 bg-emerald-500/5 p-2 text-xs text-emerald-600 dark:text-emerald-400">
+        <Card className="border-emerald-500/25 bg-emerald-500/5 p-2 text-sm text-emerald-600 dark:text-emerald-400">
           <Check className="mr-2 inline h-3.5 w-3.5" />
           {message}
         </Card>
       )}
-      {error && <Card className="border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive">{error}</Card>}
+      {error && <Card className="border-destructive/30 bg-destructive/5 p-2 text-sm text-destructive">{error}</Card>}
 
       {activeTab === "profile" && (
         <div className="columns-1 gap-4 md:columns-2 xl:columns-3 [&>*]:mb-3 [&>*]:break-inside-avoid">
@@ -337,7 +337,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
               </div>
               <div className="min-w-0">
                 <div className="truncate text-sm font-semibold">{profile?.display_name || user?.email || "AppForge user"}</div>
-                <div className="truncate text-xs text-muted-foreground">{user?.email}</div>
+                <div className="truncate text-sm text-muted-foreground">{user?.email}</div>
                 <div className="mt-2">
                   <Badge color={role === "admin" ? "blue" : "slate"}>{role}</Badge>
                 </div>
@@ -354,7 +354,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
                   event.currentTarget.value = "";
                 }}
               />
-              <span className="inline-flex h-6 items-center gap-2 rounded-xl border border-border px-2 text-xs font-medium hover:bg-accent">
+              <span className="inline-flex h-6 items-center gap-2 rounded-xl border border-border px-2 text-sm font-medium hover:bg-accent">
                 <ImagePlus className="h-3.5 w-3.5" />
                 {busy === "avatar" ? "Uploading…" : "Change avatar"}
               </span>
@@ -363,7 +363,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
           <Card className="p-4">
             <h2 className="text-sm font-semibold">Identity</h2>
             {loading || !profile ? (
-              <div className="py-4 text-xs text-muted-foreground">Loading…</div>
+              <div className="py-4 text-sm text-muted-foreground">Loading…</div>
             ) : (
               <div className="mt-4 grid gap-2">
                 <Input label="Display name" value={profile.display_name || ""} onChange={(e) => setProfile({ ...profile, display_name: e.target.value })} />
@@ -375,7 +375,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
           </Card>
           <Card className="p-4">
             <h2 className="text-sm font-semibold">Save profile</h2>
-            <p className="mt-2 text-xs leading-4 text-muted-foreground">Cards flow independently, so short sections no longer stretch to match tall ones.</p>
+            <p className="mt-2 text-sm leading-4 text-muted-foreground">Cards flow independently, so short sections no longer stretch to match tall ones.</p>
             <Button className="mt-4" onClick={() => void savePublicProfile()} disabled={busy === "profile"}>
               {busy === "profile" ? <Loader2 className="animate-spin" /> : <Check />} Save profile
             </Button>
@@ -394,7 +394,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
           <Card className="p-4">
             <h2 className="text-sm font-semibold">People visibility</h2>
             {profile && (
-              <div className="mt-4 grid gap-2 text-xs">
+              <div className="mt-4 grid gap-2 text-sm">
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={profile.is_public} onChange={(e) => setProfile({ ...profile, is_public: e.target.checked })} /> Show profile in People
                 </label>
@@ -422,7 +422,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
               <LockKeyhole className="mt-2 h-4 w-4 text-muted-foreground" />
               <div>
                 <h2 className="text-sm font-semibold">Private information</h2>
-                <p className="mt-2 text-xs leading-4 text-muted-foreground">Owner-only profile details. Never shown in People.</p>
+                <p className="mt-2 text-sm leading-4 text-muted-foreground">Owner-only profile details. Never shown in People.</p>
               </div>
             </div>
             {privateInfo && (
@@ -458,7 +458,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
               <KeyRound className="h-4 w-4 text-muted-foreground" />
               <div>
                 <h2 className="text-sm font-semibold">Email login password</h2>
-                <p className="mt-2 text-xs leading-4 text-muted-foreground">Minimum 8 characters with lowercase, uppercase, a digit and a symbol.</p>
+                <p className="mt-2 text-sm leading-4 text-muted-foreground">Minimum 8 characters with lowercase, uppercase, a digit and a symbol.</p>
               </div>
             </div>
             <div className="mt-4 grid gap-2">
@@ -474,12 +474,12 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
               <ShieldCheck className="h-4 w-4 text-muted-foreground" />
               <div>
                 <h2 className="text-sm font-semibold">Two-factor authentication</h2>
-                <p className="mt-2 text-xs text-muted-foreground">Session assurance: {currentLevel || "unknown"}.</p>
+                <p className="mt-2 text-sm text-muted-foreground">Session assurance: {currentLevel || "unknown"}.</p>
               </div>
             </div>
             <div className="mt-4 space-y-2">
               {verifiedTotp.map((factor) => (
-                <div key={factor.id} className="flex items-center justify-between rounded-xl border border-border/70 p-2 text-xs">
+                <div key={factor.id} className="flex items-center justify-between rounded-xl border border-border/70 p-2 text-sm">
                   <span>{factor.friendly_name || "Authenticator"} · verified</span>
                   <Button variant="ghost" onClick={() => void removeFactor(factor.id)} disabled={busy === "factor"}>
                     <Trash2 />
@@ -494,7 +494,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
               {enrollment && (
                 <div className="rounded-xl border border-border/70 p-2">
                   <img src={enrollment.qr} alt="TOTP QR code" className="mx-auto h-36 w-36 rounded-xl bg-white p-2" />
-                  <div className="mt-2 break-all text-xs text-muted-foreground">{enrollment.secret}</div>
+                  <div className="mt-2 break-all text-sm text-muted-foreground">{enrollment.secret}</div>
                   <div className="mt-2 flex gap-2">
                     <Input value={totpCode} onChange={(e) => setTotpCode(e.target.value)} placeholder="123456" inputMode="numeric" />
                     <Button onClick={() => void verifyFactor(enrollment.id)} disabled={busy === "verify"}>
@@ -508,7 +508,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
           {role !== "admin" && (
             <Card className="p-4">
               <h2 className="text-sm font-semibold">Admin bootstrap</h2>
-              <p className="mt-2 text-xs leading-4 text-muted-foreground">Available only for the first/sole account when no admin exists.</p>
+              <p className="mt-2 text-sm leading-4 text-muted-foreground">Available only for the first/sole account when no admin exists.</p>
               <Button className="mt-4" variant="secondary" onClick={() => void bootstrapAdmin()} disabled={busy === "bootstrap-admin"}>
                 Claim initial admin
               </Button>
@@ -519,7 +519,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
               <Trash2 className="h-4 w-4 text-destructive" />
               <div>
                 <h2 className="text-sm font-semibold text-destructive">Danger zone</h2>
-                <p className="mt-2 text-xs leading-4 text-muted-foreground">Permanently delete your Supabase Auth account and account-owned database records. This cannot be undone.</p>
+                <p className="mt-2 text-sm leading-4 text-muted-foreground">Permanently delete your Supabase Auth account and account-owned database records. This cannot be undone.</p>
               </div>
             </div>
             <div className="mt-4 grid gap-2 sm:grid-cols-[minmax(0,260px)_auto] sm:items-end">
@@ -536,7 +536,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
         <div className="grid items-start gap-4 lg:grid-cols-2">
           <Card className="p-4">
             <h2 className="text-sm font-semibold">Hugging Face rotation</h2>
-            <p className="mt-2 text-xs leading-4 text-muted-foreground">Optional personal Inference Providers tokens. Story Studio rotates up to three before server-funded tokens. Tokens stay in this browser and are never written to your profile row.</p>
+            <p className="mt-2 text-sm leading-4 text-muted-foreground">Optional personal Inference Providers tokens. Story Studio rotates up to three before server-funded tokens. Tokens stay in this browser and are never written to your profile row.</p>
             <div className="mt-4 grid gap-2">
               {hfTokens.map((value, index) => (
                 <Input key={index} type="password" autoComplete="off" label={`Token ${index + 1}`} value={value} onChange={(event) => setHfTokens((current) => current.map((item, itemIndex) => (itemIndex === index ? event.target.value : item)))} placeholder="hf_…" />
@@ -550,7 +550,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
             <VertexBridgeStatus />
             <Card className="p-4">
               <h2 className="text-sm font-semibold">Provider model</h2>
-              <p className="mt-2 text-xs leading-4 text-muted-foreground">
+              <p className="mt-2 text-sm leading-4 text-muted-foreground">
                 Story text uses the Hugging Face rotation with a continuity-safe local fallback. Vertex remains the secured cloud image bridge for AppForge features that use it. Gemini/OpenRouter browser-key fields are intentionally removed.
               </p>
             </Card>
@@ -562,14 +562,14 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
         <div className="grid items-start gap-4 lg:grid-cols-2">
           <Card className="p-4">
             <h2 className="text-sm font-semibold">Export workspace</h2>
-            <p className="mt-2 text-xs leading-4 text-muted-foreground">Download workspace state, category overrides and widget preferences as JSON.</p>
+            <p className="mt-2 text-sm leading-4 text-muted-foreground">Download workspace state, category overrides and widget preferences as JSON.</p>
             <Button className="mt-4" variant="secondary" onClick={exportWorkspace}>
               <Download className="h-4 w-4" /> Export
             </Button>
           </Card>
           <Card className="p-4">
             <h2 className="text-sm font-semibold">Import workspace</h2>
-            <p className="mt-2 text-xs leading-4 text-muted-foreground">Preview a backup before applying it. Maximum 5 MB.</p>
+            <p className="mt-2 text-sm leading-4 text-muted-foreground">Preview a backup before applying it. Maximum 5 MB.</p>
             <label className="mt-4 inline-flex cursor-pointer">
               <input
                 type="file"
@@ -581,13 +581,13 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
                   event.currentTarget.value = "";
                 }}
               />
-              <span className="inline-flex h-8 items-center gap-2 rounded-xl border border-border px-2 text-xs font-medium hover:bg-accent">
+              <span className="inline-flex h-8 items-center gap-2 rounded-xl border border-border px-2 text-sm font-medium hover:bg-accent">
                 <Upload className="h-4 w-4" /> Choose JSON
               </span>
             </label>
-            {importFileName && <div className="mt-2 text-xs text-muted-foreground">{importFileName}</div>}
+            {importFileName && <div className="mt-2 text-sm text-muted-foreground">{importFileName}</div>}
             {importPreview && (
-              <div className="mt-4 rounded-xl border border-border/70 p-2 text-xs">
+              <div className="mt-4 rounded-xl border border-border/70 p-2 text-sm">
                 <div>Workspace backup is ready to apply.</div>
                 <Button className="mt-2" onClick={applyWorkspaceImport}>
                   Apply import
