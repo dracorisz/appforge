@@ -150,10 +150,10 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-8 pt-4 sm:px-4 sm:pt-4 lg:px-8">
           <div className="grid items-center gap-8 lg:min-h-[calc(100dvh-8rem)] lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] lg:gap-8 xl:gap-8">
             <section className="max-w-4xl py-4 lg:py-8">
-              <h1 className="max-w-4xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-5xl lg:text-5xl lg:leading-[1.02] xl:text-5xl">
+              <h1 className="max-w-4xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-5xl lg:text-5xl xl:text-5xl">
                 Build useful things.<span className="block text-muted-foreground">Own the workflow.</span>
               </h1>
-              <p className="mt-4 max-w-2xl text-pretty text-sm text-muted-foreground sm:text-lg sm:leading-8">Practical tools in one consistent workspace.</p>
+              <p className="mt-4 max-w-2xl text-pretty text-sm text-muted-foreground sm:text-lg">Practical tools in one consistent workspace.</p>
               <div className="mt-8 flex flex-wrap gap-4" aria-busy={Boolean(busyProvider) || loading}>
                 {user ? (
                   <Button className="h-11 px-4" onClick={() => navigate("/")} disabled={loading}>
