@@ -6,13 +6,14 @@ import { useAuth } from "@/auth/AuthProvider";
 import { toast } from "@/lib/toast";
 import { adminDeleteUser, adminListUsers, adminSetRole, adminUpdateProfile, getRole, getSecurityState, verifyTotpFactor, type AdminUser } from "@/lib/account";
 import { AdminContentManager } from "./AdminContentManager";
+import { AdminDocsManager } from "./AdminDocsManager";
 import { AdminImageManager } from "./AdminImageManager";
 import { AdminBlogFeaturedControl } from "./AdminBlogFeaturedControl";
 import { AppAdminPage } from "@/components/dashboard/AppAdminPage";
 import MarketingStudio from "@/components/resources/MarketingStudio";
 
 type Section = "users" | "content" | "apps" | "marketing";
-type ContentSection = "blog" | "landing" | "images";
+type ContentSection = "blog" | "landing" | "docs" | "images";
 
 export function AdminConsolePage() {
   const { user } = useAuth();
@@ -25,7 +26,7 @@ export function AdminConsolePage() {
   const requestedSection = params.get("section");
   const section: Section = requestedSection === "content" || requestedSection === "apps" || requestedSection === "marketing" ? requestedSection : "users";
   const requestedContentSection = params.get("contentTab");
-  const contentSection: ContentSection = requestedContentSection === "landing" || requestedContentSection === "images" ? requestedContentSection : "blog";
+  const contentSection: ContentSection = requestedContentSection === "landing" || requestedContentSection === "docs" || requestedContentSection === "images" ? requestedContentSection : "blog";
   const [users, setUsers] = React.useState<AdminUser[]>([]);
   const [busy, setBusy] = React.useState("");
 
@@ -261,6 +262,7 @@ export function AdminConsolePage() {
             tabs={[
               { id: "blog", label: "Blog" },
               { id: "landing", label: "Landing" },
+              { id: "docs", label: "Docs" },
               { id: "images", label: "Images" },
             ]}
             active={contentSection}
@@ -274,6 +276,7 @@ export function AdminConsolePage() {
             </div>
           )}
           {contentSection === "landing" && <AdminContentManager embedded adminVerified contentType="video_teaser" />}
+          {contentSection === "docs" && <AdminDocsManager />}
           {contentSection === "images" && <AdminImageManager />}
         </div>
       )}
