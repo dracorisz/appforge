@@ -162,6 +162,18 @@ aside[aria-label="Documentation navigation"] nav a:nth-child(n + 9):not([class*=
   box-shadow: 0 0 0 1px hsl(var(--ring) / 0.24);
 }
 
+/* Google OAuth keeps the provider's recognizable blue while retaining AppForge geometry. */
+[role="dialog"][aria-label="Sign in to AppForge"] .grid.grid-cols-2 > button:first-child {
+  border-color: #3367d6;
+  background: #4285f4;
+  color: #fff;
+}
+
+[role="dialog"][aria-label="Sign in to AppForge"] .grid.grid-cols-2 > button:first-child:hover {
+  border-color: #2f5fc4;
+  background: #3367d6;
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-route="/apps/scrapper-pro"] .surface-card,
   [data-route="/apps/scrapper-pro"] .surface-card *,
