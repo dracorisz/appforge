@@ -15,7 +15,7 @@
     "check:ui-style": "node scripts/check-ui-style.mjs",
     "docs:env": "node scripts/generate-env-capabilities.mjs",
     "docs:env-check": "node scripts/generate-env-capabilities.mjs --check",
-    "verify:release": "npm run audit:apps && npm run docs:env-check && npm run lint && npm run typecheck && npm test && npm run build",
+    "verify:release": "npm run audit:apps && npm run docs:env-check && npm run check:ui-style && npm run lint && npm run typecheck && npm test && npm run build",
     "version:set": "node scripts/set-version.mjs",
     "db:migrate": "echo 'Migrations run via CI/CD'",
     "deploy": "vercel --prod",
