@@ -1,6 +1,8 @@
 export { Button } from './Button'
 export { IconButton } from './IconButton'
 export { Card } from './Card'
+export { Surface, Stack } from './Surface'
+export { Text, BodyText, LabelText, HelperText } from './Typography'
 export { Badge } from './Badge'
 export { Modal } from './Modal'
 export { Input, SearchInput, Textarea } from './Inputs'
