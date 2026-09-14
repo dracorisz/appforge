@@ -49,12 +49,15 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=4096
         run: npm run build
 
-      - name: Preserve custom documentation domain
-        run: printf '%s\n' 'docs.sstoken.space' > "$DOCS_OUT_DIR/CNAME"
+      - name: Prepare GitHub Pages routing and custom domain
+        run: |
+          cp "$DOCS_OUT_DIR/index.html" "$DOCS_OUT_DIR/404.html"
+          printf '%s\n' 'docs.sstoken.space' > "$DOCS_OUT_DIR/CNAME"
 
       - name: Verify documentation artifact
         run: |
           test -f "$DOCS_OUT_DIR/index.html"
+          test -f "$DOCS_OUT_DIR/404.html"
           test -f "$DOCS_OUT_DIR/favicon.svg"
           test -d "$DOCS_OUT_DIR/assets"
           test "$(cat "$DOCS_OUT_DIR/CNAME")" = 'docs.sstoken.space'
