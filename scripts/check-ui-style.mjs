@@ -87,7 +87,7 @@ for (const file of files) {
       if (!line.includes('design-leading-ok')) violations.push(`${filePath}:${index + 1}: page-local line height ${match[1]} requires design-leading-ok`)
     }
     for (const match of line.matchAll(paletteUtility)) {
-      const approvedGoogleBrandFallback = filePath === 'src/auth/LoginPage.tsx' && line.includes('Continue with Google')
+      const approvedGoogleBrandFallback = filePath === 'src/auth/LoginPage.tsx' && line.includes('bg-black') && line.includes('border-white/30')
       if (!line.includes('design-palette-ok') && !approvedGoogleBrandFallback) violations.push(`${filePath}:${index + 1}: hard-coded palette utility ${match[1]}`)
     }
   })
