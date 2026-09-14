@@ -3,9 +3,11 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Navigate, useLocation } from 'react-router-dom'
 import App from './App'
 import { AuthProvider } from './auth/AuthProvider'
+import { AdminDocsManager } from './components/admin/AdminDocsManager'
 import { PwaLifecycle } from './components/pwa/PwaLifecycle'
-import { CookieNotice } from './components/public/CookieNotice'
 import { ChangelogPage } from './components/public/ChangelogPage'
+import { CookieNotice } from './components/public/CookieNotice'
+import { DocsPage } from './components/public/DocsPage'
 import { PublicBlogArticlePage, PublicBlogPage } from './components/public/PublicContentPages'
 import { ToastViewport } from './components/ui/ToastViewport'
 import { updateSeo } from './lib/seo'
@@ -40,11 +42,20 @@ const initialDark = initialTheme === 'dark' || (initialTheme === 'system' && win
 document.documentElement.classList.toggle('dark', initialDark)
 if (!localStorage.getItem('appforge-theme')) localStorage.setItem('appforge-theme', JSON.stringify({ mode: initialTheme }))
 
+const docsSlugFromPath = (pathname: string, prefix = '') => {
+  const relative = prefix && pathname.startsWith(prefix) ? pathname.slice(prefix.length) : pathname
+  return relative.replace(/^\/+|\/+$/g, '').replace(/\.html$/i, '').replace(/_/g, '-').toLowerCase() || 'index'
+}
+
 function RootApp() {
   const location = useLocation()
+  const docsHost = window.location.hostname.toLowerCase() === 'docs.sstoken.space'
 
   React.useEffect(() => { updateSeo(location.pathname) }, [location.pathname])
 
+  if (docsHost) return <DocsPage slug={docsSlugFromPath(location.pathname)} />
+  if (location.pathname === '/docs' || location.pathname.startsWith('/docs/')) return <DocsPage slug={docsSlugFromPath(location.pathname, '/docs')} />
+  if (location.pathname === '/admin/docs') return <AdminDocsManager />
   if (location.pathname === '/blog') return <PublicBlogPage />
   if (location.pathname === '/changelog') return <ChangelogPage />
   if (location.pathname === '/admin/content') return <Navigate to="/settings/admin" replace />
