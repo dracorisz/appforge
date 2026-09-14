@@ -41,7 +41,7 @@ const loadHfTokens = () => {
 export function SettingsPage({ state, setState }: { state: AppState; setState: (s: AppState) => void }) {
   const { user, signOut } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = React.useState<TabId>(() => tabFromParams(searchParams));
+  const activeTab = tabFromParams(searchParams);
   const [profile, setProfile] = React.useState<AppProfile | null>(null);
   const [privateInfo, setPrivateInfo] = React.useState<PrivateProfileInfo | null>(null);
   const [role, setRole] = React.useState<"user" | "admin">("user");
@@ -63,7 +63,6 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
 
   const selectTab = React.useCallback(
     (tab: TabId, replace = false) => {
-      setActiveTab(tab);
       const next = new URLSearchParams(searchParams);
       if (tab === "profile") next.delete("tab");
       else next.set("tab", tab);
@@ -71,11 +70,6 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
     },
     [searchParams, setSearchParams],
   );
-
-  React.useEffect(() => {
-    const requested = tabFromParams(searchParams);
-    if (requested !== activeTab) setActiveTab(requested);
-  }, [searchParams, activeTab]);
 
   const flash = (text: string) => {
     setMessage(text);
@@ -314,14 +308,14 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
   };
 
   const verifiedTotp = totpFactors.filter((factor) => factor.status === "verified");
-  const tabs: { id: TabId; label: string }[] = [{ id: "profile", label: "Profile" }, { id: "security", label: "Security" }, { id: "integrations", label: "Integrations" }, { id: "data", label: "Data" }, ...(role === "admin" ? [{ id: "admin" as TabId, label: "Admin" }] : [])];
+  const tabs: { id: TabId; label: string }[] = [{ id: "profile", label: "Profile" }, { id: "security", label: "Security" }, { id: "integrations", label: "Integrations" }, { id: "data", label: "Workspace" }, ...(role === "admin" ? [{ id: "admin" as TabId, label: "Admin" }] : [])];
 
   return (
     <div className="space-y-4 pb-8">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">Settings</h1>
-          <p className="mt-1 text-xs text-muted-foreground">Profile, security, integrations and workspace data.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Profile, security, integrations, workspace and admin controls.</p>
         </div>
         <BuildBadge />
       </div>
