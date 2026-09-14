@@ -26,6 +26,7 @@ concurrency:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
   DOCS_OUT_DIR: dist
+  VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_b56EltHyMfwOQjVQcQFHwA_VUiSn9zN
 
 jobs:
   build:
@@ -45,7 +46,6 @@ jobs:
 
       - name: Build custom documentation app
         env:
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           NODE_OPTIONS: --max-old-space-size=4096
         run: npm run build
 
