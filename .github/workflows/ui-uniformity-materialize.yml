@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - scripts/apply-ui-uniformity.mjs
+      - scripts/ui-uniformity-trigger.txt
 
 permissions:
   contents: read
