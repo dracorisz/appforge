@@ -24,6 +24,14 @@ jobs:
           cache: npm
       - run: npm ci --legacy-peer-deps
       - run: node scripts/apply-ui-uniformity.mjs
+      - name: Final generated-tree cleanup
+        run: sed -i 's/px-0 //g' src/components/layout/Sidebar.tsx
+      - name: Verify generated tree
+        run: |
+          npm run check:ui-style
+          npm run typecheck
+          npm test
+          npm run build
       - name: Package generated tree
         run: |
           tar -czf /tmp/ui-uniformity-generated.tgz src tailwind.config.js scripts/check-ui-style.mjs docs/DESIGN_SYSTEM.md
