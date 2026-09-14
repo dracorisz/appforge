@@ -326,7 +326,16 @@ const uploadMetadata = (opts: UploadOptions) => ({
   folder: opts.folder || (typeof opts.metadata?.folder === 'string' ? opts.metadata.folder : 'general'),
 })
 
+const assertManualUploadFolder = (opts: UploadOptions) => {
+  if (opts.metadata?.source !== 'manual-upload') return
+  const folder = String(opts.folder || opts.metadata?.folder || 'general').trim().toLowerCase()
+  if (folder === 'desktop-buddies' || folder === 'screenshots') {
+    throw new Error('This system-managed folder does not accept direct uploads. Choose General or one of your folders.')
+  }
+}
+
 export async function uploadVaultMedia(file: File, opts: UploadOptions = {}): Promise<VaultMedia> {
+  assertManualUploadFolder(opts)
   const kind = opts.kind || inferKind(file)
   if (file.size > 104857600) throw new Error('Files over 100 MB are not allowed.')
   const prepared = await requestUploadUrl({ kind, fileName: file.name, mimeType: file.type || 'application/octet-stream', sizeBytes: file.size })
@@ -360,6 +369,7 @@ export async function uploadVaultMedia(file: File, opts: UploadOptions = {}): Pr
 }
 
 export async function uploadVaultMediaWithProgress(file: File, opts: UploadOptions & { onProgress?: (progress: number) => void } = {}): Promise<VaultMedia> {
+  assertManualUploadFolder(opts)
   const kind = opts.kind || inferKind(file)
   if (file.size > 104857600) throw new Error('Files over 100 MB are not allowed.')
   const prepared = await requestUploadUrl({ kind, fileName: file.name, mimeType: file.type || 'application/octet-stream', sizeBytes: file.size })
