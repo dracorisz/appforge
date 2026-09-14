@@ -8,7 +8,7 @@ on:
       - scripts/ui-uniformity-trigger.txt
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   materialize:
@@ -34,11 +34,11 @@ jobs:
           npm run typecheck
           npm test
           npm run build
-      - name: Package generated tree
+      - name: Publish verified commit object
         run: |
-          tar -czf /tmp/ui-uniformity-generated.tgz src tailwind.config.js scripts/check-ui-style.mjs docs/DESIGN_SYSTEM.md
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ui-uniformity-generated
-          path: /tmp/ui-uniformity-generated.tgz
-          retention-days: 1
+          git config user.name "appforge-design-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add src tailwind.config.js scripts/check-ui-style.mjs docs/DESIGN_SYSTEM.md
+          git commit -m "refactor(ui): standardize controls and layout"
+          git tag ui-uniformity-materialized-20260914
+          git push origin refs/tags/ui-uniformity-materialized-20260914
