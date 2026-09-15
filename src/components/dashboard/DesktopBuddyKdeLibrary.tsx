@@ -99,12 +99,11 @@ export function DesktopBuddyKdeLibrary() {
                   {active && <Check className="h-4 w-4 shrink-0" />}
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">{starter.note}</p>
-                <p className="mt-auto pt-4 text-xs text-muted-foreground">
+                <p className="mt-auto pt-4 text-xs text-muted-foreground"> {/* design-xs-ok: compact copyright and license notice */}
                   {starter.author}
                   <br />
                   {starter.license}
-                </p>{" "}
-                {/* design-xs-ok: compact copyright and license notice */}
+                </p>
                 <div className="flex gap-2 pt-4">
                   <Button type="button" onClick={() => selectStarter(starter)} className="flex-1 py-2 font-semibold">
                     {active ? "Active" : "Use character"}
