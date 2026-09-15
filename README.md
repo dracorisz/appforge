@@ -138,7 +138,7 @@ The human product version lives in `package.json`. Normal commits do not require
 For a named release:
 
 ```bash
-npm run version:set -- 1.27.0
+npm run version:set -- 1.28.1
 ```
 
 The canonical production deployment is the Vercel `appforge` project connected to `main`. Git-triggered Vercel deployments are disabled in `vercel.json`, so pushing to `main` is not itself a production release.

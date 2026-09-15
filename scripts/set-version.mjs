@@ -3,7 +3,7 @@ import fs from 'node:fs'
 const nextVersion = process.argv[2]
 
 if (!nextVersion || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(nextVersion)) {
-  console.error('Usage: npm run version:set -- 1.27.0')
+  console.error('Usage: npm run version:set -- 1.28.1')
   process.exit(1)
 }
 

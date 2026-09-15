@@ -6,7 +6,7 @@ const runtimeEnv = ((globalThis as typeof globalThis & {
   process?: { env?: Record<string, string | undefined> }
 }).process?.env || {})
 
-const appVersion = runtimeEnv.npm_package_version || '1.27.0'
+const appVersion = runtimeEnv.npm_package_version || '1.28.1'
 const gitSha = runtimeEnv.VERCEL_GIT_COMMIT_SHA || runtimeEnv.GITHUB_SHA || 'local'
 const buildTime = new Date().toISOString()
 const requestedBasePath = runtimeEnv.VITE_BASE_PATH || '/'

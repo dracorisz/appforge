@@ -2,6 +2,22 @@
 
 This file tracks user-visible AppForge product changes. The canonical source is the `main` branch.
 
+## 1.28.1 — September 15, 2026
+
+### Fixed
+- App editing and creation dialogs now render through a body portal so the modal backdrop consistently covers the full dynamic viewport without being clipped by workspace layout ancestors.
+- Media Vault managed-folder protections and release tests now match the reviewed behavior, including protected Getter Pro references that cannot be moved manually.
+
+### Improved
+- Removed redundant page-level Button visual overrides across app, admin and resource surfaces so shared Button variants and sizes remain the source of truth for canonical padding, typography, borders and hover treatment.
+- Preserved layout-, state- and media-specific Button classes where they carry real behavior rather than applying blanket normalization.
+- The UI style contract now treats ring-0 as the canonical no-visible-ring interaction rule, matching the reviewed interface.
+- Compact KDE attribution keeps its intentional text-xs exception explicit while the broader UI contract remains unchanged.
+
+### Maintenance
+- Synchronized design-system tests with the reviewed ring-zero and managed-folder contracts.
+- Global application version advanced to 1.28.1 across package metadata, lockfile metadata, build fallback and versioning examples.
+
 ## 1.28.0 — September 13, 2026
 
 ### Fixed
