@@ -57,17 +57,19 @@ const metaText = (asset: PublicDragonAsset) => {
   return [provider, mime, size, turn > 0 ? `turn ${turn}` : null].filter(Boolean).join(" · ");
 };
 
-function CarouselCard({ asset, active, onSelect }: { asset: PublicDragonAsset; active: boolean; onSelect: () => void }) {
+function CarouselCard({ asset, position, onSelect }: { asset: PublicDragonAsset; position: -1 | 0 | 1; onSelect: () => void }) {
+  const active = position === 0;
   const src = publicAssetUrl(asset);
   const modelLabel = asset.model === "unknown-legacy" ? "Legacy model not recorded" : asset.model || "Hugging Face image model";
   return (
     <Button
       type="button"
       onClick={onSelect}
-      className={`group relative shrink-0 cursor-pointer overflow-hidden rounded-xl border bg-card p-0 text-left transition-all duration-500 ${active ? "z-10 w-[82vw] max-w-4xl scale-100 opacity-100 md:w-[60vw]" : "w-[44vw] max-w-lg translate-y-4 scale-[.82] opacity-45 md:w-[28vw]"}`}
+      className={`group relative min-w-0 overflow-hidden rounded-xl border bg-card p-0 text-left transition-[transform,opacity,border-color,background-color] duration-500 ${active ? "z-10 scale-100 opacity-100" : "scale-[.86] opacity-50 hover:scale-[.9] hover:opacity-75"}`}
       aria-current={active ? "true" : undefined}
+      aria-label={active ? asset.title || "Current Story Studio scene" : `${position < 0 ? "Previous" : "Next"} scene: ${asset.title || "Story Studio scene"}`}
     >
-      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+      <div className={`relative overflow-hidden bg-muted ${active ? "aspect-[16/10]" : "aspect-[4/5]"}`}>
         {src ? (
           <img src={src} alt={asset.title || "Story Studio generated scene"} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" loading="lazy" />
         ) : (
@@ -76,12 +78,12 @@ function CarouselCard({ asset, active, onSelect }: { asset: PublicDragonAsset; a
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-overlay/90 via-transparent to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-inverse">
           <div className="mb-2 flex flex-wrap gap-2"><Badge color="blue">Hugging Face</Badge><Badge color="slate">Story Studio</Badge></div>
-          <h3 className={`${active ? "text-lg sm:text-lg" : "text-sm sm:text-sm"} line-clamp-2 font-semibold tracking-tight`}>{asset.title || "Story Studio scene"}</h3>
-          {active && <p className="mt-2 text-sm text-inverse/70">{metaText(asset) || "Generation metadata unavailable"}</p>}
+          <h3 className={`${active ? "text-lg" : "text-sm"} line-clamp-2 font-semibold tracking-tight`}>{asset.title || "Story Studio scene"}</h3>
+          {active && <p className="mt-2 line-clamp-1 text-sm text-inverse/70">{metaText(asset) || "Generation metadata unavailable"}</p>}
         </div>
       </div>
       {active && (
-        <div className="flex items-center justify-between gap-4 border-t px-4 py-2">
+        <div className="grid min-w-0 gap-2 border-t px-4 py-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
           <div className="min-w-0 truncate text-sm text-muted-foreground">Model: <span className="text-foreground">{modelLabel}</span></div>
           <span className="shrink-0 text-sm text-muted-foreground">{new Date(asset.generated_at).toLocaleDateString()}</span>
         </div>
@@ -105,7 +107,7 @@ function InfiniteShowcase({ assets }: { assets: PublicDragonAsset[] }) {
 
   if (!assets.length) return <Card className="p-8 text-center text-sm text-muted-foreground">No public creator-selected scenes yet.</Card>;
 
-  const positions = assets.length === 1 ? [0] : [-1, 0, 1];
+  const positions: (-1 | 0 | 1)[] = assets.length === 1 ? [0] : [-1, 0, 1];
   const beginGesture = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.pointerType === "mouse") return;
     gestureRef.current = { x: event.clientX, y: event.clientY };
@@ -125,7 +127,7 @@ function InfiniteShowcase({ assets }: { assets: PublicDragonAsset[] }) {
 
   return (
     <div
-      className="relative overflow-hidden py-8"
+      className="relative py-4"
       style={{ touchAction: "pan-y" }}
       onPointerDown={beginGesture}
       onPointerUp={endGesture}
@@ -135,11 +137,11 @@ function InfiniteShowcase({ assets }: { assets: PublicDragonAsset[] }) {
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
-      <div className="flex items-center justify-center gap-2" aria-live="polite">
-        {positions.map((offset) => {
-          const assetIndex = wrap(index + offset, assets.length);
+      <div className={`grid items-center gap-2 overflow-hidden px-2 sm:gap-4 ${assets.length === 1 ? "grid-cols-1" : "grid-cols-[minmax(0,.42fr)_minmax(0,1.6fr)_minmax(0,.42fr)]"}`} aria-live="polite">
+        {positions.map((position) => {
+          const assetIndex = wrap(index + position, assets.length);
           const asset = assets[assetIndex];
-          return <CarouselCard key={`${offset}-${asset.id}`} asset={asset} active={offset === 0} onSelect={() => { if (Date.now() >= ignoreClickUntilRef.current) setIndex(assetIndex); }} />;
+          return <CarouselCard key={`${position}-${asset.id}`} asset={asset} position={position} onSelect={() => { if (Date.now() >= ignoreClickUntilRef.current) setIndex(assetIndex); }} />;
         })}
       </div>
       {assets.length > 1 && (
@@ -211,7 +213,7 @@ export function HuggingFaceGalleryPage() {
             </div>
           </div>
 
-          <div className="surface-panel overflow-hidden rounded-xl border p-4">
+          <div className="surface-panel min-w-0 overflow-hidden rounded-xl border p-4">
             <div className="flex items-end justify-between gap-4 border-b pb-4"><div><h2 className="text-lg font-semibold tracking-tight">Public generated assets</h2><p className="mt-1 text-sm text-muted-foreground">One gallery for creator-selected Story Studio scenes and admin-managed images.</p></div><span className="text-sm text-muted-foreground">{assets.length} scenes</span></div>
             {error && <Card className="mt-4 border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">Could not load the public gallery: {error}</Card>}
             {loading ? <Card className="mt-4 flex items-center justify-center gap-2 p-8 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading public Story Studio assets…</Card> : <InfiniteShowcase assets={assets} />}
