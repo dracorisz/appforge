@@ -236,7 +236,7 @@ export default function FaviconStudio() {
                   setImageData(null);
                   setMessage("Returned to text/emoji mode.");
                 }}
-                className="col-span-2 inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent"
+                className="col-span-2 px-4"
               >
                 <RotateCcw className="h-4 w-4" /> Use text
               </Button>
@@ -245,7 +245,7 @@ export default function FaviconStudio() {
         </div>
 
         <div className="mt-4">
-          <Button type="button" onClick={() => void exportSet()} style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }} className="w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
+          <Button type="button" onClick={() => void exportSet()} style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }} className="w-full px-4 font-semibold">
             <Download className="h-4 w-4" /> Download favicon set
           </Button>
         </div>
@@ -262,10 +262,10 @@ export default function FaviconStudio() {
               <p className="text-sm text-muted-foreground">Copy-ready project assets.</p>
             </div>
             <div className="flex gap-2">
-              <Button type="button" onClick={() => void copy(svg, "SVG")} className="rounded-xl border px-4 py-2 text-sm font-medium hover:bg-accent">
+              <Button type="button" onClick={() => void copy(svg, "SVG")} className="px-4 py-2">
                 Copy SVG
               </Button>
-              <Button type="button" onClick={() => void copy(manifest, "Manifest")} className="rounded-xl border px-4 py-2 text-sm font-medium hover:bg-accent">
+              <Button type="button" onClick={() => void copy(manifest, "Manifest")} className="px-4 py-2">
                 Copy manifest
               </Button>
             </div>
@@ -283,7 +283,7 @@ export default function FaviconStudio() {
           </div>
           <div className="flex flex-wrap gap-2">
             {PREVIEW_SIZES.map((size) => (
-              <Button key={size} type="button" onClick={() => void exportPreview(size)} className="group grid min-h-9 place-items-center gap-2 rounded-xl border bg-background text-sm text-muted-foreground hover:bg-accent" title={`Download ${size}×${size} PNG`}>
+              <Button key={size} type="button" onClick={() => void exportPreview(size)} className="group grid place-items-center bg-background text-muted-foreground" title={`Download ${size}×${size} PNG`}>
                 <img src={svgDataUrl} alt={`${size} by ${size} favicon preview`} width={16} height={16} className="h-4 w-4 rounded-xl" />
                 <span>
                   {size}×{size}

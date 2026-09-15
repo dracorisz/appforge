@@ -160,7 +160,7 @@ export function DNSChecker() {
                     setType(item.type);
                     void lookup(item.name, item.type);
                   }}
-                  className="rounded-xl border border-border px-2 py-2 text-sm hover:bg-accent"
+                  className="py-2"
                 >
                   {item.name} · {item.type}
                 </Button>

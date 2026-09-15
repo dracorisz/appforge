@@ -111,7 +111,7 @@ export default function MarketingStudio() {
               ))}
             </Select>
           </label>
-          <Button type="button" onClick={generate} className="inline-flex items-center justify-center gap-2 self-end rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">
+          <Button type="button" onClick={generate} className="self-end bg-primary px-4 font-semibold text-primary-foreground">
             <Film className="h-4 w-4" /> Generate demo package
           </Button>
         </div>
@@ -159,7 +159,7 @@ export default function MarketingStudio() {
                 <div>
                   <div className="mb-2 flex items-center justify-between">
                     <h3 className="text-sm font-semibold">30–90s script</h3>
-                    <Button type="button" onClick={() => void copy(selectedDemo.script.join("\n"))} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+                    <Button type="button" onClick={() => void copy(selectedDemo.script.join("\n"))} className="text-muted-foreground hover:text-foreground">
                       <Clipboard className="h-4 w-4" /> Copy
                     </Button>
                   </div>
@@ -175,7 +175,7 @@ export default function MarketingStudio() {
                 <div>
                   <div className="mb-2 flex items-center justify-between">
                     <h3 className="text-sm font-semibold">Shot/click list</h3>
-                    <Button type="button" onClick={() => void copy(selectedDemo.shots.join("\n"))} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+                    <Button type="button" onClick={() => void copy(selectedDemo.shots.join("\n"))} className="text-muted-foreground hover:text-foreground">
                       <Clipboard className="h-4 w-4" /> Copy
                     </Button>
                   </div>
@@ -210,10 +210,10 @@ export default function MarketingStudio() {
               </div>
 
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <Button type="button" onClick={() => createPublication("youtube-16x9")} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
+                <Button type="button" onClick={() => createPublication("youtube-16x9")} className="font-semibold">
                   <Youtube className="h-4 w-4" /> Prepare 16:9 publication
                 </Button>
-                <Button type="button" onClick={() => createPublication("short-9x16")} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
+                <Button type="button" onClick={() => createPublication("short-9x16")} className="font-semibold">
                   <Film className="h-4 w-4" /> Prepare Short
                 </Button>
               </div>
@@ -252,15 +252,15 @@ export default function MarketingStudio() {
                       Published URL
                       <Input value={record.remoteUrl || ""} onChange={(event) => updatePublication(record.id, { remoteUrl: event.target.value })} placeholder="https://youtu.be/…" className="h-11 rounded-xl border bg-background px-4" />
                     </label>
-                    <Button type="button" onClick={() => markPublished(record)} className="inline-flex items-center justify-center gap-2 self-end rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
+                    <Button type="button" onClick={() => markPublished(record)} className="self-end px-4 font-semibold">
                       <CheckCircle2 className="h-4 w-4" /> Mark published
                     </Button>
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <Button type="button" onClick={() => void copy(`${record.title}\n\n${record.description}\n\nTags: ${record.tags.join(", ")}`)} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
+                    <Button type="button" onClick={() => void copy(`${record.title}\n\n${record.description}\n\nTags: ${record.tags.join(", ")}`)} className="px-4 font-semibold">
                       <Clipboard className="h-4 w-4" /> Copy publication package
                     </Button>
-                    <Button type="button" disabled title="Enable only after Google approves the narrow delegated YouTube upload scope" className="inline-flex cursor-not-allowed items-center gap-2 rounded-xl border px-4 text-sm font-semibold opacity-50">
+                    <Button type="button" disabled title="Enable only after Google approves the narrow delegated YouTube upload scope" className="cursor-not-allowed px-4 font-semibold opacity-50">
                       <Send className="h-4 w-4" /> Upload via YouTube OAuth · approval required
                     </Button>
                   </div>

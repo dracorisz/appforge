@@ -293,10 +293,10 @@ export function PF_ScrapperProNext() {
               className="h-11 w-full rounded-xl border bg-background pl-8 pr-4 text-sm"
             />
           </label>
-          <Button type="button" onClick={() => void runSearch()} disabled={loading || !query.trim()} className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">
+          <Button type="button" onClick={() => void runSearch()} disabled={loading || !query.trim()} className="bg-primary px-4 font-semibold text-primary-foreground">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />} Search
           </Button>
-          <Button type="button" onClick={() => void runSearch()} disabled={loading || !results.length} className="inline-flex items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent disabled:opacity-50">
+          <Button type="button" onClick={() => void runSearch()} disabled={loading || !results.length} className="px-4 font-semibold">
             <RefreshCw className="h-4 w-4" /> Refresh
           </Button>
         </div>
@@ -349,7 +349,7 @@ export function PF_ScrapperProNext() {
             const downloadable = Boolean(result.mediaUrl || result.thumbnail);
             return (
               <article key={result.id} className={`surface-card flex h-full flex-col overflow-hidden rounded-xl border ${selected ? "ring-0 ring-primary/40" : ""}`}>
-                <Button type="button" onClick={() => toggleSelected(result.id)} className="relative block aspect-video w-full shrink-0 overflow-hidden bg-muted/40 text-left" aria-pressed={selected}>
+                <Button type="button" onClick={() => toggleSelected(result.id)} className="relative block aspect-video w-full overflow-hidden bg-muted/40 text-left" aria-pressed={selected}>
                   {result.thumbnail ? (
                     <img src={result.thumbnail} alt="" loading="lazy" className="h-full w-full object-cover" />
                   ) : (
@@ -376,13 +376,13 @@ export function PF_ScrapperProNext() {
                     <a href={result.url} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
                       Open <ExternalLink className="h-4 w-4" />
                     </a>
-                    <Button type="button" onClick={() => void saveOneVault(result)} disabled={saving} className="grid w-9 place-items-center rounded-xl border hover:bg-accent disabled:opacity-50" aria-label="Save to Media Vault" title="Save to Media Vault">
+                    <Button type="button" onClick={() => void saveOneVault(result)} disabled={saving} className="grid w-9 place-items-center" aria-label="Save to Media Vault" title="Save to Media Vault">
                       {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Archive className={`h-4 w-4 ${savedVault ? "text-primary" : ""}`} />}
                     </Button>
-                    <Button type="button" onClick={() => void downloadResult(result)} disabled={!downloadable} className="grid w-9 place-items-center rounded-xl border hover:bg-accent disabled:cursor-not-allowed disabled:opacity-35" aria-label="Download result media" title="Download media">
+                    <Button type="button" onClick={() => void downloadResult(result)} disabled={!downloadable} className="grid w-9 place-items-center disabled:cursor-not-allowed disabled:opacity-35" aria-label="Download result media" title="Download media">
                       <Download className="h-4 w-4" />
                     </Button>
-                    <Button type="button" onClick={() => void copyUrl(result.url)} className="grid w-9 place-items-center rounded-xl border hover:bg-accent" aria-label="Copy source URL" title="Copy source URL">
+                    <Button type="button" onClick={() => void copyUrl(result.url)} className="grid w-9 place-items-center" aria-label="Copy source URL" title="Copy source URL">
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
@@ -395,7 +395,7 @@ export function PF_ScrapperProNext() {
       {!loading && visibleResults.length === 0 && <div className="surface-card rounded-xl border p-4 text-center text-sm text-muted-foreground">Search to load public results, or change the active filter.</div>}
       {nextPageToken && selectedSources.has("youtube") && (
         <div className="flex justify-center">
-          <Button type="button" onClick={() => void loadMoreYouTube()} disabled={loadingMore} className="inline-flex items-center gap-2 rounded-xl border bg-background px-4 text-sm font-semibold hover:bg-accent disabled:opacity-50">
+          <Button type="button" onClick={() => void loadMoreYouTube()} disabled={loadingMore} className="bg-background px-4 font-semibold">
             {loadingMore ? <Loader2 className="h-4 w-4 animate-spin" /> : <Youtube className="h-4 w-4" />} Load more {filter === "all" ? "results" : `${filter} results`}
           </Button>
         </div>

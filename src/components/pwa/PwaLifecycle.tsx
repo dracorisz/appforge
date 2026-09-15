@@ -113,7 +113,7 @@ export function PwaLifecycle() {
         </div>
         <Button
           aria-label="Dismiss PWA message"
-          className="rounded-xl p-2 text-muted-foreground transition-colors hover:bg-inverse/10 hover:text-inverse focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-inverse/70"
+          className="p-2 text-muted-foreground hover:bg-inverse/10 hover:text-inverse focus-visible:ring-inverse/70"
           onClick={() => {
             setNeedRefresh(false);
             setOfflineReady(false);

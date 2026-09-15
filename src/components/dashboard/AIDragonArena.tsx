@@ -312,7 +312,7 @@ export function PF_AIDragonArenaStudioV2() {
               assets.map((asset) => {
                 const src = safeAssetUrl(asset);
                 return (
-                  <Button key={asset.id} type="button" onClick={() => src && setLightbox(src)} className="h-20 w-28 shrink-0 overflow-hidden rounded-xl border border-border bg-muted">
+                  <Button key={asset.id} type="button" onClick={() => src && setLightbox(src)} className="h-20 w-28 overflow-hidden bg-muted">
                     {src && <img src={src} alt="" className="h-full w-full object-cover" />}
                   </Button>
                 );
@@ -358,7 +358,7 @@ export function PF_AIDragonArenaStudioV2() {
                 <div className="mt-2 grid gap-4 md:grid-cols-[minmax(0,1fr)_180px] md:items-start">
                   <div className="whitespace-pre-line text-sm">{item.narrative}</div>
                   {src && (
-                    <Button type="button" onClick={() => setLightbox(src)} className="overflow-hidden rounded-xl border border-border">
+                    <Button type="button" onClick={() => setLightbox(src)} className="overflow-hidden">
                       <img src={src} alt={`Scene ${item.turnNumber}`} className="aspect-[4/3] w-full object-cover" />
                     </Button>
                   )}
@@ -411,7 +411,7 @@ export function PF_AIDragonArenaStudioV2() {
             if (event.target === event.currentTarget) setLightbox("");
           }}
         >
-          <Button type="button" aria-label="Close image" onClick={() => setLightbox("")} className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-xl bg-inverse/10 text-inverse">
+          <Button type="button" aria-label="Close image" onClick={() => setLightbox("")} className="absolute right-4 top-4 flex h-6 w-6 bg-inverse/10 text-inverse">
             <X className="h-4 w-4" />
           </Button>
           <img src={lightbox} alt="Generated story scene" className="max-h-[88dvh] max-w-[92vw] rounded-xl object-contain" />

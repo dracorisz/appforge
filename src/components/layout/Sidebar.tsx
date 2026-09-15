@@ -146,7 +146,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
           </NavLink>
         )}
         {onClose ? (
-          <Button onClick={onClose} className="ml-auto rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close navigation">
+          <Button onClick={onClose} className="ml-auto p-2 text-muted-foreground hover:text-foreground" aria-label="Close navigation">
             <X className="h-4 w-4" />
           </Button>
         ) : (
@@ -247,7 +247,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
                         setThemeMode(nextMode);
                         setAccountOpen(false);
                       }}
-                      className="rounded-xl px-2 text-xs !min-h-6 !max-h-6 !h-6 !py-0 capitalize text-muted-foreground hover:text-foreground"
+                      className="text-xs !min-h-6 !max-h-6 !h-6 !py-0 capitalize text-muted-foreground hover:text-foreground"
                     >
                       {nextMode}
                     </Button>
@@ -266,7 +266,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
                 <a href="https://github.com/dracorisz/appforge/issues" target="_blank" rel="noreferrer" onClick={() => setAccountOpen(false)} className="flex items-center gap-2 rounded-xl px-2 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground">
                   <HeartHandshake className="h-4 w-4" /> Support
                 </a>
-                <Button onClick={() => void handleSignOut()} disabled={signingOut} className="flex w-full items-center justify-start gap-2 rounded-xl px-2 py-2 text-left text-sm text-muted-foreground border !border-border/0 hover:bg-accent hover:text-foreground disabled:opacity-60">
+                <Button onClick={() => void handleSignOut()} disabled={signingOut} className="flex w-full justify-start py-2 text-left text-muted-foreground !border-border/0 hover:text-foreground disabled:opacity-60">
                   <LogOut className="h-4 w-4" />
                   {signingOut ? "Signing out…" : "Sign out"}
                 </Button>
@@ -303,7 +303,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
 export function MobileHeader({ onOpen, triggerRef }: { onOpen: () => void; triggerRef?: React.Ref<HTMLButtonElement> }) {
   return (
     <header className="flex h-14 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur-xl lg:hidden">
-      <Button ref={triggerRef} onClick={onOpen} className="rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Open navigation">
+      <Button ref={triggerRef} onClick={onOpen} className="p-2 text-muted-foreground hover:text-foreground" aria-label="Open navigation">
         <Sliders className="h-4 w-4" />
       </Button>
       <NavLink to="/landing" className="flex items-center gap-2">

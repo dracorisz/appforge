@@ -227,14 +227,14 @@ export function DesktopBuddyAssetLab() {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <Button type="button" onClick={() => downloadUrl(variant.pngUrl, `${safeStem(sourceName)}-${variant.size}.png`)} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
+                    <Button type="button" onClick={() => downloadUrl(variant.pngUrl, `${safeStem(sourceName)}-${variant.size}.png`)} className="font-semibold">
                       <Download className="h-4 w-4" /> PNG
                     </Button>
                     <Button
                       type="button"
                       disabled={!variant.webpUrl}
                       onClick={() => variant.webpUrl && downloadUrl(variant.webpUrl, `${safeStem(sourceName)}-${variant.size}.webp`)}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent disabled:opacity-40"
+                      className="font-semibold disabled:opacity-40"
                     >
                       <Download className="h-4 w-4" /> WebP
                     </Button>
@@ -245,7 +245,7 @@ export function DesktopBuddyAssetLab() {
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-background/45 p-4">
             <p className="max-w-2xl text-sm text-muted-foreground">Use the optimized 512px PNG as the persistent companion image. This updates only browser-local Desktop Buddy storage and keeps your source file on this device.</p>
-            <Button type="button" onClick={() => void applyToBuddy()} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">
+            <Button type="button" onClick={() => void applyToBuddy()} className="bg-primary px-4 font-semibold text-primary-foreground">
               <Check className="h-4 w-4" /> Use 512px in Buddy
             </Button>
           </div>

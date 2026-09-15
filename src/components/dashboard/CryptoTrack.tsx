@@ -233,7 +233,7 @@ export function PF_CryptoTrack() {
             <option value="change24h">24h change</option>
             <option value="name">Name</option>
           </Select>
-          <Button onClick={() => setSortDir((value) => (value === "asc" ? "desc" : "asc"))} className="rounded-xl border border-border px-2 py-2 text-sm text-muted-foreground hover:text-foreground">
+          <Button onClick={() => setSortDir((value) => (value === "asc" ? "desc" : "asc"))} className="py-2 text-muted-foreground hover:text-foreground">
             {sortDir === "desc" ? "Descending" : "Ascending"}
           </Button>
           <div className="ml-auto flex flex-wrap items-center gap-4 text-sm text-muted-foreground">

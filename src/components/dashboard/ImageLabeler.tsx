@@ -385,7 +385,7 @@ export function PF_ImageLabeler() {
                 </Button>
               </div>
             </div>
-            <Button type="button" onClick={() => setLightbox(currentImage.url)} className="mt-4 flex min-h-[360px] w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-overlay/5 p-2 dark:bg-overlay/30">
+            <Button type="button" onClick={() => setLightbox(currentImage.url)} className="mt-4 flex min-h-[360px] w-full overflow-hidden bg-overlay/5 p-2 dark:bg-overlay/30">
               <img src={currentImage.url} alt={currentImage.name} className="max-h-[62vh] max-w-full object-contain" />
             </Button>
             <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
@@ -418,7 +418,7 @@ export function PF_ImageLabeler() {
               </div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {(currentLabel?.tags || []).map((tag) => (
-                  <Button key={tag} onClick={() => removeTag(tag)} className="inline-flex items-center gap-2 rounded-xl bg-muted px-2 py-2 text-sm text-foreground hover:bg-accent">
+                  <Button key={tag} onClick={() => removeTag(tag)} className="bg-muted py-2">
                     {tag}
                     <X className="h-3 w-3 text-muted-foreground" />
                   </Button>
@@ -469,7 +469,7 @@ export function PF_ImageLabeler() {
 
       {lightbox && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/90 p-4" onClick={() => setLightbox(null)}>
-          <Button onClick={() => setLightbox(null)} className="absolute right-4 top-4 rounded-xl bg-overlay/40 p-2 text-inverse hover:bg-overlay/60" aria-label="Close preview">
+          <Button onClick={() => setLightbox(null)} className="absolute right-4 top-4 bg-overlay/40 p-2 text-inverse hover:bg-overlay/60" aria-label="Close preview">
             <X className="h-6 w-6" />
           </Button>
           <img src={lightbox} alt="Full-size preview" className="max-h-[92vh] max-w-[96vw] object-contain" />

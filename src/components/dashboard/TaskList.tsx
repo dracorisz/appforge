@@ -359,7 +359,7 @@ export function TaskList() {
       <div className="space-y-2">
         {visibleTasks.map((task) => (
           <Card key={task.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 p-4 sm:p-4">
-            <Button type="button" onClick={() => toggle(task)} className="shrink-0 rounded-xl p-2 text-muted-foreground hover:text-foreground" aria-label={task.completed ? `Mark ${task.title} active` : `Complete ${task.title}`}>
+            <Button type="button" onClick={() => toggle(task)} className="p-2 text-muted-foreground hover:text-foreground" aria-label={task.completed ? `Mark ${task.title} active` : `Complete ${task.title}`}>
               {task.completed ? <CheckCircle2 className="h-5 w-5" /> : <Circle className="h-5 w-5" />}
             </Button>
             {editingId === task.id ? (

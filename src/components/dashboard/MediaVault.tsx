@@ -389,16 +389,16 @@ export function PF_UserMediaVault() {
           const userFolder = userFolders.find((entry) => entry.name === id);
           return (
             <div key={String(id)} className={`flex items-center gap-2 rounded-xl border transition-colors ${folder === id ? "border-foreground/25 bg-accent" : "border-border bg-background/35 hover:bg-accent/60"}`}>
-              <Button onClick={() => setFolder(id)} className="flex min-w-0 flex-1 items-center gap-2 text-left text-sm">
+              <Button onClick={() => setFolder(id)} className="flex min-w-0 flex-1 text-left">
                 <Icon className="h-4 w-4 shrink-0" />
                 <span className="truncate">{label}</span>
               </Button>
               {userFolder && (
                 <>
-                  <Button type="button" onClick={() => void renameFolder(userFolder)} className="rounded-xl p-2 text-muted-foreground hover:bg-background hover:text-foreground" aria-label={`Rename ${label}`}>
+                  <Button type="button" onClick={() => void renameFolder(userFolder)} className="p-2 text-muted-foreground hover:bg-background hover:text-foreground" aria-label={`Rename ${label}`}>
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  <Button type="button" onClick={() => void deleteFolder(userFolder)} className="rounded-xl p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label={`Delete ${label}`}>
+                  <Button type="button" onClick={() => void deleteFolder(userFolder)} className="p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label={`Delete ${label}`}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </>
@@ -547,10 +547,10 @@ export function PF_UserMediaVault() {
           />
           {previewableMedia.length > 1 && (
             <>
-              <Button type="button" onClick={() => navigatePreview(-1)} className="fixed left-3 top-1/2 z-[70] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-xl border border-inverse/20 bg-overlay/70 text-inverse hover:bg-overlay/90 sm:left-6" aria-label="Previous media">
+              <Button type="button" onClick={() => navigatePreview(-1)} className="fixed left-3 top-1/2 z-[70] grid h-11 w-11 -translate-y-1/2 place-items-center border-inverse/20 bg-overlay/70 text-inverse hover:bg-overlay/90 sm:left-6" aria-label="Previous media">
                 <ChevronLeft className="h-6 w-6" />
               </Button>
-              <Button type="button" onClick={() => navigatePreview(1)} className="fixed right-3 top-1/2 z-[70] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-xl border border-inverse/20 bg-overlay/70 text-inverse hover:bg-overlay/90 sm:right-6" aria-label="Next media">
+              <Button type="button" onClick={() => navigatePreview(1)} className="fixed right-3 top-1/2 z-[70] grid h-11 w-11 -translate-y-1/2 place-items-center border-inverse/20 bg-overlay/70 text-inverse hover:bg-overlay/90 sm:right-6" aria-label="Next media">
                 <ChevronRight className="h-6 w-6" />
               </Button>
             </>
@@ -559,7 +559,7 @@ export function PF_UserMediaVault() {
       ) : preview ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/90 p-4" onClick={() => setPreview(null)}>
           <div className="max-w-md rounded-xl border border-border bg-background p-4 text-center text-muted-foreground">Preview is not available for this item type. Use the source/download action.</div>
-          <Button onClick={() => setPreview(null)} className="absolute right-4 top-4 rounded-xl bg-overlay/50 p-2 text-inverse hover:bg-overlay/70">
+          <Button onClick={() => setPreview(null)} className="absolute right-4 top-4 bg-overlay/50 p-2 text-inverse hover:bg-overlay/70">
             <X className="h-5 w-5" />
           </Button>
         </div>

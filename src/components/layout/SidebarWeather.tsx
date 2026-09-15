@@ -199,7 +199,7 @@ export function SidebarWeather({ collapsed }: { collapsed: boolean }) {
             <div className="mt-1 text-sm text-muted-foreground">{loading ? `Loading ${selectedLocation}…` : `Open Weather Now · ${selectedLocation}`}</div>
           )}
         </Link>
-        <Button type="button" onClick={() => void refresh()} disabled={loading} className="rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-60" aria-label="Refresh sidebar weather">
+        <Button type="button" onClick={() => void refresh()} disabled={loading} className="p-2 text-muted-foreground hover:text-foreground disabled:opacity-60" aria-label="Refresh sidebar weather">
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
         </Button>
       </div>

@@ -35,7 +35,7 @@ function ToolCard({ app, favorite, onFavorite, onOpen }: { app: AppDefinition; f
           <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{app.description}</p>
         </div>
         <div className="mt-4 flex min-h-9 items-center justify-end border-t border-border/60 pt-4">
-          <Button type="button" onClick={onOpen} variant="ghost" className="justify-end text-foreground hover:text-primary">
+          <Button type="button" onClick={onOpen} variant="ghost" className="justify-end hover:text-primary">
             Open <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
@@ -89,7 +89,7 @@ function WorkspaceEditor({ apps, categories }: { apps: AppDefinition[]; categori
                     setName(category.name);
                     setDescription(category.description);
                   }}
-                  className="mt-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                  className="mt-4 text-muted-foreground hover:text-foreground"
                 >
                   <Edit2 className="h-4 w-4" /> Edit label
                 </Button>
@@ -103,7 +103,7 @@ function WorkspaceEditor({ apps, categories }: { apps: AppDefinition[]; categori
         <Card className="p-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold">Edit category</h3>
-            <Button onClick={() => setEditing(null)} className="rounded-xl p-2 text-muted-foreground hover:bg-accent">
+            <Button onClick={() => setEditing(null)} className="p-2 text-muted-foreground">
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -241,7 +241,7 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: { state:
               className="h-11 w-full rounded-xl border border-input bg-background/55 pl-8 pr-8 text-sm outline-none focus:ring-0 focus:ring-ring/25 [&::-webkit-search-cancel-button]:hidden"
             />
             {query && (
-              <Button type="button" onClick={() => updateSearch("")} aria-label="Clear search" className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground">
+              <Button type="button" onClick={() => updateSearch("")} aria-label="Clear search" className="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground">
                 <X className="h-4 w-4" />
               </Button>
             )}
@@ -269,7 +269,7 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: { state:
             <section>
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-sm font-semibold">Recent</h2>
-                <Button onClick={() => navigate("/recent")} className="text-sm text-muted-foreground hover:text-foreground">
+                <Button onClick={() => navigate("/recent")} className="text-muted-foreground hover:text-foreground">
                   View all
                 </Button>
               </div>
@@ -287,7 +287,7 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: { state:
                 {categories
                   .filter((category) => getAppsByCategory(category.id).length > 0)
                   .map((category) => (
-                    <Button key={category.id} onClick={() => navigate(`/category/${category.id}`)} className="flex items-center justify-start rounded-xl border border-border/60 p-4 text-left text-sm hover:bg-accent">
+                    <Button key={category.id} onClick={() => navigate(`/category/${category.id}`)} className="flex justify-start border-border/60 p-4 text-left">
                       <span>{category.name}</span>
                       <span className="ml-auto text-sm text-muted-foreground">{getAppsByCategory(category.id).length}</span>
                     </Button>

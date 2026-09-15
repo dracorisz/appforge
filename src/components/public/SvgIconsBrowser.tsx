@@ -252,20 +252,20 @@ export default function SvgIconsBrowser() {
                 <div className="text-sm text-muted-foreground">react-icons/{icon.pack}</div>
               </div>
               <div className="mt-4 grid grid-cols-4 gap-2">
-                <Button type="button" onClick={() => void copyImport(icon)} className="grid place-items-center rounded-xl border hover:bg-accent" title="Copy import">
+                <Button type="button" onClick={() => void copyImport(icon)} className="grid place-items-center" title="Copy import">
                   <Copy className="h-4 w-4" />
                 </Button>
-                <Button type="button" onClick={() => void copyJsx(icon)} className="grid place-items-center rounded-xl border text-sm font-semibold hover:bg-accent" title="Copy JSX">
+                <Button type="button" onClick={() => void copyJsx(icon)} className="grid place-items-center font-semibold" title="Copy JSX">
                   JSX
                 </Button>
-                <Button type="button" onClick={() => void copySvg(icon)} className="grid place-items-center rounded-xl border text-sm font-semibold hover:bg-accent" title="Copy rendered SVG">
+                <Button type="button" onClick={() => void copySvg(icon)} className="grid place-items-center font-semibold" title="Copy rendered SVG">
                   SVG
                 </Button>
-                <Button type="button" onClick={() => toggleFavorite(icon)} className="grid place-items-center rounded-xl border hover:bg-accent" title={favorite ? "Remove favorite" : "Favorite"}>
+                <Button type="button" onClick={() => toggleFavorite(icon)} className="grid place-items-center" title={favorite ? "Remove favorite" : "Favorite"}>
                   {favorite ? <Heart className="h-4 w-4 fill-current" /> : <Star className="h-4 w-4" />}
                 </Button>
               </div>
-              <Button type="button" onClick={() => void downloadSvg(icon)} className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-medium hover:bg-accent">
+              <Button type="button" onClick={() => void downloadSvg(icon)} className="mt-2">
                 <Download className="h-4 w-4" /> Download SVG
               </Button>
             </article>
@@ -276,7 +276,7 @@ export default function SvgIconsBrowser() {
       {!loading && filtered.length === 0 && <div className="surface-card rounded-xl border p-8 text-center text-sm text-muted-foreground">No icons in this pack match “{query}”.</div>}
       {visible < filtered.length && (
         <div className="mt-4 flex justify-center">
-          <Button type="button" onClick={() => setVisible((value) => value + 120)} className="rounded-xl border bg-background px-4 text-sm font-semibold hover:bg-accent">
+          <Button type="button" onClick={() => setVisible((value) => value + 120)} className="bg-background px-4 font-semibold">
             Load 120 more
           </Button>
         </div>

@@ -312,7 +312,7 @@ export function DesktopBuddyProviderLab() {
             </div>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">Choose Hugging Face or the private Vertex AI bridge. Every generation is normalized to a PNG and archived to your private Desktop Buddies Media Vault folder.</p>
           </div>
-          <Button type="button" onClick={() => void refreshStatus()} disabled={loadingStatus} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent disabled:opacity-50">
+          <Button type="button" onClick={() => void refreshStatus()} disabled={loadingStatus} className="px-4 font-semibold">
             <RefreshCw className={`h-4 w-4 ${loadingStatus ? "animate-spin" : ""}`} /> Provider status
           </Button>
         </div>
@@ -351,7 +351,7 @@ export function DesktopBuddyProviderLab() {
                 {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />} {generating ? "Working…" : provider === "vertex" ? "Generate with Vertex AI" : "Generate with Hugging Face"}
               </Button>
               {lastVertexJob && (
-                <Button type="button" onClick={() => void recoverVertex()} disabled={generating} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent disabled:opacity-50">
+                <Button type="button" onClick={() => void recoverVertex()} disabled={generating} className="px-4 font-semibold">
                   <RefreshCw className="h-4 w-4" /> Recover Vertex job
                 </Button>
               )}
@@ -400,7 +400,7 @@ export function DesktopBuddyProviderLab() {
             <p className="mt-1 text-sm text-muted-foreground">Private per-user gallery from Media Vault / Desktop Buddies. The newest 24 generations are shown here.</p>
           </div>
           <div className="flex gap-2">
-            <Button type="button" onClick={() => void refreshGallery()} disabled={galleryLoading} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent disabled:opacity-50">
+            <Button type="button" onClick={() => void refreshGallery()} disabled={galleryLoading} className="px-4 font-semibold">
               <RefreshCw className={`h-4 w-4 ${galleryLoading ? "animate-spin" : ""}`} /> Refresh
             </Button>
             <a href="/apps/media-vault" className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent">

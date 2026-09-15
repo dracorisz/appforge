@@ -106,7 +106,7 @@ export function DesktopBuddyKdeLibrary() {
                 </p>{" "}
                 {/* design-xs-ok: compact copyright and license notice */}
                 <div className="flex gap-2 pt-4">
-                  <Button type="button" onClick={() => selectStarter(starter)} className="flex-1 rounded-xl border px-2 py-2 text-sm font-semibold hover:bg-accent">
+                  <Button type="button" onClick={() => selectStarter(starter)} className="flex-1 py-2 font-semibold">
                     {active ? "Active" : "Use character"}
                   </Button>
                   <a href={source} target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-xl border text-muted-foreground hover:bg-accent hover:text-foreground" aria-label={`Open source page for ${starter.name}`}>

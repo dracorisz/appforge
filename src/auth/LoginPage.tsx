@@ -266,7 +266,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                   <h2 className="text-lg font-semibold">Sign in to AppForge</h2>
                   <p className="mt-1 text-sm text-muted-foreground">Use email or a connected provider.</p>
                 </div>
-                <Button type="button" onClick={() => setAuthOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close sign in">
+                <Button type="button" onClick={() => setAuthOpen(false)} className="w-9 text-muted-foreground hover:text-foreground" aria-label="Close sign in">
                   <span aria-hidden="true">×</span>
                 </Button>
               </div>

@@ -127,7 +127,7 @@ export function AdminDocsManager() {
       {error && <div className="surface-muted p-2 text-sm text-destructive">{error}</div>}
       <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
         <Card className="p-4">
-          <Button onClick={newItem} variant="secondary" className="w-full justify-center gap-2">
+          <Button onClick={newItem} variant="secondary" className="w-full">
             <Plus className="h-4 w-4" /> New page
           </Button>
           <div className="mt-4 space-y-2">

@@ -262,7 +262,7 @@ export default function LandingBuilder() {
           <div className="mb-2 text-sm font-semibold">Add section</div>
           <div className="grid grid-cols-3 gap-2">
             {(["hero", "features", "gallery", "cta", "faq", "footer"] as SectionKind[]).map((kind) => (
-              <Button key={kind} type="button" onClick={() => add(kind)} className="inline-flex items-center justify-center gap-2 rounded-xl border px-2 text-sm font-medium capitalize hover:bg-accent">
+              <Button key={kind} type="button" onClick={() => add(kind)} className="capitalize">
                 <Plus className="h-4 w-4" /> {kind}
               </Button>
             ))}
@@ -277,13 +277,13 @@ export default function LandingBuilder() {
                   {index + 1}. {section.kind}
                 </span>
                 <div className="flex gap-2">
-                  <Button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="grid h-9 w-9 place-items-center rounded-xl border disabled:opacity-40" aria-label={`Move ${section.kind} up`}>
+                  <Button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="grid w-9 place-items-center disabled:opacity-40" aria-label={`Move ${section.kind} up`}>
                     <ArrowUp className="h-4 w-4" />
                   </Button>
-                  <Button type="button" onClick={() => move(index, 1)} disabled={index === project.sections.length - 1} className="grid h-9 w-9 place-items-center rounded-xl border disabled:opacity-40" aria-label={`Move ${section.kind} down`}>
+                  <Button type="button" onClick={() => move(index, 1)} disabled={index === project.sections.length - 1} className="grid w-9 place-items-center disabled:opacity-40" aria-label={`Move ${section.kind} down`}>
                     <ArrowDown className="h-4 w-4" />
                   </Button>
-                  <Button type="button" onClick={() => remove(section.id)} className="grid h-9 w-9 place-items-center rounded-xl border hover:bg-destructive/10" aria-label={`Remove ${section.kind}`}>
+                  <Button type="button" onClick={() => remove(section.id)} className="grid w-9 place-items-center hover:bg-destructive/10" aria-label={`Remove ${section.kind}`}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -314,13 +314,13 @@ export default function LandingBuilder() {
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <Button type="button" onClick={saveNamed} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
+          <Button type="button" onClick={saveNamed} className="font-semibold">
             <Save className="h-4 w-4" /> Save local
           </Button>
           <Button
             type="button"
             onClick={() => downloadText(JSON.stringify({ ...project, updatedAt: new Date().toISOString() }, null, 2), `${project.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() || "landing"}.appforge.json`, "application/json")}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent"
+            className="font-semibold"
           >
             <Download className="h-4 w-4" /> Project JSON
           </Button>
@@ -336,7 +336,7 @@ export default function LandingBuilder() {
           <Button
             type="button"
             onClick={() => downloadText(buildHtml(project), `${project.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() || "landing"}.html`, "text/html;charset=utf-8")}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground"
+            className="bg-primary px-4 font-semibold text-primary-foreground"
           >
             <Download className="h-4 w-4" /> Static HTML
           </Button>

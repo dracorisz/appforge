@@ -249,26 +249,26 @@ export function DesktopBuddyOverlay() {
         </span>
       </div>
       <div className="mx-auto mt-2 flex w-fit items-center gap-2 rounded-xl border border-border bg-card/95 p-2 backdrop-blur-xl">
-        <Button type="button" onClick={() => speakText(message)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title="Speak last response" aria-label="Speak last response">
+        <Button type="button" onClick={() => speakText(message)} className="grid w-9 place-items-center text-muted-foreground hover:text-foreground" title="Speak last response" aria-label="Speak last response">
           <Volume2 className={`h-4 w-4 ${speaking ? "animate-pulse" : ""}`} />
         </Button>
-        <Button type="button" onClick={jump} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title="Jump" aria-label="Make Desktop Buddy jump">
+        <Button type="button" onClick={jump} className="grid w-9 place-items-center text-muted-foreground hover:text-foreground" title="Jump" aria-label="Make Desktop Buddy jump">
           <span className="text-sm">↥</span>
         </Button>
         <Button
           type="button"
           onClick={() => void screenshot()}
           disabled={savingScreenshot}
-          className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          className="grid w-9 place-items-center text-muted-foreground hover:text-foreground disabled:cursor-not-allowed"
           title="Save viewport screenshot to Media Vault / Screenshots"
           aria-label="Save screenshot"
         >
           <Camera className={`h-4 w-4 ${savingScreenshot ? "animate-pulse" : ""}`} />
         </Button>
-        <Button type="button" onClick={() => setShowMessage((value) => !value)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title={status} aria-label="Show Desktop Buddy status">
+        <Button type="button" onClick={() => setShowMessage((value) => !value)} className="grid w-9 place-items-center text-muted-foreground hover:text-foreground" title={status} aria-label="Show Desktop Buddy status">
           <MessageCircle className="h-4 w-4" />
         </Button>
-        <Button type="button" onClick={() => setWidgetEnabled("desktop-buddy", false)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title="Turn off floating Desktop Buddy" aria-label="Turn off Desktop Buddy widget">
+        <Button type="button" onClick={() => setWidgetEnabled("desktop-buddy", false)} className="grid w-9 place-items-center text-muted-foreground hover:text-foreground" title="Turn off floating Desktop Buddy" aria-label="Turn off Desktop Buddy widget">
           <X className="h-4 w-4" />
         </Button>
       </div>

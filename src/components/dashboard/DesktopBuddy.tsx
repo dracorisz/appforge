@@ -296,13 +296,13 @@ export function DesktopBuddy() {
               <FileButton accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={onUpload}>
                 <Upload className="h-4 w-4" /> Upload character
               </FileButton>
-              <Button type="button" onClick={exportPack} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+              <Button type="button" onClick={exportPack} className="px-4 py-2 hover:bg-muted">
                 <Download className="h-4 w-4" /> Export pack
               </Button>
               <FileButton accept="application/json,.json" onChange={importPack}>
                 <PackageOpen className="h-4 w-4" /> Import pack
               </FileButton>
-              <Button type="button" onClick={() => void exportPng()} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+              <Button type="button" onClick={() => void exportPng()} className="px-4 py-2 hover:bg-muted">
                 <ImagePlus className="h-4 w-4" /> Export PNG
               </Button>
               <Button
@@ -312,7 +312,7 @@ export function DesktopBuddy() {
                   setMessage("Desktop Buddy reset to KDE Konqi.");
                   toast.success("Desktop Buddy reset.");
                 }}
-                className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted"
+                className="px-4 py-2 hover:bg-muted"
               >
                 <RotateCcw className="h-4 w-4" /> Reset
               </Button>
@@ -413,13 +413,13 @@ export function DesktopBuddy() {
           </label>
           <p className="text-xs text-muted-foreground">Browser speech synthesis · {voices.length ? `${voices.length} voice${voices.length === 1 ? "" : "s"} detected` : "no installed voices reported yet"}.</p> {/* design-xs-ok: compact capability notice */}
           <div className="mt-4 flex flex-wrap gap-2">
-            <Button type="button" onClick={speak} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+            <Button type="button" onClick={speak} className="px-4 py-2 hover:bg-muted">
               <Mic2 className="h-4 w-4" /> Speak text
             </Button>
-            <Button type="button" onClick={testVoice} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+            <Button type="button" onClick={testVoice} className="px-4 py-2 hover:bg-muted">
               <Play className="h-4 w-4" /> Test voice
             </Button>
-            <Button type="button" onClick={stopSpeaking} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+            <Button type="button" onClick={stopSpeaking} className="px-4 py-2 hover:bg-muted">
               <Pause className="h-4 w-4" /> Stop
             </Button>
           </div>
@@ -427,7 +427,7 @@ export function DesktopBuddy() {
             <Input type="checkbox" checked={config.voiceEnabled} onChange={(event) => setConfig((current) => ({ ...current, voiceEnabled: event.target.checked }))} />
             Auto-speak agent responses and AppForge notifications while the Desktop Buddy widget is enabled.
           </label>
-          <Button type="button" onClick={testReaction} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
+          <Button type="button" onClick={testReaction} className="px-4 py-2 hover:bg-muted">
             <Play className="h-4 w-4" /> Test agent reaction
           </Button>
         </section>
