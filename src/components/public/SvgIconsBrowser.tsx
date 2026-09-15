@@ -255,10 +255,10 @@ export default function SvgIconsBrowser() {
                 <Button type="button" onClick={() => void copyImport(icon)} className="grid place-items-center" title="Copy import">
                   <Copy className="h-4 w-4" />
                 </Button>
-                <Button type="button" onClick={() => void copyJsx(icon)} className="grid place-items-center font-semibold" title="Copy JSX">
+                <Button type="button" onClick={() => void copyJsx(icon)} className="grid place-items-center" title="Copy JSX">
                   JSX
                 </Button>
-                <Button type="button" onClick={() => void copySvg(icon)} className="grid place-items-center font-semibold" title="Copy rendered SVG">
+                <Button type="button" onClick={() => void copySvg(icon)} className="grid place-items-center" title="Copy rendered SVG">
                   SVG
                 </Button>
                 <Button type="button" onClick={() => toggleFavorite(icon)} className="grid place-items-center" title={favorite ? "Remove favorite" : "Favorite"}>
@@ -276,7 +276,7 @@ export default function SvgIconsBrowser() {
       {!loading && filtered.length === 0 && <div className="surface-card rounded-xl border p-8 text-center text-sm text-muted-foreground">No icons in this pack match “{query}”.</div>}
       {visible < filtered.length && (
         <div className="mt-4 flex justify-center">
-          <Button type="button" onClick={() => setVisible((value) => value + 120)} className="bg-background px-4 font-semibold">
+          <Button type="button" onClick={() => setVisible((value) => value + 120)} size="md">
             Load 120 more
           </Button>
         </div>

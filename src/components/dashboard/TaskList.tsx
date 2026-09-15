@@ -325,7 +325,7 @@ export function TaskList() {
           </label>
           <div className="flex flex-wrap items-center gap-2">
             {(["all", "active", "completed"] as Filter[]).map((value) => (
-              <Button key={value} type="button" variant={filter === value ? "secondary" : "ghost"} size="sm" className="px-4 capitalize" aria-pressed={filter === value} onClick={() => setFilter(value)}>
+              <Button key={value} type="button" variant={filter === value ? "secondary" : "ghost"} size="md" className="capitalize" aria-pressed={filter === value} onClick={() => setFilter(value)}>
                 {value}
               </Button>
             ))}

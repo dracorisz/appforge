@@ -111,7 +111,7 @@ export default function MarketingStudio() {
               ))}
             </Select>
           </label>
-          <Button type="button" onClick={generate} className="self-end bg-primary px-4 font-semibold text-primary-foreground">
+          <Button type="button" onClick={generate} size="md" className="self-end">
             <Film className="h-4 w-4" /> Generate demo package
           </Button>
         </div>
@@ -210,10 +210,10 @@ export default function MarketingStudio() {
               </div>
 
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <Button type="button" onClick={() => createPublication("youtube-16x9")} className="font-semibold">
+                <Button type="button" onClick={() => createPublication("youtube-16x9")}>
                   <Youtube className="h-4 w-4" /> Prepare 16:9 publication
                 </Button>
-                <Button type="button" onClick={() => createPublication("short-9x16")} className="font-semibold">
+                <Button type="button" onClick={() => createPublication("short-9x16")}>
                   <Film className="h-4 w-4" /> Prepare Short
                 </Button>
               </div>
@@ -252,15 +252,15 @@ export default function MarketingStudio() {
                       Published URL
                       <Input value={record.remoteUrl || ""} onChange={(event) => updatePublication(record.id, { remoteUrl: event.target.value })} placeholder="https://youtu.be/…" className="h-11 rounded-xl border bg-background px-4" />
                     </label>
-                    <Button type="button" onClick={() => markPublished(record)} className="self-end px-4 font-semibold">
+                    <Button type="button" onClick={() => markPublished(record)} size="md" className="self-end">
                       <CheckCircle2 className="h-4 w-4" /> Mark published
                     </Button>
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <Button type="button" onClick={() => void copy(`${record.title}\n\n${record.description}\n\nTags: ${record.tags.join(", ")}`)} className="px-4 font-semibold">
+                    <Button type="button" onClick={() => void copy(`${record.title}\n\n${record.description}\n\nTags: ${record.tags.join(", ")}`)} size="md">
                       <Clipboard className="h-4 w-4" /> Copy publication package
                     </Button>
-                    <Button type="button" disabled title="Enable only after Google approves the narrow delegated YouTube upload scope" className="cursor-not-allowed px-4 font-semibold opacity-50">
+                    <Button type="button" disabled title="Enable only after Google approves the narrow delegated YouTube upload scope" size="md">
                       <Send className="h-4 w-4" /> Upload via YouTube OAuth · approval required
                     </Button>
                   </div>

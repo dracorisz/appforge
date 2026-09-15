@@ -160,7 +160,7 @@ export function DNSChecker() {
                     setType(item.type);
                     void lookup(item.name, item.type);
                   }}
-                  className="py-2"
+
                 >
                   {item.name} · {item.type}
                 </Button>

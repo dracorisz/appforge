@@ -354,7 +354,7 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
         {factorId ? (
           <form onSubmit={verifyTotp} className="mt-4 flex max-w-md gap-2">
             <Input value={totpCode} onChange={(event) => setTotpCode(event.target.value.replace(/\D/g, "").slice(0, 8))} inputMode="numeric" className="h-9 min-w-0 flex-1 rounded-xl border border-input bg-background px-4" placeholder="Authenticator code" />
-            <Button disabled={busy === "totp" || !totpCode} className="bg-primary px-4 font-semibold text-primary-foreground">
+            <Button disabled={busy === "totp" || !totpCode} size="md">
               Verify
             </Button>
           </form>
@@ -408,7 +408,7 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
       )}
       <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="rounded-xl border border-border bg-background/40 p-4">
-          <Button onClick={newItem} className="flex w-full font-semibold">
+          <Button onClick={newItem} className="w-full">
             <Plus className="h-4 w-4" /> {filterType === "video_teaser" && landingTeaser ? "Open walkthrough" : "New"}
           </Button>
           <div className="mt-4 space-y-2">
@@ -430,10 +430,10 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
               </div>
               <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                 <Input value={vertexTopic} onChange={(event) => setVertexTopic(event.target.value)} className="h-9 min-w-0 flex-1 rounded-xl border border-input bg-background px-4 text-sm" placeholder="Topic" />
-                <Button type="button" onClick={() => void draftWithVertex(false)} disabled={busy === "vertex"} className="px-4 font-semibold">
+                <Button type="button" onClick={() => void draftWithVertex(false)} disabled={busy === "vertex"} size="md">
                   {busy === "vertex" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Generate draft
                 </Button>
-                <Button type="button" onClick={() => void draftWithVertex(true)} disabled={busy === "vertex"} className="bg-primary px-4 font-semibold text-primary-foreground">
+                <Button type="button" onClick={() => void draftWithVertex(true)} disabled={busy === "vertex"} size="md">
                   <CheckCircle2 className="h-4 w-4" /> Generate & publish
                 </Button>
               </div>
@@ -509,11 +509,11 @@ export function AdminContentManager({ embedded = false, adminVerified = false, c
                   <Input type="checkbox" checked={draft.published} onChange={(event) => setDraft((current) => ({ ...current, published: event.target.checked }))} /> Published
                 </label>
               )}
-              <Button type="submit" disabled={busy === "save"} className="px-4 py-2 font-semibold">
+              <Button type="submit" disabled={busy === "save"} size="md">
                 <Save className="h-4 w-4" /> {draft.content_type === "video_teaser" ? "Save landing video" : "Save draft"}
               </Button>
               {draft.content_type === "blog_article" && (
-                <Button type="button" onClick={() => void publishBlog()} disabled={busy === "publish"} className="bg-primary px-4 py-2 font-semibold text-primary-foreground">
+                <Button type="button" onClick={() => void publishBlog()} disabled={busy === "publish"} size="md">
                   <CheckCircle2 className="h-4 w-4" /> Publish
                 </Button>
               )}

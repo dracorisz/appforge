@@ -170,7 +170,7 @@ export function DesktopBuddyCapture() {
           <p className="mt-2 max-w-3xl text-sm text-muted-foreground">Use the browser screen-share API on supported desktop browsers. If Brave or an installed PWA blocks it, import a screenshot instead and continue with the same download/Media Vault workflow.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" disabled={Boolean(busy)} onClick={() => void captureScreen()} className="bg-primary px-4 font-semibold text-primary-foreground">
+          <Button type="button" disabled={Boolean(busy)} onClick={() => void captureScreen()} size="md">
             {busy === "capture" ? <Loader2 className="h-4 w-4 animate-spin" /> : <MonitorUp className="h-4 w-4" />} Capture screen
           </Button>
           <FileButton

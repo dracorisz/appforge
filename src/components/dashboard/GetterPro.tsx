@@ -293,10 +293,10 @@ export function PF_ScrapperProNext() {
               className="h-11 w-full rounded-xl border bg-background pl-8 pr-4 text-sm"
             />
           </label>
-          <Button type="button" onClick={() => void runSearch()} disabled={loading || !query.trim()} className="bg-primary px-4 font-semibold text-primary-foreground">
+          <Button type="button" onClick={() => void runSearch()} disabled={loading || !query.trim()} size="md">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />} Search
           </Button>
-          <Button type="button" onClick={() => void runSearch()} disabled={loading || !results.length} className="px-4 font-semibold">
+          <Button type="button" onClick={() => void runSearch()} disabled={loading || !results.length} size="md">
             <RefreshCw className="h-4 w-4" /> Refresh
           </Button>
         </div>
@@ -332,10 +332,10 @@ export function PF_ScrapperProNext() {
           ariaLabel="Getter Pro result types"
         />
         <div className="flex flex-wrap gap-2">
-          <Button type="button" onClick={toggleAllVisible} disabled={!visibleResults.length} variant="ghost" size="sm" className="px-4" aria-pressed={allVisibleSelected}>
+          <Button type="button" onClick={toggleAllVisible} disabled={!visibleResults.length} variant="ghost" size="md" aria-pressed={allVisibleSelected}>
             {allVisibleSelected ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />} {allVisibleSelected ? "Clear visible" : "Select visible"}
           </Button>
-          <Button type="button" onClick={() => void saveSelectedVault()} disabled={!selectedResults.length} variant="ghost" size="sm" className="px-4">
+          <Button type="button" onClick={() => void saveSelectedVault()} disabled={!selectedResults.length} variant="ghost" size="md">
             <Archive className="h-4 w-4" /> Media Vault
           </Button>
         </div>
@@ -395,7 +395,7 @@ export function PF_ScrapperProNext() {
       {!loading && visibleResults.length === 0 && <div className="surface-card rounded-xl border p-4 text-center text-sm text-muted-foreground">Search to load public results, or change the active filter.</div>}
       {nextPageToken && selectedSources.has("youtube") && (
         <div className="flex justify-center">
-          <Button type="button" onClick={() => void loadMoreYouTube()} disabled={loadingMore} className="bg-background px-4 font-semibold">
+          <Button type="button" onClick={() => void loadMoreYouTube()} disabled={loadingMore} size="md">
             {loadingMore ? <Loader2 className="h-4 w-4 animate-spin" /> : <Youtube className="h-4 w-4" />} Load more {filter === "all" ? "results" : `${filter} results`}
           </Button>
         </div>

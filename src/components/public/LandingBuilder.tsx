@@ -314,13 +314,13 @@ export default function LandingBuilder() {
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <Button type="button" onClick={saveNamed} className="font-semibold">
+          <Button type="button" onClick={saveNamed}>
             <Save className="h-4 w-4" /> Save local
           </Button>
           <Button
             type="button"
             onClick={() => downloadText(JSON.stringify({ ...project, updatedAt: new Date().toISOString() }, null, 2), `${project.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() || "landing"}.appforge.json`, "application/json")}
-            className="font-semibold"
+
           >
             <Download className="h-4 w-4" /> Project JSON
           </Button>
@@ -336,7 +336,7 @@ export default function LandingBuilder() {
           <Button
             type="button"
             onClick={() => downloadText(buildHtml(project), `${project.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase() || "landing"}.html`, "text/html;charset=utf-8")}
-            className="bg-primary px-4 font-semibold text-primary-foreground"
+            size="md"
           >
             <Download className="h-4 w-4" /> Static HTML
           </Button>

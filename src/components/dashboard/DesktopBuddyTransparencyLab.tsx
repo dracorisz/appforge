@@ -281,7 +281,7 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
             {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eraser className="h-4 w-4" />} Repair background
           </Button>
           {!standalone ? (
-            <Button type="button" onClick={() => void loadActiveBuddy()} className="px-4">
+            <Button type="button" onClick={() => void loadActiveBuddy()} size="md">
               <WandSparkles className="h-4 w-4" /> Use active Buddy
             </Button>
           ) : (

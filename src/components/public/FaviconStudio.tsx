@@ -236,7 +236,7 @@ export default function FaviconStudio() {
                   setImageData(null);
                   setMessage("Returned to text/emoji mode.");
                 }}
-                className="col-span-2 px-4"
+                size="md" className="col-span-2"
               >
                 <RotateCcw className="h-4 w-4" /> Use text
               </Button>
@@ -245,7 +245,7 @@ export default function FaviconStudio() {
         </div>
 
         <div className="mt-4">
-          <Button type="button" onClick={() => void exportSet()} style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }} className="w-full px-4 font-semibold">
+          <Button type="button" onClick={() => void exportSet()} style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }} size="md" className="w-full">
             <Download className="h-4 w-4" /> Download favicon set
           </Button>
         </div>
@@ -262,10 +262,10 @@ export default function FaviconStudio() {
               <p className="text-sm text-muted-foreground">Copy-ready project assets.</p>
             </div>
             <div className="flex gap-2">
-              <Button type="button" onClick={() => void copy(svg, "SVG")} className="px-4 py-2">
+              <Button type="button" onClick={() => void copy(svg, "SVG")} size="md">
                 Copy SVG
               </Button>
-              <Button type="button" onClick={() => void copy(manifest, "Manifest")} className="px-4 py-2">
+              <Button type="button" onClick={() => void copy(manifest, "Manifest")} size="md">
                 Copy manifest
               </Button>
             </div>
