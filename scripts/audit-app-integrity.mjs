@@ -3,6 +3,8 @@ import fs from 'node:fs'
 const registrySource = fs.readFileSync(new URL('../src/lib/registry.ts', import.meta.url), 'utf8')
 const appSource = fs.readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8')
 const registryFallbackSource = fs.readFileSync(new URL('../src/components/dashboard/RegistryAppFallback.tsx', import.meta.url), 'utf8')
+const packageJson = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
+const packageLock = JSON.parse(fs.readFileSync(new URL('../package-lock.json', import.meta.url), 'utf8'))
 
 const categoryMatches = [...registrySource.matchAll(/\{ id: '([^']+)', name: '[^']+', description: '[^']+', icon: '[^']+', apps: \[\] \}/g)]
 const categories = new Set(categoryMatches.map((match) => match[1]))
@@ -24,6 +26,13 @@ const errors = []
 const warnings = []
 const validStatuses = new Set(['idea', 'building', 'beta', 'launched', 'deprecated'])
 const semver = /^\d+\.\d+\.\d+$/
+
+const packageVersion = String(packageJson.version || '')
+const lockVersion = String(packageLock.version || '')
+const lockRootVersion = String(packageLock.packages?.['']?.version || '')
+if (!semver.test(packageVersion)) errors.push(`package.json version is not x.y.z (${packageVersion || 'missing'})`)
+if (lockVersion !== packageVersion) errors.push(`package-lock.json version ${lockVersion || 'missing'} does not match package.json ${packageVersion}`)
+if (lockRootVersion !== packageVersion) errors.push(`package-lock root version ${lockRootVersion || 'missing'} does not match package.json ${packageVersion}`)
 
 const duplicateValues = (items, key) => {
   const seen = new Map()
@@ -117,6 +126,7 @@ if (apps.some((item) => item.id === 'pariflow-smpl')) errors.push('Pariflow Smpl
 if (!apps.length) errors.push('No apps parsed from src/lib/registry.ts')
 
 console.log(`AppForge app integrity audit: ${apps.length} registry entries across ${categories.size} categories.`)
+console.log(`Package version: ${packageVersion} (lockfile synchronized)`)
 console.log(`Statuses: ${[...validStatuses].map((status) => `${status}=${apps.filter((app) => app.status === status).length}`).join(', ')}`)
 console.log(`Implementation surfaces: explicit=${implementationCounts.explicit}, shared=${implementationCounts.shared}, dedicated-fallback=${implementationCounts.dedicatedFallback}, planned=${implementationCounts.planned}`)
 
