@@ -150,7 +150,7 @@ function VideoBlock({ url }: { url?: string }) {
   if (!url) return null;
   const embed = youtubeEmbed(url);
   return (
-    <div className="mt-8 overflow-hidden rounded-xl border border-border bg-overlay">
+    <div className="mt-8 overflow-hidden rounded-xl border border-border bg-card">
       {embed ? (
         <iframe src={embed} title="Article video walkthrough" className="aspect-video w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
       ) : (
@@ -162,7 +162,7 @@ function VideoBlock({ url }: { url?: string }) {
 
 function ArticleCard({ article, compact = false }: { article: BlogArticle; compact?: boolean }) {
   return (
-    <Link to={`/blog/${article.slug}`} className="group flex h-full flex-col overflow-hidden rounded-xl border border-border/65 bg-background/35 transition-[border-color,background-color,box-shadow] hover:border-foreground/20 hover:bg-accent/25 hover:shadow-xl">
+    <Link to={`/blog/${article.slug}`} className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-[border-color,background-color,box-shadow] hover:border-foreground/20 hover:bg-secondary hover:shadow-xl">
       {article.imageUrl && <img src={article.imageUrl} alt="" className={compact ? "h-28 w-full object-cover" : "h-36 w-full object-cover"} loading="lazy" />}
       <div className="flex flex-1 flex-col p-4">
         <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{article.appName}</div> {/* design-xs-ok: compact article metadata */}
@@ -189,7 +189,7 @@ export function PublicBlogPage() {
     document.title = "AppForge Blog";
   }, []);
   return (
-    <div className="dark flex min-h-dvh flex-col bg-overlay text-foreground" style={{ colorScheme: "dark", "--background": "0 0% 0%" } as React.CSSProperties}>
+    <div className="flex min-h-dvh flex-col bg-background text-foreground">
       <PublicHeader />
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-4 lg:px-8">
         <header className="mx-auto max-w-2xl text-center">
@@ -204,7 +204,7 @@ export function PublicBlogPage() {
         </header>
         {featured && (
           <section className="mx-auto mt-8 max-w-3xl">
-            <Link to={`/blog/${featured.slug}`} className="block rounded-xl border border-border bg-background/45 p-4 text-center transition-[border-color,background-color,box-shadow] hover:border-foreground/20 hover:bg-accent/25 hover:shadow-xl">
+            <Link to={`/blog/${featured.slug}`} className="block rounded-xl border border-border bg-card p-4 text-center transition-[border-color,background-color,box-shadow] hover:border-foreground/20 hover:bg-secondary hover:shadow-xl">
               <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Featured · {featured.appName}</div> {/* design-xs-ok: compact article metadata */}
               <h2 className="mx-auto mt-4 max-w-2xl text-lg font-semibold tracking-[-0.03em]">{featured.title}</h2>
               <p className="mx-auto mt-4 max-w-2xl text-sm text-muted-foreground">{featured.description}</p>
@@ -249,14 +249,14 @@ export function PublicBlogArticlePage({ slug }: { slug: string }) {
   }, [article]);
   if (!article && loading)
     return (
-      <div className="dark flex min-h-dvh items-center justify-center bg-overlay text-foreground">
+      <div className="flex min-h-dvh items-center justify-center bg-background text-foreground">
         <Loader2 className="h-6 w-6 animate-spin" />
       </div>
     );
   if (!article) return <PublicBlogPage />;
   const articleWidth = readingMode ? "max-w-4xl" : "max-w-7xl";
   return (
-    <div className="dark flex min-h-dvh flex-col bg-overlay text-foreground" style={{ colorScheme: "dark", "--background": "0 0% 0%" } as React.CSSProperties}>
+    <div className="flex min-h-dvh flex-col bg-background text-foreground">
       <PublicHeader />
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-4 lg:px-8">
         <Link to="/blog" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground">
