@@ -1,0 +1,64 @@
+name: Release prep 1.28.1 once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/release-prep-1-28-1-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Audit old current-version references
+        run: git grep -nE '1\.(27\.0|28\.0)' -- ':!CHANGELOG.md' || true
+      - name: Set canonical version
+        run: npm run version:set -- 1.28.1
+      - name: Refresh build fallback and changelog
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs')
+
+          const vitePath = 'vite.config.ts'
+          const vite = fs.readFileSync(vitePath, 'utf8')
+          if (!vite.includes("const appVersion = runtimeEnv.npm_package_version || '1.27.0'")) {
+            throw new Error('Expected Vite fallback version was not found.')
+          }
+          fs.writeFileSync(vitePath, vite.replace("const appVersion = runtimeEnv.npm_package_version || '1.27.0'", "const appVersion = runtimeEnv.npm_package_version || '1.28.1'"))
+
+          const changelogPath = 'CHANGELOG.md'
+          const changelog = fs.readFileSync(changelogPath, 'utf8')
+          const marker = '# AppForge Changelog\n\nThis file tracks user-visible AppForge product changes. The canonical source is the `main` branch.\n\n'
+          if (!changelog.startsWith(marker)) throw new Error('Unexpected CHANGELOG header.')
+          if (!changelog.includes('## 1.28.1 — September 15, 2026')) {
+            const entry = `## 1.28.1 — September 15, 2026\n\n### Fixed\n- App editing and creation dialogs now render through a body portal so the modal backdrop consistently covers the full dynamic viewport without being clipped by workspace layout ancestors.\n- Media Vault managed-folder protections and release tests now match the reviewed behavior, including protected Getter Pro references that cannot be moved manually.\n\n### Improved\n- Removed redundant page-level Button visual overrides across app, admin and resource surfaces so shared Button variants and sizes remain the source of truth for canonical padding, typography, borders and hover treatment.\n- Preserved layout-, state- and media-specific Button classes where they carry real behavior rather than applying blanket normalization.\n- The UI style contract now treats ring-0 as the canonical no-visible-ring interaction rule, matching the reviewed interface.\n- Compact KDE attribution keeps its intentional text-xs exception explicit while the broader UI contract remains unchanged.\n\n### Maintenance\n- Synchronized design-system tests with the reviewed ring-zero and managed-folder contracts.\n- Global application version advanced to 1.28.1, including package metadata, lockfile metadata and the standalone Vite fallback.\n\n`
+            fs.writeFileSync(changelogPath, marker + entry + changelog.slice(marker.length))
+          }
+          NODE
+      - name: Validate release metadata
+        run: |
+          node scripts/changelog.mjs validate
+          npm run audit:apps
+          echo 'Remaining old current-version references outside historical changelog:'
+          git grep -nE '1\.(27\.0|28\.0)' -- ':!CHANGELOG.md' || true
+      - name: Commit release metadata
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json vite.config.ts CHANGELOG.md
+          git commit -m "chore: release AppForge 1.28.1"
+          git push origin HEAD:main
