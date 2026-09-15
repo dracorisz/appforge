@@ -43,6 +43,7 @@ const diagnostics = {
   rawControls: new Map(),
   surfaces: new Map(),
 }
+const buttonClassOverrides = []
 const bump = (map, file, amount = 1) => map.set(file, (map.get(file) || 0) + amount)
 
 for (const file of files) {
@@ -93,6 +94,15 @@ for (const file of files) {
     }
   })
 
+  if (filePath.endsWith('.tsx')) {
+    for (const match of source.matchAll(/<Button\b[\s\S]*?>/g)) {
+      const tag = match[0]
+      if (!/\bclassName\s*=/.test(tag)) continue
+      const line = source.slice(0, match.index).split(/\r?\n/).length
+      buttonClassOverrides.push(`${filePath}:${line}: ${tag.replace(/\s+/g, ' ').trim()}`)
+    }
+  }
+
   if (!filePath.startsWith('src/components/ui/')) {
     const rawControls = source.match(/<(?:button|input|select|textarea)\b/g)?.length || 0
     if (rawControls) bump(diagnostics.rawControls, filePath, rawControls)
@@ -122,6 +132,7 @@ for (const [label, map] of [
   const top = formatTop(map)
   if (top.length) console.log(`\n${label}:\n${top.join('\n')}`)
 }
+if (buttonClassOverrides.length) console.log(`\nButton className audit (${buttonClassOverrides.length}):\n${buttonClassOverrides.join('\n')}`)
 
 if (violations.length) {
   console.error(`\nUI style contract failed with ${violations.length} violation${violations.length === 1 ? '' : 's'}:`)
