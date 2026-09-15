@@ -2,7 +2,6 @@ import React from 'react'
 import { BUILD_INFO } from '@/lib/buildInfo'
 
 const APP_ORIGIN = 'https://www.sstoken.space'
-const DOCS_ORIGIN = 'https://docs.sstoken.space'
 
 export function PublicFooter() {
   return <footer className="mt-auto shrink-0 border-t border-border/60">
@@ -14,7 +13,7 @@ export function PublicFooter() {
         <a href={`${APP_ORIGIN}/huggingface`} className="hover:text-foreground">Hugging Face</a>
         <a href={`${APP_ORIGIN}/privacy`} className="hover:text-foreground">Privacy</a>
         <a href={`${APP_ORIGIN}/terms`} className="hover:text-foreground">Terms</a>
-        <a href={`${DOCS_ORIGIN}/`} className="hover:text-foreground">Docs</a>
+        <a href="https://docs.sstoken.space/" className="hover:text-foreground">Docs</a>
       </nav>
     </div>
   </footer>
