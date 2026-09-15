@@ -32,8 +32,6 @@ export const KDE_BUDDY_LIBRARY: KdeStarter[] = [
   { id: "konqi-akademy", name: "Akademy Konqi", file: "Mascot_konqi-commu-akademy.png", author: "Tyson Tan / KDE Community", license: TYSON_LICENSE, note: "Lecture / conference pose." },
   { id: "konqi-carrying", name: "Carrying Konqi", file: "Mascot_konqi-carrying_base.png", author: "Julius Enriquez, based on Tyson Tan", license: COMMUNITY_LICENSE, note: "Reusable carrying pose, published by KDE in 2024." },
   { id: "konqi-box", name: "Third-party Box Konqi", file: "Mascot_konqi-3rdparty.png", author: "Julius Enriquez, based on Tyson Tan", license: COMMUNITY_LICENSE, note: "Konqi carrying a box of items." },
-  // { id: 'konqi-pixel', name: 'Pixel Konqi', file: 'Konqi_Pixel.png', author: 'KDE Community', license: COMMUNITY_LICENSE, note: 'Compact pixel-art style character.' },
-  // { id: 'konqi-gang', name: 'Konqi and the Gang', file: 'Konqi_and_the_Gang.png', author: 'KDE Community', license: COMMUNITY_LICENSE, note: 'Konqi, Katie and other KDE dragons.' },
   { id: "konqi-box-scene", name: "Konqi and the Box", file: "Konqi_and_the_box.png", author: "KDE Community", license: COMMUNITY_LICENSE, note: "Recent KDE Community Konqi artwork." },
 ];
 
@@ -91,22 +89,18 @@ export function DesktopBuddyKdeLibrary() {
           const source = sourceUrl(starter.file);
           const active = currentSource === source;
           return (
-            <article key={starter.id} className={`flex h-full min-h-[20rem] flex-col overflow-hidden rounded-xl border bg-background/40 ${active ? "ring-1 ring-primary/35" : ""}`}>
+            <article key={starter.id} className={`flex h-full min-h-[20rem] flex-col overflow-hidden rounded-xl border bg-background/40 text-left ${active ? "ring-1 ring-primary/35" : ""}`}>
               <div className="grid h-36 place-items-center border-b border-border/60 bg-muted/20 p-4 sm:h-40">
                 <img src={imageUrl(starter.file)} alt={starter.name} loading="lazy" className="h-28 w-28 object-contain sm:h-32 sm:w-32" />
               </div>
-              <div className="flex flex-1 flex-col p-4">
+              <div className="flex flex-1 flex-col p-4 text-left">
                 <div className="flex items-start justify-between gap-2">
                   <h3 className="text-sm font-semibold">{starter.name}</h3>
                   {active && <Check className="mt-2 h-4 w-4 shrink-0" />}
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">{starter.note}</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {starter.author}
-                  <br />
-                  {starter.license}
-                </p>
-                <div className="mt-auto flex gap-2 pt-4">
+                <p className="mt-auto pt-4 text-xs text-muted-foreground">{starter.author}<br />{starter.license}</p> {/* design-xs-ok: compact copyright and license notice */}
+                <div className="flex gap-2 pt-4">
                   <Button type="button" onClick={() => selectStarter(starter)} className="flex-1 rounded-xl border px-2 py-2 text-sm font-semibold hover:bg-accent">
                     {active ? "Active" : "Use character"}
                   </Button>
