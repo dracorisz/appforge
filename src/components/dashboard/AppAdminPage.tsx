@@ -1,6 +1,8 @@
 import React from "react";
 // @code-scanning/ignore js/incomplete-sanitization: App data from registry is rendered via React JSX with auto-escaping; all text content uses safe rendering patterns without innerHTML.
 import { Button, Card, DataTable, Input, SearchInput, Switch, Textarea } from "@/components/ui";
+import { AppIconPicker } from "@/components/ui/AppIconPicker";
+import { AppIcon } from "@/lib/appIcons";
 import { Copy, ImagePlus, LayoutGrid, List, Plus, Save, Trash2, X } from "lucide-react";
 import { getManageableApps, updateApp, deleteApp, addApp, type AppDefinition } from "@/lib/registry";
 import { saveAppOverride } from "@/lib/appOverrides";
@@ -39,7 +41,7 @@ export function AppAdminPage() {
   const saveEdit = async () => {
     if (!editingId || !form.id) return;
     try {
-      const next = { ...(form as AppDefinition), coverImage: form.coverImage?.trim() || undefined };
+      const next = { ...(form as AppDefinition), icon: form.icon || "Wrench", coverImage: form.coverImage?.trim() || undefined };
       updateApp(next);
       await saveAppOverride(next);
       reloadApps();
@@ -110,7 +112,7 @@ export function AppAdminPage() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h3 className="font-semibold">Edit {form.name}</h3>
-            <p className="text-sm text-muted-foreground">Catalog identity, cover and visibility.</p>
+            <p className="text-sm text-muted-foreground">Catalog identity, icon, cover and visibility.</p>
           </div>
           <Button variant="ghost" size="sm" onClick={cancelEdit} aria-label="Close editor">
             <X className="h-4 w-4" />
@@ -121,9 +123,9 @@ export function AppAdminPage() {
           <Input label="Name" value={form.name || ""} onChange={(event) => setForm({ ...form, name: event.target.value })} />
           <Input label="Route" value={form.route || ""} onChange={(event) => setForm({ ...form, route: event.target.value })} />
           <Input label="Category" value={form.category || ""} onChange={(event) => setForm({ ...form, category: event.target.value })} />
-          <Input label="Icon" value={form.icon || ""} onChange={(event) => setForm({ ...form, icon: event.target.value })} />
           <Input label="Version" value={form.version || ""} onChange={(event) => setForm({ ...form, version: event.target.value })} />
         </div>
+        <AppIconPicker value={form.icon || "Wrench"} onChange={(icon) => setForm((current) => ({ ...current, icon }))} />
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
           <Input label="Cover image URL" value={form.coverImage || ""} onChange={(event) => setForm({ ...form, coverImage: event.target.value || undefined })} />
           <div className="flex items-end gap-2">
@@ -180,7 +182,7 @@ export function AppAdminPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold tracking-tight text-foreground">Apps</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Manage app names, covers and catalog visibility.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Manage app names, icons, covers and catalog visibility.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button
@@ -224,13 +226,13 @@ export function AppAdminPage() {
             <Input label="Name" value={form.name || ""} onChange={(event) => setForm({ ...form, name: event.target.value })} />
             <Input label="Route" value={form.route || ""} onChange={(event) => setForm({ ...form, route: event.target.value })} />
             <Input label="Category" value={form.category || ""} onChange={(event) => setForm({ ...form, category: event.target.value })} />
-            <Input label="Icon" value={form.icon || ""} onChange={(event) => setForm({ ...form, icon: event.target.value })} />
             <Input label="Version" value={form.version || ""} onChange={(event) => setForm({ ...form, version: event.target.value })} />
             <Input label="Cover image" value={form.coverImage || ""} onChange={(event) => setForm({ ...form, coverImage: event.target.value || undefined })} />
             <div className="sm:col-span-2">
               <Textarea label="Description" value={form.description || ""} onChange={(event) => setForm({ ...form, description: event.target.value })} rows={2} />
             </div>
           </div>
+          <AppIconPicker value={form.icon || "Wrench"} onChange={(icon) => setForm((current) => ({ ...current, icon }))} />
           {error && <div className="text-sm text-destructive">{error}</div>}
           <Button onClick={createApp} disabled={!form.id?.trim()}>
             <Save className="h-4 w-4" /> Create
@@ -252,7 +254,7 @@ export function AppAdminPage() {
                 header: "App",
                 render: (app) => (
                   <div className="flex items-center gap-4">
-                    {app.coverImage ? <img src={app.coverImage} alt="" className="h-9 w-12 rounded-xl border object-cover" /> : <div className="h-9 w-12 rounded-xl border bg-muted" />}
+                    {app.coverImage ? <img src={app.coverImage} alt="" className="h-9 w-12 rounded-xl border object-cover" /> : <div className="grid h-9 w-12 place-items-center rounded-xl border bg-muted"><AppIcon name={app.icon} /></div>}
                     <div>
                       <div className="font-medium">{app.name}</div>
                       <div className="text-sm text-muted-foreground">{app.id}</div>
@@ -276,7 +278,7 @@ export function AppAdminPage() {
                   <img src={app.coverImage} alt="" className="h-full w-full object-cover" />
                 </div>
               ) : (
-                <div className="h-28 border-b bg-muted/35" />
+                <div className="grid h-28 place-items-center border-b bg-muted/35"><AppIcon name={app.icon} className="h-8 w-8" /></div>
               )}
               <div className="flex flex-1 flex-col gap-4 p-4">
                 <div>
