@@ -80,7 +80,7 @@ for (const file of files) {
     }
     for (const match of line.matchAll(ringWidth)) {
       const token = match[1]
-      if (utilityPart(token) !== 'ring-1') violations.push(`${filePath}:${index + 1}: forbidden ring width ${token}`)
+      if (utilityPart(token) !== 'ring-0') violations.push(`${filePath}:${index + 1}: forbidden ring width ${token}`)
     }
     for (const match of line.matchAll(fontWeight)) {
       const token = match[1]
@@ -148,4 +148,4 @@ if (violations.length) {
   process.exit(1)
 }
 
-console.log(`\nUI style contract OK across ${files.length} source files: canonical defaults plus explicitly reviewed mt-1 and file-scoped spacing exceptions; text-xs only by explicit exception; rounded-xl; shadow-xl; ring-1; semantic palette only.`)
+console.log(`\nUI style contract OK across ${files.length} source files: canonical defaults plus explicitly reviewed mt-1 and file-scoped spacing exceptions; text-xs only by explicit exception; rounded-xl; shadow-xl; ring-0; semantic palette only.`)
