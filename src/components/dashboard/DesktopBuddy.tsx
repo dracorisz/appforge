@@ -132,14 +132,21 @@ export function DesktopBuddy() {
 
   const speakText = React.useCallback(
     (text: string) => {
-      if (!("speechSynthesis" in window) || !text.trim()) return;
+      if (!("speechSynthesis" in window) || !text.trim()) {
+        setMessage("Browser speech synthesis is not available in this environment.");
+        return;
+      }
       window.speechSynthesis.cancel();
+      window.speechSynthesis.resume();
       const utterance = new SpeechSynthesisUtterance(text);
       const selected = voices.find((voice) => voice.name === config.voiceName);
       if (selected) utterance.voice = selected;
       utterance.onstart = () => setActivity("speaking");
       utterance.onend = () => setActivity("idle");
-      utterance.onerror = () => setActivity("idle");
+      utterance.onerror = (event) => {
+        setActivity("idle");
+        setMessage(`Voice playback failed${event.error ? ` (${event.error})` : ""}. Check browser/OS speech support and volume.`);
+      };
       window.speechSynthesis.speak(utterance);
     },
     [config.voiceName, voices],
@@ -198,13 +205,7 @@ export function DesktopBuddy() {
     setConfig((current) => ({ ...current, imageDataUrl: starter.imageUrl, assetLabel: starter.name, assetSourceUrl: starter.sourceUrl, assetLicense: starter.license }));
     setMessage(`${starter.name} selected from the KDE Community Wiki starter set.`);
   };
-  const speak = () => {
-    if (!("speechSynthesis" in window)) {
-      toast.error("Browser speech synthesis is not available here.");
-      return;
-    }
-    speakText(message);
-  };
+  const speak = () => speakText(message);
   const testVoice = () => {
     const text = `Hi, I am ${config.name || "your Desktop Buddy"}. Voice notifications are ready.`;
     setMessage(text);
@@ -342,14 +343,14 @@ export function DesktopBuddy() {
           {KDE_STARTERS.map((starter) => {
             const active = config.assetSourceUrl === starter.sourceUrl;
             return (
-              <Button key={starter.id} type="button" onClick={() => chooseStarter(starter)} className={`flex h-full min-h-24 cursor-pointer flex-col overflow-hidden rounded-xl border text-left transition-colors hover:border-foreground/25 ${active ? "ring-1 ring-primary/35" : ""}`}>
+              <Button key={starter.id} type="button" onClick={() => chooseStarter(starter)} className={`flex h-full min-h-24 cursor-pointer flex-col items-stretch justify-start overflow-hidden rounded-xl border text-left transition-colors hover:border-foreground/25 ${active ? "ring-1 ring-primary/35" : ""}`}>
                 <div className="flex h-48 w-full items-center justify-center border-b border-border/60 bg-muted/20">
                   <img src={starter.imageUrl} alt={starter.name} className="h-full w-full scale-90 object-contain" loading="lazy" />
                 </div>
-                <div className="flex flex-1 flex-col p-4">
+                <div className="flex flex-1 flex-col p-4 text-left">
                   <div className="text-sm font-semibold">{starter.name}</div>
                   <p className="mt-1 text-sm text-muted-foreground">{starter.note}</p>
-                  <p className="mt-4 text-sm text-muted-foreground">{starter.license}</p>
+                  <p className="mt-auto pt-4 text-xs text-muted-foreground">{starter.license}</p> {/* design-xs-ok: compact copyright and license notice */}
                 </div>
               </Button>
             );
@@ -405,6 +406,7 @@ export function DesktopBuddy() {
               ))}
             </Select>
           </label>
+          <p className="text-xs text-muted-foreground">Browser speech synthesis · {voices.length ? `${voices.length} voice${voices.length === 1 ? "" : "s"} detected` : "no installed voices reported yet"}.</p> {/* design-xs-ok: compact capability notice */}
           <div className="mt-4 flex flex-wrap gap-2">
             <Button type="button" onClick={speak} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted">
               <Mic2 className="h-4 w-4" /> Speak text
