@@ -133,11 +133,12 @@ export function applyAppOverrides(overrides: AppOverride[]): void {
   APPS.splice(0, APPS.length, ...CORE_APPS.map((base) => {
     const override = normalizedOverrides.find((item) => item.app_id === base.id)
     if (!override) return { ...base, tags: [...base.tags] }
+    const overrideCategory = override.category?.trim()
     return {
       ...base,
       name: override.name?.trim() || base.name,
       description: override.description?.trim() || base.description,
-      category: override.category?.trim() || base.category,
+      category: overrideCategory === 'data' ? 'converters' : overrideCategory || base.category,
       status: override.status || base.status,
       coverImage: override.cover_image == null ? undefined : override.cover_image.trim() || undefined,
       tags: Array.isArray(override.tags) ? override.tags.filter((tag): tag is string => typeof tag === 'string').slice(0, 20) : base.tags,
