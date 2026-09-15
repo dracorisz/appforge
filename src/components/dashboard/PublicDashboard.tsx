@@ -227,12 +227,12 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: { state:
               {/* design-xs-ok: compact section eyebrow */}
               <LayoutGrid className="h-4 w-4" /> AppForge
             </div>
-            <h1 className="mt-2 text-lg font-semibold tracking-tight sm:text-lg">{isWorkspace ? "Workspace" : isDashboard ? "Your tools" : title}</h1>
+            <h1 className="mt-2 text-lg font-semibold tracking-tight sm:text-lg">{isWorkspace ? "Workspace" : isDashboard ? "Dashboard" : title}</h1>
           </div>
         </div>
         {!isWorkspace && (
           <div className="relative mt-4 max-w-3xl">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
               value={query}
