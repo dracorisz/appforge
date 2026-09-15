@@ -87,25 +87,14 @@ export function DesktopBuddyOverlay() {
 
   const syncBuddy = React.useCallback(() => setBuddy(readBuddy()), []);
 
-  React.useEffect(
-    () =>
-      subscribeWidgetPreferences((changed) => {
-        if (!changed || changed === "desktop-buddy") setEnabled(isWidgetEnabled("desktop-buddy"));
-      }),
-    [],
-  );
+  React.useEffect(() => subscribeWidgetPreferences((changed) => { if (!changed || changed === "desktop-buddy") setEnabled(isWidgetEnabled("desktop-buddy")); }), []);
 
   React.useEffect(() => {
-    const onStorage = (event: StorageEvent) => {
-      if (!event.key || event.key === STORAGE_KEY) syncBuddy();
-    };
+    const onStorage = (event: StorageEvent) => { if (!event.key || event.key === STORAGE_KEY) syncBuddy(); };
     const onUpdated = () => syncBuddy();
     window.addEventListener("storage", onStorage);
     window.addEventListener("appforge:desktop-buddy-updated", onUpdated);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("appforge:desktop-buddy-updated", onUpdated);
-    };
+    return () => { window.removeEventListener("storage", onStorage); window.removeEventListener("appforge:desktop-buddy-updated", onUpdated); };
   }, [syncBuddy]);
 
   React.useEffect(() => {
@@ -114,52 +103,37 @@ export function DesktopBuddyOverlay() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  React.useEffect(
-    () => () => {
-      if (dismissTimerRef.current !== null) window.clearTimeout(dismissTimerRef.current);
-      window.speechSynthesis?.cancel();
-    },
-    [],
-  );
+  React.useEffect(() => () => {
+    if (dismissTimerRef.current !== null) window.clearTimeout(dismissTimerRef.current);
+    window.speechSynthesis?.cancel();
+  }, []);
 
-  const speakText = React.useCallback(
-    (text: string) => {
-      if (!buddy.voiceEnabled || !enabled || !("speechSynthesis" in window) || !text.trim()) return;
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      const voice = window.speechSynthesis.getVoices().find((candidate) => candidate.name === buddy.voiceName);
-      if (voice) utterance.voice = voice;
-      utterance.onstart = () => setSpeaking(true);
-      utterance.onend = () => setSpeaking(false);
-      utterance.onerror = () => setSpeaking(false);
-      window.speechSynthesis.speak(utterance);
-    },
-    [buddy.voiceEnabled, buddy.voiceName, enabled],
-  );
+  const speakText = React.useCallback((text: string) => {
+    if (!buddy.voiceEnabled || !enabled || !("speechSynthesis" in window) || !text.trim()) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    const voice = window.speechSynthesis.getVoices().find((candidate) => candidate.name === buddy.voiceName);
+    if (voice) utterance.voice = voice;
+    utterance.onstart = () => setSpeaking(true);
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => setSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+  }, [buddy.voiceEnabled, buddy.voiceName, enabled]);
 
-  const present = React.useCallback(
-    (text: string, id = "", duration = 5000) => {
-      if (!enabled) return;
-      const clean = text.trim();
-      if (!clean) return;
-      const now = Date.now();
-      const previous = lastPresentationRef.current;
-      if ((id && previous?.id === id) || (previous?.text === clean && now - previous.at < 1500)) return;
-      lastPresentationRef.current = { id, text: clean, at: now };
-      setMessage(clean.slice(0, 1000));
-      setShowMessage(true);
-      if (dismissTimerRef.current !== null) window.clearTimeout(dismissTimerRef.current);
-      dismissTimerRef.current = window.setTimeout(
-        () => {
-          setShowMessage(false);
-          dismissTimerRef.current = null;
-        },
-        Math.max(4000, Math.min(6000, duration || 5000)),
-      );
-      speakText(clean);
-    },
-    [enabled, speakText],
-  );
+  const present = React.useCallback((text: string, id = "", duration = 5000) => {
+    if (!enabled) return;
+    const clean = text.trim();
+    if (!clean) return;
+    const now = Date.now();
+    const previous = lastPresentationRef.current;
+    if ((id && previous?.id === id) || (previous?.text === clean && now - previous.at < 1500)) return;
+    lastPresentationRef.current = { id, text: clean, at: now };
+    setMessage(clean.slice(0, 1000));
+    setShowMessage(true);
+    if (dismissTimerRef.current !== null) window.clearTimeout(dismissTimerRef.current);
+    dismissTimerRef.current = window.setTimeout(() => { setShowMessage(false); dismissTimerRef.current = null; }, Math.max(4000, Math.min(6000, duration || 5000)));
+    speakText(clean);
+  }, [enabled, speakText]);
 
   React.useEffect(() => {
     const onAgentResponse = (event: Event) => {
@@ -173,41 +147,29 @@ export function DesktopBuddyOverlay() {
     };
     window.addEventListener("appforge:agent-response", onAgentResponse);
     window.addEventListener(APP_BUDDY_NOTIFICATION_EVENT, onBuddyNotification);
-    return () => {
-      window.removeEventListener("appforge:agent-response", onAgentResponse);
-      window.removeEventListener(APP_BUDDY_NOTIFICATION_EVENT, onBuddyNotification);
-    };
+    return () => { window.removeEventListener("appforge:agent-response", onAgentResponse); window.removeEventListener(APP_BUDDY_NOTIFICATION_EVENT, onBuddyNotification); };
   }, [present]);
 
   const startDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     dragRef.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, originX: position.x, originY: position.y };
     event.currentTarget.setPointerCapture(event.pointerId);
   };
-
   const moveDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
     setPosition(clampPosition({ x: drag.originX + event.clientX - drag.startX, y: drag.originY + event.clientY - drag.startY }));
   };
-
   const endDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     if (!dragRef.current || dragRef.current.pointerId !== event.pointerId) return;
     dragRef.current = null;
     const next = clampPosition(position);
     setPosition(next);
-    try {
-      localStorage.setItem(POSITION_KEY, JSON.stringify(next));
-    } catch {
-      /* session-only */
-    }
+    try { localStorage.setItem(POSITION_KEY, JSON.stringify(next)); } catch { /* session-only */ }
   };
 
   const jump = () => {
     setJumping(false);
-    window.requestAnimationFrame(() => {
-      setJumping(true);
-      window.setTimeout(() => setJumping(false), 520);
-    });
+    window.requestAnimationFrame(() => { setJumping(true); window.setTimeout(() => setJumping(false), 520); });
   };
 
   const screenshot = async () => {
@@ -218,7 +180,7 @@ export function DesktopBuddyOverlay() {
       const file = await captureCurrentTabViewport();
       await uploadVaultMedia(file, {
         kind: "image",
-        folder: "Screenshots",
+        folder: "screenshots",
         title: `AppForge screenshot · ${new Date().toLocaleString()}`,
         description: "Viewport screenshot captured from the Desktop Buddy widget.",
         metadata: { source: "desktop-buddy", route: window.location.pathname, captured_at: new Date().toISOString() },
@@ -229,56 +191,26 @@ export function DesktopBuddyOverlay() {
       const text = error instanceof Error ? error.message : "Screenshot was not saved.";
       setStatus(text);
       toast.error(text);
-    } finally {
-      setSavingScreenshot(false);
-    }
+    } finally { setSavingScreenshot(false); }
   };
 
   if (!enabled) return null;
 
   return (
     <aside className="fixed z-50 select-none" style={{ left: position.x, top: position.y }} aria-label="Movable Desktop Buddy widget">
-      {showMessage && (
-        <Button type="button" onClick={() => setShowMessage(false)} className="mb-2 block w-48 cursor-pointer rounded-xl border border-border bg-card/95 px-4 py-2 text-left text-sm text-muted-foreground backdrop-blur-xl">
-          <span className="font-semibold text-foreground">{buddy.name || "Konqi Buddy"}</span>
-          <span className="mt-2 line-clamp-3 block">{message}</span>
-        </Button>
-      )}
-
+      {showMessage && <Button type="button" onClick={() => setShowMessage(false)} className="mb-2 block w-48 cursor-pointer rounded-xl border border-border bg-card/95 px-4 py-2 text-left text-sm text-muted-foreground backdrop-blur-xl"><span className="font-semibold text-foreground">{buddy.name || "Konqi Buddy"}</span><span className="mt-2 line-clamp-3 block">{message}</span></Button>}
       <div onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag} className="relative flex h-36 w-40 touch-none cursor-grab items-end justify-center active:cursor-grabbing" title="Drag Desktop Buddy">
         <img src={buddy.imageDataUrl || FALLBACK_IMAGE} alt="" draggable={false} className={`pointer-events-none max-h-36 max-w-40 object-contain transition-transform ${speaking ? "scale-105" : ""} ${jumping ? "-translate-y-10 rotate-3" : ""}`} />
-        <span className="pointer-events-none absolute right-0 top-0 rounded-xl border border-border bg-card/90 p-2 text-muted-foreground">
-          <Move className="h-4 w-4" />
-        </span>
+        <span className="pointer-events-none absolute right-0 top-0 rounded-xl border border-border bg-card/90 p-2 text-muted-foreground"><Move className="h-4 w-4" /></span>
       </div>
-
       <div className="mx-auto mt-2 flex w-fit items-center gap-2 rounded-xl border border-border bg-card/95 p-2 backdrop-blur-xl">
-        <Button type="button" onClick={() => speakText(message)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title="Speak last response" aria-label="Speak last response">
-          <Volume2 className={`h-4 w-4 ${speaking ? "animate-pulse" : ""}`} />
-        </Button>
-        <Button type="button" onClick={jump} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title="Jump" aria-label="Make Desktop Buddy jump">
-          <span className="text-sm">↥</span>
-        </Button>
-        <Button
-          type="button"
-          onClick={() => void screenshot()}
-          disabled={savingScreenshot}
-          className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
-          title="Save viewport screenshot to Media Vault / Screenshots"
-          aria-label="Save screenshot"
-        >
-          <Camera className={`h-4 w-4 ${savingScreenshot ? "animate-pulse" : ""}`} />
-        </Button>
-        <Button type="button" onClick={() => setShowMessage((value) => !value)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title={status} aria-label="Show Desktop Buddy status">
-          <MessageCircle className="h-4 w-4" />
-        </Button>
-        <Button type="button" onClick={() => setWidgetEnabled("desktop-buddy", false)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title="Turn off floating Desktop Buddy" aria-label="Turn off Desktop Buddy widget">
-          <X className="h-4 w-4" />
-        </Button>
+        <Button type="button" onClick={() => speakText(message)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title="Speak last response" aria-label="Speak last response"><Volume2 className={`h-4 w-4 ${speaking ? "animate-pulse" : ""}`} /></Button>
+        <Button type="button" onClick={jump} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title="Jump" aria-label="Make Desktop Buddy jump"><span className="text-sm">↥</span></Button>
+        <Button type="button" onClick={() => void screenshot()} disabled={savingScreenshot} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50" title="Save viewport screenshot to Media Vault / Screenshots" aria-label="Save screenshot"><Camera className={`h-4 w-4 ${savingScreenshot ? "animate-pulse" : ""}`} /></Button>
+        <Button type="button" onClick={() => setShowMessage((value) => !value)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title={status} aria-label="Show Desktop Buddy status"><MessageCircle className="h-4 w-4" /></Button>
+        <Button type="button" onClick={() => setWidgetEnabled("desktop-buddy", false)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" title="Turn off floating Desktop Buddy" aria-label="Turn off Desktop Buddy widget"><X className="h-4 w-4" /></Button>
       </div>
-      <p className="sr-only" aria-live="polite">
-        {status}
-      </p>
+      <p className="sr-only" aria-live="polite">{status}</p>
     </aside>
   );
 }
