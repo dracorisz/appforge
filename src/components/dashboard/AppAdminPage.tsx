@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 // @code-scanning/ignore js/incomplete-sanitization: App data from registry is rendered via React JSX with auto-escaping; all text content uses safe rendering patterns without innerHTML.
 import { Button, Card, DataTable, Input, SearchInput, Switch, Textarea } from "@/components/ui";
 import { AppIconPicker } from "@/components/ui/AppIconPicker";
@@ -176,12 +177,13 @@ export function AppAdminPage() {
     </>
   ) : null;
 
-  const editor = editingId ? (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-overlay/65 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={editingId === "new" ? "Create app" : `Edit ${form.name || "app"}`} onMouseDown={(event) => { if (event.target === event.currentTarget) cancelEdit(); }}>
+  const editor = editingId && typeof document !== "undefined" ? createPortal(
+    <div className="fixed inset-0 z-[100] flex min-h-dvh w-screen items-center justify-center bg-overlay/65 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={editingId === "new" ? "Create app" : `Edit ${form.name || "app"}`} onMouseDown={(event) => { if (event.target === event.currentTarget) cancelEdit(); }}>
       <Card className="surface-popover max-h-[calc(100dvh-2rem)] w-full max-w-5xl space-y-4 overflow-y-auto p-4 shadow-xl sm:p-8">
         {editingId === "new" ? createNew : editExisting}
       </Card>
-    </div>
+    </div>,
+    document.body,
   ) : null;
 
   return (
