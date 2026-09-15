@@ -35,6 +35,7 @@ const approvedSpacingByFile = new Map([
   ['src/components/layout/Sidebar.tsx', new Set(['space-y-1'])],
   ['src/components/resources/Settings.tsx', new Set(['gap-1'])],
   ['src/components/resources/People.tsx', new Set(['p-0'])],
+  ['src/components/public/HuggingFaceGalleryPage.tsx', new Set(['p-0'])],
 ])
 const approvedSpacing = (filePath, utility) => utility === 'mt-1' || approvedSpacingByFile.get(filePath)?.has(utility)
 
