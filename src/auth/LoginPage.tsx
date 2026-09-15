@@ -137,74 +137,72 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
   };
 
   return (
-    <div className="dark min-h-dvh overflow-x-hidden bg-overlay text-foreground" style={{ colorScheme: "dark", "--background": "0 0% 0%" } as React.CSSProperties}>
-      <div className="relative isolate flex min-h-dvh flex-col overflow-hidden">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute left-1/2 top-[-28rem] h-[52rem] w-[52rem] -translate-x-1/2 rounded-xl border border-border/35 bg-accent/20 blur-3xl" />
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/20 to-transparent" />
-        </div>
-
+    <div className="min-h-dvh overflow-x-hidden bg-background text-foreground">
+      <div className="flex min-h-dvh flex-col">
         <PublicHeader className="shrink-0" />
 
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-8 pt-4 sm:px-4 sm:pt-4 lg:px-8">
-          <section className="grid min-h-[calc(100dvh-9rem)] items-center gap-8 py-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]" aria-labelledby="landing-title">
-            <div className="max-w-4xl">
-              <h1 id="landing-title" className="max-w-4xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-5xl lg:text-5xl xl:text-5xl">
-                Build useful things.<span className="block text-muted-foreground">Own the workflow.</span>
-              </h1>
-              <p className="mt-4 max-w-2xl text-pretty text-sm text-muted-foreground sm:text-lg">Practical tools in one consistent workspace.</p>
-              <div className="mt-8 flex flex-wrap gap-4" aria-busy={Boolean(busyProvider) || loading}>
-                {user ? (
-                  <Button className="h-11 px-4" onClick={() => navigate("/")} disabled={loading}>Open workspace <ArrowRight className="h-4 w-4" /></Button>
-                ) : (
-                  <Button className="h-11 px-4" onClick={() => setAuthOpen(true)} disabled={loading}>Sign in <ArrowRight className="h-4 w-4" /></Button>
-                )}
-              </div>
-              {error && <div role="alert" aria-live="polite" className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-2 text-sm text-destructive">{error}</div>}
-              {showAppCount && <p className="mt-8 border-t border-border/60 pt-4 text-sm text-muted-foreground"><strong className="font-semibold text-foreground">{appCount}</strong> active apps · open source</p>}
-            </div>
-
-            <div className="relative">
-              <div aria-hidden="true" className="absolute inset-8 -z-10 rounded-xl border border-border/50 bg-accent/25 blur-2xl" />
-              <div className="overflow-hidden rounded-xl border border-border bg-background/80 backdrop-blur-xl">
-                <div className="flex items-center justify-between gap-4 border-b border-border/60 p-4">
-                  <div className="min-w-0">
-                    <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{/* design-xs-ok: compact eyebrow label */}<PlayCircle className="h-4 w-4" /> Walkthrough</div>
-                    <h2 className="mt-2 text-lg font-semibold tracking-tight">{videoTitle}</h2>
-                    <p className="mt-1 text-sm text-muted-foreground">{videoSummary}</p>
-                  </div>
-                  <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">Open video</a>
+        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 lg:px-8">
+          <section className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]" aria-labelledby="landing-title">
+            <div className="surface-card flex min-h-[32rem] flex-col justify-between rounded-xl border p-8">
+              <div>
+                <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-secondary">
+                  <img src={APPFORGE_MARK} alt="" className="h-8 w-8" decoding="async" />
                 </div>
-                {videoEmbedUrl ? (
-                  <iframe key={videoEmbedUrl} src={videoEmbedUrl} title="AppForge product walkthrough" className="aspect-video w-full border-0" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
-                ) : (
-                  <video key={videoUrl} src={videoUrl} title="AppForge product walkthrough" className="aspect-video w-full bg-overlay object-contain" controls preload="metadata" playsInline />
-                )}
+                <h1 id="landing-title" className="max-w-4xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-5xl lg:text-5xl xl:text-5xl">
+                  Build useful things.<span className="block text-muted-foreground">Own the workflow.</span>
+                </h1>
+                <p className="mt-4 max-w-2xl text-pretty text-sm text-muted-foreground sm:text-lg">Practical tools in one consistent workspace.</p>
+              </div>
+              <div>
+                <div className="mt-8 flex flex-wrap gap-4" aria-busy={Boolean(busyProvider) || loading}>
+                  {user ? (
+                    <Button className="h-11 px-4" onClick={() => navigate("/")} disabled={loading}>Open workspace <ArrowRight className="h-4 w-4" /></Button>
+                  ) : (
+                    <Button className="h-11 px-4" onClick={() => setAuthOpen(true)} disabled={loading}>Sign in <ArrowRight className="h-4 w-4" /></Button>
+                  )}
+                </div>
+                {error && <div role="alert" aria-live="polite" className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-2 text-sm text-destructive">{error}</div>}
+                {showAppCount && <p className="mt-8 border-t border-border pt-4 text-sm text-muted-foreground"><strong className="font-semibold text-foreground">{appCount}</strong> active apps · open source</p>}
+              </div>
+            </div>
+
+            <div className="surface-card overflow-hidden rounded-xl border">
+              <div className="flex items-center justify-between gap-4 border-b border-border p-4">
+                <div className="min-w-0">
+                  <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{/* design-xs-ok: compact eyebrow label */}<PlayCircle className="h-4 w-4" /> Walkthrough</div>
+                  <h2 className="mt-2 text-lg font-semibold tracking-tight">{videoTitle}</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">{videoSummary}</p>
+                </div>
+                <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">Open video</a>
+              </div>
+              {videoEmbedUrl ? (
+                <iframe key={videoEmbedUrl} src={videoEmbedUrl} title="AppForge product walkthrough" className="aspect-video w-full border-0" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
+              ) : (
+                <video key={videoUrl} src={videoUrl} title="AppForge product walkthrough" className="aspect-video w-full bg-overlay object-contain" controls preload="metadata" playsInline />
+              )}
+              <div className="grid border-t border-border md:grid-cols-3" aria-label="Public tools and workspace access">
+                {publicTools.map(({ label, description, path, icon: Icon }) => (
+                  <Link key={path} to={path} className="group flex min-h-32 flex-col justify-between gap-4 border-b border-border p-4 transition-colors hover:bg-accent md:border-b-0 md:border-r">
+                    <span className="flex items-center justify-between gap-4"><Icon className="h-4 w-4" /><ArrowRight className="h-4 w-4 text-muted-foreground" /></span>
+                    <span><span className="block text-sm font-medium">{label}</span><span className="mt-1 block text-sm text-muted-foreground">{description}</span></span>
+                  </Link>
+                ))}
+                <Link to="/explore" className="group flex min-h-32 flex-col justify-between gap-4 p-4 text-sm font-medium transition-colors hover:bg-accent">
+                  <span className="flex items-center justify-between gap-4"><ShieldCheck className="h-4 w-4" /><ArrowRight className="h-4 w-4 text-muted-foreground" /></span>
+                  <span>Browse all public apps</span>
+                </Link>
               </div>
             </div>
           </section>
 
-          <section className="grid gap-4 py-8 md:grid-cols-3" aria-label="Public tools and workspace access">
-            {publicTools.map(({ label, description, path, icon: Icon }) => (
-              <Link key={path} to={path} className="group flex min-h-32 flex-col justify-between gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                <span className="flex items-center justify-between gap-4"><span className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-secondary"><Icon className="h-4 w-4" /></span><ArrowRight className="h-4 w-4 text-muted-foreground" /></span>
-                <span><span className="block text-sm font-medium">{label}</span><span className="mt-1 block text-sm text-muted-foreground">{description}</span></span>
-              </Link>
-            ))}
-            <Link to="/explore" className="group flex min-h-32 flex-col justify-between gap-4 rounded-xl border border-border bg-card p-4 text-sm font-medium transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-              <span className="flex items-center justify-between gap-4"><span className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-secondary"><img src={APPFORGE_MARK} alt="" className="h-6 w-6" decoding="async" /></span><ShieldCheck className="h-5 w-5 text-muted-foreground" /></span>
-              <span className="flex items-center justify-between gap-4"><span>Browse all public apps</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></span>
-            </Link>
-          </section>
-
-          <section className="pb-8 pt-8 sm:pb-8 sm:pt-8" aria-labelledby="about-appforge-title">
-            <div className="m-auto text-left">
+          <section className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)]" aria-labelledby="about-appforge-title">
+            <div className="p-4">
               <h2 id="about-appforge-title" className="text-lg font-semibold tracking-tight">Open source. Private by design.</h2>
               <p className="mt-1 text-sm text-muted-foreground">AppForge combines public tools with an authenticated workspace, keeping local work in-browser where practical and using protected persistence only where it adds value.</p>
             </div>
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <div className="rounded-xl border border-inverse/10 bg-inverse/5 p-4"><div className="text-sm font-semibold">Consistent tools</div><p className="mt-1 text-sm text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p></div>
-              <div className="rounded-xl border border-inverse/10 bg-inverse/5 p-4"><div className="text-sm font-semibold">Transparent project</div><p className="mt-1 text-sm text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p></div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="surface-card rounded-xl border p-4"><div className="text-sm font-semibold">Consistent tools</div><p className="mt-1 text-sm text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p></div>
+              <div className="surface-card rounded-xl border p-4"><div className="text-sm font-semibold">Transparent project</div><p className="mt-1 text-sm text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p></div>
             </div>
           </section>
         </main>
