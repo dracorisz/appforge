@@ -1,6 +1,5 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import ts from 'typescript'
 
 const root = path.resolve('src')
 const extensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.css'])
@@ -44,7 +43,6 @@ const diagnostics = {
   rawControls: new Map(),
   surfaces: new Map(),
 }
-const buttonClassOverrides = []
 const bump = (map, file, amount = 1) => map.set(file, (map.get(file) || 0) + amount)
 
 for (const file of files) {
@@ -95,21 +93,6 @@ for (const file of files) {
     }
   })
 
-  if (filePath.endsWith('.tsx')) {
-    const sourceFile = ts.createSourceFile(filePath, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
-    const visit = (node) => {
-      if ((ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) && node.tagName.getText(sourceFile) === 'Button') {
-        const hasClassName = node.attributes.properties.some((property) => ts.isJsxAttribute(property) && property.name.getText(sourceFile) === 'className')
-        if (hasClassName) {
-          const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1
-          buttonClassOverrides.push(`${filePath}:${line}: ${node.getText(sourceFile).replace(/\s+/g, ' ').trim()}`)
-        }
-      }
-      ts.forEachChild(node, visit)
-    }
-    visit(sourceFile)
-  }
-
   if (!filePath.startsWith('src/components/ui/')) {
     const rawControls = source.match(/<(?:button|input|select|textarea)\b/g)?.length || 0
     if (rawControls) bump(diagnostics.rawControls, filePath, rawControls)
@@ -139,7 +122,6 @@ for (const [label, map] of [
   const top = formatTop(map)
   if (top.length) console.log(`\n${label}:\n${top.join('\n')}`)
 }
-if (buttonClassOverrides.length) console.log(`\nButton className audit (${buttonClassOverrides.length}):\n${buttonClassOverrides.join('\n')}`)
 
 if (violations.length) {
   console.error(`\nUI style contract failed with ${violations.length} violation${violations.length === 1 ? '' : 's'}:`)
