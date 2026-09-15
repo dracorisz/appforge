@@ -74,10 +74,10 @@ function CarouselCard({ asset, active, onSelect }: { asset: PublicDragonAsset; a
           <div className="flex h-full items-center justify-center text-muted-foreground"><ImageIcon className="h-9 w-9" /></div>
         )}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-overlay/90 via-transparent to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-white">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-inverse">
           <div className="mb-2 flex flex-wrap gap-2"><Badge color="blue">Hugging Face</Badge><Badge color="slate">Story Studio</Badge></div>
           <h3 className={`${active ? "text-lg sm:text-lg" : "text-sm sm:text-sm"} line-clamp-2 font-semibold tracking-tight`}>{asset.title || "Story Studio scene"}</h3>
-          {active && <p className="mt-2 text-sm text-white/70">{metaText(asset) || "Generation metadata unavailable"}</p>}
+          {active && <p className="mt-2 text-sm text-inverse/70">{metaText(asset) || "Generation metadata unavailable"}</p>}
         </div>
       </div>
       {active && (
