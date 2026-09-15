@@ -36,7 +36,7 @@ export function ChangelogPage() {
     document.title = "AppForge Changelog";
   }, []);
   return (
-    <div className="dark flex min-h-dvh flex-col bg-overlay text-foreground" style={{ colorScheme: "dark", "--background": "0 0% 0%" } as React.CSSProperties}>
+    <div className="flex min-h-dvh flex-col bg-background text-foreground">
       <PublicHeader />
       <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-4 lg:px-8">
         <section className="border-b border-border/60 pb-8">
@@ -49,14 +49,14 @@ export function ChangelogPage() {
         </section>
         <div className="space-y-4 py-8">
           {releases.map((release, releaseIndex) => (
-            <section key={release.title} className="rounded-xl border border-border bg-background/45 p-4 sm:p-4">
+            <section key={release.title} className="rounded-xl border border-border bg-card p-4 sm:p-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="text-lg font-semibold tracking-[-0.025em] sm:text-lg">{release.title}</h2>
                 <span className="text-sm text-muted-foreground">{release.groups.reduce((total, group) => total + group.items.length, 0)} changes</span>
               </div>
               <div className="mt-4 space-y-2">
                 {release.groups.map((group, groupIndex) => (
-                  <details key={`${release.title}-${group.title}`} open={releaseIndex === 0 && groupIndex === 0} className="group rounded-xl border border-border/60 bg-background/30">
+                  <details key={`${release.title}-${group.title}`} open={releaseIndex === 0 && groupIndex === 0} className="group rounded-xl border border-border/60 bg-background">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 text-sm font-semibold outline-none focus-visible:ring-1 focus-visible:ring-ring/25">
                       <span>{group.title}</span>
                       <span className="flex items-center gap-2 text-sm font-normal text-muted-foreground">
