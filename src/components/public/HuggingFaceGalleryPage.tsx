@@ -64,26 +64,26 @@ function CarouselCard({ asset, active, onSelect }: { asset: PublicDragonAsset; a
     <Button
       type="button"
       onClick={onSelect}
-      className={`group relative shrink-0 cursor-pointer overflow-hidden rounded-xl border border-inverse/10 bg-card text-left transition-all duration-500 ${active ? "z-10 w-[78vw] max-w-3xl scale-100 opacity-100 md:w-[58vw]" : "w-[48vw] max-w-xl translate-y-4 scale-[.78] opacity-55 md:w-[32vw]"}`}
+      className={`group relative shrink-0 cursor-pointer overflow-hidden rounded-xl border bg-card p-0 text-left transition-all duration-500 ${active ? "z-10 w-[82vw] max-w-4xl scale-100 opacity-100 md:w-[60vw]" : "w-[44vw] max-w-lg translate-y-4 scale-[.82] opacity-45 md:w-[28vw]"}`}
       aria-current={active ? "true" : undefined}
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-muted">
         {src ? (
-          <img src={src} alt={asset.title || "Story Studio generated scene"} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]" loading="lazy" />
+          <img src={src} alt={asset.title || "Story Studio generated scene"} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" loading="lazy" />
         ) : (
-          <div className="flex h-full items-center justify-center text-inverse/35"><ImageIcon className="h-9 w-9" /></div>
+          <div className="flex h-full items-center justify-center text-muted-foreground"><ImageIcon className="h-9 w-9" /></div>
         )}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-overlay/95 via-overlay/15 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-overlay/90 via-transparent to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-white">
           <div className="mb-2 flex flex-wrap gap-2"><Badge color="blue">Hugging Face</Badge><Badge color="slate">Story Studio</Badge></div>
-          <h3 className={`${active ? "text-lg sm:text-lg" : "text-sm sm:text-sm"} line-clamp-2 font-semibold tracking-tight text-inverse`}>{asset.title || "Story Studio scene"}</h3>
-          {active && <p className="mt-2 text-sm text-inverse/55">{metaText(asset) || "Generation metadata unavailable"}</p>}
+          <h3 className={`${active ? "text-lg sm:text-lg" : "text-sm sm:text-sm"} line-clamp-2 font-semibold tracking-tight`}>{asset.title || "Story Studio scene"}</h3>
+          {active && <p className="mt-2 text-sm text-white/70">{metaText(asset) || "Generation metadata unavailable"}</p>}
         </div>
       </div>
       {active && (
-        <div className="flex items-center justify-between gap-4 border-t border-inverse/10 px-4 py-2">
-          <div className="min-w-0 truncate text-sm text-inverse/55">Model: <span className="text-inverse/80">{modelLabel}</span></div>
-          <span className="shrink-0 text-sm text-inverse/40">{new Date(asset.generated_at).toLocaleDateString()}</span>
+        <div className="flex items-center justify-between gap-4 border-t px-4 py-2">
+          <div className="min-w-0 truncate text-sm text-muted-foreground">Model: <span className="text-foreground">{modelLabel}</span></div>
+          <span className="shrink-0 text-sm text-muted-foreground">{new Date(asset.generated_at).toLocaleDateString()}</span>
         </div>
       )}
     </Button>
@@ -103,7 +103,7 @@ function InfiniteShowcase({ assets }: { assets: PublicDragonAsset[] }) {
   }, [assets.length, paused]);
   React.useEffect(() => setIndex((value) => wrap(value, assets.length)), [assets.length]);
 
-  if (!assets.length) return <Card className="border-inverse/10 bg-inverse/[0.035] p-8 text-center text-sm text-inverse/45">No public creator-selected scenes yet.</Card>;
+  if (!assets.length) return <Card className="p-8 text-center text-sm text-muted-foreground">No public creator-selected scenes yet.</Card>;
 
   const positions = assets.length === 1 ? [0] : [-1, 0, 1];
   const beginGesture = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -144,9 +144,9 @@ function InfiniteShowcase({ assets }: { assets: PublicDragonAsset[] }) {
       </div>
       {assets.length > 1 && (
         <div className="mt-4 flex items-center justify-center gap-4">
-          <Button type="button" onClick={() => setIndex((value) => wrap(value - 1, assets.length))} className="cursor-pointer rounded-xl border border-inverse/10 bg-inverse/5 p-2 text-inverse/75 hover:bg-inverse/10" aria-label="Previous scene"><ArrowLeft className="h-4 w-4" /></Button>
-          <span className="min-w-16 text-center text-sm text-inverse/45">{index + 1} / {assets.length}</span>
-          <Button type="button" onClick={() => setIndex((value) => wrap(value + 1, assets.length))} className="cursor-pointer rounded-xl border border-inverse/10 bg-inverse/5 p-2 text-inverse/75 hover:bg-inverse/10" aria-label="Next scene"><ArrowRight className="h-4 w-4" /></Button>
+          <Button type="button" variant="secondary" onClick={() => setIndex((value) => wrap(value - 1, assets.length))} className="p-2" aria-label="Previous scene"><ArrowLeft className="h-4 w-4" /></Button>
+          <span className="min-w-16 text-center text-sm text-muted-foreground">{index + 1} / {assets.length}</span>
+          <Button type="button" variant="secondary" onClick={() => setIndex((value) => wrap(value + 1, assets.length))} className="p-2" aria-label="Next scene"><ArrowRight className="h-4 w-4" /></Button>
         </div>
       )}
     </div>
@@ -195,35 +195,39 @@ export function HuggingFaceGalleryPage() {
   }, [load]);
 
   return (
-    <div className="dark min-h-screen bg-overlay text-foreground" style={{ colorScheme: "dark", "--background": "0 0% 0%" } as React.CSSProperties}>
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <PublicHeader />
-      <main className="mx-auto w-full max-w-7xl space-y-8 px-4 py-8">
-        <section className="rounded-xl border border-border bg-background/55 p-4">
-          <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-muted-foreground"><Sparkles className="h-4 w-4" /> Hugging Face powered generation</div>
-          <h1 className="mt-2 text-lg font-semibold tracking-tight">Story Studio × Hugging Face</h1>
-          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">Story Studio uses Hugging Face for narrative generation and scene artwork. Generated scenes stay private by default; creators explicitly choose what appears here.</p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Link to="/" className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-background/65 px-4 py-2 text-sm font-medium text-foreground hover:bg-accent/55">Open Story Studio <ArrowRight className="h-4 w-4" /></Link>
-            <a href="https://huggingface.co/" target="_blank" rel="noreferrer" className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-background/65 px-4 py-2 text-sm font-medium text-foreground hover:bg-accent/55"><ExternalLink className="h-4 w-4" /> Hugging Face</a>
+      <main className="mx-auto w-full max-w-7xl flex-1 space-y-8 px-4 py-8 lg:px-8">
+        <section className="grid gap-4 lg:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)]">
+          <div className="surface-card flex flex-col justify-between rounded-xl border p-8">
+            <div>
+              <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-muted-foreground"><Sparkles className="h-4 w-4" /> Hugging Face powered generation</div>
+              <h1 className="mt-4 text-5xl font-semibold tracking-[-0.05em]">Story Studio × Hugging Face</h1>
+              <p className="mt-4 max-w-3xl text-sm text-muted-foreground">Story Studio uses Hugging Face for narrative generation and scene artwork. Generated scenes stay private by default; creators explicitly choose what appears here.</p>
+            </div>
+            <div className="mt-8 flex flex-wrap gap-2">
+              <Link to="/" className="inline-flex items-center gap-2 rounded-xl border border-border bg-secondary px-4 py-2 text-sm font-medium text-foreground hover:bg-accent">Open Story Studio <ArrowRight className="h-4 w-4" /></Link>
+              <a href="https://huggingface.co/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"><ExternalLink className="h-4 w-4" /> Hugging Face</a>
+            </div>
+          </div>
+
+          <div className="surface-panel overflow-hidden rounded-xl border p-4">
+            <div className="flex items-end justify-between gap-4 border-b pb-4"><div><h2 className="text-lg font-semibold tracking-tight">Public generated assets</h2><p className="mt-1 text-sm text-muted-foreground">One gallery for creator-selected Story Studio scenes and admin-managed images.</p></div><span className="text-sm text-muted-foreground">{assets.length} scenes</span></div>
+            {error && <Card className="mt-4 border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">Could not load the public gallery: {error}</Card>}
+            {loading ? <Card className="mt-4 flex items-center justify-center gap-2 p-8 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading public Story Studio assets…</Card> : <InfiniteShowcase assets={assets} />}
           </div>
         </section>
 
-        <section>
-          <div className="mb-2 flex items-end justify-between gap-4"><div><h2 className="text-lg font-semibold tracking-tight">Public generated assets</h2><p className="mt-1 text-sm text-muted-foreground">One gallery for creator-selected Story Studio scenes and admin-managed images.</p></div><span className="text-sm text-muted-foreground">{assets.length} scenes</span></div>
-          {error && <Card className="mb-4 border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">Could not load the public gallery: {error}</Card>}
-          {loading ? <Card className="flex items-center justify-center gap-2 border-border bg-background/55 p-8 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading public Story Studio assets…</Card> : <InfiniteShowcase assets={assets} />}
-        </section>
-
         <section className="grid gap-4 lg:grid-cols-2">
-          <Card className="border-border bg-background/55 p-4">
+          <Card className="p-4">
             <div className="flex items-center gap-2 text-sm font-semibold"><MessageSquareText className="h-4 w-4" /> Story-model rotation</div>
             <p className="mt-1 text-sm text-muted-foreground">Shared requests rotate through available Hugging Face credentials and these text models until one succeeds.</p>
-            <div className="mt-4 space-y-2">{GAME_MASTER_MODELS.map((model, i) => <div key={model.id} className="rounded-xl border border-border bg-overlay/20 p-4"><div className="font-mono text-sm">{i + 1}. {model.id}</div><div className="mt-2 text-sm font-medium">{model.role}</div><div className="mt-1 text-sm text-muted-foreground">{model.note}</div></div>)}</div>
+            <div className="mt-4 divide-y divide-border rounded-xl border">{GAME_MASTER_MODELS.map((model, i) => <div key={model.id} className="p-4"><div className="font-mono text-sm">{i + 1}. {model.id}</div><div className="mt-2 text-sm font-medium">{model.role}</div><div className="mt-1 text-sm text-muted-foreground">{model.note}</div></div>)}</div>
           </Card>
-          <Card className="border-border bg-background/55 p-4">
+          <Card className="p-4">
             <div className="flex items-center gap-2 text-sm font-semibold"><ImageIcon className="h-4 w-4" /> Scene-model + provider rotation</div>
             <p className="mt-1 text-sm text-muted-foreground">AppForge resolves each model’s current provider mapping and tries compatible providers within a bounded request.</p>
-            <div className="mt-4 space-y-2">{IMAGE_MODELS.map((model, i) => <div key={model.id} className="rounded-xl border border-border bg-overlay/20 p-4"><div className="font-mono text-sm">{i + 1}. {model.id}</div><div className="mt-2 text-sm font-medium">{model.role}</div><div className="mt-1 text-sm text-muted-foreground">{model.note}</div></div>)}</div>
+            <div className="mt-4 divide-y divide-border rounded-xl border">{IMAGE_MODELS.map((model, i) => <div key={model.id} className="p-4"><div className="font-mono text-sm">{i + 1}. {model.id}</div><div className="mt-2 text-sm font-medium">{model.role}</div><div className="mt-1 text-sm text-muted-foreground">{model.note}</div></div>)}</div>
             <div className="mt-4 flex flex-wrap gap-2">{IMAGE_PROVIDERS.map((provider) => <Badge key={provider} color="slate">{provider}</Badge>)}</div>
           </Card>
         </section>
