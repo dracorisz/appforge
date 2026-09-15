@@ -2,7 +2,7 @@ import React from "react";
 // @code-scanning/ignore js/xss-through-dom: Project Pulse build data is derived from app registry metadata (trusted source) and rendered via React JSX which auto-escapes all text content.
 import { Activity, Boxes, ChevronDown, ChevronUp, CheckCircle2, ExternalLink, Rocket } from "lucide-react";
 import { BuildBadge, Button } from "@/components/ui";
-import { getAllApps } from "@/lib/registry";
+import { getAllApps, getManageableApps } from "@/lib/registry";
 
 const readinessScore = {
   launched: 100,
@@ -14,10 +14,11 @@ const readinessScore = {
 
 export function ProjectPulse() {
   const [expanded, setExpanded] = React.useState(false);
-  const apps = getAllApps();
-  const active = apps.filter((app) => app.status === "launched" || app.status === "beta").length;
-  const building = apps.filter((app) => app.status === "building" || app.status === "idea").length;
-  const average = apps.length ? Math.round(apps.reduce((sum, app) => sum + readinessScore[app.status], 0) / apps.length) : 0;
+  const visibleApps = getAllApps();
+  const trackedApps = getManageableApps();
+  const active = trackedApps.filter((app) => app.visible !== false && (app.status === "launched" || app.status === "beta")).length;
+  const building = trackedApps.filter((app) => app.visible === false || app.status === "building" || app.status === "idea").length;
+  const average = trackedApps.length ? Math.round(trackedApps.reduce((sum, app) => sum + (app.visible === false ? readinessScore.building : readinessScore[app.status]), 0) / trackedApps.length) : 0;
 
   return (
     <div className="mb-4 rounded-xl border border-border/60 bg-background/45 text-sm text-muted-foreground backdrop-blur-lg">
@@ -32,9 +33,9 @@ export function ProjectPulse() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-2 rounded-xl bg-background/45 px-2 py-2">
+          <span className="inline-flex items-center gap-2 px-2 py-2">
             <Boxes className="h-3 w-3" />
-            {apps.length} tools · {active} active · {building} building
+            {trackedApps.length} apps · {active} active · {building} building
           </span>
           <BuildBadge compact />
           {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -47,10 +48,10 @@ export function ProjectPulse() {
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-4">
                 <span className="font-medium text-foreground">Apps → full-ready PWA</span>
-                <span>{apps.length} tracked</span>
+                <span>{trackedApps.length} tracked · {visibleApps.length} visible</span>
               </div>
               <div className="grid max-h-72 gap-2 overflow-y-auto pr-2 sm:grid-cols-2">
-                {apps.map((app) => {
+                {visibleApps.map((app) => {
                   const score = readinessScore[app.status];
                   return (
                     <a key={app.id} href={app.route} className="rounded-xl border border-border/60 bg-background/50 p-2 transition hover:bg-muted/45">
@@ -85,7 +86,7 @@ export function ProjectPulse() {
                 ))}
               </div>
               <div className="mt-4 flex flex-wrap gap-4">
-                <a href="https://docs.sstoken.space/PROJECT-PULSE" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-medium text-foreground hover:underline">
+                <a href="https://docs.sstoken.space/project-pulse" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-medium text-foreground hover:underline">
                   Live tracking docs <ExternalLink className="h-3 w-3" />
                 </a>
                 <a href="https://github.com/dracorisz/appforge/issues" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-medium text-foreground hover:underline">
