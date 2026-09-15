@@ -1,5 +1,5 @@
 import React from "react";
-import { CloudSun, Loader2, MapPin, RefreshCw } from "lucide-react";
+import { Cloud, CloudRain, CloudSun, Loader2, MapPin, RefreshCw, Snowflake, Sun, Wind } from "lucide-react";
 import { Link } from "react-router-dom";
 import { isWidgetEnabled, subscribeWidgetPreferences } from "@/lib/widgetPreferences";
 import { Button } from "@/components/ui";
@@ -17,6 +17,26 @@ const STORAGE_KEY = "appforge-weather-cities-v2";
 export const SIDEBAR_WEATHER_LOCATION_KEY = "appforge-weather-sidebar-location-v1";
 export const SIDEBAR_WEATHER_CHANGED_EVENT = "appforge:sidebar-weather-location-changed";
 const FALLBACK_LOCATION = "Belgrade";
+
+const weatherTone = (condition?: string) => {
+  const value = String(condition || "").toLowerCase();
+  if (value.includes("clear") || value.includes("sun")) return "sunny";
+  if (value.includes("rain") || value.includes("drizzle") || value.includes("thunder")) return "rainy";
+  if (value.includes("snow")) return "snowy";
+  if (value.includes("cloud") || value.includes("overcast") || value.includes("fog")) return "cloudy";
+  if (value.includes("wind")) return "windy";
+  return "default";
+};
+
+const WeatherIcon = ({ condition, className = "h-4 w-4" }: { condition?: string; className?: string }) => {
+  const tone = weatherTone(condition);
+  if (tone === "sunny") return <Sun className={className} />;
+  if (tone === "rainy") return <CloudRain className={className} />;
+  if (tone === "snowy") return <Snowflake className={className} />;
+  if (tone === "cloudy") return <Cloud className={className} />;
+  if (tone === "windy") return <Wind className={className} />;
+  return <CloudSun className={className} />;
+};
 
 function preferredLocation() {
   const explicit = localStorage.getItem(SIDEBAR_WEATHER_LOCATION_KEY)?.trim();
@@ -142,37 +162,33 @@ export function SidebarWeather({ collapsed }: { collapsed: boolean }) {
   }, [refresh]);
 
   if (!enabled) return null;
+  const tone = weatherTone(weather?.condition);
 
   if (collapsed) {
     return (
       <Link
         to="/apps/weather-now"
         title={weather ? `${weather.location} · ${Math.round(weather.temp_c)}°C · ${weather.condition}` : "Weather Now"}
-        className="mx-auto flex h-9 w-9 items-center justify-center rounded-xl border border-border/60 bg-background/45 text-muted-foreground hover:bg-accent hover:text-foreground"
+        data-weather-tone={tone}
+        className="sidebar-weather-tone mx-auto flex h-9 w-9 items-center justify-center rounded-xl border text-muted-foreground hover:text-foreground"
       >
-        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CloudSun className="h-4 w-4" />}
+        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <WeatherIcon condition={weather?.condition} />}
       </Link>
     );
   }
 
   return (
-    <div className="rounded-xl border border-border/60 bg-background/45 p-2">
+    <div data-weather-tone={tone} className="sidebar-weather-tone rounded-xl border p-2">
       <div className="flex items-start gap-2">
         <Link to="/apps/weather-now" className="min-w-0 flex-1 rounded-xl focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-            {" "}
-            {/* design-xs-ok: compact weather label */}
-            <CloudSun className="h-4 w-4" /> Weather
-          </div>
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{/* design-xs-ok: compact weather label */}<WeatherIcon condition={weather?.condition} /> Weather</div>
           {weather ? (
             <>
               <div className="mt-2 flex items-end gap-2">
                 <span className="text-lg font-semibold tabular-nums text-foreground">{Math.round(weather.temp_c)}°</span>
                 <span className="mb-2 truncate text-sm text-muted-foreground">{weather.condition}</span>
               </div>
-              <div className="mt-2 flex items-center gap-2 truncate text-sm text-muted-foreground">
-                <MapPin className="h-3 w-3 shrink-0" /> {weather.location}
-              </div>
+              <div className="mt-2 flex items-center gap-2 truncate text-sm text-muted-foreground"><MapPin className="h-3 w-3 shrink-0" /> {weather.location}</div>
             </>
           ) : (
             <div className="mt-1 text-sm text-muted-foreground">{loading ? `Loading ${selectedLocation}…` : `Open Weather Now · ${selectedLocation}`}</div>
