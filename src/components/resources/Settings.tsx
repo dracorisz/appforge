@@ -9,6 +9,7 @@ import { loadCategoryOverrides, saveCategoryOverrides } from "@/lib/categories";
 import { createWorkspaceBackup, parseWorkspaceBackup, type WorkspaceImportPreview } from "@/lib/workspaceBackup";
 import { isWidgetEnabled, setWidgetEnabled } from "@/lib/widgetPreferences";
 import { VertexBridgeStatus } from "./VertexBridgeStatus";
+import { AccountEmailSecurity } from "./AccountEmailSecurity";
 import { AdminConsolePage } from "@/components/admin/AdminConsolePage";
 import { claimFirstAdmin, ensureProfile, enrollTotp, getPrivateProfileInfo, getRole, getSecurityState, savePrivateProfileInfo, saveProfile, unenrollTotp, uploadProfileImage, verifyTotpFactor, type AppProfile, type PrivateProfileInfo } from "@/lib/account";
 
@@ -338,8 +339,9 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
               <div className="min-w-0">
                 <div className="truncate text-sm font-semibold">{profile?.display_name || user?.email || "AppForge user"}</div>
                 <div className="truncate text-sm text-muted-foreground">{user?.email}</div>
-                <div className="mt-2">
+                <div className="mt-2 flex flex-wrap gap-2">
                   <Badge color={role === "admin" ? "blue" : "slate"}>{role}</Badge>
+                  <Badge color={user?.email_confirmed_at ? "green" : "slate"}>{user?.email_confirmed_at ? "Email verified" : "Email unverified"}</Badge>
                 </div>
               </div>
             </div>
@@ -450,6 +452,7 @@ export function SettingsPage({ state, setState }: { state: AppState; setState: (
 
       {activeTab === "security" && (
         <div className="grid items-start gap-4 lg:grid-cols-2">
+          {user && <AccountEmailSecurity user={user} onUserChanged={() => void refreshAccount()} />}
           <Card className="p-4">
             <div className="flex flex-col items-start gap-1">
               <div className="flex items-center gap-2">
