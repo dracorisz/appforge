@@ -28,7 +28,7 @@ export function PublicAppsPage() {
   }, [apps, category, query]);
 
   return (
-    <div className="dark flex min-h-dvh flex-col bg-overlay text-foreground" style={{ colorScheme: "dark", "--background": "0 0% 0%" } as React.CSSProperties}>
+    <div className="flex min-h-dvh flex-col bg-background text-foreground">
       <PublicHeader />
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-4 lg:px-8">
         <header className="mx-auto max-w-2xl text-center">
@@ -40,7 +40,7 @@ export function PublicAppsPage() {
         <section className="mx-auto mt-8 max-w-3xl border-y border-border/60 py-4" aria-label="Filter apps">
           <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_200px]">
             <SearchInput value={query} onChange={(event) => setQuery(event.target.value)} onClear={() => setQuery("")} placeholder="Search apps…" aria-label="Search apps" />
-            <Select value={category} onChange={(event) => setCategory(event.target.value)} className="rounded-xl border border-border bg-background/45 px-2 text-sm h-9 outline-none focus:ring-1 focus:ring-ring/30">
+            <Select value={category} onChange={(event) => setCategory(event.target.value)} className="rounded-xl border border-border bg-secondary px-2 text-sm h-9 outline-none focus:ring-1 focus:ring-ring/30">
               <option value="all">All categories</option>
               {categories.map((id) => (
                 <option key={id} value={id}>
@@ -57,7 +57,7 @@ export function PublicAppsPage() {
             <Link
               key={app.id}
               to={app.route}
-              className="group flex min-h-32 flex-col rounded-xl border border-border/65 bg-background/35 p-4 transition-[border-color,background-color,box-shadow] hover:border-foreground/20 hover:bg-accent/25 hover:shadow-xl focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="group flex min-h-32 flex-col rounded-xl border border-border bg-card p-4 transition-[border-color,background-color,box-shadow] hover:border-foreground/20 hover:bg-secondary hover:shadow-xl focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               {app.coverImage && <img src={app.coverImage} alt="" className="-mx-4 -mt-4 mb-4 h-24 w-[calc(100%+2rem)] rounded-xl object-cover" loading="lazy" />}
               <div className="min-w-0">
