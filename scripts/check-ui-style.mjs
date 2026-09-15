@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import ts from 'typescript'
 
 const root = path.resolve('src')
 const extensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.css'])
@@ -95,12 +96,18 @@ for (const file of files) {
   })
 
   if (filePath.endsWith('.tsx')) {
-    for (const match of source.matchAll(/<Button\b[\s\S]*?>/g)) {
-      const tag = match[0]
-      if (!/\bclassName\s*=/.test(tag)) continue
-      const line = source.slice(0, match.index).split(/\r?\n/).length
-      buttonClassOverrides.push(`${filePath}:${line}: ${tag.replace(/\s+/g, ' ').trim()}`)
+    const sourceFile = ts.createSourceFile(filePath, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
+    const visit = (node) => {
+      if ((ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) && node.tagName.getText(sourceFile) === 'Button') {
+        const hasClassName = node.attributes.properties.some((property) => ts.isJsxAttribute(property) && property.name.getText(sourceFile) === 'className')
+        if (hasClassName) {
+          const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1
+          buttonClassOverrides.push(`${filePath}:${line}: ${node.getText(sourceFile).replace(/\s+/g, ' ').trim()}`)
+        }
+      }
+      ts.forEachChild(node, visit)
     }
+    visit(sourceFile)
   }
 
   if (!filePath.startsWith('src/components/ui/')) {
