@@ -1,20 +1,20 @@
 /* Shared presentation rules for media-heavy tools and route-scoped visual states. */
 
-[data-route="/apps/scrapper-pro"] .grid:has(> .surface-card.overflow-hidden) {
+:is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .grid:has(> .surface-card.overflow-hidden) {
   display: block;
   column-count: 1;
   column-gap: 0.8rem;
 }
 
 @media (min-width: 640px) {
-  [data-route="/apps/scrapper-pro"] .grid:has(> .surface-card.overflow-hidden) { column-count: 2; }
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .grid:has(> .surface-card.overflow-hidden) { column-count: 2; }
 }
 
 @media (min-width: 1100px) {
-  [data-route="/apps/scrapper-pro"] .grid:has(> .surface-card.overflow-hidden) { column-count: 3; }
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .grid:has(> .surface-card.overflow-hidden) { column-count: 3; }
 }
 
-[data-route="/apps/scrapper-pro"] .grid:has(> .surface-card.overflow-hidden) > .surface-card.overflow-hidden {
+:is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .grid:has(> .surface-card.overflow-hidden) > .surface-card.overflow-hidden {
   display: inline-block;
   width: 100%;
   margin: 0 0 0.8rem;
@@ -24,7 +24,7 @@
   vertical-align: top;
 }
 
-[data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img) > :is(a, button):first-child {
+:is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img) > :is(a, button):first-child {
   position: relative;
   display: block;
   width: 100%;
@@ -34,7 +34,7 @@
   background: hsl(var(--muted));
 }
 
-[data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img) > :is(a, button):first-child::after {
+:is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img) > :is(a, button):first-child::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -44,7 +44,7 @@
   transition: opacity 180ms ease;
 }
 
-[data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img) > :is(a, button):first-child img {
+:is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img) > :is(a, button):first-child img {
   display: block;
   width: 100%;
   height: auto !important;
@@ -52,12 +52,12 @@
   object-fit: cover;
 }
 
-[data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img):hover > :is(a, button):first-child img { transform: scale(1.018); }
+:is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img):hover > :is(a, button):first-child img { transform: scale(1.018); }
 
 @media (hover: hover) and (pointer: fine) {
-  [data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img) { min-height: 0; }
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img) { min-height: 0; }
 
-  [data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img) > div:last-child {
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img) > div:last-child {
     position: absolute;
     inset: auto 0 0;
     z-index: 3;
@@ -70,15 +70,15 @@
     transition: transform 210ms ease;
   }
 
-  [data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img):hover > div:last-child,
-  [data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img):focus-within > div:last-child { transform: translateY(0); }
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img):hover > div:last-child,
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img):focus-within > div:last-child { transform: translateY(0); }
 
-  [data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img):hover > :is(a, button):first-child::after,
-  [data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img):focus-within > :is(a, button):first-child::after { opacity: 0.88; }
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img):hover > :is(a, button):first-child::after,
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img):focus-within > :is(a, button):first-child::after { opacity: 0.88; }
 }
 
 @media (max-width: 639px), (hover: none) {
-  [data-route="/apps/scrapper-pro"] .surface-card.overflow-hidden:has(img) > div:last-child {
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img) > div:last-child {
     position: static !important;
     transform: none !important;
     background: hsl(var(--background) / 0.78);
@@ -97,23 +97,23 @@
 [data-weather-now] .surface-card { transition: background 220ms ease, border-color 220ms ease; }
 [data-weather-now] .surface-card:has(.flex.flex-col.items-end .lucide-sun),
 [data-weather-now] .surface-card:has(.flex.min-w-0.items-center.gap-4 .lucide-sun) {
-  border-color: hsl(var(--warning) / 0.42);
-  background: linear-gradient(145deg, hsl(var(--warning) / 0.16), hsl(var(--card)) 58%);
+  border-color: hsl(var(--warning) / 0.62);
+  background: linear-gradient(145deg, hsl(var(--warning) / 0.24), hsl(var(--card)) 68%);
 }
 [data-weather-now] .surface-card:has(.flex.flex-col.items-end .lucide-cloud-rain),
 [data-weather-now] .surface-card:has(.flex.min-w-0.items-center.gap-4 .lucide-cloud-rain) {
-  border-color: hsl(var(--info) / 0.42);
-  background: linear-gradient(145deg, hsl(var(--info) / 0.16), hsl(var(--card)) 58%);
+  border-color: hsl(var(--info) / 0.58);
+  background: linear-gradient(145deg, hsl(var(--info) / 0.23), hsl(var(--card)) 68%);
 }
 [data-weather-now] .surface-card:has(.flex.flex-col.items-end .lucide-snowflake),
 [data-weather-now] .surface-card:has(.flex.min-w-0.items-center.gap-4 .lucide-snowflake) {
-  border-color: hsl(var(--info) / 0.32);
-  background: linear-gradient(145deg, hsl(var(--info) / 0.1), hsl(var(--card)) 58%);
+  border-color: hsl(var(--info) / 0.46);
+  background: linear-gradient(145deg, hsl(var(--info) / 0.16), hsl(var(--card)) 68%);
 }
 [data-weather-now] .surface-card:has(.flex.flex-col.items-end .lucide-cloud),
 [data-weather-now] .surface-card:has(.flex.min-w-0.items-center.gap-4 .lucide-cloud) {
-  border-color: hsl(var(--muted-foreground) / 0.3);
-  background: hsl(var(--muted));
+  border-color: hsl(var(--muted-foreground) / 0.5);
+  background: linear-gradient(145deg, hsl(var(--muted-foreground) / 0.13), hsl(var(--card)) 68%);
 }
 [data-weather-now] .surface-card:has(.flex.flex-col.items-end .lucide-wind),
 [data-weather-now] .surface-card:has(.flex.min-w-0.items-center.gap-4 .lucide-wind) {
@@ -121,9 +121,33 @@
   background: hsl(var(--card));
 }
 
-/* Keep the docs sidebar to the primary entry points; a selected deep page remains visible. */
-aside[aria-label="Documentation navigation"] nav a:first-child { display: none; }
-aside[aria-label="Documentation navigation"] nav a:nth-child(n + 9):not([class*="bg-accent"]) { display: none; }
+/* Sidebar weather uses the same condition language in a compact surface. */
+.sidebar-weather-tone {
+  border-color: hsl(var(--border));
+  background: hsl(var(--card));
+  transition: background 220ms ease, border-color 220ms ease, color 220ms ease;
+}
+.sidebar-weather-tone[data-weather-tone="sunny"] {
+  border-color: hsl(var(--warning) / 0.58);
+  background: linear-gradient(145deg, hsl(var(--warning) / 0.22), hsl(var(--card)) 72%);
+}
+.sidebar-weather-tone[data-weather-tone="sunny"] .lucide-sun { color: hsl(var(--warning)); }
+.sidebar-weather-tone[data-weather-tone="rainy"] {
+  border-color: hsl(var(--info) / 0.56);
+  background: linear-gradient(145deg, hsl(var(--info) / 0.22), hsl(var(--card)) 72%);
+}
+.sidebar-weather-tone[data-weather-tone="rainy"] .lucide-cloud-rain { color: hsl(var(--info)); }
+.sidebar-weather-tone[data-weather-tone="snowy"] {
+  border-color: hsl(var(--info) / 0.42);
+  background: linear-gradient(145deg, hsl(var(--info) / 0.14), hsl(var(--card)) 72%);
+}
+.sidebar-weather-tone[data-weather-tone="snowy"] .lucide-snowflake { color: hsl(var(--info)); }
+.sidebar-weather-tone[data-weather-tone="cloudy"] {
+  border-color: hsl(var(--muted-foreground) / 0.48);
+  background: linear-gradient(145deg, hsl(var(--muted-foreground) / 0.14), hsl(var(--card)) 72%);
+}
+.sidebar-weather-tone[data-weather-tone="cloudy"] .lucide-cloud { color: hsl(var(--muted-foreground)); }
+.sidebar-weather-tone[data-weather-tone="windy"] { border-color: hsl(var(--ring)); }
 
 /* Google OAuth keeps the provider's recognizable blue while retaining AppForge geometry. */
 [role="dialog"][aria-label="Sign in to AppForge"] .grid.grid-cols-2 > button:first-child {
@@ -138,9 +162,10 @@ aside[aria-label="Documentation navigation"] nav a:nth-child(n + 9):not([class*=
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-route="/apps/scrapper-pro"] .surface-card,
-  [data-route="/apps/scrapper-pro"] .surface-card *,
-  [data-weather-now] .surface-card {
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card,
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card *,
+  [data-weather-now] .surface-card,
+  .sidebar-weather-tone {
     transition-duration: 0.01ms !important;
   }
 }
