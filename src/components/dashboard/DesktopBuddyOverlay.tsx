@@ -198,7 +198,12 @@ export function DesktopBuddyOverlay() {
 
   return (
     <aside className="fixed z-50 select-none" style={{ left: position.x, top: position.y }} aria-label="Movable Desktop Buddy widget">
-      {showMessage && <Button type="button" onClick={() => setShowMessage(false)} className="mb-2 block w-48 cursor-pointer rounded-xl border border-border bg-card/95 px-4 py-2 text-left text-sm text-muted-foreground backdrop-blur-xl"><span className="font-semibold text-foreground">{buddy.name || "Konqi Buddy"}</span><span className="mt-2 line-clamp-3 block">{message}</span></Button>}
+      {showMessage && (
+        <Button type="button" onClick={() => setShowMessage(false)} className="mb-2 !flex w-48 cursor-pointer flex-col items-start rounded-xl border border-border bg-card/95 px-4 py-2 text-left text-sm text-muted-foreground backdrop-blur-xl">
+          <span className="block w-full font-semibold text-foreground">{buddy.name || "Konqi Buddy"}</span>
+          <span className="mt-2 block w-full line-clamp-3">{message}</span>
+        </Button>
+      )}
       <div onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag} className="relative flex h-36 w-40 touch-none cursor-grab items-end justify-center active:cursor-grabbing" title="Drag Desktop Buddy">
         <img src={buddy.imageDataUrl || FALLBACK_IMAGE} alt="" draggable={false} className={`pointer-events-none max-h-36 max-w-40 object-contain transition-transform ${speaking ? "scale-105" : ""} ${jumping ? "-translate-y-10 rotate-3" : ""}`} />
         <span className="pointer-events-none absolute right-0 top-0 rounded-xl border border-border bg-card/90 p-2 text-muted-foreground"><Move className="h-4 w-4" /></span>
