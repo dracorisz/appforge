@@ -3,27 +3,28 @@ import { PublicFooter } from "./PublicFooter";
 import React from "react";
 import { ShieldCheck } from "lucide-react";
 
-const LAST_UPDATED = "September 11, 2026";
+const LAST_UPDATED = "September 15, 2026";
 
 function LegalShell({ title, intro, children }: { title: string; intro: string; children: React.ReactNode }) {
   return (
-    <div className="dark flex min-h-screen flex-col bg-background text-foreground">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <PublicHeader />
-      <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-4 lg:px-8">
-        <main className="py-8">
-          <div className="mb-8">
-            <h1 className="text-lg font-semibold tracking-tight sm:text-lg">{title}</h1>
-            <p className="mt-4 max-w-2xl text-sm text-muted-foreground sm:text-sm">{intro}</p>
-            <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground sm:text-sm">
-              <p>Last updated: {LAST_UPDATED}</p>
-              <p className="inline-flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4" /> Public beta policy
-              </p>
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 lg:px-8">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)]">
+          <aside className="surface-card self-start rounded-xl border p-8 lg:sticky lg:top-8">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-secondary">
+              <ShieldCheck className="h-5 w-5" />
             </div>
-          </div>
-          <div className="surface-card space-y-8 rounded-xl border p-4 text-sm sm:p-8 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_p]:text-muted-foreground [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:text-muted-foreground">{children}</div>
-        </main>
-      </div>
+            <h1 className="mt-8 text-5xl font-semibold tracking-[-0.05em]">{title}</h1>
+            <p className="mt-4 text-sm text-muted-foreground">{intro}</p>
+            <div className="mt-8 border-t pt-4 text-sm text-muted-foreground">
+              <p>Last updated: {LAST_UPDATED}</p>
+              <p className="mt-2 inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Public beta policy</p>
+            </div>
+          </aside>
+          <article className="surface-card rounded-xl border p-4 text-sm sm:p-8 [&_section]:border-b [&_section]:border-border [&_section]:py-8 [&_section:first-child]:pt-0 [&_section:last-child]:border-b-0 [&_section:last-child]:pb-0 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_p]:mt-2 [&_p]:text-muted-foreground [&_strong]:text-foreground [&_ul]:mt-2 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:text-muted-foreground">{children}</article>
+        </div>
+      </main>
       <PublicFooter />
     </div>
   );
@@ -49,27 +50,15 @@ export function PrivacyPolicyPage() {
           <strong>AppForge's use and transfer of information received from Google APIs to any other app will adhere to Google API Services User Data Policy, including the Limited Use requirements.</strong>
         </p>
         <ul>
-          <li>
-            <strong>No advertising:</strong> AppForge does not use or transfer Google user data for advertising, retargeting, personalized advertising, or interest-based advertising.
-          </li>
-          <li>
-            <strong>Restricted human reading:</strong> AppForge does not permit humans to read Google user data except with the user's affirmative agreement for specific messages or files, when necessary for security investigations, to comply with applicable law, or when data has been aggregated and
-            anonymized for internal operations.
-          </li>
-          <li>
-            <strong>Feature scope limitation:</strong> Google user data is used only to provide or improve user-facing features that are prominent in AppForge's interface.
-          </li>
-          <li>
-            <strong>No generalized AI/ML training:</strong> Google user data is not used to develop, improve, or train generalized or non-personalized AI or machine-learning models.
-          </li>
+          <li><strong>No advertising:</strong> AppForge does not use or transfer Google user data for advertising, retargeting, personalized advertising, or interest-based advertising.</li>
+          <li><strong>Restricted human reading:</strong> AppForge does not permit humans to read Google user data except with the user's affirmative agreement for specific messages or files, when necessary for security investigations, to comply with applicable law, or when data has been aggregated and anonymized for internal operations.</li>
+          <li><strong>Feature scope limitation:</strong> Google user data is used only to provide or improve user-facing features that are prominent in AppForge's interface.</li>
+          <li><strong>No generalized AI/ML training:</strong> Google user data is not used to develop, improve, or train generalized or non-personalized AI or machine-learning models.</li>
         </ul>
       </section>
       <section>
         <h2>3. Tool and AI inputs</h2>
-        <p>
-          Some tools process data locally in your browser. Server-backed tools may send the minimum information needed to AppForge server functions. AI-powered features process only the input required for the user-requested feature. Do not submit secrets or information you do not want processed by
-          the relevant service.
-        </p>
+        <p>Some tools process data locally in your browser. Server-backed tools may send the minimum information needed to AppForge server functions. AI-powered features process only the input required for the user-requested feature. Do not submit secrets or information you do not want processed by the relevant service.</p>
       </section>
       <section>
         <h2>4. How we use information</h2>
@@ -82,31 +71,19 @@ export function PrivacyPolicyPage() {
       </section>
       <section>
         <h2>5. Service providers</h2>
-        <p>
-          AppForge relies on service providers to operate the product, including Google for identity, Supabase for authentication and database services, Vercel for hosting and server functions, and AI providers for features that are explicitly AI-powered. Those providers process data under their own
-          terms and privacy policies.
-        </p>
+        <p>AppForge relies on service providers to operate the product, including Google for identity, Supabase for authentication and database services, Vercel for hosting and server functions, and AI providers for features that are explicitly AI-powered. Those providers process data under their own terms and privacy policies.</p>
       </section>
       <section>
         <h2>6. Cookies, local storage, and technical data</h2>
-        <p>
-          AppForge uses essential authentication/session cookies and browser storage required to keep you signed in, remember preferences, cache PWA resources, preserve basic application state, and dismiss notices you have already seen. We do not currently use advertising cookies or third-party
-          behavioral advertising trackers. Hosting and infrastructure providers may process routine technical information such as IP addresses, request metadata, timestamps, error details, and device or browser information for security and service operation.
-        </p>
+        <p>AppForge uses essential authentication/session cookies and browser storage required to keep you signed in, remember preferences, cache PWA resources, preserve basic application state, and dismiss notices you have already seen. We do not currently use advertising cookies or third-party behavioral advertising trackers. Hosting and infrastructure providers may process routine technical information such as IP addresses, request metadata, timestamps, error details, and device or browser information for security and service operation.</p>
       </section>
       <section>
         <h2>7. Retention and deletion</h2>
-        <p>
-          Account-scoped data is retained while needed to provide the service or until it is deleted through available account controls or a valid deletion request. Operational logs may be retained for shorter periods according to the infrastructure provider's settings and policies. Requests about
-          access, correction, or deletion can be raised with the project maintainer through the public repository contact channels; do not post sensitive personal information in a public issue.
-        </p>
+        <p>Account-scoped data is retained while needed to provide the service or until it is deleted through available account controls or a valid deletion request. Operational logs may be retained for shorter periods according to the infrastructure provider's settings and policies. Requests about access, correction, or deletion can be raised with the project maintainer through the public repository contact channels; do not post sensitive personal information in a public issue.</p>
       </section>
       <section>
         <h2>8. Security</h2>
-        <p>
-          AppForge uses Supabase authentication and row-level security as part of its account data boundary and keeps server credentials out of the browser bundle. No system can guarantee absolute security, and the project should be treated as a public beta while security and operational controls
-          continue to mature.
-        </p>
+        <p>AppForge uses Supabase authentication and row-level security as part of its account data boundary and keeps server credentials out of the browser bundle. No system can guarantee absolute security, and the project should be treated as a public beta while security and operational controls continue to mature.</p>
       </section>
       <section>
         <h2>9. Changes</h2>
@@ -123,63 +100,17 @@ export function PrivacyPolicyPage() {
 export function TermsOfServicePage() {
   return (
     <LegalShell title="Terms of Service" intro="These terms set the baseline rules for using the AppForge public beta, including the open-source tools, authenticated workspace, and AI-powered features.">
-      <section>
-        <h2>1. Using AppForge</h2>
-        <p>By using AppForge, you agree to use the service lawfully and in a way that does not interfere with the service, other users, third-party systems, or applicable rights. The public beta may change, become unavailable, or contain defects while development continues.</p>
-      </section>
-      <section>
-        <h2>2. Accounts</h2>
-        <p>Some features require Google sign-in through Supabase Auth. You are responsible for maintaining control of your account and for activity performed through your authenticated session. Do not attempt to access another user's account or bypass access controls.</p>
-      </section>
-      <section>
-        <h2>3. Acceptable use</h2>
-        <ul>
-          <li>Do not use AppForge to violate law, privacy, intellectual-property rights, platform rules, or contractual restrictions.</li>
-          <li>Do not attack, overload, probe, scrape, or circumvent AppForge or third-party services in a manner that is unauthorized or abusive.</li>
-          <li>Do not upload or submit malicious code, credentials, regulated secrets, or content you are not authorized to process.</li>
-        </ul>
-      </section>
-      <section>
-        <h2>4. Tool outputs</h2>
-        <p>
-          Utility, scraping, market, weather, conversion, and AI outputs can be incomplete, delayed, incorrect, or dependent on third-party sources. You are responsible for reviewing outputs before relying on them. AppForge is not a substitute for professional legal, financial, medical, security, or
-          other regulated advice.
-        </p>
-      </section>
-      <section>
-        <h2>5. AI features</h2>
-        <p>AI-generated content is generated probabilistically and may be inaccurate or unexpected. AI inputs may be processed by configured AI providers through AppForge's server-side integration when you choose to use an AI-powered feature.</p>
-      </section>
-      <section>
-        <h2>6. Tokens, points, rewards, and experimental systems</h2>
-        <p>
-          Any points, gems, runes, token references, achievements, or reward mechanics shown during development are experimental product features unless a separate published program expressly states otherwise. They are not a promise of monetary value, liquidity, investment return, ownership
-          interest, or future distribution.
-        </p>
-      </section>
-      <section>
-        <h2>7. Cookies and local storage</h2>
-        <p>AppForge uses essential browser storage and authentication/session cookies needed for sign-in, preferences, cached PWA operation, and normal service functionality. Advertising cookies are not currently used by AppForge.</p>
-      </section>
-      <section>
-        <h2>8. Open-source code and third-party services</h2>
-        <p>Source code published in the AppForge repository is licensed under the repository's stated open-source license. Hosted service functionality may also depend on third-party platforms that have their own terms, policies, quotas, and availability.</p>
-      </section>
-      <section>
-        <h2>9. Availability and changes</h2>
-        <p>Features may be added, changed, restricted, or removed. AppForge may suspend access when necessary for security, abuse prevention, maintenance, legal compliance, or service integrity.</p>
-      </section>
-      <section>
-        <h2>10. Disclaimer and limitation</h2>
-        <p>
-          To the extent permitted by applicable law, AppForge is provided on an "as is" and "as available" basis without guarantees that every feature will be uninterrupted, error-free, or suitable for a particular purpose. Nothing in these terms excludes rights or liabilities that cannot legally be
-          excluded.
-        </p>
-      </section>
-      <section>
-        <h2>11. Changes and contact</h2>
-        <p>These terms may be updated as the public beta evolves. The date at the top identifies the latest version. Questions can be directed through the contact methods listed in the AppForge GitHub repository.</p>
-      </section>
+      <section><h2>1. Using AppForge</h2><p>By using AppForge, you agree to use the service lawfully and in a way that does not interfere with the service, other users, third-party systems, or applicable rights. The public beta may change, become unavailable, or contain defects while development continues.</p></section>
+      <section><h2>2. Accounts</h2><p>Some features require Google sign-in through Supabase Auth. You are responsible for maintaining control of your account and for activity performed through your authenticated session. Do not attempt to access another user's account or bypass access controls.</p></section>
+      <section><h2>3. Acceptable use</h2><ul><li>Do not use AppForge to violate law, privacy, intellectual-property rights, platform rules, or contractual restrictions.</li><li>Do not attack, overload, probe, scrape, or circumvent AppForge or third-party services in a manner that is unauthorized or abusive.</li><li>Do not upload or submit malicious code, credentials, regulated secrets, or content you are not authorized to process.</li></ul></section>
+      <section><h2>4. Tool outputs</h2><p>Utility, scraping, market, weather, conversion, and AI outputs can be incomplete, delayed, incorrect, or dependent on third-party sources. You are responsible for reviewing outputs before relying on them. AppForge is not a substitute for professional legal, financial, medical, security, or other regulated advice.</p></section>
+      <section><h2>5. AI features</h2><p>AI-generated content is generated probabilistically and may be inaccurate or unexpected. AI inputs may be processed by configured AI providers through AppForge's server-side integration when you choose to use an AI-powered feature.</p></section>
+      <section><h2>6. Tokens, points, rewards, and experimental systems</h2><p>Any points, gems, runes, token references, achievements, or reward mechanics shown during development are experimental product features unless a separate published program expressly states otherwise. They are not a promise of monetary value, liquidity, investment return, ownership interest, or future distribution.</p></section>
+      <section><h2>7. Cookies and local storage</h2><p>AppForge uses essential browser storage and authentication/session cookies needed for sign-in, preferences, cached PWA operation, and normal service functionality. Advertising cookies are not currently used by AppForge.</p></section>
+      <section><h2>8. Open-source code and third-party services</h2><p>Source code published in the AppForge repository is licensed under the repository's stated open-source license. Hosted service functionality may also depend on third-party platforms that have their own terms, policies, quotas, and availability.</p></section>
+      <section><h2>9. Availability and changes</h2><p>Features may be added, changed, restricted, or removed. AppForge may suspend access when necessary for security, abuse prevention, maintenance, legal compliance, or service integrity.</p></section>
+      <section><h2>10. Disclaimer and limitation</h2><p>To the extent permitted by applicable law, AppForge is provided on an "as is" and "as available" basis without guarantees that every feature will be uninterrupted, error-free, or suitable for a particular purpose. Nothing in these terms excludes rights or liabilities that cannot legally be excluded.</p></section>
+      <section><h2>11. Changes and contact</h2><p>These terms may be updated as the public beta evolves. The date at the top identifies the latest version. Questions can be directed through the contact methods listed in the AppForge GitHub repository.</p></section>
     </LegalShell>
   );
 }
