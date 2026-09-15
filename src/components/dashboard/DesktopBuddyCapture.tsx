@@ -4,6 +4,7 @@ import { uploadVaultMedia } from "@/lib/mediaVault";
 import { Button, FileButton } from "@/components/ui";
 
 const MAX_CAPTURE_EDGE = 2560;
+const SCREENSHOT_FOLDER = "screenshots";
 
 type CaptureState = {
   blob: Blob;
@@ -96,7 +97,7 @@ export function DesktopBuddyCapture() {
       const blob = await canvasBlob(canvas);
       const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
       replaceCapture({ blob, width: fitted.width, height: fitted.height, source: "screen", name: `appforge-screen-${stamp}.png` });
-      setMessage(`Captured ${fitted.width} × ${fitted.height}. You can download it or save it privately to Media Vault / Screenshots.`);
+      setMessage(`Captured ${fitted.width} × ${fitted.height}. You can download it or save it privately to Media Vault / screenshots.`);
     } catch (error) {
       const name = error instanceof DOMException ? error.name : "";
       if (name === "NotAllowedError" || name === "AbortError") {
@@ -140,7 +141,7 @@ export function DesktopBuddyCapture() {
       const file = new File([capture.blob], capture.name, { type: capture.blob.type || "image/png" });
       await uploadVaultMedia(file, {
         kind: "image",
-        folder: "Screenshots",
+        folder: SCREENSHOT_FOLDER,
         title: "Desktop Buddy screenshot",
         description: capture.source === "screen" ? "Captured from the browser screen-share API." : "Imported screenshot fallback.",
         metadata: {
@@ -150,7 +151,7 @@ export function DesktopBuddyCapture() {
           height: capture.height,
         },
       });
-      setMessage("Saved privately to Media Vault / Screenshots.");
+      setMessage("Saved privately to Media Vault / screenshots.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not save the screenshot to Media Vault.");
     } finally {
