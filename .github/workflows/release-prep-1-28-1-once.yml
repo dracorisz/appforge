@@ -27,25 +27,28 @@ jobs:
         run: git grep -nE '1\.(27\.0|28\.0)' -- ':!CHANGELOG.md' || true
       - name: Set canonical version
         run: npm run version:set -- 1.28.1
-      - name: Refresh build fallback and changelog
+      - name: Refresh version references and changelog
         shell: bash
         run: |
           node <<'NODE'
           const fs = require('node:fs')
 
-          const vitePath = 'vite.config.ts'
-          const vite = fs.readFileSync(vitePath, 'utf8')
-          if (!vite.includes("const appVersion = runtimeEnv.npm_package_version || '1.27.0'")) {
-            throw new Error('Expected Vite fallback version was not found.')
+          const replaceRequired = (path, from, to) => {
+            const source = fs.readFileSync(path, 'utf8')
+            if (!source.includes(from)) throw new Error(`Expected version reference was not found in ${path}`)
+            fs.writeFileSync(path, source.replaceAll(from, to))
           }
-          fs.writeFileSync(vitePath, vite.replace("const appVersion = runtimeEnv.npm_package_version || '1.27.0'", "const appVersion = runtimeEnv.npm_package_version || '1.28.1'"))
+
+          replaceRequired('vite.config.ts', "const appVersion = runtimeEnv.npm_package_version || '1.27.0'", "const appVersion = runtimeEnv.npm_package_version || '1.28.1'")
+          replaceRequired('README.md', 'npm run version:set -- 1.27.0', 'npm run version:set -- 1.28.1')
+          replaceRequired('scripts/set-version.mjs', "Usage: npm run version:set -- 1.27.0", "Usage: npm run version:set -- 1.28.1")
 
           const changelogPath = 'CHANGELOG.md'
           const changelog = fs.readFileSync(changelogPath, 'utf8')
           const marker = '# AppForge Changelog\n\nThis file tracks user-visible AppForge product changes. The canonical source is the `main` branch.\n\n'
           if (!changelog.startsWith(marker)) throw new Error('Unexpected CHANGELOG header.')
           if (!changelog.includes('## 1.28.1 — September 15, 2026')) {
-            const entry = `## 1.28.1 — September 15, 2026\n\n### Fixed\n- App editing and creation dialogs now render through a body portal so the modal backdrop consistently covers the full dynamic viewport without being clipped by workspace layout ancestors.\n- Media Vault managed-folder protections and release tests now match the reviewed behavior, including protected Getter Pro references that cannot be moved manually.\n\n### Improved\n- Removed redundant page-level Button visual overrides across app, admin and resource surfaces so shared Button variants and sizes remain the source of truth for canonical padding, typography, borders and hover treatment.\n- Preserved layout-, state- and media-specific Button classes where they carry real behavior rather than applying blanket normalization.\n- The UI style contract now treats ring-0 as the canonical no-visible-ring interaction rule, matching the reviewed interface.\n- Compact KDE attribution keeps its intentional text-xs exception explicit while the broader UI contract remains unchanged.\n\n### Maintenance\n- Synchronized design-system tests with the reviewed ring-zero and managed-folder contracts.\n- Global application version advanced to 1.28.1, including package metadata, lockfile metadata and the standalone Vite fallback.\n\n`
+            const entry = `## 1.28.1 — September 15, 2026\n\n### Fixed\n- App editing and creation dialogs now render through a body portal so the modal backdrop consistently covers the full dynamic viewport without being clipped by workspace layout ancestors.\n- Media Vault managed-folder protections and release tests now match the reviewed behavior, including protected Getter Pro references that cannot be moved manually.\n\n### Improved\n- Removed redundant page-level Button visual overrides across app, admin and resource surfaces so shared Button variants and sizes remain the source of truth for canonical padding, typography, borders and hover treatment.\n- Preserved layout-, state- and media-specific Button classes where they carry real behavior rather than applying blanket normalization.\n- The UI style contract now treats ring-0 as the canonical no-visible-ring interaction rule, matching the reviewed interface.\n- Compact KDE attribution keeps its intentional text-xs exception explicit while the broader UI contract remains unchanged.\n\n### Maintenance\n- Synchronized design-system tests with the reviewed ring-zero and managed-folder contracts.\n- Global application version advanced to 1.28.1 across package metadata, lockfile metadata, build fallback and versioning examples.\n\n`
             fs.writeFileSync(changelogPath, marker + entry + changelog.slice(marker.length))
           }
           NODE
@@ -53,12 +56,12 @@ jobs:
         run: |
           node scripts/changelog.mjs validate
           npm run audit:apps
-          echo 'Remaining old current-version references outside historical changelog:'
-          git grep -nE '1\.(27\.0|28\.0)' -- ':!CHANGELOG.md' || true
+          echo 'Remaining old current-version references outside historical changelog and this temporary workflow:'
+          git grep -nE '1\.(27\.0|28\.0)' -- ':!CHANGELOG.md' ':!.github/workflows/release-prep-1-28-1-once.yml' || true
       - name: Commit release metadata
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json vite.config.ts CHANGELOG.md
+          git add package.json package-lock.json vite.config.ts README.md scripts/set-version.mjs CHANGELOG.md
           git commit -m "chore: release AppForge 1.28.1"
           git push origin HEAD:main
