@@ -17,7 +17,7 @@ export function SearchInput({ value, onChange, onClear, placeholder = "Search…
       <span className="pointer-events-none absolute inset-y-0 left-4 z-10 flex items-center" aria-hidden="true">
         <Search className="h-4 w-4 text-muted-foreground" />
       </span>
-      <input {...props} type="search" value={value} onChange={onChange} placeholder={placeholder} className={`${controlClass} h-9 pl-10 pr-10 [&::-webkit-search-cancel-button]:hidden`} />
+      <input {...props} type="search" value={value} onChange={onChange} placeholder={placeholder} className={`${controlClass} h-9 [&::-webkit-search-cancel-button]:hidden`} />
       {value && onClear && (
         <span className="absolute inset-y-0 right-2 z-10 flex items-center">
           <IconButton label="Clear search" icon={<X />} onClick={onClear} />
