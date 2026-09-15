@@ -9,7 +9,6 @@ import { FRONTEND_CONTENT_UPDATED_EVENT, loadPublishedFrontendContent } from "@/
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { useAuth } from "./AuthProvider";
 import { consumeReturnPath, normalizeReturnPath } from "./returnPath";
-import { SiHuggingface as HuggingFaceLogo } from "react-icons/si";
 
 const DEFAULT_VIDEO_URL = "https://www.youtube.com/watch?v=5dAQXJXbvhI";
 const DEFAULT_VIDEO_EMBED_URL = "https://www.youtube-nocookie.com/embed/5dAQXJXbvhI?rel=0&modestbranding=1";
@@ -148,103 +147,36 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
         <PublicHeader className="shrink-0" />
 
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-8 pt-4 sm:px-4 sm:pt-4 lg:px-8">
-          <div className="grid items-center gap-8 lg:min-h-[calc(100dvh-9rem)] lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] lg:gap-8 xl:gap-8">
-            <section className="max-w-4xl py-4 lg:py-8">
-              <h1 className="max-w-4xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-5xl lg:text-5xl xl:text-5xl">
+          <section className="grid min-h-[calc(100dvh-9rem)] items-center gap-8 py-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]" aria-labelledby="landing-title">
+            <div className="max-w-4xl">
+              <h1 id="landing-title" className="max-w-4xl text-balance text-5xl font-semibold tracking-[-0.05em] sm:text-5xl lg:text-5xl xl:text-5xl">
                 Build useful things.<span className="block text-muted-foreground">Own the workflow.</span>
               </h1>
               <p className="mt-4 max-w-2xl text-pretty text-sm text-muted-foreground sm:text-lg">Practical tools in one consistent workspace.</p>
               <div className="mt-8 flex flex-wrap gap-4" aria-busy={Boolean(busyProvider) || loading}>
                 {user ? (
-                  <Button className="h-11 px-4" onClick={() => navigate("/")} disabled={loading}>
-                    Open workspace <ArrowRight className="h-4 w-4" />
-                  </Button>
+                  <Button className="h-11 px-4" onClick={() => navigate("/")} disabled={loading}>Open workspace <ArrowRight className="h-4 w-4" /></Button>
                 ) : (
-                  <Button className="h-11 px-4" onClick={() => setAuthOpen(true)} disabled={loading}>
-                    Sign in <ArrowRight className="h-4 w-4" />
-                  </Button>
+                  <Button className="h-11 px-4" onClick={() => setAuthOpen(true)} disabled={loading}>Sign in <ArrowRight className="h-4 w-4" /></Button>
                 )}
               </div>
-              {error && (
-                <div role="alert" aria-live="polite" className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-2 text-sm text-destructive">
-                  {error}
-                </div>
-              )}
-              {showAppCount && (
-                <p className="mt-8 border-t border-border/60 pt-4 text-sm text-muted-foreground">
-                  <strong className="font-semibold text-foreground">{appCount}</strong> active apps · open source
-                </p>
-              )}
-            </section>
+              {error && <div role="alert" aria-live="polite" className="mt-4 max-w-xl rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-2 text-sm text-destructive">{error}</div>}
+              {showAppCount && <p className="mt-8 border-t border-border/60 pt-4 text-sm text-muted-foreground"><strong className="font-semibold text-foreground">{appCount}</strong> active apps · open source</p>}
+            </div>
 
-            <section className="relative mx-auto w-full max-w-xl lg:max-w-none" aria-label="Public tools and workspace access">
+            <div className="relative">
               <div aria-hidden="true" className="absolute inset-8 -z-10 rounded-xl border border-border/50 bg-accent/25 blur-2xl" />
-              <div className="rounded-xl border border-border bg-background/80 p-4 backdrop-blur-xl sm:p-4">
-                <div className="flex items-center justify-between gap-4 border-b border-border/60 pb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-background">
-                      <img src={APPFORGE_MARK} alt="" className="h-9 w-9 rounded-xl" decoding="async" />
-                    </div>
-                    <div className="text-sm font-semibold">AppForge</div>
+              <div className="overflow-hidden rounded-xl border border-border bg-background/80 backdrop-blur-xl">
+                <div className="flex items-center justify-between gap-4 border-b border-border/60 p-4">
+                  <div className="min-w-0">
+                    <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{/* design-xs-ok: compact eyebrow label */}<PlayCircle className="h-4 w-4" /> Walkthrough</div>
+                    <h2 className="mt-2 text-lg font-semibold tracking-tight">{videoTitle}</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">{videoSummary}</p>
                   </div>
-                  <ShieldCheck className="h-5 w-5 shrink-0 text-muted-foreground" />
+                  <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">Open video</a>
                 </div>
-                <div className="grid gap-2 py-4">
-                  {publicTools.map(({ label, description, path, icon: Icon }) => (
-                    <Link key={path} to={path} className="group flex items-center gap-4 rounded-xl border border-border px-4 py-4 transition-colors hover:border-border hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-background">
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-medium">{label}</span>
-                        <span className="block text-sm text-muted-foreground">{description}</span>
-                      </span>
-                      <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-                    </Link>
-                  ))}
-                </div>
-                <Link to="/explore" className="group flex items-center justify-between rounded-xl border border-border bg-background/65 px-4 py-4 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                  <span>Browse all public apps</span>
-                  <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-                </Link>
-                <Link to="/huggingface" className="group flex items-center justify-between rounded-xl border border-border bg-background/65 px-4 py-4 text-sm font-medium transition-colors hover:bg-accent/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                  <span className="flex items-center gap-2">
-                    <HuggingFaceLogo className="h-4 w-4 text-[#FF9D00]" /> Hugging Face integration
-                  </span>
-                  <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              </div>
-            </section>
-          </div>
-
-          <section className="py-8 sm:py-8" aria-labelledby="walkthrough-title">
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
-              <div className="lg:pr-4">
-                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                  {" "}
-                  {/* design-xs-ok: compact eyebrow label */}
-                  <PlayCircle className="h-4 w-4" /> Walkthrough
-                </div>
-                <h2 id="walkthrough-title" className="mt-2 text-lg font-semibold tracking-tight sm:text-lg">
-                  {videoTitle}
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">{videoSummary}</p>
-                <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                  Open video <ArrowRight className="h-4 w-4" />
-                </a>
-              </div>
-              <div className="overflow-hidden rounded-xl border border-border bg-overlay">
                 {videoEmbedUrl ? (
-                  <iframe
-                    key={videoEmbedUrl}
-                    src={videoEmbedUrl}
-                    title="AppForge product walkthrough"
-                    className="aspect-video w-full border-0"
-                    loading="lazy"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                    referrerPolicy="strict-origin-when-cross-origin"
-                  />
+                  <iframe key={videoEmbedUrl} src={videoEmbedUrl} title="AppForge product walkthrough" className="aspect-video w-full border-0" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
                 ) : (
                   <video key={videoUrl} src={videoUrl} title="AppForge product walkthrough" className="aspect-video w-full bg-overlay object-contain" controls preload="metadata" playsInline />
                 )}
@@ -252,91 +184,55 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
             </div>
           </section>
 
+          <section className="grid gap-4 py-8 md:grid-cols-3" aria-label="Public tools and workspace access">
+            {publicTools.map(({ label, description, path, icon: Icon }) => (
+              <Link key={path} to={path} className="group flex min-h-32 flex-col justify-between gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                <span className="flex items-center justify-between gap-4"><span className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-secondary"><Icon className="h-4 w-4" /></span><ArrowRight className="h-4 w-4 text-muted-foreground" /></span>
+                <span><span className="block text-sm font-medium">{label}</span><span className="mt-1 block text-sm text-muted-foreground">{description}</span></span>
+              </Link>
+            ))}
+            <Link to="/explore" className="group flex min-h-32 flex-col justify-between gap-4 rounded-xl border border-border bg-card p-4 text-sm font-medium transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+              <span className="flex items-center justify-between gap-4"><span className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-secondary"><img src={APPFORGE_MARK} alt="" className="h-6 w-6" decoding="async" /></span><ShieldCheck className="h-5 w-5 text-muted-foreground" /></span>
+              <span className="flex items-center justify-between gap-4"><span>Browse all public apps</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></span>
+            </Link>
+          </section>
+
           <section className="pb-8 pt-8 sm:pb-8 sm:pt-8" aria-labelledby="about-appforge-title">
-            <div className="md:col-span-1 m-auto text-left">
-              <h2 id="about-appforge-title" className="text-lg font-semibold tracking-tight">
-                Open source. Private by design.
-              </h2>
+            <div className="m-auto text-left">
+              <h2 id="about-appforge-title" className="text-lg font-semibold tracking-tight">Open source. Private by design.</h2>
               <p className="mt-1 text-sm text-muted-foreground">AppForge combines public tools with an authenticated workspace, keeping local work in-browser where practical and using protected persistence only where it adds value.</p>
             </div>
-            <div className="grid gap-4 md:grid-cols-2 mt-4">
-              <div className="rounded-xl border border-inverse/10 bg-inverse/5 p-4">
-                <div className="text-sm font-semibold">Consistent tools</div>
-                <p className="mt-1 text-sm text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p>
-              </div>
-              <div className="rounded-xl border border-inverse/10 bg-inverse/5 p-4">
-                <div className="text-sm font-semibold">Transparent project</div>
-                <p className="mt-1 text-sm text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p>
-              </div>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <div className="rounded-xl border border-inverse/10 bg-inverse/5 p-4"><div className="text-sm font-semibold">Consistent tools</div><p className="mt-1 text-sm text-muted-foreground">Shared components and interaction patterns keep the growing app collection familiar and easier to maintain.</p></div>
+              <div className="rounded-xl border border-inverse/10 bg-inverse/5 p-4"><div className="text-sm font-semibold">Transparent project</div><p className="mt-1 text-sm text-muted-foreground">MIT-licensed source, public development, explicit data boundaries, and no advertising analytics built into the product.</p></div>
             </div>
           </section>
         </main>
 
         {authOpen && !user && (
-          <div
-            className="fixed inset-0 z-[100] flex min-h-[100dvh] items-center justify-center bg-overlay/75 p-4 backdrop-blur-sm"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Sign in to AppForge"
-            onMouseDown={(event) => {
-              if (event.target === event.currentTarget) setAuthOpen(false);
-            }}
-          >
+          <div className="fixed inset-0 z-[100] flex min-h-[100dvh] items-center justify-center bg-overlay/75 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Sign in to AppForge" onMouseDown={(event) => { if (event.target === event.currentTarget) setAuthOpen(false); }}>
             <div className="w-full max-w-md rounded-xl border border-border bg-background p-4 shadow-xl">
               <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-semibold">Sign in to AppForge</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">Use email or a connected provider.</p>
-                </div>
-                <Button type="button" onClick={() => setAuthOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close sign in">
-                  <span aria-hidden="true">×</span>
-                </Button>
+                <div><h2 className="text-lg font-semibold">Sign in to AppForge</h2><p className="mt-1 text-sm text-muted-foreground">Use email or a connected provider.</p></div>
+                <Button type="button" onClick={() => setAuthOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close sign in"><span aria-hidden="true">×</span></Button>
               </div>
-              <div className="mt-4 grid gap-2 grid-cols-2">
-                <Button variant="primary" className="border bg-black text-white border-white/30" onClick={() => void login("google")} disabled={Boolean(busyProvider) || loading}>
-                  <Google className="h-4 w-4" /> Continue with Google
-                </Button>
-                <Button variant="secondary" onClick={() => void login("github")} disabled={Boolean(busyProvider) || loading}>
-                  <Github className="h-4 w-4" /> Continue with GitHub
-                </Button>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <Button variant="primary" className="border bg-black text-white border-white/30" onClick={() => void login("google")} disabled={Boolean(busyProvider) || loading}><Google className="h-4 w-4" /> Continue with Google</Button>
+                <Button variant="secondary" onClick={() => void login("github")} disabled={Boolean(busyProvider) || loading}><Github className="h-4 w-4" /> Continue with GitHub</Button>
               </div>
-              <div className="my-4 flex items-center gap-4 text-sm text-muted-foreground">
-                <span className="h-px flex-1 bg-border" />
-                or email
-                <span className="h-px flex-1 bg-border" />
-              </div>
-              <form
-                className="grid gap-2 grid-cols-1"
-                onSubmit={async (event) => {
-                  event.preventDefault();
-                  setError("");
-                  try {
-                    await signInWithEmail(email, password);
-                    navigate(consumeReturnPath(returnTo), { replace: true });
-                  } catch (emailError) {
-                    setError(emailError instanceof Error ? emailError.message : "Email sign-in failed.");
-                  }
-                }}
-              >
+              <div className="my-4 flex items-center gap-4 text-sm text-muted-foreground"><span className="h-px flex-1 bg-border" />or email<span className="h-px flex-1 bg-border" /></div>
+              <form className="grid grid-cols-1 gap-2" onSubmit={async (event) => {
+                event.preventDefault();
+                setError("");
+                try { await signInWithEmail(email, password); navigate(consumeReturnPath(returnTo), { replace: true }); }
+                catch (emailError) { setError(emailError instanceof Error ? emailError.message : "Email sign-in failed."); }
+              }}>
                 <Input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="h-9 w-full rounded-xl border border-input bg-background px-4 text-sm" />
                 <Input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" className="h-9 w-full rounded-xl border border-input bg-background px-4 text-sm" />
-                <div className="flex flex-wrap items-center justify-between gap-2 text-sm mt-2">
-                  <Link to="/auth/forgot-password" onClick={() => setAuthOpen(false)} className="font-medium text-foreground hover:underline">
-                    Forgot password?
-                  </Link>
-                  <Link to="/auth/confirm" onClick={() => setAuthOpen(false)} className="text-muted-foreground hover:text-foreground hover:underline">
-                    Resend confirmation
-                  </Link>
-                </div>
-                <Button type="submit" className="w-full" disabled={!email.trim() || !password}>
-                  Sign in with email
-                </Button>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm"><Link to="/auth/forgot-password" onClick={() => setAuthOpen(false)} className="font-medium text-foreground hover:underline">Forgot password?</Link><Link to="/auth/confirm" onClick={() => setAuthOpen(false)} className="text-muted-foreground hover:text-foreground hover:underline">Resend confirmation</Link></div>
+                <Button type="submit" className="w-full" disabled={!email.trim() || !password}>Sign in with email</Button>
               </form>
-              {error && (
-                <div role="alert" className="mt-4 rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-2 text-sm text-destructive">
-                  {error}
-                </div>
-              )}
+              {error && <div role="alert" className="mt-4 rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-2 text-sm text-destructive">{error}</div>}
             </div>
           </div>
         )}
