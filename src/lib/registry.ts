@@ -127,7 +127,7 @@ export function addApp(next: AppDefinition): void {
   APP_MAP.set(id, normalized)
 }
 
-export type AppOverride = { app_id: string; name?: string | null; description?: string | null; category?: string | null; status?: AppStatus | null; cover_image?: string | null; tags?: unknown; visible?: boolean | null }
+export type AppOverride = { app_id: string; name?: string | null; description?: string | null; category?: string | null; status?: AppStatus | null; icon?: string | null; cover_image?: string | null; tags?: unknown; visible?: boolean | null }
 export function applyAppOverrides(overrides: AppOverride[]): void {
   const normalizedOverrides = overrides.map((item) => ({ ...item, app_id: canonicalAppId(item.app_id) }))
   APPS.splice(0, APPS.length, ...CORE_APPS.map((base) => {
@@ -140,6 +140,7 @@ export function applyAppOverrides(overrides: AppOverride[]): void {
       description: override.description?.trim() || base.description,
       category: overrideCategory === 'data' ? 'converters' : overrideCategory || base.category,
       status: override.status || base.status,
+      icon: override.icon?.trim() || base.icon,
       coverImage: override.cover_image == null ? undefined : override.cover_image.trim() || undefined,
       tags: Array.isArray(override.tags) ? override.tags.filter((tag): tag is string => typeof tag === 'string').slice(0, 20) : base.tags,
       visible: override.visible !== false,
