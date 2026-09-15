@@ -54,6 +54,18 @@
 
 :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img):hover > :is(a, button):first-child img { transform: scale(1.018); }
 
+/* Getter Pro's main search action follows the shared neutral button hierarchy. */
+:is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) button:has(> .lucide-search) {
+  border-color: hsl(var(--border));
+  background: hsl(var(--secondary));
+  color: hsl(var(--foreground));
+}
+
+:is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) button:has(> .lucide-search):hover:not(:disabled) {
+  border-color: hsl(var(--ring));
+  background: hsl(var(--accent));
+}
+
 @media (hover: hover) and (pointer: fine) {
   :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img) { min-height: 0; }
 
