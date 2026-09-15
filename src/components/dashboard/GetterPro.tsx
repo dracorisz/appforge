@@ -348,7 +348,7 @@ export function PF_ScrapperProNext() {
             const saving = savingVault.has(result.url);
             const downloadable = Boolean(result.mediaUrl || result.thumbnail);
             return (
-              <article key={result.id} className={`surface-card flex h-full flex-col overflow-hidden rounded-xl border ${selected ? "ring-1 ring-primary/40" : ""}`}>
+              <article key={result.id} className={`surface-card flex h-full flex-col overflow-hidden rounded-xl border ${selected ? "ring-0 ring-primary/40" : ""}`}>
                 <Button type="button" onClick={() => toggleSelected(result.id)} className="relative block aspect-video w-full shrink-0 overflow-hidden bg-muted/40 text-left" aria-pressed={selected}>
                   {result.thumbnail ? (
                     <img src={result.thumbnail} alt="" loading="lazy" className="h-full w-full object-cover" />

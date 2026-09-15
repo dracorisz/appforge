@@ -238,7 +238,7 @@ export function PublicDashboard({ state, onOpenApp, onToggleFavorite }: { state:
               value={query}
               onChange={(event) => updateSearch(event.target.value)}
               placeholder="Search apps…"
-              className="h-11 w-full rounded-xl border border-input bg-background/55 pl-8 pr-8 text-sm outline-none focus:ring-1 focus:ring-ring/25 [&::-webkit-search-cancel-button]:hidden"
+              className="h-11 w-full rounded-xl border border-input bg-background/55 pl-8 pr-8 text-sm outline-none focus:ring-0 focus:ring-ring/25 [&::-webkit-search-cancel-button]:hidden"
             />
             {query && (
               <Button type="button" onClick={() => updateSearch("")} aria-label="Clear search" className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground">

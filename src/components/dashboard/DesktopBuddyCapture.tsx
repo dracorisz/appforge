@@ -203,10 +203,10 @@ export function DesktopBuddyCapture() {
               · {capture.source === "screen" ? "browser capture" : "imported fallback"}
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button type="button" onClick={() => downloadCapture(capture)} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
+              <Button type="button" onClick={() => downloadCapture(capture)}>
                 <Download className="h-4 w-4" /> Download PNG
               </Button>
-              <Button type="button" disabled={Boolean(busy)} onClick={() => void saveToVault()} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent disabled:opacity-50">
+              <Button type="button" disabled={Boolean(busy)} onClick={() => void saveToVault()}>
                 {busy === "save" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save to Media Vault
               </Button>
               <span className="inline-flex items-center gap-2 rounded-xl border border-success/25 bg-success/5 px-4 text-sm text-success dark:text-success">

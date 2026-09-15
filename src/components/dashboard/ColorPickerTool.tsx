@@ -260,7 +260,7 @@ export function ColorPickerTool() {
             <div className="mb-2 text-sm font-medium text-muted-foreground">Shade ladder · 3 darker / 3 lighter</div>
             <div className="grid grid-cols-7 gap-2">
               {shadeSteps.map((color, index) => (
-                <Button key={`${color}-${index}`} type="button" onClick={() => setHex(color)} title={color} className={`aspect-square rounded-xl border ${index === 3 ? "ring-1 ring-ring/40" : "border-border"}`} style={{ backgroundColor: color }} />
+                <Button key={`${color}-${index}`} type="button" onClick={() => setHex(color)} title={color} className={`aspect-square rounded-xl border ${index === 3 ? "ring-0 ring-ring/40" : "border-border"}`} style={{ backgroundColor: color }} />
               ))}
             </div>
           </div>

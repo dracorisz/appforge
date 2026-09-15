@@ -343,7 +343,12 @@ export function DesktopBuddy() {
           {KDE_STARTERS.map((starter) => {
             const active = config.assetSourceUrl === starter.sourceUrl;
             return (
-              <Button key={starter.id} type="button" onClick={() => chooseStarter(starter)} className={`flex h-full min-h-24 cursor-pointer flex-col items-stretch justify-start overflow-hidden rounded-xl border text-left transition-colors hover:border-foreground/25 ${active ? "ring-1 ring-primary/35" : ""}`}>
+              <Button
+                key={starter.id}
+                type="button"
+                onClick={() => chooseStarter(starter)}
+                className={`flex h-full min-h-24 cursor-pointer flex-col items-stretch justify-start overflow-hidden rounded-xl border text-left transition-colors hover:border-foreground/25 ${active ? "ring-0 ring-primary/35" : ""}`}
+              >
                 <div className="flex h-48 w-full items-center justify-center border-b border-border/60 bg-muted/20">
                   <img src={starter.imageUrl} alt={starter.name} className="h-full w-full scale-90 object-contain" loading="lazy" />
                 </div>

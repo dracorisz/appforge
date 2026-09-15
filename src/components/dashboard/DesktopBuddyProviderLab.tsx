@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { listVaultMedia, uploadVaultMedia, vaultItemUrl, type VaultMedia } from "@/lib/mediaVault";
 import { repairImageTransparency } from "@/lib/imageTransparency";
 import { Button, Textarea } from "@/components/ui";
+import { SiHuggingface } from "react-icons/si";
 
 const BUDDY_STORAGE_KEY = "appforge-desktop-buddy-v1";
 const HF_KEYS_STORAGE = "dragon-arena-hf-keys";
@@ -320,22 +321,22 @@ export function DesktopBuddyProviderLab() {
           <strong className="text-foreground">Locked output rule:</strong> {TRANSPARENT_PNG_REQUIREMENT} Both provider endpoints append this on the server, report that it was applied, and the browser verifies actual alpha before accepting the result.
         </div>
 
-        <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <Button type="button" onClick={() => setProvider("huggingface")} className={`rounded-xl border p-4 text-left ${provider === "huggingface" ? "ring-1 ring-primary/30" : "bg-background/45"}`}>
-            <p className="text-sm font-semibold">Hugging Face</p>
-            <p className="mt-1 text-sm text-muted-foreground">{hfStatus === null ? "Checking deployment…" : hfStatus.configured ? "Shared server token configured" : personalTokens ? "Use your personal HF token" : "Shared token not detected"}</p>
-          </Button>
-          <Button type="button" onClick={() => setProvider("vertex")} className={`rounded-xl border p-4 text-left ${provider === "vertex" ? "ring-1 ring-primary/30" : "bg-background/45"}`}>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <div onClick={() => setProvider("huggingface")} className={`cursor-pointer rounded-xl border p-4 text-left ${provider === "huggingface" ? "border border-ring/30" : "bg-background/10"}`}>
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <SiHuggingface className="h-4 w-4" /> Hugging Face
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {hfStatus === null ? "Checking deployment…" : hfStatus.configured ? "Shared server token configured" : personalTokens ? "Use your personal HF token;" : "Shared token not detected;"}{" "}
+              {personalTokens ? `${personalTokens} local token${personalTokens === 1 ? "" : "s"} available from Story Studio;` : "Optional; configure in Story Studio provider settings;"}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground"></p>
+          </div>
+          <div onClick={() => setProvider("vertex")} className={`cursor-pointer rounded-xl border p-4 text-left ${provider === "vertex" ? "border border-ring/30" : "bg-background/10"}`}>
             <p className="flex items-center gap-2 text-sm font-semibold">
               <Cloud className="h-4 w-4" /> Vertex AI
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">{vertexStatus === null ? "Checking secure bridge…" : vertexStatus.configured ? `Secure bridge configured · ${vertexStatus.model || "Gemini Image"}` : "Bridge code ready; production WIF/IAM values still required"}</p>
-          </Button>
-          <div className="rounded-xl border bg-background/45 p-4">
-            <p className="flex items-center gap-2 text-sm font-semibold">
-              <KeyRound className="h-4 w-4" /> Personal HF
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">{personalTokens ? `${personalTokens} local token${personalTokens === 1 ? "" : "s"} available from Story Studio` : "Optional; configure in Story Studio provider settings"}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{vertexStatus === null ? "Checking secure bridge…" : vertexStatus.configured ? `Secure bridge configured · ${vertexStatus.model || "Gemini Image"}` : "Bridge code ready; Production WIF/IAM values still required;"}</p>
           </div>
         </div>
 
@@ -343,10 +344,10 @@ export function DesktopBuddyProviderLab() {
           <div className="space-y-4">
             <label className="block text-sm font-medium text-muted-foreground">
               Character prompt
-              <Textarea value={prompt} maxLength={900} onChange={(event) => setPrompt(event.target.value)} className="mt-2 min-h-24 w-full rounded-xl border bg-background p-4 text-sm text-foreground outline-none focus:ring-1 focus:ring-ring/25" />
+              <Textarea value={prompt} maxLength={900} onChange={(event) => setPrompt(event.target.value)} className="mt-2 min-h-24 w-full rounded-xl border bg-background p-4 text-sm text-foreground outline-none focus:ring-0 focus:ring-ring/25" />
             </label>
             <div className="flex flex-wrap items-center gap-2">
-              <Button type="button" onClick={() => void generate()} disabled={generating || prompt.trim().length < 8 || !selectedReady} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50">
+              <Button type="button" onClick={() => void generate()} disabled={generating || prompt.trim().length < 8 || !selectedReady}>
                 {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />} {generating ? "Working…" : provider === "vertex" ? "Generate with Vertex AI" : "Generate with Hugging Face"}
               </Button>
               {lastVertexJob && (
@@ -377,10 +378,10 @@ export function DesktopBuddyProviderLab() {
             </div>
             {result?.imageDataUrl && (
               <div className="grid grid-cols-2 gap-2 border-t p-4">
-                <Button type="button" onClick={useResult} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
+                <Button type="button" onClick={useResult}>
                   <Check className="h-4 w-4" /> Use in Buddy
                 </Button>
-                <Button type="button" onClick={() => downloadDataUrl(result.imageDataUrl!, "desktop-buddy-generated.png")} className="inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold hover:bg-accent">
+                <Button type="button" onClick={() => downloadDataUrl(result.imageDataUrl!, "desktop-buddy-generated.png")}>
                   <Download className="h-4 w-4" /> PNG
                 </Button>
               </div>
@@ -412,7 +413,7 @@ export function DesktopBuddyProviderLab() {
         ) : gallery.length ? (
           <div className="mt-4 grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
             {gallery.map((buddy) => (
-              <Button key={buddy.item.id} type="button" onClick={() => void activateGalleryBuddy(buddy)} className="group overflow-hidden rounded-xl border bg-background/35 text-left hover:border-foreground/25">
+              <div key={buddy.item.id} onClick={() => void activateGalleryBuddy(buddy)} className="cursor-pointer group overflow-hidden rounded-xl border bg-background/35 text-left hover:border-foreground/25">
                 <div className="grid aspect-square place-items-center overflow-hidden bg-muted/30">
                   {buddy.url ? <img src={buddy.url} alt={buddy.item.title || "Generated Desktop Buddy"} loading="lazy" className="h-full w-full object-contain p-2" /> : <ImagePlus className="h-6 w-6 text-muted-foreground" />}
                 </div>
@@ -420,7 +421,7 @@ export function DesktopBuddyProviderLab() {
                   <p className="truncate text-sm font-medium">{buddy.item.title || "Generated Buddy"}</p>
                   <p className="mt-1 text-sm text-muted-foreground">{new Date(buddy.item.created_at).toLocaleDateString()}</p>
                 </div>
-              </Button>
+              </div>
             ))}
           </div>
         ) : (

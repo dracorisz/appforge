@@ -67,8 +67,8 @@
     --ring: 0 0% 32%;
     --overlay: 0 0% 0%;
     --inverse: 0 0% 100%;
-    --border-opacity: 1;
-    --surface-border-opacity: 1;
+    --border-opacity: 0.2;
+    --surface-border-opacity: 0.2;
     --shadow-xl: 0 18px 45px hsl(0 0% 0% / 0.5);
   }
 }
@@ -214,14 +214,14 @@
 
   .surface-card:hover,
   .surface-panel:hover {
-    border-color: hsl(var(--ring));
-    background: hsl(var(--secondary));
+    border-color: hsl(var(--ring) / var(--surface-border-opacity));
+    background: hsl(var(--secondary) / 0.5);
   }
 
   .surface-card:focus-within,
   .surface-panel:focus-within,
   .surface-popover:focus-within {
-    border-color: hsl(var(--ring));
+    border-color: hsl(var(--ring) / var(--surface-border-opacity));
   }
 
   .app-unified-shell .app-page-header,

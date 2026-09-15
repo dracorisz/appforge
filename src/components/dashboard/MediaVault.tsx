@@ -1,6 +1,6 @@
 import { AppHeading } from "@/components/layout/AppHeading";
 import React from "react";
-import { Camera, ChevronLeft, ChevronRight, Download, FileVideo, FileImage, FileText, Folder, FolderPlus, Gamepad2, Maximize2, PanelsTopLeft, Pencil, Play, RefreshCw, Search, Sparkles, Trash2, Upload, X } from "lucide-react";
+import { Camera, ChevronLeft, ChevronRight, Download, FileVideo, FileImage, FileText, Folder, FolderPlus, Gamepad2, Maximize2, PanelsTopLeft, Pencil, Play, RefreshCw, Search, Sparkles, Trash2, Upload, X, StopCircleIcon } from "lucide-react";
 import { Badge, Button, Card, Input, Select, Tabs } from "@/components/ui";
 import { MediaShowbox } from "@/components/ui/MediaShowbox";
 import { supabase } from "@/lib/supabase";
@@ -345,7 +345,7 @@ export function PF_UserMediaVault() {
               }}
               maxLength={60}
               placeholder="Create a folder…"
-              className="h-9 min-w-0 flex-1 rounded-xl border border-input bg-background px-4 text-sm outline-none focus:ring-1 focus:ring-ring/30"
+              className="h-9 min-w-0 flex-1 rounded-xl border border-input bg-background px-4 text-sm outline-none focus:ring-0 focus:ring-ring/30"
             />
             <Button variant="secondary" onClick={() => void createFolder()} disabled={!newFolder.trim()}>
               <FolderPlus className="h-4 w-4" /> New folder
@@ -367,7 +367,10 @@ export function PF_UserMediaVault() {
               <RefreshCw className="h-4 w-4" /> Refresh
             </Button>
             {uploadsRestricted ? (
-              <Badge color="slate">Managed folder · uploads disabled</Badge>
+              <Button variant="secondary" disabled>
+                <StopCircleIcon className="h-4 w-4" />
+                Uploads disabled in this folder
+              </Button>
             ) : (
               <>
                 <Input ref={uploadInputRef} type="file" multiple accept="image/*,video/*,audio/*,application/pdf,.txt,.md,.json" className="hidden" onChange={handleUpload} disabled={uploading} />

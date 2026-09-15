@@ -7,7 +7,7 @@ const APPFORGE_MARK = "/favicon.svg?v=2";
 const APPFORGE_ORIGIN = "https://www.sstoken.space";
 
 const navItemClass =
-  "inline-flex h-9 items-center gap-2 rounded-xl border border-border bg-secondary/70 px-4 text-sm font-semibold text-muted-foreground transition-[border-color,background-color,color,box-shadow] hover:border-foreground/25 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+  "inline-flex h-9 items-center gap-2 rounded-xl border border-border bg-secondary/70 px-4 text-sm font-semibold text-muted-foreground transition-[border-color,background-color,color,box-shadow] hover:border-foreground/25 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 export function PublicHeader({ className = "" }: { className?: string }) {
   const docsHost = typeof window !== "undefined" && window.location.hostname.toLowerCase() === "docs.sstoken.space";
@@ -22,11 +22,11 @@ export function PublicHeader({ className = "" }: { className?: string }) {
     <header className={`sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl ${className}`}>
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 lg:px-8">
         {docsHost ? (
-          <a href={`${APPFORGE_ORIGIN}/landing`} className="group inline-flex items-center gap-4 rounded-xl focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+          <a href={`${APPFORGE_ORIGIN}/landing`} className="group inline-flex items-center gap-4 rounded-xl focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
             {brand}
           </a>
         ) : (
-          <Link to="/landing" className="group inline-flex items-center gap-4 rounded-xl focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+          <Link to="/landing" className="group inline-flex items-center gap-4 rounded-xl focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
             {brand}
           </Link>
         )}

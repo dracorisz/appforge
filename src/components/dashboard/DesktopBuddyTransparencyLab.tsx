@@ -236,23 +236,6 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
             Some image models draw a checkerboard pattern even when asked for transparency. This local tool samples dominant edge colors, removes matching background pixels, feathers the edge, and exports a PNG with a real alpha channel. Nothing is uploaded.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {!standalone && (
-            <Button type="button" onClick={() => void loadActiveBuddy()} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent">
-              <WandSparkles className="h-4 w-4" /> Use active Buddy
-            </Button>
-          )}
-          <FileButton
-            accept="image/*"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) void importImage(file);
-              event.currentTarget.value = "";
-            }}
-          >
-            <ImagePlus className="h-4 w-4" /> Choose image
-          </FileButton>
-        </div>
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_260px]">
@@ -293,9 +276,27 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
           />
           <p className="mt-1 text-sm text-muted-foreground">Lower values preserve more of the character; higher values remove more checkerboard/flat background. Re-run repair after changing this value.</p>
         </div>
-        <Button type="button" disabled={!source || processing} onClick={() => void runRepair()} className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">
-          {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eraser className="h-4 w-4" />} Repair background
-        </Button>
+        <div className="flex flex-col items-start gap-2">
+          <Button type="button" disabled={!source || processing} onClick={() => void runRepair()}>
+            {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eraser className="h-4 w-4" />} Repair background
+          </Button>
+          {!standalone ? (
+            <Button type="button" onClick={() => void loadActiveBuddy()} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-medium hover:bg-accent">
+              <WandSparkles className="h-4 w-4" /> Use active Buddy
+            </Button>
+          ) : (
+            <FileButton
+              accept="image/*"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) void importImage(file);
+                event.currentTarget.value = "";
+              }}
+            >
+              <ImagePlus className="h-4 w-4" /> Choose image
+            </FileButton>
+          )}
+        </div>
       </div>
 
       <div aria-live="polite" className="mt-4 text-sm text-muted-foreground">
@@ -328,11 +329,11 @@ export function DesktopBuddyTransparencyLab({ standalone = false }: { standalone
             · {result.transparentPercent.toFixed(1)}% transparent/feathered pixels
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button type="button" onClick={() => downloadResult(result, source.name)} className="inline-flex items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-accent">
+            <Button type="button" onClick={() => downloadResult(result, source.name)}>
               <Download className="h-4 w-4" /> Download PNG
             </Button>
             {!standalone && (
-              <Button type="button" onClick={applyToBuddy} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">
+              <Button type="button" onClick={applyToBuddy}>
                 <Check className="h-4 w-4" /> Use in Buddy
               </Button>
             )}

@@ -89,17 +89,22 @@ export function DesktopBuddyKdeLibrary() {
           const source = sourceUrl(starter.file);
           const active = currentSource === source;
           return (
-            <article key={starter.id} className={`flex h-full min-h-[20rem] flex-col overflow-hidden rounded-xl border bg-background/40 text-left ${active ? "ring-1 ring-primary/35" : ""}`}>
+            <article key={starter.id} className={`flex h-full min-h-[20rem] flex-col overflow-hidden rounded-xl border bg-background/40 text-left ${active ? "ring-0 ring-primary/35" : ""}`}>
               <div className="grid h-36 place-items-center border-b border-border/60 bg-muted/20 p-4 sm:h-40">
                 <img src={imageUrl(starter.file)} alt={starter.name} loading="lazy" className="h-28 w-28 object-contain sm:h-32 sm:w-32" />
               </div>
               <div className="flex flex-1 flex-col p-4 text-left">
                 <div className="flex items-start justify-between gap-2">
                   <h3 className="text-sm font-semibold">{starter.name}</h3>
-                  {active && <Check className="mt-2 h-4 w-4 shrink-0" />}
+                  {active && <Check className="h-4 w-4 shrink-0" />}
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">{starter.note}</p>
-                <p className="mt-auto pt-4 text-xs text-muted-foreground">{starter.author}<br />{starter.license}</p> {/* design-xs-ok: compact copyright and license notice */}
+                <p className="mt-auto pt-4 text-xs text-muted-foreground">
+                  {starter.author}
+                  <br />
+                  {starter.license}
+                </p>{" "}
+                {/* design-xs-ok: compact copyright and license notice */}
                 <div className="flex gap-2 pt-4">
                   <Button type="button" onClick={() => selectStarter(starter)} className="flex-1 rounded-xl border px-2 py-2 text-sm font-semibold hover:bg-accent">
                     {active ? "Active" : "Use character"}

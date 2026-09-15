@@ -269,7 +269,7 @@ export function AnyToAnyConverter() {
               if (error) setError("");
             }}
             placeholder={`Paste ${inputFormat} content here or load a local file...`}
-            className="mt-2 h-72 w-full rounded-xl border border-input bg-background p-4 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+            className="mt-2 h-72 w-full rounded-xl border border-input bg-background p-4 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-0 focus:ring-ring"
           />
         </Card>
         <Card>
@@ -281,7 +281,7 @@ export function AnyToAnyConverter() {
             value={output}
             readOnly
             placeholder="Converted output will appear here..."
-            className="mt-2 h-72 w-full rounded-xl border border-input bg-background p-4 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+            className="mt-2 h-72 w-full rounded-xl border border-input bg-background p-4 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-0 focus:ring-ring"
           />
         </Card>
       </div>

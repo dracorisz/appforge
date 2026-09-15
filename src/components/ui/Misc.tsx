@@ -24,7 +24,7 @@ export function Tabs({ tabs, active, onChange, ariaLabel = "Sections", className
             aria-selected={selected}
             disabled={tab.disabled}
             onClick={() => onChange(tab.id)}
-            className={`inline-flex h-9 shrink-0 cursor-pointer select-none items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 ${selected ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"}`}
+            className={`inline-flex h-9 shrink-0 cursor-pointer select-none items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 ${selected ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"}`}
           >
             {Icon && <Icon className="h-4 w-4" />}
             {tab.label}

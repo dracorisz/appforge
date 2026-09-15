@@ -180,15 +180,20 @@ export function SidebarWeather({ collapsed }: { collapsed: boolean }) {
   return (
     <div data-weather-tone={tone} className="sidebar-weather-tone rounded-xl border p-2">
       <div className="flex items-start gap-2">
-        <Link to="/apps/weather-now" className="min-w-0 flex-1 rounded-xl focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{/* design-xs-ok: compact weather label */}<WeatherIcon condition={weather?.condition} /> Weather</div>
+        <Link to="/apps/weather-now" className="min-w-0 flex-1 rounded-xl focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            {/* design-xs-ok: compact weather label */}
+            <WeatherIcon condition={weather?.condition} /> Weather
+          </div>
           {weather ? (
             <>
               <div className="mt-2 flex items-end gap-2">
                 <span className="text-lg font-semibold tabular-nums text-foreground">{Math.round(weather.temp_c)}°</span>
                 <span className="mb-2 truncate text-sm text-muted-foreground">{weather.condition}</span>
               </div>
-              <div className="mt-2 flex items-center gap-2 truncate text-sm text-muted-foreground"><MapPin className="h-3 w-3 shrink-0" /> {weather.location}</div>
+              <div className="mt-2 flex items-center gap-2 truncate text-sm text-muted-foreground">
+                <MapPin className="h-3 w-3 shrink-0" /> {weather.location}
+              </div>
             </>
           ) : (
             <div className="mt-1 text-sm text-muted-foreground">{loading ? `Loading ${selectedLocation}…` : `Open Weather Now · ${selectedLocation}`}</div>

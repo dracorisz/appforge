@@ -14,7 +14,7 @@ export function RegistryAppFallback() {
         <Construction className="mx-auto h-9 w-9 text-muted-foreground" />
         <h1 className="mt-4 text-lg font-semibold">App route not found</h1>
         <p className="mt-1 text-sm text-muted-foreground">This route is not registered in the AppForge app registry.</p>
-        <Link to="/apps" className="mt-4 inline-flex items-center gap-2 rounded-xl px-4 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+        <Link to="/apps" className="mt-4 inline-flex items-center gap-2 rounded-xl px-4 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring">
           <ArrowLeft className="h-4 w-4" /> Back to apps
         </Link>
       </Card>
@@ -38,10 +38,10 @@ export function RegistryAppFallback() {
           <p className="mt-2">This route does not currently have a dedicated implementation.</p>
         </div>
         <div className="mt-4 flex flex-wrap gap-4">
-          <Link to="/apps" className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+          <Link to="/apps" className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring">
             <ArrowLeft className="h-4 w-4" /> All apps
           </Link>
-          <a href="https://docs.sstoken.space/PROJECT-PULSE" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+          <a href="https://docs.sstoken.space/PROJECT-PULSE" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring">
             Project status <ExternalLink className="h-4 w-4" />
           </a>
         </div>

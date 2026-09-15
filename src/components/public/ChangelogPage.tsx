@@ -57,7 +57,7 @@ export function ChangelogPage() {
               <div className="mt-4 space-y-2">
                 {release.groups.map((group, groupIndex) => (
                   <details key={`${release.title}-${group.title}`} open={releaseIndex === 0 && groupIndex === 0} className="group rounded-xl border border-border/60 bg-background">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 text-sm font-semibold outline-none focus-visible:ring-1 focus-visible:ring-ring/25">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 text-sm font-semibold outline-none focus-visible:ring-0 focus-visible:ring-ring/25">
                       <span>{group.title}</span>
                       <span className="flex items-center gap-2 text-sm font-normal text-muted-foreground">
                         <span>{group.items.length}</span>

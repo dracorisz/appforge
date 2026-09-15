@@ -64,8 +64,8 @@ export function PwaLifecycle() {
   if (!showStatus) return null;
 
   const primaryActionClass =
-    "rounded-xl border border-inverse bg-inverse px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inverse/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950";
-  const secondaryActionClass = "rounded-xl border border-inverse/20 bg-inverse/5 px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-inverse/10 hover:text-inverse focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inverse/70";
+    "rounded-xl border border-inverse bg-inverse px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-inverse/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950";
+  const secondaryActionClass = "rounded-xl border border-inverse/20 bg-inverse/5 px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-inverse/10 hover:text-inverse focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-inverse/70";
 
   return (
     <div className="fixed bottom-4 right-4 z-[100] w-[min(24rem,calc(100vw-2rem))] rounded-xl border border-inverse/15 bg-muted/95 p-4 text-inverse backdrop-blur-xl" style={{ colorScheme: "dark" }}>
@@ -113,7 +113,7 @@ export function PwaLifecycle() {
         </div>
         <Button
           aria-label="Dismiss PWA message"
-          className="rounded-xl p-2 text-muted-foreground transition-colors hover:bg-inverse/10 hover:text-inverse focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inverse/70"
+          className="rounded-xl p-2 text-muted-foreground transition-colors hover:bg-inverse/10 hover:text-inverse focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-inverse/70"
           onClick={() => {
             setNeedRefresh(false);
             setOfflineReady(false);
