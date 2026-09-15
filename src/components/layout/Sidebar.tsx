@@ -32,14 +32,16 @@ import {
   X,
 } from "lucide-react";
 import { getAllApps, getAppsByCategory, searchApps } from "@/lib/registry";
+import { getAppIconComponent } from "@/lib/appIcons";
 import { appSidebarPreferenceKey, isAppVisibleInSidebar, isCategoryVisibleInSidebar, loadCategoryOverrides, resolveCategories, subscribeCategoryOverrides } from "@/lib/categories";
 import { useAuth } from "@/auth/AuthProvider";
 import { ensureProfile } from "@/lib/account";
+import { useTheme } from "@/hooks/useTheme";
 import { DragonArenaIcon } from "@/components/dashboard/DragonArenaIcon";
 import { Button, SearchInput } from "@/components/ui";
 import { SidebarWeather } from "./SidebarWeather";
 
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = { ArrowLeftRight, Binary, Braces, Calendar, CloudSun, Code, FileCode, Hash, Image: ImageIcon, Lock, Palette, QrCode, Regex, Search, Sparkles, Table2, Type, Video, Wrench, DragonArena: DragonArenaIcon };
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = { ArrowLeftRight, Binary, Braces, Calendar, CloudSun, Code, FileCode, Hash, Image: ImageIcon, Lock, Palette, QrCode, Regex, Search, Sparkles, Table2, Type, Video, Wrench };
 const coreItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/" },
   { id: "people", label: "People", icon: Users, path: "/people" },
@@ -51,6 +53,7 @@ const collapsedLabelClass = "pointer-events-none hidden whitespace-nowrap pr-4 t
 export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }: { onClose?: () => void; collapsed?: boolean; onToggleCollapse?: () => void }) {
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { mode: themeMode, setMode: setThemeMode } = useTheme();
   const [internalCollapsed, setInternalCollapsed] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [signingOut, setSigningOut] = React.useState(false);
@@ -133,11 +136,11 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
     <aside className={`group/sidebar relative z-40 flex h-full flex-col overflow-visible bg-background/92 backdrop-blur-xl transition-[width,transform,opacity] duration-200 ease-out ${asideWidth}`}>
       <div className={`flex items-center gap-2 py-4 ${isCollapsed ? "flex-col px-2 group-hover/sidebar:flex-row group-hover/sidebar:px-4" : "px-4"}`}>
         {isCollapsed ? (
-          <NavLink to="/" aria-label="AppForge home" className="shrink-0">
+          <NavLink to="/landing" aria-label="AppForge landing" className="shrink-0">
             <img src="/favicon.svg" alt="" className="h-6 w-6" />
           </NavLink>
         ) : (
-          <NavLink to="/" onClick={onClose} className="flex min-w-0 items-center gap-2">
+          <NavLink to="/landing" onClick={onClose} className="flex min-w-0 items-center gap-2">
             <img src="/favicon.svg" alt="AppForge" className="h-9 w-9 shrink-0" />
             <h1 className="truncate text-sm font-semibold text-foreground">AppForge</h1>
           </NavLink>
@@ -159,7 +162,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
             {searchResults.length > 0 && (
               <div className="surface-card mt-1 max-h-52 space-y-1 overflow-y-auto rounded-xl border p-2 shadow-xl">
                 {searchResults.slice(0, 8).map((app) => {
-                  const Icon = iconMap[app.id === "ai-dragon-arena" ? "DragonArena" : app.icon] || Wrench;
+                  const Icon = app.id === "ai-dragon-arena" ? DragonArenaIcon : getAppIconComponent(app.icon);
                   return (
                     <NavLink key={app.id} to={app.route} onClick={closeSearchAndSidebar} className="flex items-center gap-2 rounded-xl px-2 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground">
                       <Icon className="h-4 w-4 shrink-0" />
@@ -210,7 +213,7 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
             {sidebarApps.length > 0 && (
               <div className={`${sidebarCategories.length > 0 ? "mt-1 " : ""}space-y-1`}>
                 {sidebarApps.map((app) => {
-                  const Icon = iconMap[app.id === "ai-dragon-arena" ? "DragonArena" : app.icon] || Wrench;
+                  const Icon = app.id === "ai-dragon-arena" ? DragonArenaIcon : getAppIconComponent(app.icon);
                   return (
                     <NavLink key={app.id} to={app.route} onClick={onClose} title={isCollapsed ? app.name : undefined} className={collapsedLinkClass(location.pathname === app.route)}>
                       <Icon className="h-4 w-4 shrink-0" />
@@ -235,20 +238,18 @@ export function Sidebar({ onClose, collapsed: collapsedProp, onToggleCollapse }:
               <div className={`absolute bottom-full z-[80] mb-2 rounded-xl border border-border bg-background p-2 shadow-xl ${isCollapsed ? "left-2 w-56" : "left-4 right-4 w-auto"}`}>
                 <div className="px-2 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Appearance</div> {/* design-xs-ok: compact menu heading */}
                 <div className="grid grid-cols-3 gap-2 px-2 pb-2">
-                  {(["light", "dark", "system"] as const).map((mode) => (
+                  {(["light", "dark", "system"] as const).map((nextMode) => (
                     <Button
-                      key={mode}
+                      key={nextMode}
                       type="button"
+                      variant={themeMode === nextMode ? "secondary" : "ghost"}
                       onClick={() => {
-                        localStorage.setItem("appforge-theme", JSON.stringify({ mode }));
-                        const dark = mode === "dark" || (mode === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
-                        document.documentElement.classList.toggle("dark", dark);
-                        document.documentElement.style.colorScheme = dark ? "dark" : "light";
+                        setThemeMode(nextMode);
                         setAccountOpen(false);
                       }}
-                      className="rounded-xl px-2 text-xs !min-h-6 !max-h-6 !h-6 !py-0 capitalize text-muted-foreground hover:bg-accent hover:text-foreground"
+                      className="rounded-xl px-2 text-xs !min-h-6 !max-h-6 !h-6 !py-0 capitalize text-muted-foreground hover:text-foreground"
                     >
-                      {mode}
+                      {nextMode}
                     </Button>
                   ))}
                 </div>
@@ -305,7 +306,7 @@ export function MobileHeader({ onOpen, triggerRef }: { onOpen: () => void; trigg
       <Button ref={triggerRef} onClick={onOpen} className="rounded-xl p-2 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Open navigation">
         <Sliders className="h-4 w-4" />
       </Button>
-      <NavLink to="/" className="flex items-center gap-2">
+      <NavLink to="/landing" className="flex items-center gap-2">
         <img src="/favicon.svg" alt="AppForge" className="h-9 w-9" />
         <span className="text-sm font-semibold text-foreground">AppForge</span>
       </NavLink>
