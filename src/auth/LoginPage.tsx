@@ -156,7 +156,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
               <div>
                 <div className="mt-8 flex flex-wrap gap-4" aria-busy={Boolean(busyProvider) || loading}>
                   {user ? (
-                    <Button className="h-11 px-4" onClick={() => navigate("/")} disabled={loading}>Open workspace <ArrowRight className="h-4 w-4" /></Button>
+                    <Button className="h-11 px-4" onClick={() => navigate("/")} disabled={loading}>Open dashboard <ArrowRight className="h-4 w-4" /></Button>
                   ) : (
                     <Button className="h-11 px-4" onClick={() => setAuthOpen(true)} disabled={loading}>Sign in <ArrowRight className="h-4 w-4" /></Button>
                   )}
@@ -215,7 +215,7 @@ export function LoginPage({ returnTo = "/", landingOnly = false }: { returnTo?: 
                 <Button type="button" onClick={() => setAuthOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close sign in"><span aria-hidden="true">×</span></Button>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-2">
-                <Button variant="primary" className="border bg-black text-white border-white/30" onClick={() => void login("google")} disabled={Boolean(busyProvider) || loading}><Google className="h-4 w-4" /> Continue with Google</Button>
+                <Button variant="primary" style={{ backgroundColor: "#4285F4", borderColor: "#4285F4", color: "#fff" }} onClick={() => void login("google")} disabled={Boolean(busyProvider) || loading}><Google className="h-4 w-4" /> Continue with Google</Button>
                 <Button variant="secondary" onClick={() => void login("github")} disabled={Boolean(busyProvider) || loading}><Github className="h-4 w-4" /> Continue with GitHub</Button>
               </div>
               <div className="my-4 flex items-center gap-4 text-sm text-muted-foreground"><span className="h-px flex-1 bg-border" />or email<span className="h-px flex-1 bg-border" /></div>
