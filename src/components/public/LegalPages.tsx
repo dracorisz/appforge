@@ -22,7 +22,7 @@ function LegalShell({ title, intro, children }: { title: string; intro: string; 
               <p className="mt-2 inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Public beta policy</p>
             </div>
           </aside>
-          <article className="surface-card rounded-xl border p-4 text-sm sm:p-8 [&_section]:border-b [&_section]:border-border [&_section]:py-8 [&_section:first-child]:pt-0 [&_section:last-child]:border-b-0 [&_section:last-child]:pb-0 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_p]:mt-2 [&_p]:text-muted-foreground [&_strong]:text-foreground [&_ul]:mt-2 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:text-muted-foreground">{children}</article>
+          <article className="surface-card rounded-xl border p-4 text-sm sm:p-8 [&_section]:border-b [&_section]:border-border [&_section]:py-8 [&_section:first-child]:pt-0 [&_section:last-child]:border-b-0 [&_section:last-child]:pb-0 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_p]:mt-2 [&_p]:text-muted-foreground [&_strong]:text-foreground [&_ul]:mt-2 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5 [&_ul]:text-muted-foreground">{children}</article>
         </div>
       </main>
       <PublicFooter />
