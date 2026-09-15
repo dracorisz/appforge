@@ -145,7 +145,7 @@
     padding-right: 2.5rem !important;
   }
 
-  :where(.relative:has(input[type="search"]) .lucide-search) {
+  :where(.app-search-field > .lucide-search) {
     left: 1rem !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
