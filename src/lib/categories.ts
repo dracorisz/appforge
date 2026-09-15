@@ -9,7 +9,7 @@ export interface CategoryOverride {
 }
 
 export const DEFAULT_SIDEBAR_CATEGORY_IDS = ['ai', 'utilities', 'image', 'converters'] as const
-export const DEFAULT_SIDEBAR_APP_IDS = ['weather-now', 'scrapper-pro', 'any-converter', 'desktop-buddy'] as const
+export const DEFAULT_SIDEBAR_APP_IDS = ['weather-now', 'getter-pro', 'data-converter', 'desktop-buddy'] as const
 
 export function isCategoryVisibleInSidebar(id: string, override?: CategoryOverride) {
   if (typeof override?.visibleInSidebar === 'boolean') return override.visibleInSidebar
@@ -43,7 +43,14 @@ export function loadCategoryOverrides(): Record<string, CategoryOverride> {
     const raw = window.localStorage.getItem(scopedStorageKey())
     if (!raw) return {}
     const parsed = JSON.parse(raw)
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {}
+    const overrides = { ...(parsed as Record<string, CategoryOverride>) }
+    delete overrides.data
+    if (overrides['app:scrapper-pro'] && !overrides['app:getter-pro']) overrides['app:getter-pro'] = overrides['app:scrapper-pro']
+    if (overrides['app:any-converter'] && !overrides['app:data-converter']) overrides['app:data-converter'] = overrides['app:any-converter']
+    delete overrides['app:scrapper-pro']
+    delete overrides['app:any-converter']
+    return overrides
   } catch {
     return {}
   }
