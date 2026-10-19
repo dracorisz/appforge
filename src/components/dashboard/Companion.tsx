@@ -1,5 +1,5 @@
 import React from 'react'
-import { Bot, CheckCircle2, CircleAlert, Plus, Send, Sparkles, Trash2, User } from 'lucide-react'
+import { Bot, Check, CheckCircle2, CircleAlert, Code2, Copy, Maximize2, MessageCircle, Plus, Send, Sparkles, Trash2, User, X } from 'lucide-react'
 import { SiGithub, SiSupabase, SiVercel } from 'react-icons/si'
 import { useAuth } from '@/auth/AuthProvider'
 import { Button, Card, Input } from '@/components/ui'
@@ -8,8 +8,22 @@ type Message = { role: 'user' | 'assistant'; content: string }
 type ChatSession = { id: string; title: string; updatedAt: number; messages: Message[] }
 type IntegrationStatus = 'checking' | 'verified' | 'needs_setup' | 'invalid_credentials' | 'insufficient_permissions' | 'unavailable'
 type IntegrationKey = 'github' | 'vercel' | 'supabase'
+type CompanionMode = 'chat' | 'code'
 
-const starterPrompts = ['Explain the current AppForge architecture.', 'Help me plan the first safe coding-agent workflow.', 'Review the risks of connecting GitHub, Vercel and Supabase.']
+const starterPrompts: Record<CompanionMode, string[]> = { chat: ['Explain a technical concept in plain English.', 'Help me compare implementation approaches.', 'Think through a project plan with me.'], code: ['Help me debug an error.', 'Plan a safe, incremental feature.', 'Review code for correctness and security.'] }
+
+function FormattedMessage({ content }: { content: string }) {
+  const lines = content.replace(/\r\n/g, '\n').split('\n')
+  return <div className="break-words leading-6">{lines.map((line, index) => {
+    const heading = line.match(/^(#{1,4})\s+(.+)$/)
+    const bullet = line.match(/^\s*[-*+]\s+(.+)$/)
+    const numbered = line.match(/^\s*\d+[.)]\s+(.+)$/)
+    const text = (heading ? heading[2] : bullet ? '• ' + bullet[1] : numbered ? numbered[1] : line).split(/(\*\*[^*]+\*\*|\x60[^\x60]+\x60)/g)
+    const rendered = text.map((part, i) => part.startsWith('**') && part.endsWith('**') ? <strong key={i}>{part.slice(2, -2)}</strong> : part.charCodeAt(0) === 96 && part.charCodeAt(part.length - 1) === 96 ? <code key={i} className="rounded bg-muted px-1 py-0.5 font-mono text-[0.9em]">{part.slice(1, -1)}</code> : part)
+    if (!line.trim()) return <div key={index} className="h-2" />
+    return heading ? <div key={index} className={heading[1].length < 3 ? 'mt-3 font-semibold' : 'mt-2 font-medium'}>{rendered}</div> : bullet || numbered ? <div key={index} className="pl-2">{rendered}</div> : <p key={index} className="my-1 first:mt-0 last:mb-0">{rendered}</p>
+  })}</div>
+}
 const statusLabel: Record<IntegrationStatus, string> = { checking: 'Checking…', verified: 'Connected', needs_setup: 'Not connected', invalid_credentials: 'Invalid credentials', insufficient_permissions: 'Permission issue', unavailable: 'Unavailable' }
 
 export function Companion() {
@@ -19,6 +33,9 @@ export function Companion() {
   const [activeSessionId, setActiveSessionId] = React.useState('')
   const [sessionsLoaded, setSessionsLoaded] = React.useState(false)
   const [draft, setDraft] = React.useState('')
+  const [mode, setMode] = React.useState<CompanionMode>('chat')
+  const [expanded, setExpanded] = React.useState(false)
+  const [copiedMessage, setCopiedMessage] = React.useState<number | null>(null)
   const [sending, setSending] = React.useState(false)
   const [error, setError] = React.useState('')
   const [integrationStatuses, setIntegrationStatuses] = React.useState<Record<IntegrationKey, IntegrationStatus>>({ github: 'checking', vercel: 'checking', supabase: 'checking' })
@@ -44,6 +61,7 @@ export function Companion() {
   }, [sessions, sessionsLoaded, storageKey])
 
   React.useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }) }, [messages, sending])
+  React.useEffect(() => { if (!expanded) return; const close = (event: KeyboardEvent) => { if (event.key === 'Escape') setExpanded(false) }; window.addEventListener('keydown', close); return () => window.removeEventListener('keydown', close) }, [expanded])
 
   React.useEffect(() => {
     if (!session?.access_token) { setIntegrationStatuses({ github: 'needs_setup', vercel: 'needs_setup', supabase: 'needs_setup' }); return }
@@ -81,7 +99,7 @@ export function Companion() {
     setSessions((current) => current.map((item) => item.id === sessionId ? { ...item, title: item.messages.length === 0 ? content.slice(0, 42) : item.title, updatedAt: Date.now(), messages: next } : item))
     setDraft(''); setError(''); setSending(true)
     try {
-      const response = await fetch('/api/companion-chat', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ messages: next }) })
+      const response = await fetch('/api/companion-chat', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ messages: next, mode }) })
       const payload = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(typeof payload.message === 'string' ? payload.message : 'Companion could not complete this request.')
       setSessions((current) => current.map((item) => item.id === sessionId ? { ...item, updatedAt: Date.now(), messages: [...next, { role: 'assistant', content: String(payload.text || '').trim() }] } : item))
@@ -89,8 +107,11 @@ export function Companion() {
     finally { setSending(false) }
   }
 
+  const copyMessage = async (content: string, index: number) => { try { await navigator.clipboard.writeText(content); setCopiedMessage(index); window.setTimeout(() => setCopiedMessage((current) => current === index ? null : current), 1800) } catch { setError('Could not copy automatically. Select the response and copy it manually.') } }
+
   return (
-    <div className="grid h-full min-h-0 min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_16rem]">
+    <div className={expanded ? 'fixed inset-2 z-50 flex min-h-0 min-w-0 flex-col rounded-xl border border-border bg-background p-2 shadow-2xl sm:inset-4 sm:p-3' : 'grid h-full min-h-0 min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_16rem]'}>
+      {expanded && <div className="flex shrink-0 items-center justify-between px-2 pb-2"><span className="text-sm font-semibold">Companion workspace</span><Button type="button" variant="ghost" onClick={() => setExpanded(false)} aria-label="Close expanded chat"><X className="h-4 w-4" /></Button></div>}
       <Card className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
         <div className="flex min-h-0 flex-1">
           <aside className="hidden w-48 shrink-0 flex-col gap-1 overflow-y-auto border-r border-border/70 p-2 md:flex" aria-label="Chat sessions">
@@ -104,28 +125,29 @@ export function Companion() {
             <div ref={scrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3 sm:p-4" aria-live="polite">
               {!messages.length ? <div className="mx-auto flex min-h-full max-w-xl flex-col justify-center py-4">
                 <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-background/60"><Sparkles className="h-5 w-5" /></span>
-                <h3 className="text-lg font-semibold">Let's work on AppForge.</h3><p className="mt-1 text-sm text-muted-foreground">Ask a question or describe a development task.</p>
-                <div className="mt-3 grid gap-2">{starterPrompts.map((prompt) => <Button key={prompt} variant="ghost" type="button" onClick={() => void sendMessage(prompt)} disabled={sending} className="h-auto w-full justify-start whitespace-normal border-border/70 p-3 text-left">{prompt}</Button>)}</div>
+                <h3 className="text-lg font-semibold">{mode === 'chat' ? 'What would you like to explore?' : 'What are we building or fixing?'}</h3><p className="mt-1 text-sm text-muted-foreground">{mode === 'chat' ? 'Discuss ideas, learn concepts, and plan next steps.' : 'Describe the goal, share code or errors, and work through a solution.'}</p>
+                <div className="mt-3 grid gap-2">{starterPrompts[mode].map((prompt) => <Button key={prompt} variant="ghost" type="button" onClick={() => void sendMessage(prompt)} disabled={sending} className="h-auto w-full justify-start whitespace-normal border-border/70 p-3 text-left">{prompt}</Button>)}</div>
               </div> : messages.map((message, index) => <div key={index} className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {message.role === 'assistant' && <span className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border/70"><Bot className="h-4 w-4" /></span>}
-                <div className={`max-w-[88%] whitespace-pre-wrap break-words rounded-xl px-3 py-3 text-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'border border-border/70 bg-background/60'}`}>{message.content}</div>
+                <div className={`max-w-[92%] break-words rounded-xl px-3 py-3 text-sm ${message.role === 'user' ? 'whitespace-pre-wrap bg-primary text-primary-foreground' : 'border border-border/70 bg-background/60'}`}>{message.role === 'assistant' ? <FormattedMessage content={message.content} /> : message.content}</div>
+                {message.role === 'assistant' && <button type="button" onClick={() => void copyMessage(message.content, index)} className="ml-1 inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Copy response" title="Copy response">{copiedMessage === index ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copiedMessage === index ? 'Copied' : 'Copy'}</button>}
                 {message.role === 'user' && <span className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border/70"><User className="h-4 w-4" /></span>}
               </div>)}
               {sending && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Sparkles className="h-4 w-4 animate-pulse" /> Companion is thinking…</div>}
               {error && <div role="alert" className="flex items-start gap-2 rounded-xl border border-destructive/30 p-3 text-sm"><CircleAlert className="mt-1 h-4 w-4 shrink-0" /><span>{error}</span></div>}
             </div>
-            <form className="shrink-0 border-t border-border/70 p-3" onSubmit={(event) => { event.preventDefault(); void sendMessage() }}><div className="flex items-end gap-2"><label className="min-w-0 flex-1"><span className="sr-only">Message Companion</span><Input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Ask about AppForge or describe a task…" maxLength={4000} disabled={sending} /></label><Button type="submit" disabled={!draft.trim() || sending}><Send className="h-4 w-4" /> Send</Button></div></form>
+            <form className="shrink-0 border-t border-border/70 p-3" onSubmit={(event) => { event.preventDefault(); void sendMessage() }}><label className="mb-2 block"><span className="sr-only">Message Companion</span><textarea value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void sendMessage() } }} placeholder={mode === 'chat' ? 'Ask anything… (Enter to send, Shift+Enter for a new line)' : 'Describe a coding task, paste code or an error… (Enter to send)'} maxLength={4000} disabled={sending} rows={2} className="!h-auto !max-h-36 !min-h-[3.5rem] w-full resize-y !px-3 !py-2" /></label><div className="flex flex-wrap items-center justify-between gap-2"><div className="inline-flex items-center rounded-lg border border-border/70 bg-muted/40 p-1" aria-label="Companion mode"><button type="button" onClick={() => setMode('chat')} aria-pressed={mode === 'chat'} className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ${mode === 'chat' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}><MessageCircle className="h-3.5 w-3.5" />Chat</button><button type="button" onClick={() => setMode('code')} aria-pressed={mode === 'code'} className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ${mode === 'code' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}><Code2 className="h-3.5 w-3.5" />Code</button></div><Button type="submit" disabled={!draft.trim() || sending}><Send className="h-4 w-4" /> Send</Button></div></form>
           </div>
         </div>
       </Card>
       <aside className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto">
-        <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Integrations</h3></div><p className="mt-2 text-xs leading-5 text-muted-foreground">Connection status is checked securely by the server. A verified connection confirms the credential works, not that every operation has been tested.</p>
+        <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Integrations</h3></div><p className="mt-2 text-xs leading-5 text-muted-foreground">Connection status is checked securely by the server. Direct repository, deployment, and database actions are not yet exposed to chat.</p>
           {([{ name: 'GitHub', key: 'github' as const, icon: SiGithub }, { name: 'Vercel', key: 'vercel' as const, icon: SiVercel }, { name: 'Supabase', key: 'supabase' as const, icon: SiSupabase }]).map(({ name, key, icon: Icon }) => {
             const status = integrationStatuses[key]
             return <div key={name} className="mt-3 flex items-center gap-2"><Icon className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="min-w-0 flex-1 text-sm font-medium">{name}</span><span className={`text-xs ${status === 'verified' ? 'text-emerald-600 dark:text-emerald-400' : status === 'checking' ? 'text-muted-foreground' : 'text-amber-600 dark:text-amber-400'}`}>{statusLabel[status]}</span></div>
           })}
         </Card>
-        <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Workspace access</h3></div><p className="mt-2 break-all text-sm text-muted-foreground">{user?.email || 'Signed-in account required'}</p><p className="mt-3 text-xs leading-5 text-muted-foreground">Companion is a private app. Server requests are authenticated against your AppForge account.</p></Card>
+        <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Workspace access</h3></div><p className="mt-2 break-all text-sm text-muted-foreground">{user?.email || 'Signed-in account required'}</p><p className="mt-3 text-xs leading-5 text-muted-foreground">Use Chat for general discussion or Code for development tasks across projects. Connected services are currently status-checked only.</p></Card>
         <div className="mt-auto shrink-0 pt-1"><Button type="button" variant="secondary" onClick={startNewSession} className="w-full justify-center gap-2"><Plus className="h-4 w-4" />New chat</Button></div>
       </aside>
     </div>
