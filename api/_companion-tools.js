@@ -277,7 +277,7 @@ export async function executeCompanionTool(name, args, user, accessToken) {
     if (!id || id.length > 200 || /[\r\n]/.test(id)) throw new Error('Deployment ID or URL is invalid.')
     const token = requireToken('VERCEL_API_TOKEN', 'Vercel')
     const params = new URLSearchParams()
-    const teamId = String(process.env.VERCEL_TEAM_ID || '').trim()
+    const teamId = String(process.env.VERCEL_TEAM_ID || DEFAULT_VERCEL_TEAM_ID).trim()
     if (teamId) params.set('teamId', teamId)
     const result = await fetchJson(VERCEL_API + '/v13/deployments/' + encodeURIComponent(id) + (params.size ? '?' + params.toString() : ''), { headers: { Authorization: 'Bearer ' + token } })
     if (!allowedVercelProjects().has(String(result.projectId || ''))) throw new Error('This deployment does not belong to a Companion-allowed Vercel project.')
