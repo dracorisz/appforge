@@ -29,7 +29,7 @@ export interface CategoryDefinition {
 }
 
 export const canonicalAppId = (id: string) => id === 'scrapper-pro' ? 'getter-pro' : id
-export const PRIVATE_APP_IDS = new Set(['getter-pro', 'media-vault', 'desktop-buddy', 'ai-dragon-arena'])
+export const PRIVATE_APP_IDS = new Set(['getter-pro', 'media-vault', 'desktop-buddy', 'ai-dragon-arena', 'companion'])
 export const isPublicApp = (app: Pick<AppDefinition, 'id'>) => !PRIVATE_APP_IDS.has(canonicalAppId(app.id))
 
 export const CATEGORIES: CategoryDefinition[] = [
@@ -66,6 +66,7 @@ const APPS: AppDefinition[] = [
   app({ id: 'weather-now', name: 'Weather Now', description: 'Current weather and city lookup.', category: 'utilities', icon: 'CloudSun', route: '/apps/weather-now', tags: ['weather', 'city'], status: 'beta', version: '1.3.0' }),
   app({ id: 'task-list', name: 'Task List', description: 'Local-first tasks with optional signed-in sync.', category: 'utilities', icon: 'FileText', route: '/apps/task-list', tags: ['tasks', 'todo'], status: 'beta', version: '0.1.0' }),
   app({ id: 'desktop-buddy', name: 'Desktop Buddy', description: 'Create and run a personal desktop character.', category: 'ai', icon: 'Sparkles', route: '/apps/desktop-buddy', tags: ['ai', 'character', 'voice'], status: 'beta', version: '0.6.0' }),
+  app({ id: 'companion', name: 'Companion', description: 'A private AI coding assistant for AppForge, powered by Google Cloud.', category: 'ai', icon: 'Bot', route: '/apps/companion', tags: ['ai', 'agent', 'coding', 'assistant'], status: 'building', version: '0.1.0' }),
   app({ id: 'ai-dragon-arena', name: 'Story Studio', description: 'AI-assisted story creation and scene generation.', category: 'ai', icon: 'Gamepad2', route: '/apps/ai-dragon-arena', tags: ['ai', 'story', 'image'], status: 'beta', version: '1.6.2' }),
   app({ id: 'json-formatter', name: 'JSON Formatter', description: 'Format, minify and validate JSON.', category: 'json-data', icon: 'Braces', route: '/apps/json-formatter', tags: ['json', 'format'], status: 'beta', version: '0.2.0' }),
   app({ id: 'csv-converter', name: 'CSV Converter', description: 'Convert CSV to JSON, Markdown or SQL.', category: 'converters', icon: 'Table2', route: '/apps/csv-converter', tags: ['csv', 'json'], status: 'beta', version: '0.2.0' }),
