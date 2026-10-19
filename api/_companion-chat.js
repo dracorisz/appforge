@@ -10,7 +10,7 @@ const MAX_MESSAGES = 24
 const MAX_MESSAGE_CHARS = 4000
 const MAX_TOTAL_CHARS = 18000
 const MAX_TOOL_ROUNDS = 4
-const MAX_TOOL_CALLS_PER_ROUND = 2
+const MAX_TOOL_CALLS_PER_ROUND = 4
 const REQUEST_BUDGET_MS = 55000
 
 const modelForMode = (mode) => {
@@ -153,11 +153,10 @@ export default async function handler(req, res) {
       }
 
       contents.push({ role: 'model', parts })
-      if (functionCalls.length > MAX_TOOL_CALLS_PER_ROUND) {
-        return res.status(502).json({ message: 'Companion requested too many tool operations at once. Narrow the task and try again.', requestId })
-      }
       const functionResponses = []
-      for (const part of functionCalls) {
+      const permittedFunctionCalls = functionCalls.slice(0, MAX_TOOL_CALLS_PER_ROUND)
+      const deferredFunctionCalls = functionCalls.slice(MAX_TOOL_CALLS_PER_ROUND)
+      for (const part of permittedFunctionCalls) {
         const call = part.functionCall
         const name = String(call.name || '')
         const args = call.args && typeof call.args === 'object' ? call.args : {}
@@ -191,6 +190,16 @@ export default async function handler(req, res) {
             },
           })
         }
+      }
+      for (const part of deferredFunctionCalls) {
+        const call = part.functionCall
+        functionResponses.push({
+          functionResponse: {
+            name: String(call.name || ''),
+            ...(call.id ? { id: call.id } : {}),
+            response: { error: 'This round exceeded the safe tool-operation limit. Continue with fewer operations in the next step.' },
+          },
+        })
       }
       contents.push({ role: 'user', parts: functionResponses })
       if (Date.now() >= deadline - 1500) {
