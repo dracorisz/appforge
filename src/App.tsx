@@ -219,6 +219,7 @@ function App() {
   if (location.pathname === '/auth/confirm' || location.pathname === '/auth/email-confirmation') return <AuthEmailFlowPage mode="confirm" />
   if (!registryReady) return routeFallback
   const routeApp = getManageableApps().find((item) => item.route === location.pathname)
+  if (location.pathname === '/apps/companion' && user && user.email?.toLowerCase() !== 'dracorisz@gmail.com') return <Navigate to="/" replace />
   if (routeApp?.visible === false) return <Navigate to={user ? '/' : '/explore'} replace />
   if (location.pathname === '/privacy') return lazyPage(<PrivacyPolicyPage />)
   if (location.pathname === '/terms') return lazyPage(<TermsOfServicePage />)
