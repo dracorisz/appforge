@@ -6,6 +6,7 @@ const VERCEL_API = 'https://api.vercel.com'
 const SUPABASE_API = 'https://api.supabase.com'
 const DEFAULT_REPO = 'dracorisz/appforge'
 const DEFAULT_VERCEL_PROJECT = 'prj_duzco4XEzLRNCPs3n0VkWpRDusZq'
+const DEFAULT_VERCEL_TEAM_ID = 'team_w5zHVgvHs060CuaxQt23OSyr'
 const DEFAULT_SUPABASE_PROJECT = 'ixqoosixhahrsgwoxyme'
 const MAX_TOOL_TEXT = 24000
 const REQUEST_TIMEOUT = 7000
@@ -266,7 +267,7 @@ export async function executeCompanionTool(name, args, user, accessToken) {
     const token = requireToken('VERCEL_API_TOKEN', 'Vercel')
     const params = new URLSearchParams({ projectId, limit: String(Math.max(1, Math.min(10, Number(args.limit) || 5)) ) })
     if (args.target === 'production' || args.target === 'preview') params.set('target', args.target)
-    const teamId = String(process.env.VERCEL_TEAM_ID || '').trim()
+    const teamId = String(process.env.VERCEL_TEAM_ID || DEFAULT_VERCEL_TEAM_ID).trim()
     if (teamId) params.set('teamId', teamId)
     const result = await fetchJson(VERCEL_API + '/v6/deployments?' + params.toString(), { headers: { Authorization: 'Bearer ' + token } })
     return trimResult((result.deployments || []).map((item) => ({ uid: item.uid, url: item.url, state: item.readyState || item.state, target: item.target, createdAt: item.createdAt, meta: { githubCommitSha: item.meta?.githubCommitSha, githubCommitRef: item.meta?.githubCommitRef, githubCommitMessage: item.meta?.githubCommitMessage } })))
