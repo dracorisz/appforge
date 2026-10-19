@@ -1,5 +1,5 @@
 import React from 'react'
-import { Bot, Check, CheckCircle2, CircleAlert, Code2, Copy, Maximize2, MessageCircle, Plus, Send, Sparkles, Trash2, User, X } from 'lucide-react'
+import { Bot, Check, CheckCircle2, CircleAlert, Code2, Copy, MessageCircle, Plus, Send, Sparkles, Trash2, User, X } from 'lucide-react'
 import { SiGithub, SiSupabase, SiVercel } from 'react-icons/si'
 import { useAuth } from '@/auth/AuthProvider'
 import { Button, Card } from '@/components/ui'
@@ -201,7 +201,7 @@ export function Companion() {
                 <div><span className="text-muted-foreground">Operation: </span>{pendingApproval.operation === 'create' ? 'Create file' : 'Replace file'}</div>
                 <div className="break-all"><span className="text-muted-foreground">Target: </span>{pendingApproval.repository}/{pendingApproval.path}</div>
                 <div><span className="text-muted-foreground">Commit summary: </span>{pendingApproval.summary}</div>
-                <details className="rounded-lg border border-border/70">
+                <details open className="rounded-lg border border-border/70">
                   <summary className="cursor-pointer px-3 py-2 font-medium">Review complete proposed file content</summary>
                   <pre className="max-h-72 overflow-auto whitespace-pre-wrap break-words border-t border-border/70 p-3 text-xs leading-5">{pendingApproval.preview || 'No preview was provided.'}</pre>
                 </details>
