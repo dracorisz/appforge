@@ -22,19 +22,32 @@ const modelForMode = (mode) => {
 }
 
 const normalizeMessages = (value) => {
-  if (!Array.isArray(value) || value.length < 1 || value.length > MAX_MESSAGES) return null
-  let total = 0
-  const messages = []
-  for (const item of value) {
-    if (!item || !['user', 'assistant'].includes(item.role) || typeof item.content !== 'string') return null
+  if (!Array.isArray(value) || value.length < 1 || value.length > 200) return null
+
+  // Validate the newest user message strictly, but bound older browser-stored history
+  // instead of rejecting an otherwise valid prompt when a session grows too large.
+  const latest = value[value.length - 1]
+  if (!latest || latest.role !== 'user' || typeof latest.content !== 'string') return null
+  const latestContent = latest.content.trim()
+  if (!latestContent || latestContent.length > MAX_MESSAGE_CHARS) return null
+
+  const bounded = [{ role: 'user', content: latestContent }]
+  let total = latestContent.length
+  for (let index = value.length - 2; index >= 0 && bounded.length < MAX_MESSAGES; index -= 1) {
+    const item = value[index]
+    if (!item || !['user', 'assistant'].includes(item.role) || typeof item.content !== 'string') continue
     const content = item.content.trim()
-    if (!content || content.length > MAX_MESSAGE_CHARS) return null
-    total += content.length
-    if (total > MAX_TOTAL_CHARS) return null
-    messages.push({ role: item.role === 'assistant' ? 'model' : 'user', parts: [{ text: content }] })
+    if (!content) continue
+    const clipped = content.length > MAX_MESSAGE_CHARS ? content.slice(-MAX_MESSAGE_CHARS) : content
+    if (total + clipped.length > MAX_TOTAL_CHARS) break
+    bounded.push({ role: item.role, content: clipped })
+    total += clipped.length
   }
-  if (messages[messages.length - 1]?.role !== 'user') return null
-  return messages
+  bounded.reverse()
+  return bounded.map((item) => ({
+    role: item.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: item.content }],
+  }))
 }
 
 const systemPrompt = (mode) => mode === 'code'
