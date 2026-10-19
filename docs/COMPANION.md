@@ -16,6 +16,20 @@ Companion is a private AppForge app intended to become the project's AI chat and
 - Server-side Vertex AI text generation using AppForge's existing Google Workload Identity Federation bridge.
 - GitHub, Vercel and Supabase are not yet connected to the Companion runtime. The UI labels are placeholders and must not imply that tools are available.
 
+## Connection status and required credentials
+
+The owner-authenticated `GET /api/companion-integrations` endpoint checks provider credentials server-side and returns only a safe status; it never returns token values. The shared `api/_companion-auth.js` helper verifies the Supabase session and owner email for both chat and integration-status requests.
+
+Configure these Vercel environment variables as encrypted server-side secrets for the environment where Companion is being tested:
+
+- `GITHUB_TOKEN`: a fine-grained GitHub token or GitHub App installation token restricted to the AppForge repository. Grant only the repository and permissions required for enabled tools.
+- `VERCEL_API_TOKEN`: a Vercel token restricted to the relevant team/project where possible.
+- `SUPABASE_ACCESS_TOKEN`: a Supabase personal access token with only the project-management scopes required for enabled tools.
+
+Do not put these values in chat, source files, client-visible `VITE_*` variables, or the database. After setting each secret, verify the connection in Companion. A successful identity check proves only that the credential is accepted; it does not prove every advertised operation works. Keep an integration marked as unavailable until operation-level tests pass.
+
+Current state: the status endpoint and UI are implemented, but the three provider tokens are not configured in the AppForge Vercel project. Therefore, Companion still cannot perform GitHub, Vercel or Supabase actions. No production deployment has been made for these changes.
+
 ## Integration target
 
 Build full management capabilities across the three systems, including read and write operations where the provider API supports them:
