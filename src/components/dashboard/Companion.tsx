@@ -1,5 +1,6 @@
 import React from 'react'
-import { Bot, CheckCircle2, CircleAlert, Database, Github, Plus, Send, Sparkles, Trash2, Triangle, User } from 'lucide-react'
+import { Bot, CheckCircle2, CircleAlert, Plus, Send, Sparkles, Trash2, User } from 'lucide-react'
+import { SiGithub, SiSupabase, SiVercel } from 'react-icons/si'
 import { useAuth } from '@/auth/AuthProvider'
 import { Button, Card, Input } from '@/components/ui'
 
@@ -204,9 +205,9 @@ export function Companion() {
         <Card className="shrink-0 p-3">
           <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Integrations</h3></div>
           {([
-            { name: 'GitHub', key: 'github' as const, icon: Github },
-            { name: 'Vercel', key: 'vercel' as const, icon: Triangle },
-            { name: 'Supabase', key: 'supabase' as const, icon: Database },
+            { name: 'GitHub', key: 'github' as const, icon: SiGithub },
+            { name: 'Vercel', key: 'vercel' as const, icon: SiVercel },
+            { name: 'Supabase', key: 'supabase' as const, icon: SiSupabase },
           ]).map(({ name, key, icon: Icon }) => {
             const status = integrationStatuses[key]
             return <div key={name} className="mt-3 flex items-center gap-2">
