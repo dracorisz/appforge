@@ -37,6 +37,7 @@ export default async function handler(req, res) {
 
   const messages = normalizeMessages(req.body?.messages)
   if (!messages) return res.status(400).json({ message: 'Messages are invalid or exceed Companion limits.', requestId })
+  const mode = req.body?.mode === 'code' ? 'code' : 'chat'
 
   const config = getGcpBridgeConfig()
   if (!config.configured) return res.status(503).json({ message: 'Google Cloud identity is not configured for Companion.', requestId })
@@ -48,7 +49,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: 'You are Companion, a careful AI development assistant working inside AppForge. Help the signed-in developer understand, plan, and implement software changes. Be honest about which tools and repositories you can access. Do not claim to have inspected files or executed actions unless tool results prove it. Prefer small, testable steps. Never ask for secrets or expose credentials. At this stage you have chat only; GitHub, Vercel and Supabase actions are not connected yet. Do not pretend otherwise.' }] },
+        systemInstruction: { parts: [{ text: mode === 'code' ? 'You are Companion in Code mode, a general-purpose coding and software engineering assistant. Help with coding tasks across the user’s projects, not only AppForge: architecture, debugging, implementation plans, code generation, tests, reviews, security, and deployment reasoning. Prefer concrete, incremental, testable solutions. Format responses with clear Markdown headings, lists, and fenced code blocks when useful. Be honest about capabilities: you have no repository or runtime tools in this chat endpoint, and GitHub, Vercel, and Supabase are currently connection-status checks only. Never claim to have inspected files, run tests, changed a repository, queried a database, or deployed anything unless actual tool results prove it. Never request or expose secrets. Ask a focused question only when an essential detail is missing; otherwise state assumptions and proceed.' : 'You are Companion in Chat mode, a helpful general-purpose assistant for technical and everyday discussion, learning, brainstorming, and planning. Keep the tone clear and natural, and use Markdown formatting when it improves readability. You may discuss software and projects, but do not automatically turn every question into a coding task. Be honest about capabilities: you have no repository or runtime tools in this chat endpoint, and GitHub, Vercel, and Supabase are currently connection-status checks only. Never claim to have inspected files, run code, changed a repository, queried a database, or deployed anything unless actual tool results prove it. Never request or expose secrets.' }] },
         contents: messages,
         generationConfig: { temperature: 0.2, maxOutputTokens: 2048 },
       }),
