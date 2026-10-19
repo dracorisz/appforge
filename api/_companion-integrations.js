@@ -35,9 +35,9 @@ export default async function handler(req, res) {
   return res.status(200).json({
     requestId,
     integrations: {
-      github: { status: checks[0], capabilities: ['repositories', 'files', 'issues', 'pull_requests', 'actions'] },
-      vercel: { status: checks[1], capabilities: ['projects', 'domains', 'environment_variables', 'deployments', 'logs'] },
-      supabase: { status: checks[2], capabilities: ['projects', 'schemas', 'sql', 'migrations', 'edge_functions'] },
+      github: { status: checks[0], capabilities: ['repositories', 'files', 'code_search', 'approved_file_writes', 'release_checks'] },
+      vercel: { status: checks[1], capabilities: ['deployment_inspection'] },
+      supabase: { status: checks[2], capabilities: ['schema_read', 'rls_protected_table_reads'] },
     },
   })
 }
