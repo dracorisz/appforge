@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import handler from '../api/desktop-buddy-vertex.js'
+import handler from '../api/_desktop-buddy-vertex.js'
 import { getGcpBridgeConfig } from '../api/_gcp-cloud-run.js'
 
 const makeRes = () => {
