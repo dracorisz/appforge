@@ -4,7 +4,7 @@ import { useAuth } from '@/auth/AuthProvider'
 import { Button, Card, Input } from '@/components/ui'
 
 type Message = { role: 'user' | 'assistant'; content: string }
-type IntegrationStatus = 'checking' | 'verified' | 'needs_setup' | 'invalid_credentials' | 'unavailable'
+type IntegrationStatus = 'checking' | 'verified' | 'needs_setup' | 'invalid_credentials' | 'insufficient_permissions' | 'unavailable'
 type IntegrationKey = 'github' | 'vercel' | 'supabase'
 const starterPrompts = [
   'Explain the current AppForge architecture.',
@@ -38,7 +38,7 @@ export function Companion() {
       const payload = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error('Integration status could not be checked.')
       const integrations = payload.integrations || {}
-      const normalize = (value: unknown): IntegrationStatus => ['verified', 'needs_setup', 'invalid_credentials', 'unavailable'].includes(String(value)) ? value as IntegrationStatus : 'unavailable'
+      const normalize = (value: unknown): IntegrationStatus => ['verified', 'needs_setup', 'invalid_credentials', 'insufficient_permissions', 'unavailable'].includes(String(value)) ? value as IntegrationStatus : 'unavailable'
       setIntegrationStatuses({
         github: normalize(integrations.github?.status),
         vercel: normalize(integrations.vercel?.status),
@@ -136,7 +136,7 @@ export function Companion() {
           ].map(({ name, key, description, icon: Icon }) => <div key={name} className="flex items-start gap-4">
             <span className="mt-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-border/70"><Icon className="h-4 w-4" /></span>
             <div className="min-w-0 flex-1"><div className="text-sm font-medium">{name}</div><p className="mt-2 text-sm text-muted-foreground">{description}</p></div>
-            <span className="mt-2 rounded-xl border border-border px-2 py-2 text-sm text-muted-foreground">{{ checking: 'Checking', verified: 'Credential verified', needs_setup: 'Needs setup', invalid_credentials: 'Check credentials', unavailable: 'Unavailable' }[integrationStatuses[key]]}</span>
+            <span className="mt-2 rounded-xl border border-border px-2 py-2 text-sm text-muted-foreground">{{ checking: 'Checking', verified: 'Credential verified', needs_setup: 'Needs setup', invalid_credentials: 'Check credentials', insufficient_permissions: 'Review permissions', unavailable: 'Unavailable' }[integrationStatuses[key]]}</span>
           </div>)}
         </Card>
       </aside>
