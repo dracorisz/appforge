@@ -35,40 +35,27 @@ export function Layout({ children, currentVersion }: { children: React.ReactNode
     };
   }, [mobileOpen, closeMobileSidebar]);
 
-  React.useEffect(() => {
-    setMobileOpen(false);
-  }, [location.pathname]);
+  React.useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
   return (
-    <div data-route={location.pathname} className="flex h-screen overflow-hidden bg-background">
+    <div data-route={location.pathname} className="flex h-dvh min-h-0 overflow-hidden bg-background">
       <div className={`hidden lg:flex ${sidebarCollapsed ? "w-16" : "w-64"} transition-all duration-300`}>
         <Sidebar collapsed={sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)} />
       </div>
-
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 bg-background lg:hidden" role="dialog" aria-modal="true" aria-label="AppForge navigation">
-          <Sidebar onClose={closeMobileSidebar} />
-        </div>
-      )}
-
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+      {mobileOpen && <div className="fixed inset-0 z-50 bg-background lg:hidden" role="dialog" aria-modal="true" aria-label="AppForge navigation"><Sidebar onClose={closeMobileSidebar} /></div>}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <MobileHeader onOpen={() => setMobileOpen(true)} triggerRef={menuTriggerRef} />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-8 overflow-x-hidden">
-          <div className="mx-auto min-w-0 w-full max-w-7xl">
+        <main className={`min-h-0 flex-1 overflow-x-hidden ${isAppRoute ? "overflow-hidden p-2 lg:p-3" : "overflow-y-auto p-4 lg:p-8"}`}>
+          <div className={`mx-auto min-w-0 w-full max-w-7xl ${isAppRoute ? "flex h-full min-h-0 flex-col" : ""}`}>
             {showProjectPulse && <ProjectPulse />}
-            <div className={isAppRoute ? "app-unified-shell w-full" : "w-full"}>
-              {isAppRoute && (
-                <section className="app-page-header surface-card mb-4 rounded-xl border border-border/80 p-4 sm:p-4">
-                  <AppHeading />
-                </section>
-              )}
-              <div className={`app-content w-full [&>div:first-child]:!mx-0 [&>div:first-child]:!w-full [&>div:first-child]:!max-w-none [&>div:first-child]:!p-0 ${isAppRoute ? "[&_.app-heading]:hidden" : ""}`}>{children}</div>
+            <div className={isAppRoute ? "app-unified-shell flex min-h-0 w-full flex-1 flex-col" : "w-full"}>
+              {isAppRoute && <section className="app-page-header surface-card mb-2 shrink-0 rounded-xl border border-border/80 px-3 py-2"><AppHeading /></section>}
+              <div className={`app-content w-full [&>div:first-child]:!mx-0 [&>div:first-child]:!w-full [&>div:first-child]:!max-w-none [&>div:first-child]:!p-0 ${isAppRoute ? "min-h-0 flex-1 overflow-y-auto [&_.app-heading]:hidden" : ""}`}>{children}</div>
             </div>
           </div>
         </main>
         <Footer version={currentVersion} />
       </div>
-
       {showDesktopBuddy && <DesktopBuddyOverlay />}
       <BackToTop />
     </div>
