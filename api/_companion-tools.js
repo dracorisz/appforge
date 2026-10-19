@@ -166,7 +166,7 @@ export async function executeCompanionTool(name, args, user) {
     const repository = parseRepo(args.repository)
     const query = String(args.query || '').trim().slice(0, 120)
     if (query.length < 2) throw new Error('Search query must contain at least two characters.')
-    const token = requireToken('GITHUB_TOKEN', 'GitHub')
+    requireToken('GITHUB_TOKEN', 'GitHub')
     const url = GITHUB_API + '/search/code?q=' + encodeURIComponent(query + ' repo:' + repository) + '&per_page=8'
     const result = await fetchJson(url, { headers: { ...githubHeaders(), Accept: 'application/vnd.github.text-match+json' } })
     return { total: result.total_count || 0, matches: (result.items || []).slice(0, 8).map((item) => ({ path: item.path, url: item.html_url, repository: item.repository?.full_name })) }
