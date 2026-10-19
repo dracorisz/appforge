@@ -1,4 +1,5 @@
 import React from 'react'
+import { Companion } from './components/dashboard/Companion'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { ArrowLeftRight, Bitcoin, Image as ImageIcon, Palette, PanelsTopLeft, QrCode } from 'lucide-react'
 import { Layout } from './components/layout/Layout'
@@ -113,7 +114,7 @@ const lazyPage = (page: React.ReactNode) => <React.Suspense fallback={routeFallb
 const utilitySlugs = new Set(['json-formatter','uuid-generator','password-generator','token-generator','base64-tool','hash-tool','url-encoder','html-encoder','jwt-decoder','hex-converter'])
 const imageSlugs = new Set(['image-resizer','image-converter','image-compressor','image-metadata'])
 const localSlugs = new Set(['csv-converter','timestamp-converter','regex-tester'])
-const privatePaths = new Set(['/apps/getter-pro','/apps/scrapper-pro','/apps/media-vault','/apps/desktop-buddy','/apps/ai-dragon-arena'])
+const privatePaths = new Set(['/apps/getter-pro','/apps/scrapper-pro','/apps/media-vault','/apps/desktop-buddy','/apps/ai-dragon-arena','/apps/companion'])
 const toolNameForSlug = (slug: string) => getApp(slug)?.name || slug.replace(/-/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
 
 function publicAppPage(pathname: string): React.ReactNode | null {
@@ -265,6 +266,7 @@ function App() {
         <Route path="/apps/data-converter" element={<AnyToAnyConverter />} />
         <Route path="/apps/any-converter" element={<Navigate to="/apps/data-converter" replace />} />
         <Route path="/apps/task-list" element={<TaskList />} />
+        <Route path="/apps/companion" element={<Companion />} />
         <Route path="/apps/media-vault" element={<PF_UserMediaVault />} />
         <Route path="/apps/desktop-buddy" element={<DesktopBuddy />} />
         <Route path="/apps/qr-generator" element={<QrGenerator />} />
