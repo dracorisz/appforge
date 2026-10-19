@@ -4,6 +4,7 @@ const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL |
 const SUPABASE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || ''
 const MODEL = process.env.COMPANION_VERTEX_MODEL || 'gemini-2.5-flash'
 const LOCATION = process.env.COMPANION_VERTEX_LOCATION || 'us-central1'
+const OWNER_EMAIL = (process.env.COMPANION_OWNER_EMAIL || 'dracorisz@gmail.com').trim().toLowerCase()
 const MAX_MESSAGES = 24
 const MAX_MESSAGE_CHARS = 4000
 const MAX_TOTAL_CHARS = 18000
@@ -50,6 +51,7 @@ export default async function handler(req, res) {
   const token = getBearer(req)
   const user = await authenticate(token).catch(() => null)
   if (!user?.id) return res.status(401).json({ message: 'Sign in to use Companion.', requestId })
+  if (String(user.email || '').trim().toLowerCase() !== OWNER_EMAIL) return res.status(403).json({ message: 'Companion is currently restricted to its owner.', requestId })
 
   const messages = normalizeMessages(req.body?.messages)
   if (!messages) return res.status(400).json({ message: 'Messages are invalid or exceed Companion limits.', requestId })
