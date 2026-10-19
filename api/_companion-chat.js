@@ -4,7 +4,8 @@ import { companionTools, executeCompanionTool, executeApprovedCompanionAction } 
 
 const DEFAULT_CHAT_MODEL = 'gemini-3.8-flash'
 const DEFAULT_CODE_MODEL = 'gemini-4-argon'
-const LOCATION = process.env.COMPANION_VERTEX_LOCATION || 'global'
+const configuredLocation = process.env.COMPANION_VERTEX_LOCATION || 'global'
+const locationForModel = (model) => ['gemini-4-argon', 'gemini-3.8-flash'].includes(model) ? 'global' : configuredLocation
 const MAX_MESSAGES = 24
 const MAX_MESSAGE_CHARS = 4000
 const MAX_TOTAL_CHARS = 18000
@@ -73,7 +74,7 @@ async function callModel({ url, accessToken, model, contents, mode, useTools, re
       providerStatus: String(providerError.status || '').slice(0, 80),
       providerMessage,
       model,
-      location: LOCATION,
+      location: new URL(url).pathname.match(/\/locations\/([^/]+)/)?.[1] || 'unknown',
     })
     const message = response.status === 429
       ? 'Companion has reached the current model quota. Try again shortly.'
@@ -118,8 +119,10 @@ export default async function handler(req, res) {
     if (!config.configured) return res.status(503).json({ message: 'Google Cloud identity is not configured for Companion.', requestId })
 
     const { accessToken } = await createGcpBridgeCredentials()
-    const url = 'https://' + LOCATION + '-aiplatform.googleapis.com/v1/projects/' +
-      encodeURIComponent(config.projectNumber) + '/locations/' + encodeURIComponent(LOCATION) +
+    const location = locationForModel(model)
+    const host = location === 'global' ? 'aiplatform.googleapis.com' : location + '-aiplatform.googleapis.com'
+    const url = 'https://' + host + '/v1/projects/' +
+      encodeURIComponent(config.projectNumber) + '/locations/' + encodeURIComponent(location) +
       '/publishers/google/models/' + encodeURIComponent(model) + ':generateContent'
     const useTools = mode === 'code'
     let toolCallsExecuted = 0
