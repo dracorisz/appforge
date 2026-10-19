@@ -65,7 +65,8 @@ function FormattedMessage({ content }: { content: string }) {
     paragraph.push(line.trim())
   })
   flushParagraph(); flushList()
-  if (code) blocks.push(<pre key={blocks.length} className="my-3 max-w-full overflow-x-auto rounded-lg border border-border/70 bg-muted/60 p-3 text-xs leading-5"><code>{code.join('\n')}</code></pre>)
+  const trailingCode = code as unknown as string[] | null
+  if (trailingCode) blocks.push(<pre key={blocks.length} className="my-3 max-w-full overflow-x-auto rounded-lg border border-border/70 bg-muted/60 p-3 text-xs leading-5"><code>{trailingCode.join('\n')}</code></pre>)
   return <div className="break-words leading-6 [&_a]:break-all">{blocks}</div>
 }
 const statusLabel: Record<IntegrationStatus, string> = { checking: 'Checking…', verified: 'Connected', needs_setup: 'Not connected', invalid_credentials: 'Invalid credentials', insufficient_permissions: 'Permission issue', unavailable: 'Unavailable' }
