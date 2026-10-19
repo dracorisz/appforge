@@ -191,6 +191,7 @@ const createPendingApproval = (action, user) => {
 export async function executeCompanionTool(name, args, user, accessToken) {
   if (!args || typeof args !== 'object' || Array.isArray(args)) throw new Error('Tool arguments must be an object.')
   if (name === 'github_list_files') {
+    requireToken('GITHUB_TOKEN', 'GitHub')
     const repository = parseRepo(args.repository)
     const path = args.path ? safePath(args.path) : ''
     const result = await fetchJson(githubUrl(repository, path), { headers: githubHeaders() })
@@ -198,6 +199,7 @@ export async function executeCompanionTool(name, args, user, accessToken) {
     return trimResult(entries.slice(0, 120).map((entry) => ({ name: entry.name, path: entry.path, type: entry.type, size: entry.size, url: entry.html_url })))
   }
   if (name === 'github_read_file') {
+    requireToken('GITHUB_TOKEN', 'GitHub')
     const repository = parseRepo(args.repository)
     const path = safePath(args.path)
     const file = await githubGetFile(repository, path)
