@@ -191,8 +191,14 @@ export default async function handler(req, res) {
       }
     }
 
+    if (Date.now() < deadline - 8000) {
+      const finalPayload = await callModel({ url, accessToken, model, contents, mode, useTools: false, requestId, deadline })
+      const finalParts = finalPayload?.candidates?.[0]?.content?.parts || []
+      const finalText = finalParts.filter((part) => !part.thought).map((part) => part.text || '').join('').trim()
+      if (finalText) return res.status(200).json({ text: finalText, model, provider: 'vertex-ai', requestId, toolCallsExecuted })
+    }
     return res.status(200).json({
-      text: 'I reached the tool-step limit before producing a final summary. Ask me to continue with the next verification or implementation step; I will not mark the task complete until the results are reviewed.',
+      text: 'I reached the tool-step or time limit before producing a final summary. Ask me to continue with the next verification or implementation step; I will not mark the task complete until the results are reviewed.',
       model,
       provider: 'vertex-ai',
       requestId,
