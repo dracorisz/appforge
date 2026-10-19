@@ -10,7 +10,7 @@ const MAX_MESSAGES = 24
 const MAX_MESSAGE_CHARS = 4000
 const MAX_TOTAL_CHARS = 18000
 const MAX_TOOL_ROUNDS = 5
-const MAX_TOOL_CALLS_PER_ROUND = 3
+const MAX_TOOL_CALLS_PER_ROUND = 2
 const REQUEST_BUDGET_MS = 55000
 
 const modelForMode = (mode) => {
@@ -62,7 +62,7 @@ async function callModel({ url, accessToken, model, contents, mode, useTools, re
     method: 'POST',
     headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(Math.min(28000, remaining - 500)),
+    signal: AbortSignal.timeout(Math.min(22000, remaining - 500)),
   })
   if (!response.ok) {
     const errorPayload = await response.json().catch(() => ({}))
