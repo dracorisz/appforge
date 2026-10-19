@@ -13,6 +13,9 @@
     "api/desktop-buddy.js": {
       "maxDuration": 180
     },
+    "api/companion.js": {
+      "maxDuration": 60
+    },
     "api/**/*.js": {
       "maxDuration": 30
     }
