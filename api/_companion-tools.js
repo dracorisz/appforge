@@ -279,6 +279,7 @@ export async function executeCompanionTool(name, args, user, accessToken) {
     const teamId = String(process.env.VERCEL_TEAM_ID || '').trim()
     if (teamId) params.set('teamId', teamId)
     const result = await fetchJson(VERCEL_API + '/v13/deployments/' + encodeURIComponent(id) + (params.size ? '?' + params.toString() : ''), { headers: { Authorization: 'Bearer ' + token } })
+    if (!allowedVercelProjects().has(String(result.projectId || ''))) throw new Error('This deployment does not belong to a Companion-allowed Vercel project.')
     return trimResult({ id: result.id, url: result.url, name: result.name, state: result.readyState || result.state, target: result.target, createdAt: result.createdAt, ready: result.ready, meta: { githubCommitSha: result.meta?.githubCommitSha, githubCommitRef: result.meta?.githubCommitRef, githubCommitMessage: result.meta?.githubCommitMessage } })
   }
   if (name === 'supabase_list_tables') {
