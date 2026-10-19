@@ -4,6 +4,8 @@ import { useAuth } from '@/auth/AuthProvider'
 import { Button, Card, Input } from '@/components/ui'
 
 type Message = { role: 'user' | 'assistant'; content: string }
+type IntegrationStatus = 'checking' | 'verified' | 'needs_setup' | 'invalid_credentials' | 'unavailable'
+type IntegrationKey = 'github' | 'vercel' | 'supabase'
 const starterPrompts = [
   'Explain the current AppForge architecture.',
   'Help me plan the first safe coding-agent workflow.',
@@ -16,11 +18,37 @@ export function Companion() {
   const [draft, setDraft] = React.useState('')
   const [sending, setSending] = React.useState(false)
   const [error, setError] = React.useState('')
+  const [integrationStatuses, setIntegrationStatuses] = React.useState<Record<IntegrationKey, IntegrationStatus>>({ github: 'checking', vercel: 'checking', supabase: 'checking' })
   const scrollRef = React.useRef<HTMLDivElement | null>(null)
 
   React.useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages, sending])
+
+  React.useEffect(() => {
+    if (!session?.access_token) {
+      setIntegrationStatuses({ github: 'needs_setup', vercel: 'needs_setup', supabase: 'needs_setup' })
+      return
+    }
+    const controller = new AbortController()
+    void fetch('/api/companion-integrations', {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+      signal: controller.signal,
+    }).then(async (response) => {
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error('Integration status could not be checked.')
+      const integrations = payload.integrations || {}
+      const normalize = (value: unknown): IntegrationStatus => ['verified', 'needs_setup', 'invalid_credentials', 'unavailable'].includes(String(value)) ? value as IntegrationStatus : 'unavailable'
+      setIntegrationStatuses({
+        github: normalize(integrations.github?.status),
+        vercel: normalize(integrations.vercel?.status),
+        supabase: normalize(integrations.supabase?.status),
+      })
+    }).catch(() => {
+      if (!controller.signal.aborted) setIntegrationStatuses({ github: 'unavailable', vercel: 'unavailable', supabase: 'unavailable' })
+    })
+    return () => controller.abort()
+  }, [session?.access_token])
 
   const sendMessage = async (value = draft) => {
     const content = value.trim()
@@ -100,15 +128,15 @@ export function Companion() {
           <p className="mt-4 text-sm text-muted-foreground">Companion is a private app. Server requests are authenticated against your AppForge account.</p>
         </Card>
         <Card className="space-y-4 p-4">
-          <div><h3 className="text-sm font-semibold">Integrations</h3><p className="mt-2 text-sm text-muted-foreground">Connection setup is the next implementation stage.</p></div>
+          <div><h3 className="text-sm font-semibold">Integrations</h3><p className="mt-2 text-sm text-muted-foreground">Connection status is checked securely by the server. A verified connection confirms the credential works, not that every operation has been tested.</p></div>
           {[
-            { name: 'GitHub', description: 'Repository search, diffs and reviewed changes', icon: GitBranch },
-            { name: 'Vercel', description: 'Deployment status and project settings', icon: Server },
-            { name: 'Supabase', description: 'Schema, migrations and security checks', icon: CheckCircle2 },
-          ].map(({ name, description, icon: Icon }) => <div key={name} className="flex items-start gap-4">
+            { name: 'GitHub', key: 'github' as const, description: 'Repositories, files, issues, pull requests and Actions', icon: GitBranch },
+            { name: 'Vercel', key: 'vercel' as const, description: 'Projects, domains, environment metadata, deployments and logs', icon: Server },
+            { name: 'Supabase', key: 'supabase' as const, description: 'Projects, schemas, SQL, migrations and Edge Functions', icon: CheckCircle2 },
+          ].map(({ name, key, description, icon: Icon }) => <div key={name} className="flex items-start gap-4">
             <span className="mt-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-border/70"><Icon className="h-4 w-4" /></span>
             <div className="min-w-0 flex-1"><div className="text-sm font-medium">{name}</div><p className="mt-2 text-sm text-muted-foreground">{description}</p></div>
-            <span className="mt-2 rounded-xl border border-border px-2 py-2 text-sm text-muted-foreground">Not connected</span>
+            <span className="mt-2 rounded-xl border border-border px-2 py-2 text-sm text-muted-foreground">{{ checking: 'Checking', verified: 'Credential verified', needs_setup: 'Needs setup', invalid_credentials: 'Check credentials', unavailable: 'Unavailable' }[integrationStatuses[key]]}</span>
           </div>)}
         </Card>
       </aside>
