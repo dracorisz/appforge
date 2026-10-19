@@ -14,15 +14,58 @@ const starterPrompts: Record<CompanionMode, string[]> = { chat: ['Explain a tech
 
 function FormattedMessage({ content }: { content: string }) {
   const lines = content.replace(/\r\n/g, '\n').split('\n')
-  return <div className="break-words leading-6">{lines.map((line, index) => {
+  const blocks: React.ReactNode[] = []
+  let paragraph: string[] = []
+  let list: { ordered: boolean; items: string[] } | null = null
+  let code: string[] | null = null
+  const inline = (value: string) => value.split(/(\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|\x60[^\x60]+\x60)/g).map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) return <strong key={index}>{part.slice(2, -2)}</strong>
+    if (part.startsWith('*') && part.endsWith('*')) return <em key={index}>{part.slice(1, -1)}</em>
+    if (part.startsWith('~~') && part.endsWith('~~')) return <del key={index}>{part.slice(2, -2)}</del>
+    if (part.charCodeAt(0) === 96 && part.charCodeAt(part.length - 1) === 96) return <code key={index} className="rounded bg-muted px-1 py-0.5 font-mono text-[0.9em]">{part.slice(1, -1)}</code>
+    return part
+  })
+  const flushParagraph = () => {
+    if (paragraph.length) { blocks.push(<p key={blocks.length} className="my-2 first:mt-0 last:mb-0">{inline(paragraph.join(' '))}</p>); paragraph = [] }
+  }
+  const flushList = () => {
+    if (list) {
+      const Tag = list.ordered ? 'ol' : 'ul'
+      blocks.push(<Tag key={blocks.length} className={(list.ordered ? 'list-decimal' : 'list-disc') + ' my-2 space-y-1 pl-6'}>{list.items.map((item, index) => <li key={index}>{inline(item)}</li>)}</Tag>)
+      list = null
+    }
+  }
+  lines.forEach((line) => {
+    if (/^\s*\x60\x60\x60/.test(line)) {
+      flushParagraph(); flushList()
+      if (code) { blocks.push(<pre key={blocks.length} className="my-3 max-w-full overflow-x-auto rounded-lg border border-border/70 bg-muted/60 p-3 text-xs leading-5"><code>{code.join('\n')}</code></pre>); code = null }
+      else code = []
+      return
+    }
+    if (code) { code.push(line); return }
+    if (!line.trim()) { flushParagraph(); flushList(); return }
     const heading = line.match(/^(#{1,4})\s+(.+)$/)
+    if (heading) {
+      flushParagraph(); flushList()
+      blocks.push(<div key={blocks.length} className={heading[1].length <= 2 ? 'mt-3 font-semibold' : 'mt-2 font-medium'}>{inline(heading[2])}</div>)
+      return
+    }
     const bullet = line.match(/^\s*[-*+]\s+(.+)$/)
     const numbered = line.match(/^\s*\d+[.)]\s+(.+)$/)
-    const text = (heading ? heading[2] : bullet ? '• ' + bullet[1] : numbered ? numbered[1] : line).split(/(\*\*[^*]+\*\*|\x60[^\x60]+\x60)/g)
-    const rendered = text.map((part, i) => part.startsWith('**') && part.endsWith('**') ? <strong key={i}>{part.slice(2, -2)}</strong> : part.charCodeAt(0) === 96 && part.charCodeAt(part.length - 1) === 96 ? <code key={i} className="rounded bg-muted px-1 py-0.5 font-mono text-[0.9em]">{part.slice(1, -1)}</code> : part)
-    if (!line.trim()) return <div key={index} className="h-2" />
-    return heading ? <div key={index} className={heading[1].length < 3 ? 'mt-3 font-semibold' : 'mt-2 font-medium'}>{rendered}</div> : bullet || numbered ? <div key={index} className="pl-2">{rendered}</div> : <p key={index} className="my-1 first:mt-0 last:mb-0">{rendered}</p>
-  })}</div>
+    if (bullet || numbered) {
+      flushParagraph()
+      const ordered = Boolean(numbered)
+      if (list && list.ordered !== ordered) flushList()
+      if (!list) list = { ordered, items: [] }
+      list.items.push((bullet || numbered)![1])
+      return
+    }
+    flushList()
+    paragraph.push(line.trim())
+  })
+  flushParagraph(); flushList()
+  if (code) blocks.push(<pre key={blocks.length} className="my-3 max-w-full overflow-x-auto rounded-lg border border-border/70 bg-muted/60 p-3 text-xs leading-5"><code>{code.join('\n')}</code></pre>)
+  return <div className="break-words leading-6 [&_a]:break-all">{blocks}</div>
 }
 const statusLabel: Record<IntegrationStatus, string> = { checking: 'Checking…', verified: 'Connected', needs_setup: 'Not connected', invalid_credentials: 'Invalid credentials', insufficient_permissions: 'Permission issue', unavailable: 'Unavailable' }
 
