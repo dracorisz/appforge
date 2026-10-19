@@ -2,7 +2,7 @@ import React from 'react'
 import { Bot, Check, CheckCircle2, CircleAlert, Code2, Copy, Maximize2, MessageCircle, Plus, Send, Sparkles, Trash2, User, X } from 'lucide-react'
 import { SiGithub, SiSupabase, SiVercel } from 'react-icons/si'
 import { useAuth } from '@/auth/AuthProvider'
-import { Button, Card, Input } from '@/components/ui'
+import { Button, Card } from '@/components/ui'
 
 type Message = { role: 'user' | 'assistant'; content: string }
 type ChatSession = { id: string; title: string; updatedAt: number; messages: Message[] }
@@ -112,7 +112,7 @@ export function Companion() {
   return (
     <div className={expanded ? 'fixed inset-2 z-50 flex min-h-0 min-w-0 flex-col rounded-xl border border-border bg-background p-2 shadow-2xl sm:inset-4 sm:p-3' : 'grid h-full min-h-0 min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_16rem]'}>
       {expanded && <div className="flex shrink-0 items-center justify-between px-2 pb-2"><span className="text-sm font-semibold">Companion workspace</span><Button type="button" variant="ghost" onClick={() => setExpanded(false)} aria-label="Close expanded chat"><X className="h-4 w-4" /></Button></div>}
-      <Card className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
+      <Card className={expanded ? 'flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden' : 'flex h-full min-h-0 min-w-0 flex-col overflow-hidden'}>
         <div className="flex min-h-0 flex-1">
           <aside className="hidden w-48 shrink-0 flex-col gap-1 overflow-y-auto border-r border-border/70 p-2 md:flex" aria-label="Chat sessions">
             <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Recent sessions</div>
@@ -140,7 +140,7 @@ export function Companion() {
           </div>
         </div>
       </Card>
-      <aside className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto">
+      <aside className={expanded ? 'hidden' : 'flex h-full min-h-0 flex-col gap-3 overflow-y-auto'}>
         <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Integrations</h3></div><p className="mt-2 text-xs leading-5 text-muted-foreground">Connection status is checked securely by the server. Direct repository, deployment, and database actions are not yet exposed to chat.</p>
           {([{ name: 'GitHub', key: 'github' as const, icon: SiGithub }, { name: 'Vercel', key: 'vercel' as const, icon: SiVercel }, { name: 'Supabase', key: 'supabase' as const, icon: SiSupabase }]).map(({ name, key, icon: Icon }) => {
             const status = integrationStatuses[key]
