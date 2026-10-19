@@ -8,7 +8,7 @@ const check = async (url, token, headers = {}) => {
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...headers },
       signal: AbortSignal.timeout(7000),
     })
-    return response.ok ? 'verified' : response.status === 401 || response.status === 403 ? 'invalid_credentials' : 'unavailable'
+    return response.ok ? 'verified' : response.status === 401 ? 'invalid_credentials' : response.status === 403 ? 'insufficient_permissions' : 'unavailable'
   } catch {
     return 'unavailable'
   }
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
   const checks = await Promise.all([
     configured('GITHUB_TOKEN') ? check('https://api.github.com/user', process.env.GITHUB_TOKEN, { 'X-GitHub-Api-Version': '2022-11-28' }) : Promise.resolve('needs_setup'),
     configured('VERCEL_API_TOKEN') ? check('https://api.vercel.com/v2/user', process.env.VERCEL_API_TOKEN) : Promise.resolve('needs_setup'),
-    configured('SUPABASE_ACCESS_TOKEN') ? check('https://api.supabase.com/v1/projects', process.env.SUPABASE_ACCESS_TOKEN) : Promise.resolve('needs_setup'),
+    configured('SUPABASE_ACCESS_TOKEN') ? check('https://api.supabase.com/v1/projects/ixqoosixhahrsgwoxyme', process.env.SUPABASE_ACCESS_TOKEN) : Promise.resolve('needs_setup'),
   ])
 
   return res.status(200).json({
