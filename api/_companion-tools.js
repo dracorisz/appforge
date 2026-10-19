@@ -68,9 +68,13 @@ const isProtectedWritePath = (path) => (
 )
 const githubUrl = (repository, path = '') => GITHUB_API + '/repos/' + repository + '/contents' + (path ? '/' + path.split('/').map(encodeURIComponent).join('/') : '')
 const githubGetFile = async (repository, path) => fetchJson(githubUrl(repository, path), { headers: githubHeaders() })
+const redactSecrets = (value) => String(value)
+  .replace(/gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|AIza[0-9A-Za-z_-]{30,}|sb_secret_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}/g, '[REDACTED_SECRET]')
+  .replace(/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----[\s\S]*?-----END (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/g, '[REDACTED_PRIVATE_KEY]')
+const hasLikelySecret = (value) => /gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|AIza[0-9A-Za-z_-]{30,}|sb_secret_[A-Za-z0-9_-]+|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/.test(String(value))
 const decodeFile = (file) => {
   if (file.type !== 'file' || typeof file.content !== 'string' || file.size > 500000) throw new Error('Only text files up to 500 KB can be read.')
-  return Buffer.from(file.content.replace(/\s/g, ''), 'base64').toString('utf8')
+  return redactSecrets(Buffer.from(file.content.replace(/\s/g, ''), 'base64').toString('utf8'))
 }
 const requireRepoMetadata = async (repository) => fetchJson(GITHUB_API + '/repos/' + repository, { headers: githubHeaders() })
 
@@ -91,7 +95,7 @@ const readOnlySql = (value) => {
   const query = String(value || '').trim()
   if (!query || query.length > 8000 || !/^(select|with)\b/i.test(query)) throw new Error('Only a single SELECT or WITH query up to 8,000 characters is allowed.')
   if (query.includes(';') || /--|\/\*|\*\/|\\x00/i.test(query)) throw new Error('SQL comments and multiple statements are blocked.')
-  if (/\b(insert|update|delete|merge|drop|alter|create|truncate|grant|revoke|copy|call|do|execute|prepare|deallocate|set|reset|vacuum|analyze|refresh|reindex|pg_sleep|dblink|lo_import|lo_export|pg_read_file|pg_write_file|pg_ls_dir|set_config|nextval|setval|large_object|http_get|http_post)\b/i.test(query)) {
+  if (/\b(insert|update|delete|merge|drop|alter|create|truncate|grant|revoke|copy|call|do|execute|prepare|deallocate|set|reset|vacuum|analyze|refresh|reindex|pg_sleep|dblink|lo_import|lo_export|pg_read_file|pg_write_file|pg_ls_dir|set_config|nextval|setval|large_object|http_get|http_post|pg_advisory|pg_cancel_backend|pg_terminate_backend|pg_reload_conf|pg_promote|pg_notify|pg_switch_wal|pg_rotate_logfile|pg_stat_file|cron)\b|\bpg_[a-z0-9_]+\s*\(|\blo_[a-z0-9_]+\s*\(/i.test(query)) {
     throw new Error('The query contains a blocked mutation, administrative command, or potentially side-effecting function.')
   }
   return query
@@ -178,6 +182,7 @@ export async function executeCompanionTool(name, args, user) {
     const content = String(args.content ?? '')
     const summary = String(args.summary || '').trim().replace(/[\r\n\t]+/g, ' ').slice(0, 120)
     if (!content || content.length > 100000) throw new Error('Proposed file content must be between 1 and 100,000 characters.')
+    if (hasLikelySecret(content)) throw new Error('The proposed file content resembles a credential or private key. Remove it before requesting approval.')
     if (!summary) throw new Error('A concise commit summary is required.')
     if (isProtectedWritePath(path)) throw new Error('Companion cannot modify its own safety controls, deployment configuration, workflows, security policy, or database migrations through its tool interface.')
     requireToken('GITHUB_TOKEN', 'GitHub')
@@ -233,7 +238,7 @@ export async function executeApprovedCompanionAction(token, user) {
   const repository = parseRepo(action.repository)
   const path = safePath(action.path)
   if (isProtectedWritePath(path)) throw new Error('This path is protected from Companion writes.')
-  const tokenValue = requireToken('GITHUB_TOKEN', 'GitHub')
+  requireToken('GITHUB_TOKEN', 'GitHub')
   const metadata = await requireRepoMetadata(repository)
   if (metadata.archived || metadata.disabled || metadata.default_branch !== action.defaultBranch) throw new Error('Repository state changed since approval was requested. Review the change again.')
   let current = null
