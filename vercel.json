@@ -10,7 +10,7 @@
   "installCommand": "npm install",
   "regions": ["iad1"],
   "functions": {
-    "api/desktop-buddy-vertex.js": {
+    "api/desktop-buddy.js": {
       "maxDuration": 180
     },
     "api/**/*.js": {
@@ -22,6 +22,10 @@
     "VITE_APP_URL": "https://www.sstoken.space"
   },
   "rewrites": [
+    { "source": "/api/companion-chat", "destination": "/api/companion?mode=chat" },
+    { "source": "/api/companion-integrations", "destination": "/api/companion?mode=integrations" },
+    { "source": "/api/desktop-buddy-image", "destination": "/api/desktop-buddy?mode=image" },
+    { "source": "/api/desktop-buddy-vertex", "destination": "/api/desktop-buddy?mode=vertex" },
     {
       "source": "/((?!api(?:/|$)).*)",
       "destination": "/index.html"
