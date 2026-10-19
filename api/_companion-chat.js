@@ -10,8 +10,8 @@ const MAX_MESSAGES = 24
 const MAX_MESSAGE_CHARS = 4000
 const MAX_TOTAL_CHARS = 18000
 const MAX_TOOL_ROUNDS = 5
-const MAX_TOOL_CALLS_PER_ROUND = 5
-const REQUEST_BUDGET_MS = 26000
+const MAX_TOOL_CALLS_PER_ROUND = 3
+const REQUEST_BUDGET_MS = 55000
 
 const modelForMode = (mode) => {
   const modernLegacyOverride = /^gemini-(3|4)-/.test(String(process.env.COMPANION_VERTEX_MODEL || '').trim())
@@ -62,7 +62,7 @@ async function callModel({ url, accessToken, model, contents, mode, useTools, re
     method: 'POST',
     headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(Math.min(17000, remaining - 500)),
+    signal: AbortSignal.timeout(Math.min(28000, remaining - 500)),
   })
   if (!response.ok) {
     const errorPayload = await response.json().catch(() => ({}))
@@ -155,7 +155,7 @@ export default async function handler(req, res) {
         }
         try {
           console.info('Companion tool requested', audit)
-          const result = await executeCompanionTool(name, args, auth.user)
+          const result = await executeCompanionTool(name, args, auth.user, auth.accessToken)
           if (result?.pendingApproval) {
             console.info('Companion action awaits owner approval', { requestId, tool: name, operation: result.pendingApproval.operation })
             return res.status(200).json({ text: result.text, pendingApproval: result.pendingApproval, model, provider: 'vertex-ai', requestId, toolCallsExecuted })
@@ -182,7 +182,7 @@ export default async function handler(req, res) {
       contents.push({ role: 'user', parts: functionResponses })
       if (Date.now() >= deadline - 1500) {
         return res.status(200).json({
-          text: 'I completed the available tool operations, but the server time limit prevented another reasoning step. Ask me to continue; I will not claim the task is complete until the results are reviewed.',
+          text: 'I completed some tool operations, but the request time limit stopped me before I could summarize their results. Ask me to continue with a focused next step; I will rerun any checks needed before drawing conclusions.',
           model,
           provider: 'vertex-ai',
           requestId,
@@ -192,7 +192,7 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json({
-      text: 'I reached the tool-step limit for this request. The operations completed so far are available in this turn; ask me to continue with the next verification or implementation step.',
+      text: 'I reached the tool-step limit before producing a final summary. Ask me to continue with the next verification or implementation step; I will not mark the task complete until the results are reviewed.',
       model,
       provider: 'vertex-ai',
       requestId,
