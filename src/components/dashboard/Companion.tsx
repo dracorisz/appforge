@@ -1,5 +1,5 @@
 import React from 'react'
-import { Bot, CheckCircle2, CircleAlert, Github, Send, Server, ShieldCheck, Sparkles, User } from 'lucide-react'
+import { Bot, CheckCircle2, CircleAlert, GitBranch, Send, Server, ShieldCheck, Sparkles, User } from 'lucide-react'
 import { useAuth } from '@/auth/AuthProvider'
 import { Button, Card, Input } from '@/components/ui'
 
@@ -102,7 +102,7 @@ export function Companion() {
         <Card className="space-y-4 p-4">
           <div><h3 className="text-sm font-semibold">Integrations</h3><p className="mt-2 text-sm text-muted-foreground">Connection setup is the next implementation stage.</p></div>
           {[
-            { name: 'GitHub', description: 'Repository search, diffs and reviewed changes', icon: Github },
+            { name: 'GitHub', description: 'Repository search, diffs and reviewed changes', icon: GitBranch },
             { name: 'Vercel', description: 'Deployment status and project settings', icon: Server },
             { name: 'Supabase', description: 'Schema, migrations and security checks', icon: CheckCircle2 },
           ].map(({ name, description, icon: Icon }) => <div key={name} className="flex items-start gap-4">
