@@ -142,6 +142,7 @@ const createPendingApproval = (action, user) => {
       path: action.path,
       operation: action.operation,
       summary: action.summary,
+      preview: action.content,
       expiresAt: payload.expiresAt,
     },
   }
