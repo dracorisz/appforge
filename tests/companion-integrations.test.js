@@ -7,7 +7,7 @@ delete process.env.GITHUB_TOKEN
 delete process.env.VERCEL_API_TOKEN
 delete process.env.SUPABASE_ACCESS_TOKEN
 
-const { default: handler } = await import('../api/companion-integrations.js')
+const { default: handler } = await import('../api/_companion-integrations.js')
 
 const makeResponse = () => ({
   statusCode: 200,
