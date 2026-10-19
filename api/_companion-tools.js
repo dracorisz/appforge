@@ -83,6 +83,8 @@ const toolDeclarations = [
   { name: 'github_list_files', description: 'List files and folders in an allowed GitHub repository path. Use to discover project structure.', parameters: { type: 'OBJECT', properties: { repository: { type: 'STRING', description: 'Repository in owner/name format.' }, path: { type: 'STRING', description: 'Optional directory path; omit for repository root.' } }, required: ['repository'] } },
   { name: 'github_read_file', description: 'Read a text source or documentation file from an allowed GitHub repository. Never use for secrets or environment files.', parameters: { type: 'OBJECT', properties: { repository: { type: 'STRING' }, path: { type: 'STRING' } }, required: ['repository', 'path'] } },
   { name: 'github_search_code', description: 'Search filenames and code in an allowed GitHub repository. Returns matching paths and URLs.', parameters: { type: 'OBJECT', properties: { repository: { type: 'STRING' }, query: { type: 'STRING', description: 'Short code or filename search phrase.' } }, required: ['repository', 'query'] } },
+  { name: 'github_run_release_checks', description: 'Run AppForge’s fixed, non-deploying release verification workflow on main. It runs audit, lint, typecheck, tests, and build; it cannot deploy anything.', parameters: { type: 'OBJECT', properties: { repository: { type: 'STRING', description: 'Must be dracorisz/appforge.' } }, required: ['repository'] } },
+  { name: 'github_get_release_check_status', description: 'Read the latest AppForge release-verification workflow result. A queued or in-progress run is not a pass.', parameters: { type: 'OBJECT', properties: { repository: { type: 'STRING', description: 'Must be dracorisz/appforge.' } }, required: ['repository'] } },
   { name: 'github_propose_file_change', description: 'Prepare a GitHub file create/update on the repository default branch. This NEVER writes immediately: it returns a pending approval for the owner to review and explicitly approve.', parameters: { type: 'OBJECT', properties: { repository: { type: 'STRING' }, path: { type: 'STRING' }, content: { type: 'STRING', description: 'Complete replacement file content or new file content.' }, summary: { type: 'STRING', description: 'Concise commit message describing the change.' } }, required: ['repository', 'path', 'content', 'summary'] } },
   { name: 'vercel_list_deployments', description: 'Inspect recent deployments for an allowed Vercel project. Read-only; Companion must not deploy, promote, or roll back.', parameters: { type: 'OBJECT', properties: { projectId: { type: 'STRING', description: 'Allowed Vercel project ID.' }, target: { type: 'STRING', enum: ['production', 'preview'], description: 'Optional deployment target.' }, limit: { type: 'INTEGER', description: 'Optional result count from 1 to 10.' } }, required: ['projectId'] } },
   { name: 'vercel_get_deployment', description: 'Inspect a specific deployment by ID or URL. Read-only; do not deploy or promote.', parameters: { type: 'OBJECT', properties: { deploymentIdOrUrl: { type: 'STRING' } }, required: ['deploymentIdOrUrl'] } },
@@ -208,6 +210,37 @@ export async function executeCompanionTool(name, args, user, accessToken) {
     const url = GITHUB_API + '/search/code?q=' + encodeURIComponent(query + ' repo:' + repository) + '&per_page=8'
     const result = await fetchJson(url, { headers: { ...githubHeaders(), Accept: 'application/vnd.github.text-match+json' } })
     return { total: result.total_count || 0, matches: (result.items || []).slice(0, 8).map((item) => ({ path: item.path, url: item.html_url, repository: item.repository?.full_name })) }
+  }
+  if (name === 'github_run_release_checks') {
+    const repository = parseRepo(args.repository)
+    if (repository !== DEFAULT_REPO) throw new Error('The release-verification workflow is configured only for dracorisz/appforge.')
+    requireToken('GITHUB_TOKEN', 'GitHub')
+    const workflowUrl = 'https://github.com/' + repository + '/actions/workflows/companion-verify.yml'
+    await fetchJson(GITHUB_API + '/repos/' + repository + '/actions/workflows/companion-verify.yml/dispatches', {
+      method: 'POST',
+      headers: githubHeaders(),
+      body: JSON.stringify({ ref: 'main' }),
+    })
+    return { status: 'dispatched', ref: 'main', workflowUrl, message: 'Release verification was requested. Check the workflow status before claiming it passed.' }
+  }
+  if (name === 'github_get_release_check_status') {
+    const repository = parseRepo(args.repository)
+    if (repository !== DEFAULT_REPO) throw new Error('The release-verification workflow is configured only for dracorisz/appforge.')
+    requireToken('GITHUB_TOKEN', 'GitHub')
+    const result = await fetchJson(GITHUB_API + '/repos/' + repository + '/actions/workflows/companion-verify.yml/runs?branch=main&per_page=5', { headers: githubHeaders() })
+    const run = (result.workflow_runs || [])[0]
+    if (!run) return { status: 'not_found', message: 'No release-verification run was found yet.' }
+    return {
+      id: run.id,
+      status: run.status,
+      conclusion: run.conclusion,
+      url: run.html_url,
+      createdAt: run.created_at,
+      updatedAt: run.updated_at,
+      headBranch: run.head_branch,
+      headSha: run.head_sha,
+      event: run.event,
+    }
   }
   if (name === 'github_propose_file_change') {
     const repository = parseRepo(args.repository)
