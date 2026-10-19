@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { COMPANION_SUPABASE_URL, COMPANION_SUPABASE_KEY } from './_companion-auth.js'
 
 const GITHUB_API = 'https://api.github.com'
 const VERCEL_API = 'https://api.vercel.com'
@@ -86,19 +87,51 @@ const toolDeclarations = [
   { name: 'vercel_list_deployments', description: 'Inspect recent deployments for an allowed Vercel project. Read-only; Companion must not deploy, promote, or roll back.', parameters: { type: 'OBJECT', properties: { projectId: { type: 'STRING', description: 'Allowed Vercel project ID.' }, target: { type: 'STRING', enum: ['production', 'preview'], description: 'Optional deployment target.' }, limit: { type: 'INTEGER', description: 'Optional result count from 1 to 10.' } }, required: ['projectId'] } },
   { name: 'vercel_get_deployment', description: 'Inspect a specific deployment by ID or URL. Read-only; do not deploy or promote.', parameters: { type: 'OBJECT', properties: { deploymentIdOrUrl: { type: 'STRING' } }, required: ['deploymentIdOrUrl'] } },
   { name: 'supabase_list_tables', description: 'List tables, columns, and relationships for an allowed Supabase project using a read-only schema query.', parameters: { type: 'OBJECT', properties: { projectId: { type: 'STRING', description: 'Allowed Supabase project reference.' }, schema: { type: 'STRING', description: 'Optional schema name; defaults to public.' } }, required: ['projectId'] } },
-  { name: 'supabase_read_query', description: 'Run one bounded, read-only SELECT/WITH query against an allowed Supabase project. Mutations, DDL, multiple statements, and risky database functions are blocked.', parameters: { type: 'OBJECT', properties: { projectId: { type: 'STRING' }, query: { type: 'STRING', description: 'A single SELECT or WITH query, preferably with a LIMIT.' } }, required: ['projectId', 'query'] } },
+  { name: 'supabase_read_table', description: 'Read a limited number of rows from a public Supabase table through PostgREST using the owner’s authenticated session, so Supabase Row Level Security applies. GET-only; no arbitrary SQL or mutations.', parameters: { type: 'OBJECT', properties: { projectId: { type: 'STRING' }, table: { type: 'STRING', description: 'Table name in the public schema.' }, columns: { type: 'STRING', description: 'Optional comma-separated column names; defaults to *.' }, limit: { type: 'INTEGER', description: 'Optional row limit from 1 to 50.' }, filters: { type: 'ARRAY', items: { type: 'OBJECT', properties: { column: { type: 'STRING' }, operator: { type: 'STRING', enum: ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'is', 'like', 'ilike'] }, value: { type: 'STRING' } }, required: ['column', 'operator', 'value'] } } }, required: ['projectId', 'table'] } },
 ]
 
 export const companionTools = [{ functionDeclarations: toolDeclarations }]
 
-const readOnlySql = (value) => {
-  const query = String(value || '').trim()
-  if (!query || query.length > 8000 || !/^(select|with)\b/i.test(query)) throw new Error('Only a single SELECT or WITH query up to 8,000 characters is allowed.')
-  if (query.includes(';') || /--|\/\*|\*\/|\\x00/i.test(query)) throw new Error('SQL comments and multiple statements are blocked.')
-  if (/\b(insert|update|delete|merge|drop|alter|create|truncate|grant|revoke|copy|call|do|execute|prepare|deallocate|set|reset|vacuum|analyze|refresh|reindex|pg_sleep|dblink|lo_import|lo_export|pg_read_file|pg_write_file|pg_ls_dir|set_config|nextval|setval|large_object|http_get|http_post|pg_advisory|pg_cancel_backend|pg_terminate_backend|pg_reload_conf|pg_promote|pg_notify|pg_switch_wal|pg_rotate_logfile|pg_stat_file|cron)\b|\bpg_[a-z0-9_]+\s*\(|\blo_[a-z0-9_]+\s*\(/i.test(query)) {
-    throw new Error('The query contains a blocked mutation, administrative command, or potentially side-effecting function.')
+const isPrivilegedSupabaseKey = (value) => {
+  const key = String(value || '')
+  if (key.startsWith('sb_secret_')) return true
+  const parts = key.split('.')
+  if (parts.length !== 3) return false
+  try { return JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8')).role === 'service_role' } catch { return false }
+}
+const supabaseTableRead = async (projectId, args, accessToken) => {
+  const project = String(projectId || '').trim()
+  if (!allowedSupabaseProjects().has(project)) throw new Error('Supabase project is not in Companion’s allowed-project list.')
+  const baseUrl = new URL(COMPANION_SUPABASE_URL)
+  if (baseUrl.hostname.split('.')[0] !== project) throw new Error('The selected Supabase project does not match the configured authenticated data endpoint.')
+  if (!COMPANION_SUPABASE_KEY || isPrivilegedSupabaseKey(COMPANION_SUPABASE_KEY)) throw new Error('Safe table reads require a Supabase publishable/anon key, not a service-role or secret key.')
+  if (!String(accessToken || '').trim()) throw new Error('The owner session is required for a row-level-security-protected read.')
+  const table = String(args.table || '').trim()
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]{0,62}$/.test(table)) throw new Error('Table name is invalid.')
+  const columns = String(args.columns || '*').trim()
+  const columnList = columns === '*' ? '*' : columns.split(',').map((item) => item.trim()).join(',')
+  if (columnList !== '*' && (!columnList || columnList.split(',').length > 12 || columnList.split(',').some((item) => !/^[a-zA-Z_][a-zA-Z0-9_]{0,62}$/.test(item)))) throw new Error('Columns must be * or a comma-separated list of up to 12 simple column names.')
+  const filters = args.filters === undefined ? [] : args.filters
+  if (!Array.isArray(filters) || filters.length > 5) throw new Error('At most five simple filters are allowed.')
+  const url = new URL('/rest/v1/' + encodeURIComponent(table), baseUrl.origin)
+  url.searchParams.set('select', columnList)
+  url.searchParams.set('limit', String(Math.max(1, Math.min(50, Number(args.limit) || 20))))
+  const operators = new Set(['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'is', 'like', 'ilike'])
+  for (const filter of filters) {
+    if (!filter || !/^[a-zA-Z_][a-zA-Z0-9_]{0,62}$/.test(String(filter.column || '')) || !operators.has(String(filter.operator || ''))) throw new Error('A filter column or operator is invalid.')
+    const value = String(filter.value ?? '')
+    if (!value || value.length > 200 || !/^[A-Za-z0-9 _@.:+\-/%]+$/.test(value)) throw new Error('Filter values may contain only simple text, numbers, and basic pattern characters.')
+    if (filter.operator === 'is' && !['null', 'true', 'false'].includes(value.toLowerCase())) throw new Error('The is operator supports only null, true, or false.')
+    url.searchParams.set(String(filter.column), String(filter.operator) + '.' + value)
   }
-  return query
+  return fetchJson(url.toString(), {
+    headers: {
+      apikey: COMPANION_SUPABASE_KEY,
+      Authorization: 'Bearer ' + String(accessToken),
+      Accept: 'application/json',
+      'Accept-Profile': 'public',
+    },
+  })
 }
 const supabaseQuery = async (projectId, query) => {
   const project = String(projectId || '').trim()
@@ -152,7 +185,7 @@ const createPendingApproval = (action, user) => {
   }
 }
 
-export async function executeCompanionTool(name, args, user) {
+export async function executeCompanionTool(name, args, user, accessToken) {
   if (!args || typeof args !== 'object' || Array.isArray(args)) throw new Error('Tool arguments must be an object.')
   if (name === 'github_list_files') {
     const repository = parseRepo(args.repository)
@@ -222,11 +255,7 @@ export async function executeCompanionTool(name, args, user) {
     const query = "select table_schema, table_name, column_name, data_type, is_nullable from information_schema.columns where table_schema = '" + schema + "' order by table_name, ordinal_position limit 300"
     return trimResult(await supabaseQuery(projectId, query))
   }
-  if (name === 'supabase_read_query') {
-    const projectId = String(args.projectId || '').trim()
-    const query = readOnlySql(args.query)
-    return trimResult(await supabaseQuery(projectId, query))
-  }
+  if (name === 'supabase_read_table') return trimResult(await supabaseTableRead(args.projectId, args, accessToken)
   throw new Error('Unknown Companion tool: ' + String(name).slice(0, 80))
 }
 
