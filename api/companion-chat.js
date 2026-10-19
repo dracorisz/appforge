@@ -1,27 +1,11 @@
 import { createGcpBridgeCredentials, getGcpBridgeConfig } from './_gcp-cloud-run.js'
+import { authenticateCompanionRequest } from './_companion-auth.js'
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://ixqoosixhahrsgwoxyme.supabase.co'
-const SUPABASE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || ''
 const MODEL = process.env.COMPANION_VERTEX_MODEL || 'gemini-2.5-flash'
 const LOCATION = process.env.COMPANION_VERTEX_LOCATION || 'us-central1'
-const OWNER_EMAIL = (process.env.COMPANION_OWNER_EMAIL || 'dracorisz@gmail.com').trim().toLowerCase()
 const MAX_MESSAGES = 24
 const MAX_MESSAGE_CHARS = 4000
 const MAX_TOTAL_CHARS = 18000
-
-const getBearer = (req) => {
-  const value = req.headers?.authorization || ''
-  return value.startsWith('Bearer ') ? value.slice(7).trim() : ''
-}
-
-const authenticate = async (token) => {
-  if (!token || !SUPABASE_KEY) return null
-  const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` },
-    signal: AbortSignal.timeout(8000),
-  })
-  return response.ok ? response.json().catch(() => null) : null
-}
 
 const normalizeMessages = (value) => {
   if (!Array.isArray(value) || value.length < 1 || value.length > MAX_MESSAGES) return null
@@ -48,10 +32,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method not allowed.', requestId })
   }
 
-  const token = getBearer(req)
-  const user = await authenticate(token).catch(() => null)
-  if (!user?.id) return res.status(401).json({ message: 'Sign in to use Companion.', requestId })
-  if (String(user.email || '').trim().toLowerCase() !== OWNER_EMAIL) return res.status(403).json({ message: 'Companion is currently restricted to its owner.', requestId })
+  const auth = await authenticateCompanionRequest(req)
+  if (!auth.ok) return res.status(auth.status).json({ message: auth.message, requestId })
 
   const messages = normalizeMessages(req.body?.messages)
   if (!messages) return res.status(400).json({ message: 'Messages are invalid or exceed Companion limits.', requestId })
