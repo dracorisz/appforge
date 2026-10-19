@@ -200,8 +200,10 @@ export function Companion() {
                 <div className="mt-3 grid gap-2">{starterPrompts[mode].map((prompt) => <Button key={prompt} variant="ghost" type="button" onClick={() => void sendMessage(prompt)} disabled={sending} className="h-auto w-full justify-start whitespace-normal border-border/70 p-3 text-left">{prompt}</Button>)}</div>
               </div> : messages.map((message, index) => <div key={index} className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {message.role === 'assistant' && <span className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border/70"><Bot className="h-4 w-4" /></span>}
-                <div className={`max-w-[92%] break-words rounded-xl px-3 py-3 text-sm ${message.role === 'user' ? 'whitespace-pre-wrap bg-primary text-primary-foreground' : 'border border-border/70 bg-background/60'}`}>{message.role === 'assistant' ? <FormattedMessage content={message.content} /> : message.content}</div>
-                {message.role === 'assistant' && <button type="button" onClick={() => void copyMessage(message.content, index)} className="ml-1 inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Copy response" title="Copy response">{copiedMessage === index ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copiedMessage === index ? 'Copied' : 'Copy'}</button>}
+                <div className={`flex min-w-0 max-w-[92%] flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
+                  <div className={`w-fit max-w-full break-words rounded-xl px-3 py-3 text-sm ${message.role === 'user' ? 'whitespace-pre-wrap bg-primary text-primary-foreground' : 'border border-border/70 bg-background/60'}`}>{message.role === 'assistant' ? <FormattedMessage content={message.content} /> : message.content}</div>
+                  <button type="button" onClick={() => void copyMessage(message.content, index)} className="mt-1 inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground" aria-label={message.role === 'assistant' ? 'Copy response' : 'Copy message'} title={message.role === 'assistant' ? 'Copy response' : 'Copy message'}>{copiedMessage === index ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copiedMessage === index ? 'Copied' : 'Copy'}</button>
+                </div>
                 {message.role === 'user' && <span className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border/70"><User className="h-4 w-4" /></span>}
               </div>)}
               {sending && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Sparkles className="h-4 w-4 animate-pulse" /> Companion is thinking…</div>}
@@ -227,13 +229,13 @@ export function Companion() {
         </div>
       </Card>
       <aside className={expanded ? 'hidden' : 'flex h-full min-h-0 flex-col gap-3 overflow-y-auto'}>
-        <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Integrations</h3></div>
+        <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Integrations</h3></div><p className="mt-1 text-xs text-muted-foreground">Live connection status for services Companion can use.</p>
           {([{ name: 'GitHub', key: 'github' as const, icon: SiGithub }, { name: 'Vercel', key: 'vercel' as const, icon: SiVercel }, { name: 'Supabase', key: 'supabase' as const, icon: SiSupabase }]).map(({ name, key, icon: Icon }) => {
             const status = integrationStatuses[key]
             return <div key={name} className="mt-3 flex items-center gap-2"><Icon className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="min-w-0 flex-1 text-sm font-medium">{name}</span><span className={`text-xs ${status === 'verified' ? 'text-emerald-600 dark:text-emerald-400' : status === 'checking' ? 'text-muted-foreground' : 'text-amber-600 dark:text-amber-400'}`}>{statusLabel[status]}</span></div>
           })}
         </Card>
-        <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Workspace access</h3></div><p className="mt-2 break-all text-sm text-muted-foreground">{user?.email || 'Signed-in account required'}</p></Card>
+        <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Workspace access</h3></div><p className="mt-1 text-xs text-muted-foreground">Private Companion workspace; access is restricted to the owner account.</p><p className="mt-2 break-all text-sm text-muted-foreground">{user?.email || 'Signed-in account required'}</p></Card>
         <div className="mt-auto shrink-0 pt-1"><Button type="button" variant="secondary" onClick={startNewSession} className="w-full justify-center gap-2"><Plus className="h-4 w-4" />New chat</Button></div>
       </aside>
     </div>
