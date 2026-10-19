@@ -9,6 +9,7 @@ type ChatSession = { id: string; title: string; updatedAt: number; messages: Mes
 type IntegrationStatus = 'checking' | 'verified' | 'needs_setup' | 'invalid_credentials' | 'insufficient_permissions' | 'unavailable'
 type IntegrationKey = 'github' | 'vercel' | 'supabase'
 type CompanionMode = 'chat' | 'code'
+type PendingApproval = { token: string; repository: string; path: string; operation: 'create' | 'update'; summary: string; preview: string; expiresAt: number; sessionId: string }
 
 const starterPrompts: Record<CompanionMode, string[]> = { chat: ['Explain a technical concept in plain English.', 'Help me compare implementation approaches.', 'Think through a project plan with me.'], code: ['Help me debug an error.', 'Plan a safe, incremental feature.', 'Review code for correctness and security.'] }
 
@@ -81,6 +82,7 @@ export function Companion() {
   const [copiedMessage, setCopiedMessage] = React.useState<number | null>(null)
   const [sending, setSending] = React.useState(false)
   const [error, setError] = React.useState('')
+  const [pendingApproval, setPendingApproval] = React.useState<PendingApproval | null>(null)
   const [integrationStatuses, setIntegrationStatuses] = React.useState<Record<IntegrationKey, IntegrationStatus>>({ github: 'checking', vercel: 'checking', supabase: 'checking' })
   const scrollRef = React.useRef<HTMLDivElement | null>(null)
   const activeSession = sessions.find((item) => item.id === activeSessionId)
@@ -125,8 +127,9 @@ export function Companion() {
     setActiveSessionId(fresh.id)
     setDraft('')
     setError('')
+    setPendingApproval(null)
   }
-  const selectSession = (id: string) => { setActiveSessionId(id); setError('') }
+  const selectSession = (id: string) => { setActiveSessionId(id); setError(''); setPendingApproval(null) }
   const deleteSession = (id: string) => {
     const remaining = sessions.filter((item) => item.id !== id)
     if (!remaining.length) { const fresh = { id: crypto.randomUUID(), title: 'New chat', updatedAt: Date.now(), messages: [] }; setSessions([fresh]); setActiveSessionId(fresh.id); return }
@@ -140,13 +143,28 @@ export function Companion() {
     const next = [...messages, { role: 'user' as const, content }]
     const sessionId = activeSessionId
     setSessions((current) => current.map((item) => item.id === sessionId ? { ...item, title: item.messages.length === 0 ? content.slice(0, 42) : item.title, updatedAt: Date.now(), messages: next } : item))
-    setDraft(''); setError(''); setSending(true)
+    setDraft(''); setError(''); setPendingApproval(null); setSending(true)
     try {
       const response = await fetch('/api/companion-chat', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ messages: next, mode }) })
       const payload = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(typeof payload.message === 'string' ? payload.message : 'Companion could not complete this request.')
+      if (payload.pendingApproval && typeof payload.pendingApproval.token === 'string') setPendingApproval({ ...payload.pendingApproval, sessionId })
       setSessions((current) => current.map((item) => item.id === sessionId ? { ...item, updatedAt: Date.now(), messages: [...next, { role: 'assistant', content: String(payload.text || '').trim() }] } : item))
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Companion is temporarily unavailable.') }
+    finally { setSending(false) }
+  }
+
+  const approvePendingAction = async () => {
+    const approval = pendingApproval
+    if (!approval || sending || !session?.access_token) return
+    setSending(true); setError('')
+    try {
+      const response = await fetch('/api/companion-chat', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ approvalToken: approval.token }) })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(typeof payload.message === 'string' ? payload.message : 'Companion could not apply the approved change.')
+      setSessions((current) => current.map((item) => item.id === approval.sessionId ? { ...item, updatedAt: Date.now(), messages: [...item.messages, { role: 'assistant', content: String(payload.text || 'The approved action completed.').trim() }] } : item))
+      setPendingApproval(null)
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'The approved change could not be applied.') }
     finally { setSending(false) }
   }
 
@@ -178,19 +196,34 @@ export function Companion() {
               </div>)}
               {sending && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Sparkles className="h-4 w-4 animate-pulse" /> Companion is thinking…</div>}
               {error && <div role="alert" className="flex items-start gap-2 rounded-xl border border-destructive/30 p-3 text-sm"><CircleAlert className="mt-1 h-4 w-4 shrink-0" /><span>{error}</span></div>}
+              {pendingApproval && pendingApproval.sessionId === activeSessionId && <div className="space-y-3 rounded-xl border border-amber-500/40 bg-amber-500/5 p-3 text-sm">
+                <div className="font-semibold">Approval required — no change has been made yet</div>
+                <div><span className="text-muted-foreground">Operation: </span>{pendingApproval.operation === 'create' ? 'Create file' : 'Replace file'}</div>
+                <div className="break-all"><span className="text-muted-foreground">Target: </span>{pendingApproval.repository}/{pendingApproval.path}</div>
+                <div><span className="text-muted-foreground">Commit summary: </span>{pendingApproval.summary}</div>
+                <details className="rounded-lg border border-border/70">
+                  <summary className="cursor-pointer px-3 py-2 font-medium">Review complete proposed file content</summary>
+                  <pre className="max-h-72 overflow-auto whitespace-pre-wrap break-words border-t border-border/70 p-3 text-xs leading-5">{pendingApproval.preview || 'No preview was provided.'}</pre>
+                </details>
+                <p className="text-xs text-muted-foreground">Approval commits this file to the repository’s default branch. It does not deploy to production. The request expires after five minutes.</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" onClick={() => void approvePendingAction()} disabled={sending}>Approve and commit</Button>
+                  <Button type="button" variant="secondary" onClick={() => setPendingApproval(null)} disabled={sending}>Cancel</Button>
+                </div>
+              </div>}
             </div>
             <form className="shrink-0 border-t border-border/70 p-3" onSubmit={(event) => { event.preventDefault(); void sendMessage() }}><label className="mb-2 block"><span className="sr-only">Message Companion</span><textarea value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void sendMessage() } }} placeholder={mode === 'chat' ? 'Ask anything… (Enter to send, Shift+Enter for a new line)' : 'Describe a coding task, paste code or an error… (Enter to send)'} maxLength={4000} disabled={sending} rows={2} className="!h-auto !max-h-36 !min-h-[3.5rem] w-full resize-y !px-3 !py-2" /></label><div className="flex flex-wrap items-center justify-between gap-2"><div className="inline-flex items-center rounded-lg border border-border/70 bg-muted/40 p-1" aria-label="Companion mode"><button type="button" onClick={() => setMode('chat')} aria-pressed={mode === 'chat'} className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ${mode === 'chat' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}><MessageCircle className="h-3.5 w-3.5" />Chat</button><button type="button" onClick={() => setMode('code')} aria-pressed={mode === 'code'} className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ${mode === 'code' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}><Code2 className="h-3.5 w-3.5" />Code</button></div><Button type="submit" disabled={!draft.trim() || sending}><Send className="h-4 w-4" /> Send</Button></div></form>
           </div>
         </div>
       </Card>
       <aside className={expanded ? 'hidden' : 'flex h-full min-h-0 flex-col gap-3 overflow-y-auto'}>
-        <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Integrations</h3></div><p className="mt-2 text-xs leading-5 text-muted-foreground">Connection status is checked securely by the server. Direct repository, deployment, and database actions are not yet exposed to chat.</p>
+        <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Integrations</h3></div>
           {([{ name: 'GitHub', key: 'github' as const, icon: SiGithub }, { name: 'Vercel', key: 'vercel' as const, icon: SiVercel }, { name: 'Supabase', key: 'supabase' as const, icon: SiSupabase }]).map(({ name, key, icon: Icon }) => {
             const status = integrationStatuses[key]
             return <div key={name} className="mt-3 flex items-center gap-2"><Icon className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="min-w-0 flex-1 text-sm font-medium">{name}</span><span className={`text-xs ${status === 'verified' ? 'text-emerald-600 dark:text-emerald-400' : status === 'checking' ? 'text-muted-foreground' : 'text-amber-600 dark:text-amber-400'}`}>{statusLabel[status]}</span></div>
           })}
         </Card>
-        <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Workspace access</h3></div><p className="mt-2 break-all text-sm text-muted-foreground">{user?.email || 'Signed-in account required'}</p><p className="mt-3 text-xs leading-5 text-muted-foreground">Use Chat for general discussion or Code for development tasks across projects. Connected services are currently status-checked only.</p></Card>
+        <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Workspace access</h3></div><p className="mt-2 break-all text-sm text-muted-foreground">{user?.email || 'Signed-in account required'}</p></Card>
         <div className="mt-auto shrink-0 pt-1"><Button type="button" variant="secondary" onClick={startNewSession} className="w-full justify-center gap-2"><Plus className="h-4 w-4" />New chat</Button></div>
       </aside>
     </div>
