@@ -92,11 +92,6 @@ export function Companion() {
   return (
     <div className="grid h-full min-h-0 min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_16rem]">
       <Card className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
-        <div className="flex shrink-0 items-center gap-3 border-b border-border/70 px-3 py-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/70 bg-background/60"><Bot className="h-4 w-4" /></span>
-          <div className="min-w-0 flex-1"><h2 className="font-semibold leading-tight">Companion</h2><p className="text-xs text-muted-foreground">AppForge development assistant</p></div>
-          <Button type="button" variant="secondary" onClick={startNewSession} className="h-8 gap-1 px-2"><Plus className="h-4 w-4" /><span className="hidden sm:inline">New chat</span></Button>
-        </div>
         <div className="flex min-h-0 flex-1">
           <aside className="hidden w-48 shrink-0 flex-col gap-1 overflow-y-auto border-r border-border/70 p-2 md:flex" aria-label="Chat sessions">
             <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Recent sessions</div>
@@ -123,14 +118,15 @@ export function Companion() {
           </div>
         </div>
       </Card>
-      <aside className="flex min-h-0 flex-col gap-3 overflow-y-auto">
-        <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Integrations</h3></div>
+      <aside className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto">
+        <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Integrations</h3></div><p className="mt-2 text-xs leading-5 text-muted-foreground">Connection status is checked securely by the server. A verified connection confirms the credential works, not that every operation has been tested.</p>
           {([{ name: 'GitHub', key: 'github' as const, icon: SiGithub }, { name: 'Vercel', key: 'vercel' as const, icon: SiVercel }, { name: 'Supabase', key: 'supabase' as const, icon: SiSupabase }]).map(({ name, key, icon: Icon }) => {
             const status = integrationStatuses[key]
             return <div key={name} className="mt-3 flex items-center gap-2"><Icon className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="min-w-0 flex-1 text-sm font-medium">{name}</span><span className={`text-xs ${status === 'verified' ? 'text-emerald-600 dark:text-emerald-400' : status === 'checking' ? 'text-muted-foreground' : 'text-amber-600 dark:text-amber-400'}`}>{statusLabel[status]}</span></div>
           })}
         </Card>
-        <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Workspace access</h3></div><p className="mt-2 break-all text-sm text-muted-foreground">{user?.email || 'Signed-in account required'}</p></Card>
+        <Card className="shrink-0 p-3"><div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /><h3 className="text-sm font-semibold">Workspace access</h3></div><p className="mt-2 break-all text-sm text-muted-foreground">{user?.email || 'Signed-in account required'}</p><p className="mt-3 text-xs leading-5 text-muted-foreground">Companion is a private app. Server requests are authenticated against your AppForge account.</p></Card>
+        <div className="mt-auto shrink-0 pt-1"><Button type="button" variant="secondary" onClick={startNewSession} className="w-full justify-center gap-2"><Plus className="h-4 w-4" />New chat</Button></div>
       </aside>
     </div>
   )
