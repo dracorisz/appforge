@@ -55,8 +55,23 @@ export default async function handler(req, res) {
       signal: AbortSignal.timeout(22000),
     })
     if (!response.ok) {
-      console.warn('Companion Vertex request failed', { requestId, status: response.status, model: MODEL })
-      return res.status(response.status === 429 ? 429 : 502).json({ message: response.status === 429 ? 'Companion has reached the current model quota. Try again shortly.' : 'Google Cloud could not complete the request. Check Vertex AI access and model availability.', requestId })
+      const errorPayload = await response.json().catch(() => ({}))
+      const providerError = errorPayload?.error || {}
+      const providerMessage = String(providerError.message || '').replace(/[\r\n\t]+/g, ' ').slice(0, 240)
+      console.warn('Companion Vertex request failed', {
+        requestId,
+        status: response.status,
+        providerStatus: String(providerError.status || '').slice(0, 80),
+        providerMessage,
+        model: MODEL,
+        location: LOCATION,
+      })
+      const message = response.status === 429
+        ? 'Companion has reached the current model quota. Try again shortly.'
+        : response.status === 403
+          ? 'Vertex AI denied access for the configured Google Cloud identity. Check Vertex AI API enablement and the service account permissions.'
+          : 'Google Cloud could not complete the request. Check Vertex AI access and model availability.'
+      return res.status(response.status === 429 ? 429 : 502).json({ message, requestId })
     }
     const payload = await response.json()
     const candidate = payload?.candidates?.[0]
