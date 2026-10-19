@@ -255,7 +255,7 @@ export async function executeCompanionTool(name, args, user, accessToken) {
     const query = "select table_schema, table_name, column_name, data_type, is_nullable from information_schema.columns where table_schema = '" + schema + "' order by table_name, ordinal_position limit 300"
     return trimResult(await supabaseQuery(projectId, query))
   }
-  if (name === 'supabase_read_table') return trimResult(await supabaseTableRead(args.projectId, args, accessToken)
+  if (name === 'supabase_read_table') return trimResult(await supabaseTableRead(args.projectId, args, accessToken))
   throw new Error('Unknown Companion tool: ' + String(name).slice(0, 80))
 }
 
