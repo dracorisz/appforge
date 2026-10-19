@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import handler from '../api/desktop-buddy-image.js'
+import handler from '../api/_desktop-buddy-image.js'
 
 const responseStub = () => ({
   headers: {}, statusCode: 200, body: null,
