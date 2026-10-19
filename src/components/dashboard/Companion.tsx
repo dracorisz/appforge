@@ -148,7 +148,16 @@ export function Companion() {
       const response = await fetch('/api/companion-chat', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ messages: next, mode }) })
       const payload = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(typeof payload.message === 'string' ? payload.message : 'Companion could not complete this request.')
-      if (payload.pendingApproval && typeof payload.pendingApproval.token === 'string') setPendingApproval({ ...payload.pendingApproval, sessionId })
+      if (payload.pendingApproval && typeof payload.pendingApproval.token === 'string') setPendingApproval({
+        token: String(payload.pendingApproval.token),
+        repository: String(payload.pendingApproval.repository || ''),
+        path: String(payload.pendingApproval.path || ''),
+        operation: payload.pendingApproval.operation === 'create' ? 'create' : 'update',
+        summary: String(payload.pendingApproval.summary || ''),
+        preview: String(payload.pendingApproval.preview || ''),
+        expiresAt: Number(payload.pendingApproval.expiresAt || 0),
+        sessionId,
+      })
       setSessions((current) => current.map((item) => item.id === sessionId ? { ...item, updatedAt: Date.now(), messages: [...next, { role: 'assistant', content: String(payload.text || '').trim() }] } : item))
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Companion is temporarily unavailable.') }
     finally { setSending(false) }
