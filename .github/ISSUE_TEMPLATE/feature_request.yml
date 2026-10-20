@@ -1,0 +1,57 @@
+name: Feature or mini-app request
+description: Suggest a focused AppForge improvement or new tool
+title: "[Feature]: "
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Type
+      options:
+        - Improve an existing mini-app
+        - Add a new mini-app
+        - Shared UI / accessibility
+        - PWA / install / offline
+        - Auth / profile / admin
+        - API / provider integration
+        - Documentation / contributor experience
+    validations:
+      required: true
+  - type: input
+    id: route
+    attributes:
+      label: Existing route (if any)
+      placeholder: /apps/scrapper-pro
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem
+      description: What should become easier, faster, safer, or clearer?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Proposed outcome
+      description: Describe the smallest useful version of the feature.
+    validations:
+      required: true
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples / references
+      description: Optional links or product references. Explain the behavior you want rather than asking for an exact visual copy.
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Participation
+      options:
+        - label: I can test a preview build
+        - label: I may be able to submit a pull request
+        - label: I can help document edge cases
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: This request does not include credentials, private user data, or secrets.
+          required: true

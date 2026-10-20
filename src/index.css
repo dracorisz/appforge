@@ -1,0 +1,415 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 4%;
+    --card: 0 0% 96%;
+    --card-foreground: 0 0% 4%;
+    --popover: 0 0% 96%;
+    --popover-foreground: 0 0% 4%;
+    --primary: 0 0% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 92%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 93%;
+    --muted-foreground: 0 0% 34%;
+    --accent: 0 0% 88%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 142 72% 29%;
+    --success-foreground: 0 0% 98%;
+    --warning: 38 92% 40%;
+    --warning-foreground: 24 10% 10%;
+    --info: 217 91% 45%;
+    --info-foreground: 0 0% 98%;
+    --border: 0 0% 78%;
+    --input: 0 0% 78%;
+    --ring: 0 0% 55%;
+    --overlay: 0 0% 4%;
+    --inverse: 0 0% 100%;
+    --radius: 0.35rem;
+    --control-height: 2.25rem;
+    --pill-height: 1.5rem;
+    --control-line-height: 1.25rem;
+    --border-opacity: 1;
+    --surface-border-opacity: 1;
+    --shadow-xl: 0 18px 45px hsl(0 0% 4% / 0.14);
+  }
+
+  .dark {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 96%;
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 96%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 0 0% 96%;
+    --primary-foreground: 0 0% 10%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 0 0% 12%;
+    --accent-foreground: 0 0% 96%;
+    --destructive: 0 72% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 142 70% 55%;
+    --success-foreground: 144 80% 10%;
+    --warning: 43 96% 56%;
+    --warning-foreground: 26 83% 14%;
+    --info: 213 94% 68%;
+    --info-foreground: 224 71% 4%;
+    --border: 0 0% 17%;
+    --input: 0 0% 17%;
+    --ring: 0 0% 32%;
+    --overlay: 0 0% 0%;
+    --inverse: 0 0% 100%;
+    --border-opacity: 0.2;
+    --surface-border-opacity: 0.2;
+    --shadow-xl: 0 18px 45px hsl(0 0% 0% / 0.5);
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html {
+    font-size: 16px;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-size: 0.875rem;
+    line-height: 1.5rem;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: hsl(var(--foreground));
+    color: hsl(var(--background));
+  }
+
+  :where(
+    a[href],
+    button:not(:disabled),
+    select:not(:disabled),
+    summary,
+    [role="button"]:not([aria-disabled="true"]),
+    [role="tab"]:not([aria-disabled="true"]),
+    input[type="checkbox"]:not(:disabled),
+    input[type="radio"]:not(:disabled),
+    input[type="range"]:not(:disabled),
+    input[type="file"]:not(:disabled),
+    label[for]
+  ) {
+    cursor: pointer;
+  }
+
+  :where(button:disabled, select:disabled, [aria-disabled="true"]) {
+    cursor: not-allowed;
+  }
+
+  :where(button, [role="button"], [role="tab"]) {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]), select, textarea) {
+    height: var(--control-height);
+    min-height: var(--control-height);
+    max-height: var(--control-height);
+    border: 1px solid hsl(var(--input));
+    border-radius: var(--radius);
+    background: hsl(var(--secondary));
+    color: hsl(var(--foreground));
+    padding: 0 1rem;
+    font-size: 0.875rem;
+    line-height: var(--control-line-height);
+    transition:
+      border-color 150ms ease,
+      background-color 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  :where(input[type="search"]) {
+    padding-left: 2.5rem !important;
+    padding-right: 2.5rem !important;
+  }
+
+  :where(.app-search-field > .lucide-search) {
+    left: 1rem !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+  }
+
+  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]), select, textarea):hover:not(:disabled) {
+    border-color: hsl(var(--ring));
+    background: hsl(var(--accent));
+  }
+
+  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]), select, textarea):focus-visible {
+    border-color: hsl(var(--ring));
+    outline: none;
+    box-shadow: 0 0 0 1px hsl(var(--ring) / 0.35);
+  }
+
+  :where(input, select, textarea):disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  :where(input, textarea)::placeholder {
+    color: hsl(var(--muted-foreground));
+  }
+
+  textarea {
+    height: auto;
+    min-height: 6rem;
+    max-height: 7rem;
+    resize: vertical;
+  }
+}
+
+@layer components {
+  .app-control {
+    line-height: var(--control-line-height);
+  }
+
+  .app-pill {
+    height: var(--pill-height);
+    min-height: var(--pill-height);
+    max-height: var(--pill-height);
+  }
+
+  .surface-card,
+  .surface-panel,
+  .surface-popover,
+  .surface-muted {
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+  }
+
+  .surface-card,
+  .surface-panel {
+    background: hsl(var(--card));
+  }
+
+  .surface-popover {
+    background: hsl(var(--popover));
+    box-shadow: var(--shadow-xl);
+  }
+
+  .surface-muted {
+    background: hsl(var(--muted));
+  }
+
+  .surface-card:hover,
+  .surface-panel:hover {
+    border-color: hsl(var(--ring) / var(--surface-border-opacity));
+    background: hsl(var(--secondary) / 0.5);
+  }
+
+  .surface-card:focus-within,
+  .surface-panel:focus-within,
+  .surface-popover:focus-within {
+    border-color: hsl(var(--ring) / var(--surface-border-opacity));
+  }
+
+  .app-unified-shell .app-page-header,
+  .app-unified-shell .surface-card {
+    transition:
+      border-color 180ms ease,
+      background-color 180ms ease;
+  }
+
+  .app-unified-shell .app-content .app-heading {
+    display: none !important;
+  }
+
+  .surface-card:hover,
+  .app-page-header:hover {
+    transform: none !important;
+  }
+
+  .app-unified-shell :where(button, a)[class*="border"] {
+    transition-property: border-color, background-color, color;
+    transition-duration: 180ms;
+  }
+
+  .app-unified-shell :where(button, a)[class*="border"]:hover {
+    transform: none !important;
+  }
+
+  .preview-card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: hsl(var(--card));
+  }
+
+  .preview-card > a:first-child {
+    position: relative;
+    display: block;
+    height: 15rem;
+    border-bottom: 0;
+    background: hsl(var(--muted));
+  }
+
+  .preview-card > a:first-child::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(to top, hsl(var(--background) / 0.46), transparent 48%);
+    opacity: 0.72;
+    transition: opacity 180ms ease;
+  }
+
+  .preview-card img {
+    transition:
+      filter 220ms ease,
+      opacity 220ms ease;
+  }
+
+  .preview-card,
+  .preview-card:hover,
+  .preview-card:focus-within,
+  .preview-card img,
+  .preview-card:hover img,
+  .preview-card:focus-within img {
+    transform: none !important;
+  }
+
+  .preview-card:hover img,
+  .preview-card:focus-within img {
+    filter: saturate(1.02) contrast(1.01);
+  }
+
+  figure:has(img[alt*="Dragon Arena scene"]) {
+    width: min(100%, 27rem) !important;
+    max-width: 27rem !important;
+    margin-inline: 0 auto !important;
+    border-radius: var(--radius) !important;
+  }
+
+  figure:has(img[alt*="Dragon Arena scene"]) > a {
+    height: 10.5rem !important;
+  }
+
+  figure:has(img[alt*="Dragon Arena scene"]) img {
+    width: 100% !important;
+    height: 10.5rem !important;
+    max-height: 10.5rem !important;
+    aspect-ratio: auto !important;
+    object-fit: cover !important;
+  }
+
+  figure:has(img[alt*="Dragon Arena scene"]) figcaption {
+    padding-block: 0.5rem !important;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .preview-card:hover > a:first-child::after,
+    .preview-card:focus-within > a:first-child::after {
+      opacity: 0.88;
+    }
+  }
+
+  @media (max-width: 640px) {
+    figure:has(img[alt*="Dragon Arena scene"]) {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    figure:has(img[alt*="Dragon Arena scene"]) > a,
+    figure:has(img[alt*="Dragon Arena scene"]) img {
+      height: 9rem !important;
+      max-height: 9rem !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .surface-card,
+    .surface-card *,
+    .surface-panel,
+    .surface-panel *,
+    .surface-popover,
+    .surface-popover *,
+    .surface-muted,
+    .surface-muted *,
+    .app-unified-shell *,
+    .preview-card,
+    .preview-card * {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-break {
+    page-break-inside: avoid;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes pulse-subtle {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--border));
+  border-radius: var(--radius);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--ring));
+}

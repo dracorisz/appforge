@@ -1,0 +1,82 @@
+name: GitHub Pages Docs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'tailwind.config.js'
+      - '.github/workflows/pages.yml'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-docs
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+  DOCS_OUT_DIR: dist
+  VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_b56EltHyMfwOQjVQcQFHwA_VUiSn9zN
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Build custom documentation app
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build
+
+      - name: Prepare GitHub Pages routing and custom domain
+        run: |
+          cp "$DOCS_OUT_DIR/index.html" "$DOCS_OUT_DIR/404.html"
+          printf '%s\n' 'docs.sstoken.space' > "$DOCS_OUT_DIR/CNAME"
+
+      - name: Verify documentation artifact
+        run: |
+          test -f "$DOCS_OUT_DIR/index.html"
+          test -f "$DOCS_OUT_DIR/404.html"
+          test -f "$DOCS_OUT_DIR/favicon.svg"
+          test -d "$DOCS_OUT_DIR/assets"
+          test "$(cat "$DOCS_OUT_DIR/CNAME")" = 'docs.sstoken.space'
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v6
+
+      - name: Upload documentation artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy documentation to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

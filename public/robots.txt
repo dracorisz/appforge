@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /settings
+Disallow: /workspace
+Disallow: /people
+
+Sitemap: https://www.sstoken.space/sitemap.xml

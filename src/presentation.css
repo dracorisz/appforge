@@ -1,0 +1,183 @@
+/* Shared presentation rules for media-heavy tools and route-scoped visual states. */
+
+:is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .grid:has(> .surface-card.overflow-hidden) {
+  display: block;
+  column-count: 1;
+  column-gap: 0.8rem;
+}
+
+@media (min-width: 640px) {
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .grid:has(> .surface-card.overflow-hidden) { column-count: 2; }
+}
+
+@media (min-width: 1100px) {
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .grid:has(> .surface-card.overflow-hidden) { column-count: 3; }
+}
+
+:is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .grid:has(> .surface-card.overflow-hidden) > .surface-card.overflow-hidden {
+  display: inline-block;
+  width: 100%;
+  margin: 0 0 0.8rem;
+  break-inside: avoid;
+  overflow: hidden;
+  border-radius: 1rem;
+  vertical-align: top;
+}
+
+:is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img) > :is(a, button):first-child {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto !important;
+  min-height: 10rem;
+  overflow: hidden;
+  background: hsl(var(--muted));
+}
+
+:is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img) > :is(a, button):first-child::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, hsl(var(--background) / 0.62), transparent 48%);
+  opacity: 0.58;
+  transition: opacity 180ms ease;
+}
+
+:is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img) > :is(a, button):first-child img {
+  display: block;
+  width: 100%;
+  height: auto !important;
+  max-height: 34rem;
+  object-fit: cover;
+}
+
+:is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img):hover > :is(a, button):first-child img { transform: scale(1.018); }
+
+/* Getter Pro's main search action follows the shared neutral button hierarchy. */
+:is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) button:has(> .lucide-search) {
+  border-color: hsl(var(--border));
+  background: hsl(var(--secondary));
+  color: hsl(var(--foreground));
+}
+
+:is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) button:has(> .lucide-search):hover:not(:disabled) {
+  border-color: hsl(var(--ring));
+  background: hsl(var(--accent));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img) { min-height: 0; }
+
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img) > div:last-child {
+    position: absolute;
+    inset: auto 0 0;
+    z-index: 3;
+    max-height: 88%;
+    padding-top: 2.6rem;
+    background: linear-gradient(to top, hsl(var(--background) / 0.97) 16%, hsl(var(--background) / 0.88) 54%, hsl(var(--background) / 0.16));
+    backdrop-filter: blur(13px) saturate(118%);
+    -webkit-backdrop-filter: blur(13px) saturate(118%);
+    transform: translateY(calc(100% - 4.9rem));
+    transition: transform 210ms ease;
+  }
+
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img):hover > div:last-child,
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img):focus-within > div:last-child { transform: translateY(0); }
+
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img):hover > :is(a, button):first-child::after,
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img):focus-within > :is(a, button):first-child::after { opacity: 0.88; }
+}
+
+@media (max-width: 639px), (hover: none) {
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card.overflow-hidden:has(img) > div:last-child {
+    position: static !important;
+    transform: none !important;
+    background: hsl(var(--background) / 0.78);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+
+[data-route="/apps/image-labeler"] .grid:has(img) { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+
+@media (min-width: 640px) {
+  [data-route="/apps/image-labeler"] .grid:has(img) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Weather cards react only to their primary condition icon, not metric icons. */
+[data-weather-now] .surface-card { transition: background 220ms ease, border-color 220ms ease; }
+[data-weather-now] .surface-card:has(.flex.flex-col.items-end .lucide-sun),
+[data-weather-now] .surface-card:has(.flex.min-w-0.items-center.gap-4 .lucide-sun) {
+  border-color: hsl(var(--warning) / 0.62);
+  background: linear-gradient(145deg, hsl(var(--warning) / 0.24), hsl(var(--card)) 68%);
+}
+[data-weather-now] .surface-card:has(.flex.flex-col.items-end .lucide-cloud-rain),
+[data-weather-now] .surface-card:has(.flex.min-w-0.items-center.gap-4 .lucide-cloud-rain) {
+  border-color: hsl(var(--info) / 0.58);
+  background: linear-gradient(145deg, hsl(var(--info) / 0.23), hsl(var(--card)) 68%);
+}
+[data-weather-now] .surface-card:has(.flex.flex-col.items-end .lucide-snowflake),
+[data-weather-now] .surface-card:has(.flex.min-w-0.items-center.gap-4 .lucide-snowflake) {
+  border-color: hsl(var(--info) / 0.46);
+  background: linear-gradient(145deg, hsl(var(--info) / 0.16), hsl(var(--card)) 68%);
+}
+[data-weather-now] .surface-card:has(.flex.flex-col.items-end .lucide-cloud),
+[data-weather-now] .surface-card:has(.flex.min-w-0.items-center.gap-4 .lucide-cloud) {
+  border-color: hsl(var(--muted-foreground) / 0.5);
+  background: linear-gradient(145deg, hsl(var(--muted-foreground) / 0.13), hsl(var(--card)) 68%);
+}
+[data-weather-now] .surface-card:has(.flex.flex-col.items-end .lucide-wind),
+[data-weather-now] .surface-card:has(.flex.min-w-0.items-center.gap-4 .lucide-wind) {
+  border-color: hsl(var(--ring));
+  background: hsl(var(--card));
+}
+
+/* Sidebar weather uses the same condition language in a compact surface. */
+.sidebar-weather-tone {
+  border-color: hsl(var(--border));
+  background: hsl(var(--card));
+  transition: background 220ms ease, border-color 220ms ease, color 220ms ease;
+}
+.sidebar-weather-tone[data-weather-tone="sunny"] {
+  border-color: hsl(var(--warning) / 0.58);
+  background: linear-gradient(145deg, hsl(var(--warning) / 0.22), hsl(var(--card)) 72%);
+}
+.sidebar-weather-tone[data-weather-tone="sunny"] .lucide-sun { color: hsl(var(--warning)); }
+.sidebar-weather-tone[data-weather-tone="rainy"] {
+  border-color: hsl(var(--info) / 0.56);
+  background: linear-gradient(145deg, hsl(var(--info) / 0.22), hsl(var(--card)) 72%);
+}
+.sidebar-weather-tone[data-weather-tone="rainy"] .lucide-cloud-rain { color: hsl(var(--info)); }
+.sidebar-weather-tone[data-weather-tone="snowy"] {
+  border-color: hsl(var(--info) / 0.42);
+  background: linear-gradient(145deg, hsl(var(--info) / 0.14), hsl(var(--card)) 72%);
+}
+.sidebar-weather-tone[data-weather-tone="snowy"] .lucide-snowflake { color: hsl(var(--info)); }
+.sidebar-weather-tone[data-weather-tone="cloudy"] {
+  border-color: hsl(var(--muted-foreground) / 0.48);
+  background: linear-gradient(145deg, hsl(var(--muted-foreground) / 0.14), hsl(var(--card)) 72%);
+}
+.sidebar-weather-tone[data-weather-tone="cloudy"] .lucide-cloud { color: hsl(var(--muted-foreground)); }
+.sidebar-weather-tone[data-weather-tone="windy"] { border-color: hsl(var(--ring)); }
+
+/* Google OAuth keeps the provider's recognizable blue while retaining AppForge geometry. */
+[role="dialog"][aria-label="Sign in to AppForge"] .grid.grid-cols-2 > button:first-child {
+  border-color: #3367d6;
+  background: #4285f4;
+  color: #fff;
+}
+
+[role="dialog"][aria-label="Sign in to AppForge"] .grid.grid-cols-2 > button:first-child:hover {
+  border-color: #2f5fc4;
+  background: #3367d6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card,
+  :is([data-route="/apps/getter-pro"], [data-route="/apps/scrapper-pro"]) .surface-card *,
+  [data-weather-now] .surface-card,
+  .sidebar-weather-tone {
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "extends": ["config:recommended"],
+  "schedule": ["before 6:00am on Monday"],
+  "automerge": false,
+  "automergeType": "pr",
+  "labels": ["dependencies"],
+  "assignees": ["dracorisz"],
+  "reviewers": ["dracorisz"],
+  "platformAutomerge": true,
+  "commitMessageAction": "bump",
+  "commitMessagePrefix": "chore(deps): ",
+  "commitMessageTopic": "depName@currentVersion",
+  "enabledManagers": ["npm"]
+}

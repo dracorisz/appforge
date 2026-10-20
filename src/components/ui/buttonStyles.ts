@@ -1,0 +1,25 @@
+export const buttonBaseClass =
+  "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-[background-color,border-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 has-[img]:h-auto has-[img]:max-h-none has-[video]:h-auto has-[video]:max-h-none [&>svg]:h-4 [&>svg]:w-4 [&>svg]:shrink-0";
+
+export const buttonVariantClasses = {
+  primary: "border-border bg-secondary text-foreground hover:border-ring/20 hover:bg-accent",
+  default: "border-border bg-secondary text-foreground hover:border-ring/20 hover:bg-accent",
+  secondary: "border-border bg-secondary text-secondary-foreground hover:border-ring/20 hover:bg-accent",
+  ghost: "border-transparent bg-transparent text-foreground hover:border-border hover:bg-accent hover:text-accent-foreground",
+  destructive: "border-destructive bg-destructive text-destructive-foreground hover:bg-destructive/90",
+} as const;
+
+export const buttonSizeClasses = {
+  sm: "h-9 min-h-9 max-h-9 px-2",
+  md: "h-9 min-h-9 max-h-9 px-4",
+  lg: "h-9 min-h-9 max-h-9 px-8",
+} as const;
+
+export const iconButtonSizeClasses = {
+  sm: "h-9 min-h-9 max-h-9 w-9",
+  md: "h-9 min-h-9 max-h-9 w-9",
+} as const;
+
+export type ButtonVariant = keyof typeof buttonVariantClasses;
+export type ButtonSize = keyof typeof buttonSizeClasses;
+export type IconButtonSize = keyof typeof iconButtonSizeClasses;

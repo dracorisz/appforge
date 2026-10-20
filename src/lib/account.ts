@@ -1,0 +1,307 @@
+import type { User } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
+
+export interface AppProfile {
+  id: string
+  username: string | null
+  display_name: string | null
+  avatar_url: string | null
+  bio: string | null
+  website: string | null
+  location: string | null
+  github_username: string | null
+  headline: string | null
+  skills: string[]
+  open_to_collaboration: boolean
+  is_public: boolean
+  show_skills: boolean
+  show_website: boolean
+  show_github: boolean
+  show_email: boolean
+  public_email: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PrivateProfileInfo {
+  user_id: string
+  sex: string | null
+  birth_date: string | null
+  phone: string | null
+  address_line1: string | null
+  address_line2: string | null
+  city: string | null
+  region: string | null
+  postal_code: string | null
+  country: string | null
+  organization: string | null
+  job_title: string | null
+  notes: string | null
+  created_at?: string
+  updated_at?: string
+}
+
+export interface UserImage {
+  id: string
+  owner_id: string
+  title: string | null
+  source_url: string | null
+  storage_path: string | null
+  mime_type: string | null
+  width: number | null
+  height: number | null
+  metadata: Record<string, unknown>
+  created_at: string
+  updated_at: string
+}
+
+export interface ProfileImageLink {
+  profile_id: string
+  image_id: string
+  kind: 'avatar' | 'gallery' | 'cover'
+  sort_order: number
+  user_images?: UserImage | UserImage[] | null
+}
+
+export interface AdminUser {
+  id: string
+  email: string | null
+  created_at: string
+  last_sign_in_at: string | null
+  role: 'user' | 'admin'
+  display_name: string | null
+  username: string | null
+  avatar_url: string | null
+  is_public: boolean
+}
+
+export type AssuranceLevel = 'aal1' | 'aal2' | null
+
+const PROFILE_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
+
+const normalizeAssuranceLevel = (value: unknown): AssuranceLevel => {
+  if (value === 'aal1' || value === 'aal2') return value
+  return null
+}
+
+const profileDefaults = (user: User) => ({
+  id: user.id,
+  display_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'AppForge user',
+  avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+  skills: [] as string[],
+  open_to_collaboration: true,
+  is_public: true,
+  show_skills: true,
+  show_website: true,
+  show_github: true,
+  show_email: false,
+  public_email: null,
+})
+
+const privateDefaults = (userId: string): PrivateProfileInfo => ({
+  user_id: userId,
+  sex: null,
+  birth_date: null,
+  phone: null,
+  address_line1: null,
+  address_line2: null,
+  city: null,
+  region: null,
+  postal_code: null,
+  country: null,
+  organization: null,
+  job_title: null,
+  notes: null,
+})
+
+const trimOrNull = (value: unknown) => {
+  const text = String(value ?? '').trim()
+  return text || null
+}
+
+const trimLimited = (value: unknown, max: number) => trimOrNull(value)?.slice(0, max) || null
+
+const normalizeHttpUrl = (value: unknown) => {
+  const text = trimOrNull(value)
+  if (!text) return null
+  const candidate = /^[a-z][a-z0-9+.-]*:/i.test(text) ? text : `https://${text}`
+  try {
+    const url = new URL(candidate)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error('Website must use http:// or https://.')
+    return url.toString().slice(0, 2_000)
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Website must use http:// or https://.') throw error
+    throw new Error('Website must be a valid web address.')
+  }
+}
+
+const normalizeEmail = (value: unknown) => {
+  const text = trimOrNull(value)?.toLowerCase() || null
+  if (!text) return null
+  if (text.length > 320 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) throw new Error('Public email must be a valid email address.')
+  return text
+}
+
+const normalizeUsername = (value: unknown) => {
+  const username = trimOrNull(value)?.toLowerCase() || null
+  if (!username) return null
+  if (username.length > 64 || !/^[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?$/.test(username)) {
+    throw new Error('Username may use lowercase letters, numbers, dots, underscores, and hyphens, and cannot start or end with punctuation.')
+  }
+  return username
+}
+
+const normalizeGithubUsername = (value: unknown) => {
+  const username = trimOrNull(value)?.replace(/^@/, '') || null
+  if (!username) return null
+  if (username.length > 39 || !/^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/.test(username) || username.includes('--')) {
+    throw new Error('GitHub username must be a valid GitHub handle.')
+  }
+  return username
+}
+
+export async function ensureProfile(user: User): Promise<AppProfile> {
+  const existing = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
+  if (existing.error) throw existing.error
+  if (existing.data) return existing.data as AppProfile
+  const created = await supabase.from('profiles').insert(profileDefaults(user)).select('*').single()
+  if (created.error) throw created.error
+  return created.data as AppProfile
+}
+
+export async function saveProfile(userId: string, patch: Partial<AppProfile>): Promise<AppProfile> {
+  const skills = Array.isArray(patch.skills) ? patch.skills.map((skill) => skill.trim().slice(0, 80)).filter(Boolean).slice(0, 16) : []
+  const payload = {
+    display_name: trimLimited(patch.display_name, 120),
+    username: normalizeUsername(patch.username),
+    avatar_url: trimLimited(patch.avatar_url, 2_000),
+    bio: trimLimited(patch.bio, 2_000),
+    website: normalizeHttpUrl(patch.website),
+    location: trimLimited(patch.location, 160),
+    github_username: normalizeGithubUsername(patch.github_username),
+    headline: trimLimited(patch.headline, 240),
+    skills,
+    open_to_collaboration: patch.open_to_collaboration ?? true,
+    is_public: patch.is_public ?? true,
+    show_skills: patch.show_skills ?? true,
+    show_website: patch.show_website ?? true,
+    show_github: patch.show_github ?? true,
+    show_email: patch.show_email ?? false,
+    public_email: patch.show_email ? normalizeEmail(patch.public_email) : null,
+    updated_at: new Date().toISOString(),
+  }
+  const result = await supabase.from('profiles').update(payload).eq('id', userId).select('*').single()
+  if (result.error) throw result.error
+  return result.data as AppProfile
+}
+
+export async function getPrivateProfileInfo(userId: string): Promise<PrivateProfileInfo> {
+  const result = await supabase.from('profile_private_info').select('*').eq('user_id', userId).maybeSingle()
+  if (result.error) throw result.error
+  return result.data ? result.data as PrivateProfileInfo : privateDefaults(userId)
+}
+
+export async function savePrivateProfileInfo(userId: string, patch: Partial<PrivateProfileInfo>): Promise<PrivateProfileInfo> {
+  const payload = {
+    user_id: userId,
+    sex: trimLimited(patch.sex, 80),
+    birth_date: trimLimited(patch.birth_date, 40),
+    phone: trimLimited(patch.phone, 80),
+    address_line1: trimLimited(patch.address_line1, 240),
+    address_line2: trimLimited(patch.address_line2, 240),
+    city: trimLimited(patch.city, 160),
+    region: trimLimited(patch.region, 160),
+    postal_code: trimLimited(patch.postal_code, 40),
+    country: trimLimited(patch.country, 120),
+    organization: trimLimited(patch.organization, 200),
+    job_title: trimLimited(patch.job_title, 200),
+    notes: trimLimited(patch.notes, 4_000),
+    updated_at: new Date().toISOString(),
+  }
+  const result = await supabase.from('profile_private_info').upsert(payload, { onConflict: 'user_id' }).select('*').single()
+  if (result.error) throw result.error
+  return result.data as PrivateProfileInfo
+}
+
+export async function getRole(userId: string): Promise<'user' | 'admin'> { const result = await supabase.from('app_roles').select('role').eq('user_id', userId).maybeSingle(); if (result.error) throw result.error; return result.data?.role === 'admin' ? 'admin' : 'user' }
+export async function claimFirstAdmin(): Promise<boolean> { const result = await supabase.rpc('claim_first_admin'); if (result.error) throw result.error; return Boolean(result.data) }
+export async function listVisibleProfiles(): Promise<AppProfile[]> { const result = await supabase.rpc('list_visible_profiles'); if (result.error) throw result.error; return (result.data || []) as AppProfile[] }
+export async function listProfileImages(profileId?: string): Promise<ProfileImageLink[]> { let query = supabase.from('profile_images').select('profile_id,image_id,kind,sort_order,user_images(*)').order('sort_order', { ascending: true }); if (profileId) query = query.eq('profile_id', profileId); const result = await query; if (result.error) throw result.error; return (result.data || []) as unknown as ProfileImageLink[] }
+
+const safeFileName = (name: string) => name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(-90) || 'image'
+export async function uploadProfileImage(userId: string, file: File, kind: 'avatar' | 'gallery' | 'cover' = 'gallery') {
+  if (!PROFILE_IMAGE_TYPES.has(file.type)) throw new Error('Choose a PNG, JPEG, WebP, or GIF image.')
+  if (file.size > 10 * 1024 * 1024) throw new Error('Images must be 10 MB or smaller.')
+  const path = `${userId}/${crypto.randomUUID()}-${safeFileName(file.name)}`
+  const upload = await supabase.storage.from('profile-media').upload(path, file, { upsert: false, contentType: file.type, cacheControl: '3600' })
+  if (upload.error) throw upload.error
+  const { data: publicUrl } = supabase.storage.from('profile-media').getPublicUrl(path)
+  const image = await supabase.from('user_images').insert({ owner_id: userId, title: file.name, source_url: publicUrl.publicUrl, storage_path: path, mime_type: file.type, metadata: { size: file.size } }).select('*').single()
+  if (image.error) { await supabase.storage.from('profile-media').remove([path]); throw image.error }
+
+  const replacingSingle = kind === 'avatar' || kind === 'cover'
+  const previousSingle = replacingSingle
+    ? await supabase.from('profile_images').select('image_id').eq('profile_id', userId).eq('kind', kind)
+    : null
+  if (previousSingle?.error) {
+    await supabase.from('user_images').delete().eq('id', image.data.id).eq('owner_id', userId)
+    await supabase.storage.from('profile-media').remove([path])
+    throw previousSingle.error
+  }
+
+  const link = await supabase.from('profile_images').insert({ profile_id: userId, image_id: image.data.id, kind, sort_order: kind === 'gallery' ? Date.now() : 0 })
+  if (link.error) {
+    await supabase.from('user_images').delete().eq('id', image.data.id).eq('owner_id', userId)
+    await supabase.storage.from('profile-media').remove([path])
+    throw link.error
+  }
+
+  if (kind === 'avatar') {
+    const profile = await supabase.from('profiles').update({ avatar_url: publicUrl.publicUrl, updated_at: new Date().toISOString() }).eq('id', userId)
+    if (profile.error) {
+      await supabase.from('profile_images').delete().eq('profile_id', userId).eq('image_id', image.data.id).eq('kind', 'avatar')
+      await supabase.from('user_images').delete().eq('id', image.data.id).eq('owner_id', userId)
+      await supabase.storage.from('profile-media').remove([path])
+      throw profile.error
+    }
+  }
+
+  if (replacingSingle) {
+    const oldIds = (previousSingle?.data || []).map((row) => row.image_id).filter((id): id is string => Boolean(id) && id !== image.data.id)
+    if (oldIds.length) {
+      const oldImages = await supabase.from('user_images').select('id,storage_path').eq('owner_id', userId).in('id', oldIds)
+      await supabase.from('profile_images').delete().eq('profile_id', userId).eq('kind', kind).in('image_id', oldIds)
+      await supabase.from('user_images').delete().eq('owner_id', userId).in('id', oldIds)
+      const oldPaths = (oldImages.data || []).map((row) => row.storage_path).filter((value): value is string => Boolean(value))
+      if (oldPaths.length) await supabase.storage.from('profile-media').remove(oldPaths)
+    }
+  }
+  return image.data as UserImage
+}
+
+export async function removeProfileImage(userId: string, image: UserImage) {
+  if (image.owner_id !== userId) throw new Error('You can only remove your own image.')
+  const linked = await supabase.from('profile_images').select('kind').eq('profile_id', userId).eq('image_id', image.id)
+  if (linked.error) throw linked.error
+  const wasAvatar = (linked.data || []).some((link) => link.kind === 'avatar')
+  const links = await supabase.from('profile_images').delete().eq('profile_id', userId).eq('image_id', image.id)
+  if (links.error) throw links.error
+  const row = await supabase.from('user_images').delete().eq('id', image.id).eq('owner_id', userId)
+  if (row.error) throw row.error
+  if (wasAvatar) {
+    const profile = await supabase.from('profiles').update({ avatar_url: null, updated_at: new Date().toISOString() }).eq('id', userId)
+    if (profile.error) throw profile.error
+  }
+  if (image.storage_path) {
+    const storage = await supabase.storage.from('profile-media').remove([image.storage_path])
+    if (storage.error) throw storage.error
+  }
+}
+export async function getSecurityState(): Promise<{ currentLevel: AssuranceLevel; nextLevel: AssuranceLevel; totp: any[] }> { const [aal, factors] = await Promise.all([supabase.auth.mfa.getAuthenticatorAssuranceLevel(), supabase.auth.mfa.listFactors()]); if (aal.error) throw aal.error; if (factors.error) throw factors.error; return { currentLevel: normalizeAssuranceLevel(aal.data.currentLevel), nextLevel: normalizeAssuranceLevel(aal.data.nextLevel), totp: factors.data?.totp ?? [] } }
+export async function enrollTotp() { const result = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'AppForge' }); if (result.error) throw result.error; return result.data }
+export async function verifyTotpFactor(factorId: string, code: string) { const challenge = await supabase.auth.mfa.challenge({ factorId }); if (challenge.error) throw challenge.error; const verified = await supabase.auth.mfa.verify({ factorId, challengeId: challenge.data.id, code: code.trim() }); if (verified.error) throw verified.error; return verified.data }
+export async function unenrollTotp(factorId: string) { const result = await supabase.auth.mfa.unenroll({ factorId }); if (result.error) throw result.error }
+export async function adminListUsers(): Promise<AdminUser[]> { const result = await supabase.rpc('admin_list_users'); if (result.error) throw result.error; return (result.data || []) as AdminUser[] }
+export async function adminSetRole(userId: string, role: 'user' | 'admin') { const result = await supabase.from('app_roles').upsert({ user_id: userId, role, updated_at: new Date().toISOString() }); if (result.error) throw result.error }
+export async function adminUpdateProfile(userId: string, patch: Pick<AppProfile, 'display_name' | 'username' | 'is_public'>) { const result = await supabase.from('profiles').update({ ...patch, updated_at: new Date().toISOString() }).eq('id', userId); if (result.error) throw result.error }
+export async function adminDeleteUser(userId: string) { const result = await supabase.rpc('admin_delete_user', { target_user_id: userId }); if (result.error) throw result.error; return Boolean(result.data) }

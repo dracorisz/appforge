@@ -1,0 +1,72 @@
+{
+  "buildCommand": "NODE_OPTIONS=--max-old-space-size=4096 npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "functions": {
+    "api/companion.js": {
+      "maxDuration": 60
+    },
+    "api/lamat.js": {
+      "maxDuration": 60
+    }
+  },
+  "env": {
+    "VITE_APP_NAME": "Lamat",
+    "VITE_APP_URL": "https://pf-appforge.vercel.app"
+  },
+  "rewrites": [
+    {
+      "source": "/api/companion-chat",
+      "destination": "/api/companion?mode=chat"
+    },
+    {
+      "source": "/api/companion-integrations",
+      "destination": "/api/companion?mode=integrations"
+    },
+    {
+      "source": "/api/lamat-cron",
+      "destination": "/api/lamat?mode=cron"
+    },
+    {
+      "source": "/api/maya-daily-brief",
+      "destination": "/api/lamat?mode=cron"
+    },
+    {
+      "source": "/api/lamet-daily-brief",
+      "destination": "/api/lamat?mode=cron"
+    },
+    {
+      "source": "/((?!api(?:/|$)).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(self), geolocation=()"
+        }
+      ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/lamat-cron",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}
