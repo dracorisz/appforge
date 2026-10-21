@@ -19,8 +19,8 @@ if (!appSource.includes('<Companion />') || !appSource.includes('<LoginPage')) {
   failures.push('src/App.tsx must route unauthenticated users to LoginPage and authenticated users to Companion (Lamat).')
 }
 
-if (!loginSource.includes('signInWithGoogle') || !loginSource.includes('signInWithGitHub') || !loginSource.includes('signInWithEmail')) {
-  failures.push('LoginPage must preserve Google, GitHub, and Email/Password authentication flows.')
+if (!loginSource.includes('signInWithGoogle') || !loginSource.includes('signInWithGitHub') || loginSource.includes('signInWithEmail')) {
+  failures.push('Login page must wire Google and GitHub OAuth and exclude email/password login')
 }
 
 if (!companionSource.includes('/api/lamat') || !companionSource.includes('/api/companion-chat')) {

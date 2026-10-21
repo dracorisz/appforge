@@ -5,6 +5,7 @@ import {
   authenticateCronRequest,
 } from '../api/_companion-auth.js'
 import {
+  AVAILABLE_MODELS,
   computeActionParameterHash,
   enforceToolAuthorization,
   executeCompanionTool,
@@ -15,9 +16,11 @@ import {
   verifyApproval,
 } from '../api/_companion-tools.js'
 import {
+  analyzeTaskCapabilities,
   calculateUsageCost,
   callFreeModelProvider,
   callVertexGardenPartnerModel,
+  classifyLamatError,
   invokeLamatAgent,
   isFreeModel,
   isVertexGardenModel,
@@ -37,7 +40,8 @@ import {
   selectNextActionableTask,
   verifyTaskOutcome,
 } from '../api/_lamat-engine.js'
-import { normalizeMessages } from '../api/_companion-chat.js'
+import { generateSessionTitle, normalizeMessages } from '../api/_companion-chat.js'
+import { verifyAllIntegrations } from '../api/_companion-integrations.js'
 import { buildConciseActivitySummary } from '../api/lamat.js'
 
 const OWNER_USER = { id: '4c5c0d15-467a-4e63-b2d5-f05763293af8', email: 'dracorisz@gmail.com' }
@@ -838,4 +842,242 @@ test('15. Orchestrator model selection, Free Mode multi-key rotation, financial 
   assert.equal(rateRes.task.user_rating, 3)
   assert.ok(rateRes.revisionTask)
   assert.match(rateRes.revisionTask.title, /Revise: Prepare remote income plan/)
+})
+
+test('16. Capability-aware multi-model routing upgrades text-only models for vision attachments and cleans unusable models', async () => {
+  // Verify unusable Vertex AI Model Garden and dead Mistral HF models are removed from AVAILABLE_MODELS
+  assert.equal(
+    AVAILABLE_MODELS.some((m) => m.id.startsWith('vertex-claude:') || m.id.startsWith('vertex-meta:')),
+    false
+  )
+  assert.equal(
+    AVAILABLE_MODELS.some((m) => m.id === 'hf:mistralai/Mistral-Small-24B-Instruct-2501'),
+    false
+  )
+
+  // Task capability detection
+  const imgCaps = analyzeTaskCapabilities({
+    query: 'Can you now make similar image but using Google provided model?',
+    attachments: [{ inlineData: { mimeType: 'image/jpeg', data: 'abc' } }],
+  })
+  assert.equal(imgCaps.hasImageAttachments, true)
+  assert.equal(imgCaps.needsImageGeneration, true)
+  assert.equal(imgCaps.googleImageRequested, true)
+  assert.ok(imgCaps.requiredCapabilities.includes('vision'))
+  assert.ok(imgCaps.requiredCapabilities.includes('image_generation'))
+
+  // Text-only free model (nemotron-3-ultra) automatically upgrades to vision-capable free model when image attachment is present
+  const upgradedFree = selectModelForRole('chat', {
+    requestedModel: 'openrouter:nvidia/nemotron-3-ultra-550b-a55b:free',
+    queryHint: 'What is in this screenshot?',
+    attachments: [{ inlineData: { mimeType: 'image/png', data: 'xyz' } }],
+  })
+  assert.equal(upgradedFree, 'openrouter:nvidia/nemotron-3.5-super-vl:free')
+
+  // Explicit 'auto' requestedModel is not overridden by stale preferred_chat_model in budgetConfig
+  const autoRouted = selectModelForRole('chat', {
+    requestedModel: 'auto',
+    budgetConfig: { preferred_chat_model: 'openrouter:nvidia/nemotron-3-ultra-550b-a55b:free' },
+    queryHint: 'Refactor the authentication flow in TypeScript',
+  })
+  assert.equal(autoRouted, 'gemini-4-argon')
+})
+
+test('17. Structured error classification distinguishes timeouts, user cancellations, auth errors, and rate limits', () => {
+  const timeoutErr = new Error('The operation was aborted due to timeout')
+  timeoutErr.name = 'TimeoutError'
+  const classifiedTimeout = classifyLamatError(timeoutErr)
+  assert.equal(classifiedTimeout.status, 504)
+  assert.equal(classifiedTimeout.category, 'timeout')
+  assert.equal(classifiedTimeout.retryable, true)
+  assert.doesNotMatch(classifiedTimeout.userMessage, /^The operation was aborted due to timeout$/)
+
+  const cancelErr = new Error('The operation was aborted')
+  cancelErr.name = 'AbortError'
+  const classifiedCancel = classifyLamatError(cancelErr)
+  assert.equal(classifiedCancel.status, 499)
+  assert.equal(classifiedCancel.category, 'cancelled')
+  assert.equal(classifiedCancel.retryable, false)
+
+  const rateErr = new Error('Rate limit reached')
+  rateErr.status = 429
+  const classifiedRate = classifyLamatError(rateErr)
+  assert.equal(classifiedRate.status, 429)
+  assert.equal(classifiedRate.category, 'rate_limit')
+  assert.equal(classifiedRate.retryable, true)
+
+  const authErr = new Error('Access denied: restricted account')
+  authErr.status = 403
+  const classifiedAuth = classifyLamatError(authErr)
+  assert.equal(classifiedAuth.status, 403)
+  assert.equal(classifiedAuth.category, 'auth_error')
+  assert.equal(classifiedAuth.retryable, false)
+})
+
+test('18. Context optimization strips historical base64 images, deduplicates memories, and reduces token footprint', async () => {
+  const hugeBase64 = 'data:image/jpeg;base64,' + 'A'.repeat(50000)
+  const messagesWithBlobs = [
+    { role: 'user', content: 'Analyze this\n\n[Attached: screenshot.png]' },
+    {
+      role: 'assistant',
+      content: `Here is your generated artwork:\n\n![Broken Placeholder]([INLINE_IMAGE_ATTACHED_TO_RESPONSE])\n\n![Sunset Cloud](${hugeBase64})`,
+    },
+    { role: 'user', content: 'Now summarize what we did.' },
+  ]
+  const normalized = normalizeMessages(messagesWithBlobs)
+  assert.equal(normalized.length, 3)
+  assert.doesNotMatch(normalized[0].parts[0].text, /\[Attached:/)
+  assert.doesNotMatch(normalized[1].parts[0].text, /INLINE_IMAGE_ATTACHED_TO_RESPONSE/)
+  assert.doesNotMatch(normalized[1].parts[0].text, /AAAA/)
+  assert.match(normalized[1].parts[0].text, /\[Generated Image: Sunset Cloud\]/)
+
+  const mock = createMockSupabaseFetch({
+    maya_memories: [
+      { id: 'm1', kind: 'fact', content: 'Duplicate memory entry about runway', provenance: 'owner_stated', confidence: 0.9, status: 'active' },
+      { id: 'm2', kind: 'fact', content: 'Duplicate memory entry about runway', provenance: 'owner_stated', confidence: 0.9, status: 'active' },
+      { id: 'm3', kind: 'preference', content: 'Prefers concise engineering summaries', provenance: 'owner_stated', confidence: 0.85, status: 'active' },
+    ],
+  })
+  const fullCtx = await loadLamatOperationalContext('owner-token', { queryHint: 'runway', compact: false, fetchImpl: mock.fetchImpl })
+  const compactCtx = await loadLamatOperationalContext('owner-token', { queryHint: 'hello', compact: true, fetchImpl: mock.fetchImpl })
+  assert.equal(fullCtx.rankedMemories.length, 2) // deduplicated from 3 to 2
+  assert.ok(compactCtx.contextMetrics.systemPromptChars <= fullCtx.contextMetrics.systemPromptChars)
+})
+
+test('19. Google Docs & Sheets create/write tools and end-to-end integration verification operate accurately', async () => {
+  const mock = createMockSupabaseFetch({
+    user_preferences: [
+      {
+        user_id: OWNER_USER.id,
+        preferences: {
+          google_provider_token: 'ya29.valid-user-oauth-token',
+        },
+      },
+    ],
+  })
+
+  const googleWorkspaceFetch = async (urlStr, options = {}) => {
+    const url = new URL(urlStr)
+    if (url.hostname === 'ixqoosixhahrsgwoxyme.supabase.co') {
+      return mock.fetchImpl(urlStr, options)
+    }
+    if (url.pathname === '/drive/v3/about') {
+      return new Response(
+        JSON.stringify({ user: { displayName: 'Dragoljub', emailAddress: 'dracorisz@gmail.com' } }),
+        { status: 200 }
+      )
+    }
+    if (url.hostname === 'docs.googleapis.com' && url.pathname === '/v1/documents' && options.method === 'POST') {
+      const body = JSON.parse(options.body)
+      return new Response(JSON.stringify({ documentId: 'doc-new-001', title: body.title }), { status: 200 })
+    }
+    if (url.hostname === 'docs.googleapis.com' && url.pathname.endsWith(':batchUpdate')) {
+      return new Response(JSON.stringify({ documentId: 'doc-new-001', replies: [{}] }), { status: 200 })
+    }
+    if (url.hostname === 'docs.googleapis.com' && url.pathname === '/v1/documents/doc-new-001') {
+      return new Response(
+        JSON.stringify({ documentId: 'doc-new-001', title: 'Lamat Plan', body: { content: [{ endIndex: 25 }] } }),
+        { status: 200 }
+      )
+    }
+    if (url.hostname === 'sheets.googleapis.com' && url.pathname === '/v4/spreadsheets' && options.method === 'POST') {
+      const body = JSON.parse(options.body)
+      return new Response(
+        JSON.stringify({
+          spreadsheetId: 'sheet-new-001',
+          properties: { title: body.properties.title },
+          spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/sheet-new-001/edit',
+        }),
+        { status: 200 }
+      )
+    }
+    if (url.hostname === 'sheets.googleapis.com' && url.pathname.includes('/values/')) {
+      return new Response(
+        JSON.stringify({
+          updates: { updatedRange: 'Sheet1!A1:B2', updatedRows: 2, updatedCells: 4 },
+          updatedRows: 2,
+          updatedCells: 4,
+        }),
+        { status: 200 }
+      )
+    }
+    return new Response(JSON.stringify({ ok: true }), { status: 200 })
+  }
+
+  const createdDoc = await executeCompanionTool(
+    'google_docs_create',
+    { title: 'Q4 Engineering Roadmap', content: '# Roadmap\n1. Multi-model routing\n2. Google Workspace integration' },
+    OWNER_USER,
+    'owner-token',
+    { fetchImpl: googleWorkspaceFetch, agentRole: 'supervisor' }
+  )
+  assert.equal(createdDoc.created, true)
+  assert.equal(createdDoc.documentId, 'doc-new-001')
+  assert.equal(createdDoc.authSource, 'user_oauth')
+
+  const updatedDoc = await executeCompanionTool(
+    'google_docs_write',
+    { documentId: 'doc-new-001', mode: 'append', content: '3. Library rich previews' },
+    OWNER_USER,
+    'owner-token',
+    { fetchImpl: googleWorkspaceFetch, agentRole: 'supervisor' }
+  )
+  assert.equal(updatedDoc.updated, true)
+
+  const createdSheet = await executeCompanionTool(
+    'google_sheets_create',
+    {
+      title: 'Runway & Budget Tracker',
+      sheetNames: ['Overview'],
+      values: [
+        ['Category', 'Monthly EUR'],
+        ['Essentials', '850'],
+      ],
+    },
+    OWNER_USER,
+    'owner-token',
+    { fetchImpl: googleWorkspaceFetch, agentRole: 'supervisor' }
+  )
+  assert.equal(createdSheet.created, true)
+  assert.equal(createdSheet.spreadsheetId, 'sheet-new-001')
+  assert.equal(createdSheet.populatedRows, 2)
+
+  const updatedSheet = await executeCompanionTool(
+    'google_sheets_write',
+    {
+      spreadsheetId: 'sheet-new-001',
+      range: 'Overview!A3',
+      mode: 'append',
+      values: [['Cloud Credits', '300']],
+    },
+    OWNER_USER,
+    'owner-token',
+    { fetchImpl: googleWorkspaceFetch, agentRole: 'supervisor' }
+  )
+  assert.equal(updatedSheet.updated, true)
+  assert.equal(updatedSheet.updatedRows, 2)
+
+  const integrations = await verifyAllIntegrations(
+    { user: OWNER_USER, accessToken: 'owner-token' },
+    { fetchImpl: googleWorkspaceFetch }
+  )
+  assert.equal(integrations.google_workspace.status, 'verified')
+  assert.equal(integrations.google_workspace.authSource, 'user_oauth')
+  assert.ok(integrations.google_workspace.capabilities.includes('google_docs_create'))
+  assert.ok(integrations.google_workspace.capabilities.includes('google_sheets_write'))
+})
+
+test('20. Session title generation produces concise, non-truncated titles after first reply', () => {
+  const title1 = generateSessionTitle(
+    'Review my active goals, runway, and top priorities for today.',
+    '### Executive Priorities & Runway Assessment\nHere is your current breakdown...'
+  )
+  assert.equal(title1, 'Executive Priorities & Runway Assessment')
+
+  const title2 = generateSessionTitle(
+    'Can you help me debug the Google Drive OAuth token refresh flow in Lamat?',
+    'Let us inspect the token refresh logic in api/_companion-tools.js.'
+  )
+  assert.ok(title2.length >= 6 && title2.length <= 52)
+  assert.doesNotMatch(title2, /^New chat$/i)
 })

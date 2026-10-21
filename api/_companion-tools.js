@@ -15,7 +15,7 @@ const DEFAULT_REPO = 'dracorisz/appforge'
 const DEFAULT_VERCEL_PROJECT = 'prj_duzco4XEzLRNCPs3n0VkWpRDusZq'
 const DEFAULT_VERCEL_TEAM_ID = 'team_w5zHVgvHs060CuaxQt23OSyr'
 const DEFAULT_SUPABASE_PROJECT = 'ixqoosixhahrsgwoxyme'
-const MAX_TOOL_TEXT = 24000
+const MAX_TOOL_TEXT = 10000
 const REQUEST_TIMEOUT = 10000
 
 export const AVAILABLE_MODELS = Object.freeze([
@@ -25,6 +25,8 @@ export const AVAILABLE_MODELS = Object.freeze([
     group: 'Orchestrator',
     provider: 'auto',
     tier: 'auto',
+    contextWindow: 1000000,
+    capabilities: ['chat', 'reasoning', 'coding', 'vision', 'audio', 'tools', 'image_generation', 'document_processing'],
   },
   {
     id: 'gemini-3.8-flash',
@@ -32,6 +34,8 @@ export const AVAILABLE_MODELS = Object.freeze([
     group: 'Google Cloud Vertex AI',
     provider: 'vertex-ai',
     tier: 'paid',
+    contextWindow: 1000000,
+    capabilities: ['chat', 'vision', 'audio', 'tools', 'coding', 'document_processing'],
   },
   {
     id: 'gemini-4-argon',
@@ -39,111 +43,98 @@ export const AVAILABLE_MODELS = Object.freeze([
     group: 'Google Cloud Vertex AI',
     provider: 'vertex-ai',
     tier: 'paid',
-  },
-  {
-    id: 'vertex-claude:claude-sonnet-4-5@20250929',
-    label: 'Claude 4.5 Sonnet (Vertex Garden)',
-    group: 'Vertex AI Model Garden (GCP Credits)',
-    provider: 'vertex-garden',
-    tier: 'paid',
-  },
-  {
-    id: 'vertex-claude:claude-opus-4-1@20250805',
-    label: 'Claude 4.1 Opus (Vertex Garden)',
-    group: 'Vertex AI Model Garden (GCP Credits)',
-    provider: 'vertex-garden',
-    tier: 'paid',
-  },
-  {
-    id: 'vertex-claude:claude-3-5-sonnet-v2@20241022',
-    label: 'Claude 3.5 Sonnet v2 (Vertex Garden)',
-    group: 'Vertex AI Model Garden (GCP Credits)',
-    provider: 'vertex-garden',
-    tier: 'paid',
-  },
-  {
-    id: 'vertex-meta:meta/llama-3.3-70b-instruct-maas',
-    label: 'Llama 3.3 70B Instruct (Vertex Garden)',
-    group: 'Vertex AI Model Garden (GCP Credits)',
-    provider: 'vertex-garden',
-    tier: 'paid',
+    contextWindow: 1000000,
+    capabilities: ['chat', 'reasoning', 'coding', 'vision', 'audio', 'tools', 'document_processing'],
   },
   {
     id: 'openrouter:minimax/minimax-m3.1-flash:free',
-    label: 'MiniMax M3.1 Flash (1M ctx · Free)',
-    group: 'OpenRouter Free Models ($0)',
+    label: 'MiniMax M3.1 Flash (1M ctx)',
+    group: 'Free Tier Models (Quota-Limited)',
     provider: 'openrouter',
     tier: 'free',
+    contextWindow: 1000000,
+    capabilities: ['chat', 'vision', 'document_processing'],
   },
   {
     id: 'openrouter:nvidia/nemotron-3-ultra-550b-a55b:free',
-    label: 'Nemotron 3 Ultra 550B (1M ctx · Free)',
-    group: 'OpenRouter Free Models ($0)',
+    label: 'Nemotron 3 Ultra 550B (1M ctx)',
+    group: 'Free Tier Models (Quota-Limited)',
     provider: 'openrouter',
     tier: 'free',
+    contextWindow: 1000000,
+    capabilities: ['chat', 'reasoning', 'coding', 'document_processing'],
   },
   {
     id: 'openrouter:poolside/laguna-s-2.1:free',
-    label: 'Poolside Laguna S 2.1 (Code · Free)',
-    group: 'OpenRouter Free Models ($0)',
+    label: 'Poolside Laguna S 2.1 (Code)',
+    group: 'Free Tier Models (Quota-Limited)',
     provider: 'openrouter',
     tier: 'free',
+    contextWindow: 262144,
+    capabilities: ['chat', 'coding', 'reasoning'],
   },
   {
     id: 'openrouter:cohere/north-mini-code:free',
-    label: 'Cohere North Mini Code (Code · Free)',
-    group: 'OpenRouter Free Models ($0)',
+    label: 'Cohere North Mini Code (Code)',
+    group: 'Free Tier Models (Quota-Limited)',
     provider: 'openrouter',
     tier: 'free',
+    contextWindow: 256000,
+    capabilities: ['chat', 'coding'],
   },
   {
     id: 'openrouter:nvidia/nemotron-3.5-super-vl:free',
-    label: 'Nemotron 3.5 Super VL (Vision · Free)',
-    group: 'OpenRouter Free Models ($0)',
+    label: 'Nemotron 3.5 Super VL (Vision)',
+    group: 'Free Tier Models (Quota-Limited)',
     provider: 'openrouter',
     tier: 'free',
+    contextWindow: 1000000,
+    capabilities: ['chat', 'vision', 'document_processing'],
   },
   {
     id: 'openrouter:nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-    label: 'Nemotron 3 Nano Reasoning (Free)',
-    group: 'OpenRouter Free Models ($0)',
+    label: 'Nemotron 3 Nano Reasoning',
+    group: 'Free Tier Models (Quota-Limited)',
     provider: 'openrouter',
     tier: 'free',
+    contextWindow: 256000,
+    capabilities: ['chat', 'reasoning', 'vision', 'audio'],
   },
   {
     id: 'openrouter:dots-studio/dots-3-note-preview:free',
-    label: 'Dots 3 Note 512k (Free)',
-    group: 'OpenRouter Free Models ($0)',
+    label: 'Dots 3 Note 512k',
+    group: 'Free Tier Models (Quota-Limited)',
     provider: 'openrouter',
     tier: 'free',
+    contextWindow: 512000,
+    capabilities: ['chat', 'vision', 'document_processing'],
   },
   {
     id: 'openrouter:google/gemma-4-31b-it:free',
-    label: 'Google Gemma 4 31B (Free)',
-    group: 'OpenRouter Free Models ($0)',
+    label: 'Google Gemma 4 31B',
+    group: 'Free Tier Models (Quota-Limited)',
     provider: 'openrouter',
     tier: 'free',
+    contextWindow: 262144,
+    capabilities: ['chat', 'vision'],
   },
   {
     id: 'hf:Qwen/Qwen2.5-72B-Instruct',
-    label: 'Qwen 2.5 72B Instruct (HF)',
-    group: 'HuggingFace Inference',
+    label: 'Qwen 2.5 72B Instruct',
+    group: 'Free Tier Models (Quota-Limited)',
     provider: 'huggingface',
     tier: 'free',
+    contextWindow: 128000,
+    capabilities: ['chat', 'reasoning', 'coding'],
   },
   {
     id: 'hf:meta-llama/Llama-3.3-70B-Instruct',
-    label: 'Llama 3.3 70B Instruct (HF)',
-    group: 'HuggingFace Inference',
+    label: 'Llama 3.3 70B Instruct',
+    group: 'Free Tier Models (Quota-Limited)',
     provider: 'huggingface',
     tier: 'free',
-  },
-  {
-    id: 'hf:mistralai/Mistral-Small-24B-Instruct-2501',
-    label: 'Mistral Small 24B (HF)',
-    group: 'HuggingFace Inference',
-    provider: 'huggingface',
-    tier: 'free',
+    contextWindow: 128000,
+    capabilities: ['chat', 'reasoning'],
   },
 ])
 
@@ -289,7 +280,11 @@ export const TOOL_POLICY_CATEGORIES = Object.freeze({
   google_drive_list_files: 'read_state',
   google_drive_read_file: 'read_state',
   google_docs_read: 'read_state',
+  google_docs_create: 'task_execution',
+  google_docs_write: 'task_execution',
   google_sheets_read: 'read_state',
+  google_sheets_create: 'task_execution',
+  google_sheets_write: 'task_execution',
   lamat_read_library: 'read_state',
   lamat_inspect_environment: 'read_state',
   lamat_check_budget_and_resources: 'read_state',
@@ -376,7 +371,11 @@ export const ROLE_TOOL_PERMISSIONS = Object.freeze({
     'google_drive_list_files',
     'google_drive_read_file',
     'google_docs_read',
+    'google_docs_create',
+    'google_docs_write',
     'google_sheets_read',
+    'google_sheets_create',
+    'google_sheets_write',
     'lamat_read_library',
     'lamat_inspect_environment',
     'lamat_check_budget_and_resources',
@@ -444,16 +443,20 @@ const toolDeclarations = [
   { name: 'vercel_get_deployment', description: 'Inspect a specific deployment by ID or URL. Read-only.', parameters: { type: 'OBJECT', properties: { deploymentIdOrUrl: { type: 'STRING' } }, required: ['deploymentIdOrUrl'] } },
   { name: 'supabase_list_tables', description: 'List tables and columns for the Supabase project using a read-only schema query.', parameters: { type: 'OBJECT', properties: { projectId: { type: 'STRING' }, schema: { type: 'STRING' } } } },
   { name: 'supabase_read_table', description: 'Read rows from a public Supabase table through PostgREST using the owner session so Row Level Security applies.', parameters: { type: 'OBJECT', properties: { projectId: { type: 'STRING' }, table: { type: 'STRING' }, columns: { type: 'STRING' }, limit: { type: 'INTEGER' }, filters: { type: 'ARRAY', items: { type: 'OBJECT', properties: { column: { type: 'STRING' }, operator: { type: 'STRING', enum: ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'is', 'like', 'ilike'] }, value: { type: 'STRING' } }, required: ['column', 'operator', 'value'] } } }, required: ['table'] } },
-  { name: 'google_drive_list_files', description: 'Search and list documents, spreadsheets, and files in the user’s Google Drive AND uploaded User Library.', parameters: { type: 'OBJECT', properties: { query: { type: 'STRING', description: 'Optional filename query string, e.g. "Dragoljub\'s Plans".' }, folderId: { type: 'STRING', description: 'Optional folder ID or URL.' }, limit: { type: 'INTEGER', description: 'Max items to return (1-50).' } } } },
+  { name: 'google_drive_list_files', description: 'Search and list documents, spreadsheets, and files in the user’s Google Drive (by filename and full-text content) AND uploaded User Library.', parameters: { type: 'OBJECT', properties: { query: { type: 'STRING', description: 'Optional filename or content search phrase, e.g. "Dragoljub\'s Plans".' }, mimeType: { type: 'STRING', enum: ['any', 'document', 'spreadsheet', 'folder', 'pdf', 'image'], description: 'Optional file type filter.' }, folderId: { type: 'STRING', description: 'Optional folder ID or URL.' }, limit: { type: 'INTEGER', description: 'Max items to return (1-50).' } } } },
   { name: 'google_drive_read_file', description: 'Read/export a file from Google Drive or User Library by fileId or URL. Exports Google Docs as plain text, Google Sheets as CSV, or reads uploaded documents.', parameters: { type: 'OBJECT', properties: { fileId: { type: 'STRING', description: 'Google Drive file ID, Library item ID, or document/sheet URL.' } }, required: ['fileId'] } },
   { name: 'google_docs_read', description: 'Read structured document content from a Google Doc by documentId or URL (supports personal OAuth, link-shared docs, and service-account shared docs).', parameters: { type: 'OBJECT', properties: { documentId: { type: 'STRING', description: 'Google Doc ID or full docs.google.com URL.' } }, required: ['documentId'] } },
-  { name: 'google_sheets_read', description: 'Read tabular rows and cell values from a Google Spreadsheet by spreadsheetId or URL (supports personal OAuth, link-shared sheets, and service-account shared sheets).', parameters: { type: 'OBJECT', properties: { spreadsheetId: { type: 'STRING', description: 'Google Sheet ID or full sheets.google.com URL.' }, range: { type: 'STRING', description: 'Optional A1 notation range, e.g. Sheet1!A1:Z100.' } }, required: ['spreadsheetId'] } },
+  { name: 'google_docs_create', description: 'Create a new Google Doc in the user’s Google Drive with a title and initial content.', parameters: { type: 'OBJECT', properties: { title: { type: 'STRING', description: 'Title of the new Google Doc.' }, content: { type: 'STRING', description: 'Initial document body text or markdown content.' } }, required: ['title'] } },
+  { name: 'google_docs_write', description: 'Edit an existing Google Doc by appending text or replacing matching text.', parameters: { type: 'OBJECT', properties: { documentId: { type: 'STRING', description: 'Google Doc ID or URL.' }, mode: { type: 'STRING', enum: ['append', 'replace'], description: 'Use append to add content at the end, or replace to replace findText.' }, content: { type: 'STRING', description: 'Text to append or replacement text.' }, findText: { type: 'STRING', description: 'When mode is replace, the text string to find and replace.' } }, required: ['documentId', 'content'] } },
+  { name: 'google_sheets_read', description: 'Read spreadsheet metadata (sheet tab names, dimensions) and tabular cell values from a Google Spreadsheet by spreadsheetId or URL.', parameters: { type: 'OBJECT', properties: { spreadsheetId: { type: 'STRING', description: 'Google Sheet ID or full sheets.google.com URL.' }, range: { type: 'STRING', description: 'Optional A1 notation range, e.g. Sheet1!A1:Z100.' } }, required: ['spreadsheetId'] } },
+  { name: 'google_sheets_create', description: 'Create a new Google Spreadsheet with a title, optional sheet tab names, and optional initial rows.', parameters: { type: 'OBJECT', properties: { title: { type: 'STRING', description: 'Title of the new Google Spreadsheet.' }, sheetNames: { type: 'ARRAY', items: { type: 'STRING' }, description: 'Optional sheet tab names (defaults to ["Sheet1"]).' }, values: { type: 'ARRAY', items: { type: 'ARRAY', items: { type: 'STRING' } }, description: 'Optional 2D array of initial rows and cells to populate starting at A1.' } }, required: ['title'] } },
+  { name: 'google_sheets_write', description: 'Update or append rows and cell values in an existing Google Spreadsheet.', parameters: { type: 'OBJECT', properties: { spreadsheetId: { type: 'STRING', description: 'Google Sheet ID or URL.' }, range: { type: 'STRING', description: 'Target A1 range (e.g. Sheet1!A1 or A1:D10).' }, mode: { type: 'STRING', enum: ['update', 'append'], description: 'Use update to overwrite the range or append to add rows at the end of the table.' }, values: { type: 'ARRAY', items: { type: 'ARRAY', items: { type: 'STRING' } }, description: '2D array of row values to write.' } }, required: ['spreadsheetId', 'values'] } },
   { name: 'lamat_read_library', description: 'List or read parsed documents, spreadsheets, and images from the user’s persistent Lamat Library.', parameters: { type: 'OBJECT', properties: { id: { type: 'STRING', description: 'Optional specific library item ID to read full parsed_text.' }, query: { type: 'STRING', description: 'Optional title/filename search query.' } } } },
   { name: 'lamat_inspect_environment', description: 'Inspect Lamat’s own live runtime environment, repository, deployment, database, Google Cloud service account email, and available paid/free models.', parameters: { type: 'OBJECT', properties: {} } },
   { name: 'lamat_check_budget_and_resources', description: 'Read verified and estimated budget limits, token usage, daily spend, cached Google Cloud status, and resource inventory.', parameters: { type: 'OBJECT', properties: {} } },
   { name: 'lamat_read_financial_summary', description: 'Read the owner financial summary from fin_summary(), including account balances, active debts, recurring essentials, and income sources.', parameters: { type: 'OBJECT', properties: {} } },
   { name: 'lamat_upsert_financial_record', description: 'Populate or update a record in the Finance tab (fin_accounts, fin_debts, fin_recurring, or fin_income_sources) based on user documents, sheets, or conversation.', parameters: { type: 'OBJECT', properties: { record_type: { type: 'STRING', enum: ['account', 'debt', 'recurring', 'income'], description: 'Type of financial record to create or update.' }, name: { type: 'STRING', description: 'Account name, creditor name, recurring expense name, or income source name.' }, amount: { type: 'NUMBER', description: 'Amount in major currency units (e.g. 150.50).' }, currency: { type: 'STRING', description: '3-letter currency code: EUR, USD, or RSD.' }, kind: { type: 'STRING', description: 'Optional subtype (e.g. bank/cash for account; loan/card/bill_arrears/personal/tax for debt; freelance/employment for income).' }, due_date: { type: 'STRING', description: 'Optional ISO date YYYY-MM-DD for debt due_date or recurring next_due.' }, cadence: { type: 'STRING', enum: ['once', 'weekly', 'monthly', 'yearly'], description: 'Cadence for recurring expense or income source.' }, essential: { type: 'BOOLEAN', description: 'Whether a recurring expense is essential.' }, consequence_note: { type: 'STRING', description: 'Consequence of delay for a debt.' }, note: { type: 'STRING', description: 'Additional note or provenance.' } }, required: ['record_type', 'name', 'amount'] } },
-  { name: 'lamat_generate_image', description: 'Generate an image from a text prompt using Vertex AI Imagen or FLUX and return it as inline markdown while saving a thumbnail to the User Library.', parameters: { type: 'OBJECT', properties: { prompt: { type: 'STRING', description: 'Detailed visual description of the image to generate.' } }, required: ['prompt'] } },
+  { name: 'lamat_generate_image', description: 'Generate an image from a text prompt using Google Cloud Vertex AI Imagen / Gemini Image or FLUX and return it as inline markdown while saving a thumbnail to the User Library.', parameters: { type: 'OBJECT', properties: { prompt: { type: 'STRING', description: 'Detailed visual description of the image to generate.' }, provider_preference: { type: 'STRING', enum: ['auto', 'google', 'flux'], description: 'Set to google when the user specifically requests a Google-provided image model.' }, aspect_ratio: { type: 'STRING', enum: ['1:1', '16:9', '9:16', '4:3', '3:4'], description: 'Optional aspect ratio (defaults to 1:1).' } }, required: ['prompt'] } },
   { name: 'lamat_record_memory', description: 'Persist a durable memory in maya_memories with explicit provenance and confidence. Deduplicates identical active memories.', parameters: { type: 'OBJECT', properties: { kind: { type: 'STRING', enum: ['fact', 'preference', 'decision', 'lesson', 'event', 'hypothesis'] }, content: { type: 'STRING' }, provenance: { type: 'STRING', enum: ['stated_by_owner', 'observed', 'verified_tool', 'inferred'] }, confidence: { type: 'NUMBER' }, tags: { type: 'ARRAY', items: { type: 'STRING' } }, supersedes_id: { type: 'STRING' } }, required: ['kind', 'content'] } },
   { name: 'lamat_manage_memories', description: 'Permanently delete obsolete or unneeded memories from maya_memories.', parameters: { type: 'OBJECT', properties: { memory_ids: { type: 'ARRAY', items: { type: 'STRING' }, description: 'List of memory UUIDs to delete.' } }, required: ['memory_ids'] } },
   { name: 'lamat_upsert_goal', description: 'Create or update a persistent goal in maya_goals.', parameters: { type: 'OBJECT', properties: { id: { type: 'STRING' }, parent_id: { type: 'STRING' }, title: { type: 'STRING' }, description: { type: 'STRING' }, success_criteria: { type: 'STRING' }, status: { type: 'STRING', enum: ['proposed', 'active', 'blocked', 'done', 'dropped'] }, priority: { type: 'INTEGER' }, horizon: { type: 'STRING', enum: ['now', 'soon', 'later'] }, target_date: { type: 'STRING' } }, required: ['title'] } },
@@ -565,11 +568,56 @@ export function parseGoogleDocOrSheetId(input) {
   return str
 }
 
-async function resolveGoogleWorkspaceHeaders(db) {
+export async function resolveGoogleWorkspaceHeaders(db, fetchImpl = fetch) {
   const headers = { Accept: 'application/json' }
   // 1. Check if the user has a personal Google OAuth token saved from Google Sign-In
-  const prefRows = await db.select('user_preferences', 'select=preferences&limit=1').catch(() => [])
-  const userGoogleToken = prefRows?.[0]?.preferences?.google_provider_token || null
+  const prefRows = await db.select('user_preferences', 'select=user_id,preferences&limit=1').catch(() => [])
+  const prefs = prefRows?.[0]?.preferences || {}
+  let userGoogleToken = prefs.google_provider_token || null
+  const refreshToken = prefs.google_provider_refresh_token || null
+  const clientId = String(process.env.GOOGLE_CLIENT_ID || process.env.GOOGLE_OAUTH_CLIENT_ID || '').trim()
+  const clientSecret = String(process.env.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_OAUTH_CLIENT_SECRET || '').trim()
+
+  if (userGoogleToken && refreshToken && clientId && clientSecret) {
+    const expiresAt = Number(prefs.google_provider_token_expires_at || 0)
+    if (expiresAt > 0 && expiresAt < Date.now() + 60_000) {
+      try {
+        const refreshRes = await fetchImpl('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            client_id: clientId,
+            client_secret: clientSecret,
+            refresh_token: refreshToken,
+            grant_type: 'refresh_token',
+          }),
+          signal: AbortSignal.timeout(6000),
+        })
+        if (refreshRes.ok) {
+          const refreshJson = await refreshRes.json().catch(() => ({}))
+          if (refreshJson.access_token) {
+            userGoogleToken = refreshJson.access_token
+            const nextPrefs = {
+              ...prefs,
+              google_provider_token: userGoogleToken,
+              google_provider_token_updated_at: new Date().toISOString(),
+              google_provider_token_expires_at: Date.now() + Number(refreshJson.expires_in || 3500) * 1000,
+            }
+            if (prefRows?.[0]?.user_id) {
+              await db
+                .update('user_preferences', `user_id=eq.${encodeURIComponent(String(prefRows[0].user_id))}`, {
+                  preferences: nextPrefs,
+                })
+                .catch(() => {})
+            }
+          }
+        }
+      } catch {
+        // continue with existing token
+      }
+    }
+  }
+
   if (userGoogleToken) {
     headers.Authorization = `Bearer ${userGoogleToken}`
     return { headers, source: 'user_oauth', apiKey: null }
@@ -750,8 +798,43 @@ export async function executeCompanionTool(name, args, user, accessToken, option
     if (query.length < 2) throw new Error('Search query must contain at least two characters.')
     requireToken('GITHUB_TOKEN', 'GitHub')
     const url = GITHUB_API + '/search/code?q=' + encodeURIComponent(query + ' repo:' + repository) + '&per_page=8'
-    const result = await fetchJson(url, { headers: { ...githubHeaders(), Accept: 'application/vnd.github.text-match+json' } }, fetchImpl)
-    return { total: result.total_count || 0, matches: (result.items || []).slice(0, 8).map((item) => ({ path: item.path, url: item.html_url, repository: item.repository?.full_name })) }
+    const result = await fetchJson(
+      url,
+      { headers: { ...githubHeaders(), Accept: 'application/vnd.github.text-match+json' } },
+      fetchImpl
+    ).catch(() => ({ total_count: 0, items: [] }))
+    const matches = (result.items || [])
+      .slice(0, 8)
+      .map((item) => ({ path: item.path, url: item.html_url, repository: item.repository?.full_name || repository }))
+    if (matches.length > 0) {
+      return { total: result.total_count || matches.length, matches }
+    }
+    // Fallback: search repository git tree by filename/path tokens when GitHub Code Search index returns 0 matches
+    const treeRes = await fetchJson(
+      `${GITHUB_API}/repos/${repository}/git/trees/HEAD?recursive=1`,
+      { headers: githubHeaders() },
+      fetchImpl
+    ).catch(() => null)
+    if (treeRes && Array.isArray(treeRes.tree)) {
+      const tokens = query
+        .toLowerCase()
+        .split(/[\s/_.-]+/)
+        .filter((t) => t.length >= 2)
+      const treeMatches = treeRes.tree
+        .filter((node) => node.type === 'blob' && typeof node.path === 'string')
+        .filter((node) => {
+          const lower = node.path.toLowerCase()
+          return lower.includes(query.toLowerCase()) || (tokens.length > 0 && tokens.some((tok) => lower.includes(tok)))
+        })
+        .slice(0, 12)
+        .map((node) => ({
+          path: node.path,
+          url: `https://github.com/${repository}/blob/main/${node.path}`,
+          repository,
+        }))
+      return { total: treeMatches.length, matches: treeMatches }
+    }
+    return { total: 0, matches: [] }
   }
 
   if (name === 'github_run_release_checks') {
@@ -851,8 +934,27 @@ export async function executeCompanionTool(name, args, user, accessToken, option
     const projectId = normalizeSupabaseProjectId(args.projectId)
     const schema = String(args.schema || 'public').trim()
     if (!/^[a-zA-Z_][a-zA-Z0-9_]{0,62}$/.test(schema)) throw new Error('Schema name is invalid.')
-    const query = "select table_schema, table_name, column_name, data_type, is_nullable from information_schema.columns where table_schema = '" + schema + "' order by table_name, ordinal_position limit 300"
-    return trimResult(await supabaseQuery(projectId, query, fetchImpl))
+    const query =
+      "select table_schema, table_name, column_name, data_type, is_nullable from information_schema.columns where table_schema = '" +
+      schema +
+      "' order by table_name, ordinal_position limit 300"
+    const rawRows = await supabaseQuery(projectId, query, fetchImpl)
+    if (Array.isArray(rawRows) && rawRows.length > 15) {
+      const grouped = new Map()
+      for (const row of rawRows) {
+        const tName = row.table_name || 'unknown'
+        if (!grouped.has(tName)) grouped.set(tName, [])
+        grouped.get(tName).push(`${row.column_name}:${row.data_type}`)
+      }
+      return trimResult(
+        Array.from(grouped.entries()).map(([table_name, columns]) => ({
+          table_schema: schema,
+          table_name,
+          columns,
+        }))
+      )
+    }
+    return trimResult(rawRows)
   }
 
   if (name === 'supabase_read_table') {
@@ -878,17 +980,26 @@ export async function executeCompanionTool(name, args, user, accessToken, option
 
   if (name === 'google_drive_list_files') {
     const query = String(args.query || '').trim()
+    const mimeFilter = String(args.mimeType || 'any').trim().toLowerCase()
     const folderId = args.folderId ? parseGoogleDocOrSheetId(args.folderId) : ''
     const qParts = ['trashed = false']
     if (folderId) qParts.push(`'${escapeDriveQueryLiteral(folderId)}' in parents`)
-    if (query) qParts.push(`name contains '${escapeDriveQueryLiteral(query)}'`)
+    if (mimeFilter === 'document') qParts.push(`mimeType = 'application/vnd.google-apps.document'`)
+    else if (mimeFilter === 'spreadsheet') qParts.push(`mimeType = 'application/vnd.google-apps.spreadsheet'`)
+    else if (mimeFilter === 'folder') qParts.push(`mimeType = 'application/vnd.google-apps.folder'`)
+    else if (mimeFilter === 'pdf') qParts.push(`mimeType = 'application/pdf'`)
+    else if (mimeFilter === 'image') qParts.push(`mimeType contains 'image/'`)
+    if (query) {
+      const escaped = escapeDriveQueryLiteral(query)
+      qParts.push(`(name contains '${escaped}' or fullText contains '${escaped}')`)
+    }
 
     // Also check User Library items first so uploaded docs/sheets are always found!
     const libItems = await db
-      .select('lamat_library_items', 'select=id,title,file_name,mime_type,kind,created_at&order=created_at.desc&limit=20')
+      .select('lamat_library_items', 'select=id,title,file_name,mime_type,kind,parsed_text,created_at&order=created_at.desc&limit=20')
       .catch(() => [])
     const matchingLib = query
-      ? libItems.filter((item) => `${item.title} ${item.file_name}`.toLowerCase().includes(query.toLowerCase()))
+      ? libItems.filter((item) => `${item.title} ${item.file_name} ${item.parsed_text || ''}`.toLowerCase().includes(query.toLowerCase()))
       : libItems
 
     const gcpConfig = getGcpBridgeConfig()
@@ -912,7 +1023,7 @@ export async function executeCompanionTool(name, args, user, accessToken, option
           hint:
             source === 'user_oauth'
               ? `Connected to your Google Drive via OAuth, but no file matched "${query}". Try a broader search or paste the direct Google Docs/Sheets URL.`
-              : `To give Lamat direct access to your personal Google Drive without manual file sharing, sign in via "Continue with Google" (which grants Drive/Docs/Sheets readonly access), OR paste a Google Docs/Sheets URL with "Anyone with the link can view", OR upload the file to your Lamat Library.`,
+              : `To give Lamat direct access to your personal Google Drive without manual file sharing, sign in via "Continue with Google" (or connect Google Workspace in Integrations), OR paste a Google Docs/Sheets URL with "Anyone with the link can view", OR upload the file to your Lamat Library.`,
         }
       }
       return trimResult([
@@ -941,9 +1052,13 @@ export async function executeCompanionTool(name, args, user, accessToken, option
       }
       return {
         files: [],
+        authSource: source,
         error: errMsg || 'Google Drive API access failed.',
         serviceAccountEmail: gcpConfig.serviceAccountEmail || null,
-        hint: `You can paste any link-shared Google Docs or Google Sheets URL directly in chat (works without GCP Drive API), upload the document via the composer (saved to your Library), or enable Drive/Sheets API in GCP project ${gcpConfig.projectNumber}.`,
+        hint:
+          driveErr?.status === 401
+            ? 'Your Google Workspace OAuth session expired. Reconnect Google Workspace in the Integrations menu.'
+            : `You can connect Google Workspace in the Integrations menu for direct Drive/Docs/Sheets access, paste any link-shared Google Docs/Sheets URL directly in chat, or upload the document to your Library.`,
       }
     }
   }
@@ -1100,7 +1215,140 @@ export async function executeCompanionTool(name, args, user, accessToken, option
     return {
       documentId,
       title: doc.title,
+      revisionId: doc.revisionId || null,
       text: redactSecrets(extractedText).slice(0, MAX_TOOL_TEXT),
+    }
+  }
+
+  if (name === 'google_docs_create') {
+    const title = String(args.title || 'Untitled Document').trim().slice(0, 200)
+    const content = String(args.content || '').trim()
+    if (!title) throw new Error('Document title is required.')
+
+    const { headers, source } = await resolveGoogleWorkspaceHeaders(db, fetchImpl)
+    if (!headers.Authorization) {
+      throw new Error('Google Workspace authorization is required to create a Google Doc. Sign in with Google or connect Google Workspace in Integrations.')
+    }
+
+    try {
+      const createdDoc = await fetchJson(
+        'https://docs.googleapis.com/v1/documents',
+        {
+          method: 'POST',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title }),
+        },
+        fetchImpl
+      )
+      const documentId = createdDoc.documentId
+      if (documentId && content) {
+        await fetchJson(
+          `https://docs.googleapis.com/v1/documents/${encodeURIComponent(documentId)}:batchUpdate`,
+          {
+            method: 'POST',
+            headers: { ...headers, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              requests: [
+                {
+                  insertText: {
+                    location: { index: 1 },
+                    text: content,
+                  },
+                },
+              ],
+            }),
+          },
+          fetchImpl
+        )
+      }
+      return {
+        created: true,
+        documentId,
+        title: createdDoc.title || title,
+        authSource: source,
+        webViewLink: `https://docs.google.com/document/d/${documentId}/edit`,
+      }
+    } catch (err) {
+      const status = err?.status || 500
+      if (status === 401 || status === 403) {
+        throw new Error(
+          source === 'user_oauth'
+            ? `Google Docs write permission is required (${err.message}). Reconnect Google Workspace in Integrations to grant document creation access.`
+            : `Creating a personal Google Doc requires signing in with Google OAuth (service accounts cannot create unshared personal Docs without user OAuth consent: ${err.message}).`
+        )
+      }
+      throw err
+    }
+  }
+
+  if (name === 'google_docs_write') {
+    const documentId = parseGoogleDocOrSheetId(args.documentId)
+    const content = String(args.content ?? '')
+    const mode = String(args.mode || 'append').trim().toLowerCase()
+    const findText = String(args.findText || '')
+    if (!documentId) throw new Error('Valid documentId or Google Docs URL is required.')
+    if (!content) throw new Error('Document content to write is required.')
+
+    const { headers, source } = await resolveGoogleWorkspaceHeaders(db, fetchImpl)
+    if (!headers.Authorization) {
+      throw new Error('Google Workspace authorization is required to edit a Google Doc.')
+    }
+
+    try {
+      let requests = []
+      if (mode === 'replace' && findText) {
+        requests = [
+          {
+            replaceAllText: {
+              containsText: { text: findText, matchCase: false },
+              replaceText: content,
+            },
+          },
+        ]
+      } else {
+        const currentDoc = await fetchJson(
+          `https://docs.googleapis.com/v1/documents/${encodeURIComponent(documentId)}`,
+          { headers },
+          fetchImpl
+        )
+        const bodyContent = currentDoc.body?.content || []
+        const lastElem = bodyContent[bodyContent.length - 1]
+        const insertIndex = Math.max(1, (Number(lastElem?.endIndex) || 2) - 1)
+        const prefix = insertIndex > 1 ? '\n' : ''
+        requests = [
+          {
+            insertText: {
+              location: { index: insertIndex },
+              text: prefix + content,
+            },
+          },
+        ]
+      }
+
+      await fetchJson(
+        `https://docs.googleapis.com/v1/documents/${encodeURIComponent(documentId)}:batchUpdate`,
+        {
+          method: 'POST',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ requests }),
+        },
+        fetchImpl
+      )
+
+      return {
+        updated: true,
+        documentId,
+        mode,
+        authSource: source,
+        webViewLink: `https://docs.google.com/document/d/${documentId}/edit`,
+      }
+    } catch (err) {
+      if (err?.status === 401 || err?.status === 403) {
+        throw new Error(
+          `Google Docs edit permission denied (${err.message}). Ensure you have write access and Google Workspace is connected in Integrations.`
+        )
+      }
+      throw err
     }
   }
 
@@ -1109,7 +1357,44 @@ export async function executeCompanionTool(name, args, user, accessToken, option
     if (!spreadsheetId) throw new Error('Valid spreadsheetId or Google Sheets URL is required.')
     const range = String(args.range || 'A1:Z100').trim()
 
-    // Try direct link-shared CSV export first so link-shared spreadsheets work without GCP Sheets API enabled
+    const { headers, apiKey } = await resolveGoogleWorkspaceHeaders(db, fetchImpl)
+
+    // Try authenticated Sheets v4 API first to include sheet metadata + values
+    if (headers.Authorization || apiKey) {
+      try {
+        const metaUrl = new URL(`https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}`)
+        metaUrl.searchParams.set('fields', 'properties.title,sheets.properties(sheetId,title,index,gridProperties)')
+        if (apiKey && !headers.Authorization) metaUrl.searchParams.set('key', apiKey)
+
+        const valUrl = new URL(
+          `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(range)}`
+        )
+        if (apiKey && !headers.Authorization) valUrl.searchParams.set('key', apiKey)
+
+        const [meta, result] = await Promise.all([
+          fetchJson(metaUrl.toString(), { headers }, fetchImpl).catch(() => null),
+          fetchJson(valUrl.toString(), { headers }, fetchImpl),
+        ])
+
+        return {
+          spreadsheetId,
+          title: meta?.properties?.title || 'Google Spreadsheet',
+          sheets: (meta?.sheets || []).map((s) => ({
+            sheetId: s.properties?.sheetId,
+            title: s.properties?.title,
+            rowCount: s.properties?.gridProperties?.rowCount,
+            columnCount: s.properties?.gridProperties?.columnCount,
+          })),
+          range: result.range || range,
+          values: result.values || [],
+          rowCount: (result.values || []).length,
+        }
+      } catch {
+        // Fall through to link-shared CSV export
+      }
+    }
+
+    // Fallback: direct link-shared CSV export so link-shared spreadsheets work without GCP Sheets API enabled
     const csvRes = await fetchImpl(`https://docs.google.com/spreadsheets/d/${encodeURIComponent(spreadsheetId)}/export?format=csv`, {
       signal: AbortSignal.timeout(REQUEST_TIMEOUT),
     }).catch(() => null)
@@ -1130,16 +1415,126 @@ export async function executeCompanionTool(name, args, user, accessToken, option
       }
     }
 
-    const { headers, apiKey } = await resolveGoogleWorkspaceHeaders(db, fetchImpl)
-    const url = new URL(`https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(range)}`)
-    if (apiKey && !headers.Authorization) url.searchParams.set('key', apiKey)
+    throw new Error('Could not read Google Spreadsheet. Connect Google Workspace in Integrations or ensure the spreadsheet is shared.')
+  }
 
-    const result = await fetchJson(url.toString(), { headers }, fetchImpl)
-    return {
-      spreadsheetId,
-      range: result.range || range,
-      values: result.values || [],
-      rowCount: (result.values || []).length,
+  if (name === 'google_sheets_create') {
+    const title = String(args.title || 'Untitled Spreadsheet').trim().slice(0, 200)
+    if (!title) throw new Error('Spreadsheet title is required.')
+    const sheetNames = Array.isArray(args.sheetNames) && args.sheetNames.length > 0
+      ? args.sheetNames.map((n) => String(n).trim()).filter(Boolean).slice(0, 10)
+      : ['Sheet1']
+    const values = Array.isArray(args.values) ? args.values : []
+
+    const { headers, source } = await resolveGoogleWorkspaceHeaders(db, fetchImpl)
+    if (!headers.Authorization) {
+      throw new Error('Google Workspace authorization is required to create a Google Sheet.')
+    }
+
+    try {
+      const createdSheet = await fetchJson(
+        'https://sheets.googleapis.com/v4/spreadsheets',
+        {
+          method: 'POST',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            properties: { title },
+            sheets: sheetNames.map((sheetTitle) => ({ properties: { title: sheetTitle } })),
+          }),
+        },
+        fetchImpl
+      )
+      const spreadsheetId = createdSheet.spreadsheetId
+      let populatedRows = 0
+      if (spreadsheetId && values.length > 0) {
+        const firstTab = sheetNames[0] || 'Sheet1'
+        const targetRange = `${firstTab}!A1`
+        const updateRes = await fetchJson(
+          `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(targetRange)}?valueInputOption=USER_ENTERED`,
+          {
+            method: 'PUT',
+            headers: { ...headers, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              range: targetRange,
+              majorDimension: 'ROWS',
+              values,
+            }),
+          },
+          fetchImpl
+        )
+        populatedRows = Number(updateRes.updatedRows || values.length)
+      }
+      return {
+        created: true,
+        spreadsheetId,
+        title: createdSheet.properties?.title || title,
+        sheets: sheetNames,
+        populatedRows,
+        authSource: source,
+        spreadsheetUrl: createdSheet.spreadsheetUrl || `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`,
+      }
+    } catch (err) {
+      if (err?.status === 401 || err?.status === 403) {
+        throw new Error(
+          `Google Sheets creation permission denied (${err.message}). Reconnect Google Workspace in Integrations to grant spreadsheet write access.`
+        )
+      }
+      throw err
+    }
+  }
+
+  if (name === 'google_sheets_write') {
+    const spreadsheetId = parseGoogleDocOrSheetId(args.spreadsheetId)
+    if (!spreadsheetId) throw new Error('Valid spreadsheetId or Google Sheets URL is required.')
+    const range = String(args.range || 'Sheet1!A1').trim()
+    const mode = String(args.mode || 'update').trim().toLowerCase()
+    const rawValues = args.values
+    const values = Array.isArray(rawValues)
+      ? rawValues.map((row) => (Array.isArray(row) ? row.map((cell) => String(cell ?? '')) : [String(row ?? '')]))
+      : []
+    if (values.length === 0) throw new Error('A non-empty 2D array of row values is required.')
+
+    const { headers, source } = await resolveGoogleWorkspaceHeaders(db, fetchImpl)
+    if (!headers.Authorization) {
+      throw new Error('Google Workspace authorization is required to update a Google Sheet.')
+    }
+
+    try {
+      const endpoint =
+        mode === 'append'
+          ? `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`
+          : `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`
+      const method = mode === 'append' ? 'POST' : 'PUT'
+      const result = await fetchJson(
+        endpoint,
+        {
+          method,
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            majorDimension: 'ROWS',
+            values,
+          }),
+        },
+        fetchImpl
+      )
+      const updateInfo = result.updates || result
+      return {
+        updated: true,
+        spreadsheetId,
+        mode,
+        updatedRange: updateInfo.updatedRange || range,
+        updatedRows: Number(updateInfo.updatedRows || values.length),
+        updatedCells: Number(updateInfo.updatedCells || 0),
+        authSource: source,
+        spreadsheetUrl: `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`,
+      }
+    } catch (err) {
+      if (err?.status === 401 || err?.status === 403) {
+        throw new Error(
+          `Google Sheets write permission denied (${err.message}). Ensure you have edit access and Google Workspace is connected in Integrations.`
+        )
+      }
+      throw err
     }
   }
 
@@ -1273,6 +1668,10 @@ export async function executeCompanionTool(name, args, user, accessToken, option
   if (name === 'lamat_generate_image') {
     const prompt = String(args.prompt || '').trim().slice(0, 900)
     if (prompt.length < 3) throw new Error('Image prompt must be at least 3 characters.')
+    const providerPreference = String(args.provider_preference || 'auto').trim().toLowerCase()
+    const aspectRatio = ['1:1', '16:9', '9:16', '4:3', '3:4'].includes(String(args.aspect_ratio || ''))
+      ? String(args.aspect_ratio)
+      : '1:1'
 
     const saveImageToLibrary = async (dataUrl, providerName, modelName) => {
       await db
@@ -1290,9 +1689,11 @@ export async function executeCompanionTool(name, args, user, accessToken, option
         .catch(() => {})
     }
 
-    // Tier 1: Direct Google Cloud Vertex AI Imagen 3 (uses GCP trial credit)
+    let googleErrorDetail = null
+
+    // Tier 1: Direct Google Cloud Vertex AI Imagen 3 & Gemini Image (uses GCP trial credit)
     const gcpConfig = getGcpBridgeConfig()
-    if (gcpConfig.configured) {
+    if (gcpConfig.configured && providerPreference !== 'flux') {
       try {
         const { accessToken: gcpAccessToken, idToken } = await createGcpBridgeCredentials()
         const imagenUrl = `https://us-central1-aiplatform.googleapis.com/v1/projects/${encodeURIComponent(gcpConfig.projectNumber)}/locations/us-central1/publishers/google/models/imagen-3.0-fast-generate-001:predict`
@@ -1304,9 +1705,9 @@ export async function executeCompanionTool(name, args, user, accessToken, option
           },
           body: JSON.stringify({
             instances: [{ prompt }],
-            parameters: { sampleCount: 1, aspectRatio: '1:1' },
+            parameters: { sampleCount: 1, aspectRatio },
           }),
-          signal: AbortSignal.timeout(25000),
+          signal: AbortSignal.timeout(22000),
         }).catch(() => null)
 
         if (directRes && directRes.ok) {
@@ -1325,24 +1726,59 @@ export async function executeCompanionTool(name, args, user, accessToken, option
               message: 'Image generated via Google Cloud Vertex AI Imagen 3 and saved to your Library.',
             }
           }
+        } else if (directRes) {
+          const errBody = await directRes.json().catch(() => ({}))
+          googleErrorDetail = `Vertex Imagen (${directRes.status}): ${extractErrorMessage(errBody).slice(0, 140)}`
         }
 
-        // Tier 2: Cloud Run Worker (with required userId parameter fixed!)
+        // Tier 1B: Vertex AI Gemini Image (gemini-3.1-flash-image via global endpoint)
+        const geminiImgUrl = `https://aiplatform.googleapis.com/v1/projects/${encodeURIComponent(gcpConfig.projectNumber)}/locations/global/publishers/google/models/gemini-3.1-flash-image:generateContent`
+        const geminiImgRes = await fetchImpl(geminiImgUrl, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${gcpAccessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+          }),
+          signal: AbortSignal.timeout(22000),
+        }).catch(() => null)
+
+        if (geminiImgRes && geminiImgRes.ok) {
+          const geminiImgJson = await geminiImgRes.json().catch(() => ({}))
+          const imgPart = geminiImgJson?.candidates?.[0]?.content?.parts?.find((p) => p?.inlineData?.data)
+          if (imgPart?.inlineData?.data) {
+            const mime = imgPart.inlineData.mimeType || 'image/png'
+            const dataUrl = `data:${mime};base64,${imgPart.inlineData.data}`
+            await saveImageToLibrary(dataUrl, 'vertex-ai', 'gemini-3.1-flash-image')
+            return {
+              generated: true,
+              provider: 'vertex-ai',
+              model: 'gemini-3.1-flash-image',
+              prompt,
+              imageDataUrl: dataUrl,
+              message: 'Image generated via Google Cloud Vertex AI Gemini Image and saved to your Library.',
+            }
+          }
+        }
+
+        // Tier 2: Cloud Run Worker (with valid policy.js schema: id + kind: 'image' + prompt)
         const job = await callCloudWorker({
           config: gcpConfig,
           idToken,
           path: '/v1/jobs',
           method: 'POST',
           body: {
-            userId: String(user.id),
-            kind: 'image_generate',
-            model: 'imagen-3.0-fast-generate-001',
+            id: crypto.randomUUID(),
+            kind: 'image',
             prompt,
-            sampleCount: 1,
-            width: 1024,
-            height: 1024,
           },
-        }).catch(() => null)
+        }).catch((workerErr) => {
+          if (!googleErrorDetail) googleErrorDetail = String(workerErr?.message || 'Cloud Worker unavailable')
+          return null
+        })
         if (job?.outputUri) {
           const downloaded = await downloadPrivateWorkerObject({
             config: gcpConfig,
@@ -1350,18 +1786,18 @@ export async function executeCompanionTool(name, args, user, accessToken, option
             uri: job.outputUri,
           })
           const dataUrl = `data:${downloaded.contentType};base64,${downloaded.buffer.toString('base64')}`
-          await saveImageToLibrary(dataUrl, 'vertex-ai-worker', 'imagen-3.0-fast-generate-001')
+          await saveImageToLibrary(dataUrl, 'vertex-ai-worker', 'gemini-3.1-flash-image')
           return {
             generated: true,
             provider: 'vertex-ai',
-            model: 'imagen-3.0-fast-generate-001',
+            model: job.model || 'gemini-3.1-flash-image',
             prompt,
             imageDataUrl: dataUrl,
             message: 'Image generated via Vertex AI Cloud Worker and saved to your Library.',
           }
         }
-      } catch {
-        // Fall through to free FLUX image generator
+      } catch (gcpErr) {
+        googleErrorDetail = String(gcpErr?.message || 'Vertex AI image generation failed')
       }
     }
 
@@ -1370,6 +1806,10 @@ export async function executeCompanionTool(name, args, user, accessToken, option
     const freeRes = await fetchImpl(freeImgUrl, {
       signal: AbortSignal.timeout(22000),
     }).catch(() => null)
+    const fallbackNote =
+      providerPreference === 'google' && googleErrorDetail
+        ? ` (Note: Google Vertex AI returned "${googleErrorDetail}", so Lamat fell back to FLUX.1.)`
+        : ''
     if (freeRes && freeRes.ok) {
       const buf = Buffer.from(await freeRes.arrayBuffer())
       if (buf.length > 0 && buf.length <= 2_500_000) {
@@ -1380,9 +1820,11 @@ export async function executeCompanionTool(name, args, user, accessToken, option
           generated: true,
           provider: 'flux-free',
           model: 'FLUX.1',
+          requestedProvider: providerPreference,
+          googleFallbackReason: googleErrorDetail,
           prompt,
           imageDataUrl: dataUrl,
-          message: 'Image generated via FLUX and saved to your Library.',
+          message: `Image generated via FLUX and saved to your Library.${fallbackNote}`,
         }
       }
     }
@@ -1393,9 +1835,11 @@ export async function executeCompanionTool(name, args, user, accessToken, option
       generated: true,
       provider: 'flux-free',
       model: 'FLUX.1',
+      requestedProvider: providerPreference,
+      googleFallbackReason: googleErrorDetail,
       prompt,
       imageDataUrl: freeImgUrl,
-      message: 'Image generated via FLUX and saved to your Library.',
+      message: `Image generated via FLUX and saved to your Library.${fallbackNote}`,
     }
   }
 

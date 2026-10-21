@@ -125,3 +125,63 @@ test('UI style checker enforces the project token contract and bans page-level n
   assert.match(source, /rawControlBudget = 0/)
   assert.match(source, /process\.exit\(1\)/)
 })
+
+test('authentication flow retains only Google and GitHub OAuth and removes email/password login', async () => {
+  const login = await read('src/auth/LoginPage.tsx')
+  const app = await read('src/App.tsx')
+  const authProvider = await read('src/auth/AuthProvider.tsx')
+
+  assert.match(login, /Continue with Google/)
+  assert.match(login, /Continue with GitHub/)
+  assert.doesNotMatch(login, /signInWithEmail/)
+  assert.doesNotMatch(login, /Forgot password\?/i)
+  assert.doesNotMatch(authProvider, /signInWithEmail/)
+  assert.match(authProvider, /https:\/\/www\.googleapis\.com\/auth\/drive/)
+  assert.match(authProvider, /https:\/\/www\.googleapis\.com\/auth\/documents/)
+  assert.match(authProvider, /https:\/\/www\.googleapis\.com\/auth\/spreadsheets/)
+  assert.match(app, /location\.pathname\.startsWith\('\/auth\/'\)/)
+})
+
+test('Companion navigation, model selector, session menu, and Markdown parser meet B1-B11 requirements', async () => {
+  const companion = await read('src/components/dashboard/Companion.tsx')
+  const parts = await read('src/components/dashboard/CompanionParts.tsx')
+
+  // B1 & Section 4: Left-aligned model selector without HF badge or dead Vertex Garden / Mistral entries
+  assert.match(parts, /min-w-0 flex-1 truncate text-left/)
+  assert.doesNotMatch(parts, /badge:\s*['"]HF['"]/)
+  assert.doesNotMatch(parts, /vertex-claude:/)
+  assert.doesNotMatch(parts, /Mistral-Small-24B-Instruct-2501/)
+
+  // B2 & Section 9: Left-side nav buttons for Integrations, Memory & Persona, and Library; Logs removed from right panel
+  assert.match(companion, /setShowIntegrationsModal\(true\)/)
+  assert.match(companion, /setShowMemoryModal\(true\)/)
+  assert.match(companion, /setShowLibraryModal\(true\)/)
+  assert.doesNotMatch(companion, /railTab === 'logs'/)
+
+  // B3: Dynamic browser document.title updates with activeSession
+  assert.match(companion, /document\.title = currentTitle/)
+
+  // B4: Analyze and Summary controls without "in new chat"
+  assert.doesNotMatch(companion, /Analyze in new chat/)
+  assert.doesNotMatch(companion, /Summarize in new chat/)
+  assert.match(companion, /> Analyze\s*</)
+  assert.match(companion, /> Summary\s*</)
+
+  // B5: No textual [Attached: ...] duplication in composer displayContent
+  assert.doesNotMatch(companion, /\\n\\n\[Attached:/)
+
+  // B6: Ordered list parser keeps numbered items in one <ol> across nested bullets and blank lines
+  assert.match(parts, /export function parseMarkdownBlocks/)
+  assert.match(parts, /hasSubsequentNumberedItem/)
+  assert.match(parts, /lastItem\.subItems\.push/)
+
+  // B7 & B8: "Engine: Lamat" removed from left sidebar and LamatLogo removed from PersonaConfigModal
+  assert.doesNotMatch(companion, /Engine:\s*Lamat/)
+
+  // B10: Session overflow menu opens upward when near bottom of viewport
+  assert.match(companion, /menuOpenUpward \? 'bottom-full mb-2' : 'top-full mt-1'/)
+
+  // Section 11: Centralized working state with Stop button and AbortController
+  assert.match(companion, /cancelActiveRequest/)
+  assert.match(companion, /aria-label="Cancel active request"/)
+})

@@ -1,43 +1,63 @@
 import React from 'react'
 import {
   Activity,
+  BookOpen,
+  Brain,
   Check,
   CircleAlert,
   Copy,
   Download,
   Eye,
+  FileSpreadsheet,
   FileText,
   Image as ImageIcon,
   LogOut,
   MicOff,
+  Monitor,
+  Moon,
   MoreHorizontal,
   PanelLeft,
   PanelRight,
   Pause,
   Pencil,
   Play,
+  Plug,
   Plus,
   RefreshCw,
   Send,
   Sparkles,
+  Square,
+  Sun,
   Trash2,
   User,
   VolumeX,
   X,
 } from 'lucide-react'
-import { SiGithub, SiGoogledrive, SiSupabase, SiVercel } from 'react-icons/si'
 import { useAuth } from '@/auth/AuthProvider'
 import { useTheme } from '@/hooks/useTheme'
 import { toast } from '@/lib/toast'
-import { Badge, Button, Card, FileButton, Input, LamatLogo, Modal, Select, Surface, Textarea } from '@/components/ui'
+import { Badge, Button, Card, FileButton, Input, LamatLogo, Modal, Surface, Textarea } from '@/components/ui'
 import { Financier } from './Financier'
 import {
   AnimatedAssistantMessage,
+  IntegrationsModal,
+  LibraryModal,
+  MemoryPersonalizationModal,
   ModelSelectorDropdown,
   PersonaConfigModal,
   TaskInspectModal,
+  type IntegrationStatusItem,
+  type LamatLibraryItem,
   type LamatTask,
 } from './CompanionParts'
+
+type MessageAttachmentMeta = {
+  name: string
+  mimeType: string
+  kind: 'image' | 'document' | 'spreadsheet'
+  sizeBytes: number
+  dataUrl?: string
+}
 
 type Message = {
   id?: string
@@ -46,11 +66,18 @@ type Message = {
   model?: string | null
   createdAt?: string
   thumbnails?: Array<{ name: string; dataUrl: string }>
+  attachments?: MessageAttachmentMeta[]
 }
-type ChatSession = { id: string; title: string; updatedAt: number; messages: Message[] }
-type IntegrationStatus = 'checking' | 'verified' | 'needs_setup' | 'invalid_credentials' | 'insufficient_permissions' | 'unavailable'
+type ChatSession = {
+  id: string
+  title: string
+  updatedAt: number
+  sourceSessionId?: string | null
+  messages: Message[]
+}
+type IntegrationStatus = 'checking' | 'verified' | 'partial' | 'expired' | 'needs_setup' | 'invalid_credentials' | 'insufficient_permissions' | 'unavailable'
 type IntegrationKey = 'github' | 'vercel' | 'supabase' | 'google_workspace'
-type RailTab = 'tasks' | 'context' | 'finance' | 'budget' | 'logs'
+type RailTab = 'tasks' | 'context' | 'finance' | 'budget'
 
 type UserPersona = {
   name: string
@@ -236,17 +263,8 @@ const starterPrompts = [
   'Inspect the repository structure and propose the next self-improvement step.',
 ]
 
-const statusLabel: Record<IntegrationStatus, string> = {
-  checking: 'Checking…',
-  verified: 'Connected',
-  needs_setup: 'Not connected',
-  invalid_credentials: 'Invalid credentials',
-  insufficient_permissions: 'Permission issue',
-  unavailable: 'Unavailable',
-}
-
 export function Companion() {
-  const { session, user, signOut } = useAuth()
+  const { session, user, connectGoogleWorkspace, signOut } = useAuth()
   const { mode: themeMode, setMode: setThemeMode } = useTheme()
   const storageKey = `lamat-operator-sessions:${user?.id || user?.email || 'local'}`
   const [sessions, setSessions] = React.useState<ChatSession[]>([])
@@ -260,6 +278,7 @@ export function Companion() {
   const [railTab, setRailTab] = React.useState<RailTab>('tasks')
   const [copiedMessage, setCopiedMessage] = React.useState<number | null>(null)
   const [sending, setSending] = React.useState(false)
+  const [workingSessionId, setWorkingSessionId] = React.useState<string | null>(null)
   const [cycling, setCycling] = React.useState(false)
   const [autoContinue, setAutoContinue] = React.useState(false)
   const [error, setError] = React.useState('')
@@ -277,6 +296,12 @@ export function Companion() {
   const [newMemoryKind, setNewMemoryKind] = React.useState('fact')
   const [persona, setPersona] = React.useState<UserPersona | null>(null)
   const [showOnboarding, setShowOnboarding] = React.useState(false)
+  const [showIntegrationsModal, setShowIntegrationsModal] = React.useState(false)
+  const [showMemoryModal, setShowMemoryModal] = React.useState(false)
+  const [showLibraryModal, setShowLibraryModal] = React.useState(false)
+  const [verifyingIntegrations, setVerifyingIntegrations] = React.useState(false)
+  const [uploadingLibrary, setUploadingLibrary] = React.useState(false)
+  const [integrationsDetail, setIntegrationsDetail] = React.useState<Record<string, IntegrationStatusItem>>({})
   const [personaNameInput, setPersonaNameInput] = React.useState('Lamat')
   const [personaGenderInput, setPersonaGenderInput] = React.useState('adaptive')
   const [userCallsignInput, setUserCallsignInput] = React.useState('Dragoljub')
@@ -288,6 +313,7 @@ export function Companion() {
   const [savingBudget, setSavingBudget] = React.useState(false)
 
   const [menuSessionId, setMenuSessionId] = React.useState<string | null>(null)
+  const [menuOpenUpward, setMenuOpenUpward] = React.useState(false)
   const [renameModalSession, setRenameModalSession] = React.useState<ChatSession | null>(null)
   const [renameTitleInput, setRenameTitleInput] = React.useState('')
   const [deleteModalSession, setDeleteModalSession] = React.useState<ChatSession | null>(null)
@@ -305,6 +331,7 @@ export function Companion() {
   })
 
   const scrollRef = React.useRef<HTMLDivElement | null>(null)
+  const activeAbortRef = React.useRef<AbortController | null>(null)
   const lastToastRef = React.useRef<{ msg: string; at: number }>({ msg: '', at: 0 })
   const activeSession = sessions.find((item) => item.id === activeSessionId)
   const messages = React.useMemo(() => activeSession?.messages || [], [activeSession])
@@ -316,9 +343,36 @@ export function Companion() {
     toast[tone](msg, duration)
   }, [])
 
+  // B3: Dynamic browser document title based on active session title
   React.useEffect(() => {
-    document.title = 'Lamat'
+    const currentTitle = activeSession?.title?.trim()
+    if (
+      !activeSession ||
+      activeSession.messages.length === 0 ||
+      !currentTitle ||
+      currentTitle.toLowerCase() === 'new chat'
+    ) {
+      document.title = 'Lamat'
+    } else {
+      document.title = currentTitle
+    }
+  }, [activeSession])
+
+  React.useEffect(() => {
+    return () => {
+      activeAbortRef.current?.abort()
+    }
   }, [])
+
+  // Close session overflow menu on Escape
+  React.useEffect(() => {
+    if (!menuSessionId) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuSessionId(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [menuSessionId])
 
   React.useEffect(() => {
     const onOnline = () => setOnline(true)
@@ -424,7 +478,7 @@ export function Companion() {
     void refreshOperationalState()
   }, [refreshOperationalState])
 
-  React.useEffect(() => {
+  const refreshIntegrations = React.useCallback(async () => {
     if (!session?.access_token) {
       setIntegrationStatuses({
         github: 'needs_setup',
@@ -434,38 +488,50 @@ export function Companion() {
       })
       return
     }
-    const controller = new AbortController()
-    void fetch('/api/companion-integrations', {
-      headers: { Authorization: `Bearer ${session.access_token}` },
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        const payload = await response.json().catch(() => ({}))
-        if (!response.ok) throw new Error('Integration status could not be checked.')
-        const integrations = payload.integrations || {}
-        const normalize = (value: unknown): IntegrationStatus =>
-          ['verified', 'needs_setup', 'invalid_credentials', 'insufficient_permissions', 'unavailable'].includes(String(value))
-            ? (value as IntegrationStatus)
-            : 'unavailable'
-        setIntegrationStatuses({
-          github: normalize(integrations.github?.status),
-          vercel: normalize(integrations.vercel?.status),
-          supabase: normalize(integrations.supabase?.status),
-          google_workspace: normalize(integrations.google_workspace?.status),
-        })
+    setVerifyingIntegrations(true)
+    try {
+      const response = await fetch('/api/companion-integrations', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
       })
-      .catch(() => {
-        if (!controller.signal.aborted) {
-          setIntegrationStatuses({
-            github: 'unavailable',
-            vercel: 'unavailable',
-            supabase: 'unavailable',
-            google_workspace: 'unavailable',
-          })
-        }
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error('Integration status could not be checked.')
+      const integrations = payload.integrations || {}
+      setIntegrationsDetail(integrations)
+      const normalize = (value: unknown): IntegrationStatus =>
+        ['verified', 'partial', 'expired', 'needs_setup', 'invalid_credentials', 'insufficient_permissions', 'unavailable'].includes(String(value))
+          ? (value as IntegrationStatus)
+          : 'unavailable'
+      setIntegrationStatuses({
+        github: normalize(integrations.github?.status),
+        vercel: normalize(integrations.vercel?.status),
+        supabase: normalize(integrations.supabase?.status),
+        google_workspace: normalize(integrations.google_workspace?.status),
       })
-    return () => controller.abort()
+    } catch {
+      setIntegrationStatuses({
+        github: 'unavailable',
+        vercel: 'unavailable',
+        supabase: 'unavailable',
+        google_workspace: 'unavailable',
+      })
+    } finally {
+      setVerifyingIntegrations(false)
+    }
   }, [session?.access_token])
+
+  React.useEffect(() => {
+    void refreshIntegrations()
+  }, [refreshIntegrations])
+
+  const cancelActiveRequest = React.useCallback(() => {
+    if (activeAbortRef.current) {
+      activeAbortRef.current.abort()
+      activeAbortRef.current = null
+    }
+    setSending(false)
+    setWorkingSessionId(null)
+    notifyOnce('Active request cancelled.', 'info')
+  }, [notifyOnce])
 
   const runOperatingCycle = React.useCallback(
     async (taskId?: string, maxSteps = 1) => {
@@ -628,7 +694,15 @@ export function Companion() {
     notifyOnce(`Exported "${targetSession.title}" as Markdown.`, 'success')
   }
 
-  const sendMessageInSession = async (targetSessionId: string, baseMessages: Message[], content: string) => {
+  const sendMessageInSession = async (
+    targetSessionId: string,
+    baseMessages: Message[],
+    content: string,
+    options?: {
+      sessionAction?: 'analyze' | 'summary'
+      sourceContext?: { sessionId: string; title: string; turns: Array<{ role: string; content: string }> }
+    }
+  ) => {
     if (!content.trim() || sending || !session?.access_token) return
     const next = [...baseMessages, { id: crypto.randomUUID(), role: 'user' as const, content: content.trim() }]
     setSessions((current) =>
@@ -642,7 +716,10 @@ export function Companion() {
           : item
       )
     )
+    const controller = new AbortController()
+    activeAbortRef.current = controller
     setSending(true)
+    setWorkingSessionId(targetSessionId)
     setError('')
     try {
       const response = await fetch('/api/companion-chat', {
@@ -651,11 +728,14 @@ export function Companion() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
+        signal: controller.signal,
         body: JSON.stringify({
           messages: next.map((m) => ({ role: m.role, content: m.content })),
           mode: 'lamat',
           model: selectedModel,
           freeOnly,
+          ...(options?.sessionAction ? { sessionAction: options.sessionAction } : {}),
+          ...(options?.sourceContext ? { sourceContext: options.sourceContext } : {}),
         }),
       })
       const payload = await response.json().catch(() => ({}))
@@ -670,6 +750,10 @@ export function Companion() {
           item.id === targetSessionId
             ? {
                 ...item,
+                title:
+                  (!item.title || item.title === 'New chat') && typeof payload.generatedTitle === 'string' && payload.generatedTitle.trim()
+                    ? payload.generatedTitle.trim()
+                    : item.title,
                 updatedAt: Date.now(),
                 messages: [...next, { id: msgId, role: 'assistant', content: replyText, model: payload.model }],
               }
@@ -678,84 +762,142 @@ export function Companion() {
       )
       void refreshOperationalState()
     } catch (cause) {
+      if (cause instanceof DOMException && cause.name === 'AbortError') return
       setError(cause instanceof Error ? cause.message : 'Lamat is temporarily unavailable.')
     } finally {
+      if (activeAbortRef.current === controller) {
+        activeAbortRef.current = null
+      }
       setSending(false)
+      setWorkingSessionId(null)
     }
   }
 
-  const analyzeOrSummarizeSessionInNewChat = (targetSession: ChatSession, actionType: 'analyze' | 'summarize') => {
+  const analyzeOrSummarizeSessionInNewChat = (targetSession: ChatSession, actionType: 'analyze' | 'summary') => {
+    if (sending) return
     setMenuSessionId(null)
-    const speakerName = persona?.user_callsign || 'Dragoljub'
-    const operatorName = persona?.name || 'Lamat'
-    const transcript = targetSession.messages
-      .slice(-20)
-      .map((m) => `${m.role === 'user' ? speakerName : operatorName}: ${m.content}`)
-      .join('\n\n')
-      .slice(0, 3200)
+    const compactTurns = targetSession.messages
+      .slice(-16)
+      .map((m) => ({
+        role: m.role,
+        content: m.content
+          .replace(/!\[([^\]]*)\]\(data:image\/[^)]+\)/g, '[Image: $1]')
+          .replace(/\n*\[Attached:\s*[^\]]+\]/gi, '')
+          .slice(0, 700),
+      }))
 
     const newId = crypto.randomUUID()
     const newTitle = `${actionType === 'analyze' ? 'Analysis' : 'Summary'}: ${targetSession.title}`.slice(0, 60)
     const freshSession: ChatSession = {
       id: newId,
       title: newTitle,
+      sourceSessionId: targetSession.id,
       updatedAt: Date.now(),
       messages: [],
     }
     setSessions((current) => [freshSession, ...current].slice(0, 30))
     setActiveSessionId(newId)
 
-    const prompt =
+    const displayPrompt =
       actionType === 'analyze'
-        ? `Analyze our previous conversation ("${targetSession.title}") in the context of my active goals, finances, and priorities. Identify key decisions, blind spots, and the highest-leverage next actions:\n\n${transcript || '(Empty session — analyze my current operational state and goals instead.)'}`
-        : `Summarize our conversation ("${targetSession.title}") into a concise executive summary with: (1) Key Decisions Made, (2) Verified Facts, and (3) Open Action Items:\n\n${transcript || '(Empty session — summarize my current active goals and tasks instead.)'}`
+        ? `Technical analysis of session "${targetSession.title}"`
+        : `Summary of session "${targetSession.title}"`
 
-    void sendMessageInSession(newId, [], prompt)
+    void sendMessageInSession(newId, [], displayPrompt, {
+      sessionAction: actionType,
+      sourceContext: {
+        sessionId: targetSession.id,
+        title: targetSession.title,
+        turns: compactTurns,
+      },
+    })
   }
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || [])
-    event.target.value = ''
+  const processSelectedFiles = async (fileList: FileList | File[] | null, forLibraryModalOnly = false) => {
+    const files = Array.from(fileList || [])
     if (!files.length) return
     setError('')
+    if (forLibraryModalOnly) setUploadingLibrary(true)
     const nextAttachments: AttachmentItem[] = [...attachments]
-    for (const file of files) {
-      if (nextAttachments.length >= 4) {
-        setError('At most 4 attachments can be included per message.')
-        break
-      }
-      if (file.size > 4 * 1024 * 1024) {
-        setError(`File "${file.name}" exceeds the 4 MiB upload limit.`)
-        continue
-      }
-      const isImage = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(file.type)
-      const isTextOrSheet =
-        /\.(csv|tsv|txt|md|json)$/i.test(file.name) ||
-        ['text/plain', 'text/csv', 'text/markdown', 'application/json', 'text/tab-separated-values'].includes(file.type)
+    try {
+      for (const file of files) {
+        if (!forLibraryModalOnly && nextAttachments.length >= 4) {
+          setError('At most 4 attachments can be included per message.')
+          break
+        }
+        if (file.size > 4 * 1024 * 1024) {
+          setError(`File "${file.name}" exceeds the 4 MiB upload limit.`)
+          continue
+        }
+        const isImage = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(file.type)
+        const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name)
+        const isTextOrSheet =
+          isPdf ||
+          /\.(csv|tsv|txt|md|json|js|jsx|ts|tsx|py|sql|html|css|yaml|yml)$/i.test(file.name) ||
+          ['text/plain', 'text/csv', 'text/markdown', 'application/json', 'text/tab-separated-values'].includes(file.type)
 
-      if (!isImage && !isTextOrSheet) {
-        setError(`Unsupported file format (${file.name}). Attach PNG/JPEG/WebP/GIF images or CSV/TSV/TXT/MD/JSON documents.`)
-        continue
-      }
+        if (!isImage && !isTextOrSheet) {
+          setError(`Unsupported file format (${file.name}). Attach PNG/JPEG/WebP/GIF images, PDFs, or CSV/TSV/TXT/MD/JSON/code files.`)
+          continue
+        }
 
-      if (isImage) {
-        const base64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = () => resolve(String(reader.result || ''))
-          reader.onerror = () => reject(new Error('Failed to read image file.'))
-          reader.readAsDataURL(file)
-        }).catch(() => '')
-        if (base64) {
-          nextAttachments.push({
-            name: file.name,
-            mimeType: file.type,
-            data: base64,
-            sizeBytes: file.size,
-            kind: 'image',
-          })
-          // Save image thumbnail to User Library in background
+        if (isImage) {
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(String(reader.result || ''))
+            reader.onerror = () => reject(new Error('Failed to read image file.'))
+            reader.readAsDataURL(file)
+          }).catch(() => '')
+          if (base64) {
+            if (!forLibraryModalOnly) {
+              nextAttachments.push({
+                name: file.name,
+                mimeType: file.type,
+                data: base64,
+                sizeBytes: file.size,
+                kind: 'image',
+              })
+            }
+            if (session?.access_token) {
+              await fetch('/api/lamat', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({
+                  action: 'save_library_item',
+                  title: file.name,
+                  fileName: file.name,
+                  mimeType: file.type,
+                  kind: 'image',
+                  sizeBytes: file.size,
+                  thumbnailData: base64,
+                  parsedText: `Uploaded image: ${file.name}`,
+                }),
+              })
+                .then(() => refreshOperationalState())
+                .catch(() => {})
+            }
+          }
+        } else {
+          const rawText = await file.text().catch(() => '')
+          const isSheet = /\.(csv|tsv)$/i.test(file.name) || file.type === 'text/csv'
+          const clippedText = isPdf && !rawText.trim()
+            ? `[PDF Document: ${file.name} (${Math.round(file.size / 1024)} KB)]`
+            : rawText.slice(0, 60000)
+          if (!forLibraryModalOnly) {
+            nextAttachments.push({
+              name: file.name,
+              mimeType: file.type || (isSheet ? 'text/csv' : isPdf ? 'application/pdf' : 'text/plain'),
+              data: '',
+              sizeBytes: file.size,
+              kind: isSheet ? 'spreadsheet' : 'document',
+              parsedText: clippedText,
+            })
+          }
           if (session?.access_token) {
-            void fetch('/api/lamat', {
+            await fetch('/api/lamat', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -765,55 +907,32 @@ export function Companion() {
                 action: 'save_library_item',
                 title: file.name,
                 fileName: file.name,
-                mimeType: file.type,
-                kind: 'image',
+                mimeType: file.type || (isSheet ? 'text/csv' : isPdf ? 'application/pdf' : 'text/plain'),
+                kind: isSheet ? 'spreadsheet' : 'document',
                 sizeBytes: file.size,
-                thumbnailData: base64,
-                parsedText: `Uploaded image: ${file.name}`,
+                parsedText: clippedText,
               }),
             })
-              .then(() => refreshOperationalState())
+              .then(() => {
+                notifyOnce(`Saved "${file.name}" to your Library.`, 'success')
+                return refreshOperationalState()
+              })
               .catch(() => {})
           }
         }
-      } else {
-        const rawText = await file.text().catch(() => '')
-        const isSheet = /\.(csv|tsv)$/i.test(file.name) || file.type === 'text/csv'
-        const clippedText = rawText.slice(0, 60000)
-        nextAttachments.push({
-          name: file.name,
-          mimeType: file.type || (isSheet ? 'text/csv' : 'text/plain'),
-          data: '',
-          sizeBytes: file.size,
-          kind: isSheet ? 'spreadsheet' : 'document',
-          parsedText: clippedText,
-        })
-        if (session?.access_token) {
-          void fetch('/api/lamat', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({
-              action: 'save_library_item',
-              title: file.name,
-              fileName: file.name,
-              mimeType: file.type || (isSheet ? 'text/csv' : 'text/plain'),
-              kind: isSheet ? 'spreadsheet' : 'document',
-              sizeBytes: file.size,
-              parsedText: clippedText,
-            }),
-          })
-            .then(() => {
-              notifyOnce(`Saved "${file.name}" to your Library.`, 'success')
-              return refreshOperationalState()
-            })
-            .catch(() => {})
-        }
       }
+      if (!forLibraryModalOnly) {
+        setAttachments(nextAttachments)
+      }
+    } finally {
+      if (forLibraryModalOnly) setUploadingLibrary(false)
     }
-    setAttachments(nextAttachments)
+  }
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || [])
+    event.target.value = ''
+    await processSelectedFiles(files, false)
   }
 
   const sendMessage = async (value = draft) => {
@@ -826,19 +945,30 @@ export function Companion() {
       .map((d) => `\n\n--- Attached ${d.kind.toUpperCase()}: ${d.name} ---\n${(d.parsedText || '').slice(0, 12000)}`)
       .join('')
 
-    const displayContent =
-      attachments.length > 0
-        ? `${content || 'Analyze the attached file(s).'}\n\n[Attached: ${attachments.map((a) => a.name).join(', ')}]`
-        : content
+    // B5: Do not duplicate attachment names with textual "[Attached: ...]" in displayContent
+    const displayContent = content
     const llmPromptContent = `${content || 'Analyze the attached file(s).'}${docTextBlocks}`
     const thumbnails = imageAttachments.map((img) => ({ name: img.name, dataUrl: img.data }))
+    const messageAttachments: MessageAttachmentMeta[] = attachments.map((att) => ({
+      name: att.name,
+      mimeType: att.mimeType,
+      kind: att.kind,
+      sizeBytes: att.sizeBytes,
+      ...(att.kind === 'image' && att.data ? { dataUrl: att.data } : {}),
+    }))
 
     const nextDisplayMessages: Message[] = [
       ...messages,
-      { id: crypto.randomUUID(), role: 'user', content: displayContent, thumbnails },
+      {
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: displayContent,
+        thumbnails,
+        attachments: messageAttachments,
+      },
     ]
     const nextLlmMessages = [
-      ...messages.map((m) => ({ role: m.role, content: m.content })),
+      ...messages.map((m) => ({ role: m.role, content: m.content || 'Attached file(s).' })),
       { role: 'user' as const, content: llmPromptContent.slice(0, 4000) },
     ]
 
@@ -850,12 +980,12 @@ export function Companion() {
       sizeBytes: img.sizeBytes,
     }))
 
+    // Section 7.1: Keep session title until Lamat's first reply arrives
     setSessions((current) =>
       current.map((item) =>
         item.id === sessionId
           ? {
               ...item,
-              title: item.messages.length === 0 ? displayContent.slice(0, 48) : item.title,
               updatedAt: Date.now(),
               messages: nextDisplayMessages,
             }
@@ -866,7 +996,10 @@ export function Companion() {
     setAttachments([])
     setError('')
     setPendingApproval(null)
+    const controller = new AbortController()
+    activeAbortRef.current = controller
     setSending(true)
+    setWorkingSessionId(sessionId)
     try {
       const response = await fetch('/api/companion-chat', {
         method: 'POST',
@@ -874,6 +1007,7 @@ export function Companion() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
+        signal: controller.signal,
         body: JSON.stringify({
           messages: nextLlmMessages,
           attachments: sentImageAttachments,
@@ -901,11 +1035,20 @@ export function Companion() {
       const replyText = String(payload.text || '').trim()
       const msgId = crypto.randomUUID()
       setLatestAnimatedId(msgId)
+      const fallbackTitle = (content || attachments[0]?.name || 'Lamat Session')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 44)
+      const nextGeneratedTitle =
+        typeof payload.generatedTitle === 'string' && payload.generatedTitle.trim()
+          ? payload.generatedTitle.trim()
+          : fallbackTitle
       setSessions((current) =>
         current.map((item) =>
           item.id === sessionId
             ? {
                 ...item,
+                title: !item.title || item.title === 'New chat' ? nextGeneratedTitle : item.title,
                 updatedAt: Date.now(),
                 messages: [
                   ...nextDisplayMessages,
@@ -917,9 +1060,14 @@ export function Companion() {
       )
       void refreshOperationalState()
     } catch (cause) {
+      if (cause instanceof DOMException && cause.name === 'AbortError') return
       setError(cause instanceof Error ? cause.message : 'Lamat is temporarily unavailable.')
     } finally {
+      if (activeAbortRef.current === controller) {
+        activeAbortRef.current = null
+      }
       setSending(false)
+      setWorkingSessionId(null)
     }
   }
 
@@ -1383,25 +1531,24 @@ export function Companion() {
   const goals = opState?.goals || []
   const memories = opState?.memories || []
   const resources = opState?.resources || []
-  const libraryItems = opState?.libraryItems || []
-  const runs = opState?.runs || []
+  const libraryItems = (opState?.libraryItems || []) as LamatLibraryItem[]
   const inboxCount = pendingQuestions.length + pendingApprovals.length
+  const connectedIntegrationsCount = Object.values(integrationStatuses).filter(
+    (st) => st === 'verified' || st === 'partial'
+  ).length
 
   return (
     <div className="flex h-dvh w-screen min-w-0 overflow-hidden bg-background text-foreground">
-      {/* Left Sidebar (Gemini / ChatGPT style with floating z-50 3-dots menu & flush-right buttons) */}
+      {/* Left Sidebar (B2, B7, B9, B10: compact typography, left-side nav modals, upward overflow menu) */}
       {sidebarOpen && (
         <aside
-          className="flex h-full w-72 shrink-0 flex-col border-r border-border/70 bg-background p-2"
+          className="flex h-full w-64 shrink-0 flex-col border-r border-border/70 bg-background p-2"
           aria-label="Lamat sidebar"
         >
           <div className="flex items-center justify-between gap-2 py-2 pl-2">
             <div className="flex items-center gap-2">
-              <LamatLogo className="h-4 w-4" />
-              <div className="flex flex-col">
-                <span className="text-sm font-semibold">{persona?.name || 'Lamat'}</span>
-                <span className="text-sm text-muted-foreground">Engine: Lamat</span>
-              </div>
+              <LamatLogo className="h-4 w-4 shrink-0" />
+              <span className="truncate text-sm font-semibold">{persona?.name || 'Lamat'}</span>
             </div>
             <div className="ml-auto flex items-center gap-2">
               <Button
@@ -1426,15 +1573,73 @@ export function Companion() {
             </div>
           </div>
 
-          <div className="py-2">
-            <Button type="button" variant="secondary" onClick={startNewSession} className="w-full justify-start gap-2">
+          <div className="space-y-2 py-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={startNewSession}
+              disabled={sending}
+              className="w-full justify-start gap-2 text-xs /* design-xs-ok */"
+            >
               <Plus className="h-4 w-4" /> New chat
             </Button>
+
+            {/* B2 & Section 9: Left-side navigation buttons for Integrations, Memory/Personalization, and Library */}
+            <div className="space-y-2 border-b border-border/70 pb-2" role="navigation" aria-label="Workspace features">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowIntegrationsModal(true)
+                  void refreshIntegrations()
+                }}
+                className="w-full justify-between px-2 text-left text-xs /* design-xs-ok */"
+              >
+                <span className="flex items-center gap-2 truncate">
+                  <Plug className="h-4 w-4 shrink-0" />
+                  <span>Integrations</span>
+                </span>
+                <Badge color={connectedIntegrationsCount >= 3 ? 'green' : 'amber'}>
+                  {connectedIntegrationsCount}/4
+                </Badge>
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMemoryModal(true)}
+                className="w-full justify-between px-2 text-left text-xs /* design-xs-ok */"
+              >
+                <span className="flex items-center gap-2 truncate">
+                  <Brain className="h-4 w-4 shrink-0" />
+                  <span>Memory & Persona</span>
+                </span>
+                <Badge color="slate">{memories.length}</Badge>
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowLibraryModal(true)}
+                className="w-full justify-between px-2 text-left text-xs /* design-xs-ok */"
+              >
+                <span className="flex items-center gap-2 truncate">
+                  <BookOpen className="h-4 w-4 shrink-0" />
+                  <span>Library</span>
+                </span>
+                <Badge color="slate">{libraryItems.length}</Badge>
+              </Button>
+            </div>
           </div>
 
+          <div className="px-2 text-xs font-medium text-muted-foreground /* design-xs-ok */">Sessions</div>
+
           <div className="min-h-0 flex-1 space-y-2 overflow-y-auto py-2" aria-label="Chat history">
-            {sessions.map((item) => {
+            {sessions.map((item, idx) => {
               const isMenuOpen = menuSessionId === item.id
+              const isSessionWorking = sending && workingSessionId === item.id
               return (
                 <div
                   key={item.id}
@@ -1444,8 +1649,9 @@ export function Companion() {
                     <Button
                       variant="ghost"
                       type="button"
+                      size="sm"
                       onClick={() => selectSession(item.id)}
-                      className="min-w-0 flex-1 justify-start truncate px-2 py-2 text-left text-sm"
+                      className="min-w-0 flex-1 justify-start truncate px-2 py-2 text-left text-xs /* design-xs-ok */"
                       aria-current={item.id === activeSessionId ? 'page' : undefined}
                       title={item.title}
                     >
@@ -1455,45 +1661,57 @@ export function Companion() {
                       variant="ghost"
                       type="button"
                       size="sm"
-                      onClick={() => setMenuSessionId(isMenuOpen ? null : item.id)}
+                      onClick={(event) => {
+                        const rect = event.currentTarget.getBoundingClientRect()
+                        const nearBottom =
+                          window.innerHeight - rect.bottom < 220 ||
+                          (sessions.length >= 4 && idx >= sessions.length - 2)
+                        setMenuOpenUpward(nearBottom)
+                        setMenuSessionId(isMenuOpen ? null : item.id)
+                      }}
                       className="ml-auto shrink-0"
                       aria-label={`Session options for ${item.title}`}
+                      aria-expanded={isMenuOpen}
                       title="Session options"
                     >
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </div>
 
-                  {/* Floating z-50 Popover Menu on Top Layer (5i) */}
+                  {/* B4 & B10: Floating z-50 Popover Menu opening upward when near bottom */}
                   {isMenuOpen && (
                     <Surface
                       variant="popover"
                       padding={2}
-                      className="absolute right-0 top-full z-50 mt-1 w-56 space-y-2 border border-border shadow-xl"
+                      className={`absolute right-0 z-50 w-48 space-y-2 border border-border shadow-xl ${
+                        menuOpenUpward ? 'bottom-full mb-2' : 'top-full mt-1'
+                      }`}
                     >
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="w-full justify-start gap-2"
+                        disabled={sending}
+                        className="w-full justify-start gap-2 text-xs /* design-xs-ok */"
                         onClick={() => analyzeOrSummarizeSessionInNewChat(item, 'analyze')}
                       >
-                        <Sparkles className="h-4 w-4" /> Analyze in new chat
+                        <Sparkles className="h-4 w-4" /> Analyze
                       </Button>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="w-full justify-start gap-2"
-                        onClick={() => analyzeOrSummarizeSessionInNewChat(item, 'summarize')}
+                        disabled={sending}
+                        className="w-full justify-start gap-2 text-xs /* design-xs-ok */"
+                        onClick={() => analyzeOrSummarizeSessionInNewChat(item, 'summary')}
                       >
-                        <FileText className="h-4 w-4" /> Summarize in new chat
+                        <FileText className="h-4 w-4" /> Summary
                       </Button>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="w-full justify-start gap-2"
+                        className="w-full justify-start gap-2 text-xs /* design-xs-ok */"
                         onClick={() => exportSessionAsMarkdown(item)}
                       >
                         <Download className="h-4 w-4" /> Export (.md)
@@ -1502,7 +1720,7 @@ export function Companion() {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="w-full justify-start gap-2"
+                        className="w-full justify-start gap-2 text-xs /* design-xs-ok */"
                         onClick={() => {
                           setRenameModalSession(item)
                           setRenameTitleInput(item.title)
@@ -1515,7 +1733,8 @@ export function Companion() {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="w-full justify-start gap-2 text-destructive"
+                        disabled={isSessionWorking}
+                        className="w-full justify-start gap-2 text-xs text-destructive /* design-xs-ok */"
                         onClick={() => {
                           setDeleteModalSession(item)
                           setMenuSessionId(null)
@@ -1530,24 +1749,33 @@ export function Companion() {
             })}
           </div>
 
-          {/* Theme & Account Footer (5c: box above removed; 5j: logout flush right) */}
+          {/* B9: Compact Theme Switcher with Icons & Account Footer */}
           <div className="space-y-2 border-t border-border/70 pt-2">
-            <div className="grid grid-cols-3 gap-2">
-              {(['light', 'dark', 'system'] as const).map((nextMode) => (
+            <div className="grid grid-cols-3 gap-2" role="group" aria-label="Color theme">
+              {(
+                [
+                  { mode: 'light', label: 'Light', Icon: Sun },
+                  { mode: 'dark', label: 'Dark', Icon: Moon },
+                  { mode: 'system', label: 'Auto', Icon: Monitor },
+                ] as const
+              ).map(({ mode: nextMode, label, Icon }) => (
                 <Button
                   key={nextMode}
                   type="button"
                   size="sm"
                   variant={themeMode === nextMode ? 'secondary' : 'ghost'}
                   onClick={() => setThemeMode(nextMode)}
-                  className="capitalize"
+                  aria-pressed={themeMode === nextMode}
+                  aria-label={`${label} theme`}
+                  className="!h-7 !min-h-7 !max-h-7 gap-2 px-2 text-xs /* design-xs-ok */"
                 >
-                  {nextMode}
+                  <Icon className="h-3.5 w-3.5 shrink-0" />
+                  <span>{label}</span>
                 </Button>
               ))}
             </div>
             <div className="flex items-center pl-2">
-              <span className="truncate text-sm text-muted-foreground">{user?.email || 'Owner'}</span>
+              <span className="truncate text-xs text-muted-foreground /* design-xs-ok */">{user?.email || 'Owner'}</span>
               <Button
                 type="button"
                 size="sm"
@@ -1566,7 +1794,7 @@ export function Companion() {
 
       {/* Main Conversational Column */}
       <main className="flex min-h-0 min-w-0 flex-1 flex-col">
-        {/* Minimal Top Header (5d: no logo/Lamat text on topbar; custom grouped ModelSelectorDropdown) */}
+        {/* Top Header */}
         <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border/70 px-4">
           <div className="flex min-w-0 items-center gap-2">
             {!sidebarOpen && (
@@ -1574,7 +1802,11 @@ export function Companion() {
                 <PanelLeft className="h-4 w-4" />
               </Button>
             )}
-            <ModelSelectorDropdown value={selectedModel} onChange={(m) => void handleModelChange(m)} />
+            <ModelSelectorDropdown
+              value={selectedModel}
+              onChange={(m) => void handleModelChange(m)}
+              disabled={sending}
+            />
             {!online && <Badge color="red">Offline</Badge>}
           </div>
 
@@ -1603,8 +1835,9 @@ export function Companion() {
               type="button"
               size="sm"
               variant={freeOnly ? 'primary' : 'secondary'}
+              disabled={sending}
               onClick={() => void handleToggleFreeOnly()}
-              title="Free Models Only: Forces Lamat to use $0 OpenRouter & HuggingFace models so zero Google Cloud credit is spent."
+              title="Free Models Only: Uses quota-limited free models on OpenRouter & Hugging Face."
             >
               {freeOnly ? 'Free: ON' : 'Free: OFF'}
             </Button>
@@ -1634,7 +1867,7 @@ export function Companion() {
         {/* Centered Conversation Stream */}
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-8" aria-live="polite">
           <div className="mx-auto max-w-3xl space-y-4">
-            {/* Inline Actionable Questions & Approvals if any exist */}
+            {/* Inline Actionable Questions & Approvals (Always interactive even when sending per Section 11) */}
             {pendingQuestions.map((q) => (
               <Card key={q.id} className="space-y-2 border-warning/40 bg-warning/5 p-4">
                 <div className="flex items-center justify-between gap-2">
@@ -1693,7 +1926,7 @@ export function Companion() {
                   How can {persona?.name || 'Lamat'} move your goals forward today, {persona?.user_callsign || 'Dragoljub'}?
                 </h1>
                 <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-                  Unified Orchestrator: talk, inspect Google Drive/Docs/Sheets, upload documents to your Library, manage finances & tasks, write code, or generate images in one conversation.
+                  Multi-Model Orchestrator: talk, search or edit Google Drive, Docs & Sheets, preview documents in your Library, manage finances & tasks, write code, or generate images.
                 </p>
                 <div className="mt-8 grid w-full gap-2 sm:grid-cols-2">
                   {starterPrompts.map((prompt) => (
@@ -1711,59 +1944,22 @@ export function Companion() {
                 </div>
               </div>
             ) : (
-              messages.map((message, index) => (
-                <div key={message.id || index} className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  {/* 5e & 5a: Frameless Gemini-style assistant response without robot icon/border/box + typing animation */}
-                  {message.role === 'assistant' ? (
-                    <div className="flex min-w-0 w-full flex-col items-start">
-                      <div className="w-full break-words text-sm text-foreground">
-                        <AnimatedAssistantMessage
-                          content={message.content}
-                          animate={Boolean(message.id && message.id === latestAnimatedId)}
-                        />
-                      </div>
-                      {/* 5b: Icon-only Copy and Speak buttons */}
-                      <div className="mt-1 flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          type="button"
-                          onClick={() => void copyMessage(message.content, index)}
-                          aria-label="Copy response"
-                          title={copiedMessage === index ? 'Copied' : 'Copy response'}
-                        >
-                          {copiedMessage === index ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          type="button"
-                          disabled
-                          aria-label="Speak response (disabled)"
-                          title="Voice & audio features are currently disabled"
-                        >
-                          <VolumeX className="h-4 w-4" />
-                        </Button>
-                        {message.model && <span className="text-sm text-muted-foreground">{message.model}</span>}
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex min-w-0 max-w-[85%] flex-col items-end">
-                        {message.thumbnails && message.thumbnails.length > 0 && (
-                          <div className="mb-2 flex flex-wrap gap-2">
-                            {message.thumbnails.map((thumb, tIdx) => (
-                              <img
-                                key={tIdx}
-                                src={thumb.dataUrl}
-                                alt={thumb.name}
-                                className="h-14 w-14 rounded-xl border border-border object-cover"
-                              />
-                            ))}
-                          </div>
-                        )}
-                        <div className="w-fit max-w-full whitespace-pre-wrap break-words rounded-xl bg-primary px-4 py-4 text-sm text-primary-foreground">
-                          {message.content}
+              messages.map((message, index) => {
+                const msgImages =
+                  message.attachments?.filter((a) => a.kind === 'image' && a.dataUrl) ||
+                  message.thumbnails?.map((t) => ({ name: t.name, dataUrl: t.dataUrl, kind: 'image' as const, mimeType: 'image/png', sizeBytes: 0 })) ||
+                  []
+                const msgDocs = message.attachments?.filter((a) => a.kind !== 'image') || []
+
+                return (
+                  <div key={message.id || index} className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    {message.role === 'assistant' ? (
+                      <div className="flex min-w-0 w-full flex-col items-start">
+                        <div className="w-full break-words text-sm text-foreground">
+                          <AnimatedAssistantMessage
+                            content={message.content}
+                            animate={Boolean(message.id && message.id === latestAnimatedId)}
+                          />
                         </div>
                         <div className="mt-1 flex items-center gap-2">
                           <Button
@@ -1771,26 +1967,103 @@ export function Companion() {
                             size="sm"
                             type="button"
                             onClick={() => void copyMessage(message.content, index)}
-                            aria-label="Copy message"
-                            title={copiedMessage === index ? 'Copied' : 'Copy message'}
+                            aria-label="Copy response"
+                            title={copiedMessage === index ? 'Copied' : 'Copy response'}
                           >
                             {copiedMessage === index ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                           </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            type="button"
+                            disabled
+                            aria-label="Speak response (disabled)"
+                            title="Voice & audio features are currently disabled"
+                          >
+                            <VolumeX className="h-4 w-4" />
+                          </Button>
+                          {message.model && <span className="text-xs text-muted-foreground /* design-xs-ok */">{message.model}</span>}
                         </div>
                       </div>
-                      <span className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl border border-border/70">
-                        <User className="h-4 w-4" />
-                      </span>
-                    </>
-                  )}
-                </div>
-              ))
+                    ) : (
+                      <>
+                        <div className="flex min-w-0 max-w-[85%] flex-col items-end">
+                          {/* B5: Image attachments show thumbnail; Documents/Sheets show file icon + name */}
+                          {(msgImages.length > 0 || msgDocs.length > 0) && (
+                            <div className="mb-2 flex flex-wrap justify-end gap-2">
+                              {msgImages.map((img, tIdx) => (
+                                <img
+                                  key={`img-${tIdx}`}
+                                  src={img.dataUrl}
+                                  alt={img.name}
+                                  title={img.name}
+                                  className="h-16 w-16 rounded-xl border border-border object-cover"
+                                />
+                              ))}
+                              {msgDocs.map((doc, dIdx) => (
+                                <Surface
+                                  key={`doc-${dIdx}`}
+                                  variant="muted"
+                                  padding={2}
+                                  className="flex items-center gap-2 border border-border"
+                                >
+                                  {doc.kind === 'spreadsheet' ? (
+                                    <FileSpreadsheet className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                  ) : (
+                                    <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                  )}
+                                  <span className="max-w-48 truncate text-xs font-medium /* design-xs-ok */">
+                                    {doc.name}
+                                  </span>
+                                </Surface>
+                              ))}
+                            </div>
+                          )}
+                          {message.content && (
+                            <div className="w-fit max-w-full whitespace-pre-wrap break-words rounded-xl bg-primary px-4 py-4 text-sm text-primary-foreground">
+                              {message.content}
+                            </div>
+                          )}
+                          <div className="mt-1 flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              type="button"
+                              onClick={() => void copyMessage(message.content, index)}
+                              aria-label="Copy message"
+                              title={copiedMessage === index ? 'Copied' : 'Copy message'}
+                            >
+                              {copiedMessage === index ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                            </Button>
+                          </div>
+                        </div>
+                        <span className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl border border-border/70">
+                          <User className="h-4 w-4" />
+                        </span>
+                      </>
+                    )}
+                  </div>
+                )
+              })
             )}
 
+            {/* Section 11: Centralized Working State Banner with Explicit Cancellation */}
             {sending && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Sparkles className="h-4 w-4 animate-pulse" /> {persona?.name || 'Lamat'} is orchestrating tools and reasoning…
-              </div>
+              <Surface variant="muted" padding={2} className="flex items-center justify-between gap-2 border border-border">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Sparkles className="h-4 w-4 animate-pulse" />
+                  <span>Work in progress — {persona?.name || 'Lamat'} is orchestrating and thinking…</span>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={cancelActiveRequest}
+                  aria-label="Cancel active request"
+                >
+                  <Square className="h-3.5 w-3.5" /> Stop
+                </Button>
+              </Surface>
             )}
 
             {error && (
@@ -1834,7 +2107,7 @@ export function Companion() {
           </div>
         </div>
 
-        {/* Centered ChatGPT / Claude / Gemini Style Bottom Composer (5f: thumbnails for images + document chips) */}
+        {/* Bottom Composer (B5: image thumbnails for images, file icon + name for documents/spreadsheets) */}
         <div className="shrink-0 px-4 pb-4">
           <div className="mx-auto max-w-3xl">
             <Card className="p-2">
@@ -1844,14 +2117,17 @@ export function Companion() {
                     <Surface key={`${att.name}-${idx}`} variant="muted" padding={2} className="flex items-center gap-2">
                       {att.kind === 'image' && att.data ? (
                         <img src={att.data} alt={att.name} className="h-10 w-10 rounded-xl object-cover" />
+                      ) : att.kind === 'spreadsheet' ? (
+                        <FileSpreadsheet className="h-4 w-4 shrink-0 text-muted-foreground" />
                       ) : (
-                        <FileText className="h-4 w-4 shrink-0" />
+                        <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
                       )}
                       <span className="max-w-40 truncate text-sm">{att.name}</span>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
+                        disabled={sending}
                         onClick={() => setAttachments((prev) => prev.filter((_, i) => i !== idx))}
                         aria-label={`Remove ${att.name}`}
                       >
@@ -1879,7 +2155,7 @@ export function Companion() {
                         void sendMessage()
                       }
                     }}
-                    placeholder={`Message ${persona?.name || 'Lamat'}… (attach images/sheets, paste Drive links, or ask to generate images)`}
+                    placeholder={`Message ${persona?.name || 'Lamat'}… (attach images/sheets, search or create Google Docs/Sheets, or ask to generate images)`}
                     maxLength={4000}
                     disabled={sending}
                     rows={2}
@@ -1891,7 +2167,7 @@ export function Companion() {
                     <FileButton
                       variant="ghost"
                       size="sm"
-                      accept="image/png,image/jpeg,image/webp,image/gif,.csv,.tsv,.txt,.md,.json"
+                      accept="image/png,image/jpeg,image/webp,image/gif,application/pdf,.csv,.tsv,.txt,.md,.json,.js,.ts,.tsx,.py,.sql"
                       multiple
                       disabled={sending}
                       onChange={(e) => void handleFileUpload(e)}
@@ -1909,9 +2185,15 @@ export function Companion() {
                       <MicOff className="h-4 w-4" /> Voice
                     </Button>
                   </div>
-                  <Button type="submit" size="sm" disabled={(!draft.trim() && !attachments.length) || sending}>
-                    <Send className="h-4 w-4" /> Send
-                  </Button>
+                  {sending ? (
+                    <Button type="button" size="sm" variant="secondary" onClick={cancelActiveRequest}>
+                      <Square className="h-3.5 w-3.5" /> Stop
+                    </Button>
+                  ) : (
+                    <Button type="submit" size="sm" disabled={(!draft.trim() && !attachments.length) || sending}>
+                      <Send className="h-4 w-4" /> Send
+                    </Button>
+                  )}
                 </div>
               </form>
             </Card>
@@ -1919,7 +2201,7 @@ export function Companion() {
         </div>
       </main>
 
-      {/* Slide-over Right Operator Panel (Tasks, Context, Finance, Budget, Logs) */}
+      {/* Slide-over Right Operator Panel (Section 9: Logs removed; Integrations, Memory & Library moved to left nav modals) */}
       {drawerOpen && (
         <aside
           className="flex h-full w-96 shrink-0 flex-col border-l border-border/70 bg-background p-4"
@@ -1946,21 +2228,18 @@ export function Companion() {
             </div>
           </div>
 
-          <div className="grid grid-cols-5 gap-2 border-b border-border/70 pb-2">
+          <div className="grid grid-cols-4 gap-2 border-b border-border/70 pb-2">
             <Button type="button" size="sm" variant={railTab === 'tasks' ? 'secondary' : 'ghost'} onClick={() => setRailTab('tasks')} className="px-2">
               Tasks
             </Button>
             <Button type="button" size="sm" variant={railTab === 'context' ? 'secondary' : 'ghost'} onClick={() => setRailTab('context')} className="px-2">
-              Context
+              Inbox {inboxCount > 0 ? `(${inboxCount})` : ''}
             </Button>
             <Button type="button" size="sm" variant={railTab === 'finance' ? 'secondary' : 'ghost'} onClick={() => setRailTab('finance')} className="px-2">
               Finance
             </Button>
             <Button type="button" size="sm" variant={railTab === 'budget' ? 'secondary' : 'ghost'} onClick={() => setRailTab('budget')} className="px-2">
               Budget
-            </Button>
-            <Button type="button" size="sm" variant={railTab === 'logs' ? 'secondary' : 'ghost'} onClick={() => setRailTab('logs')} className="px-2">
-              Logs
             </Button>
           </div>
 
@@ -1969,9 +2248,9 @@ export function Companion() {
             {railTab === 'tasks' && (
               <>
                 <Surface variant="muted" padding={2} className="space-y-2">
-                  <div className="text-sm font-semibold">Autonomous Queue & Overnight Mode</div>
+                  <div className="text-sm font-semibold">Autonomous Queue & Free Mode</div>
                   <p className="text-sm text-muted-foreground">
-                    <strong>Auto: ON</strong> continuously executes queued tasks and skips any task that needs your input. Turn <strong>Free: ON</strong> for overnight runs ($0 cost).
+                    <strong>Auto: ON</strong> continuously executes queued tasks and skips any task that needs your input. Turn <strong>Free: ON</strong> for free-tier models.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <Button
@@ -2108,151 +2387,60 @@ export function Companion() {
               </>
             )}
 
-            {/* TAB 2: CONTEXT (Questions, Approvals, User Library of Images/Docs, and Memories with Delete) */}
+            {/* TAB 2: INBOX (Questions & Approvals) */}
             {railTab === 'context' && (
-              <>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-semibold">Questions & Approvals ({inboxCount})</h3>
-                  {inboxCount === 0 ? (
-                    <p className="text-sm text-muted-foreground">No pending questions or approvals.</p>
-                  ) : (
-                    <>
-                      {pendingQuestions.map((q) => (
-                        <Surface key={q.id} variant="muted" padding={2} className="space-y-2">
-                          <div className="text-sm font-semibold">{q.question}</div>
-                          <div className="text-sm text-muted-foreground">{q.context_why}</div>
-                          <div className="flex gap-2">
-                            <Input
-                              value={questionAnswers[q.id] || ''}
-                              onChange={(e) => setQuestionAnswers((prev) => ({ ...prev, [q.id]: e.target.value }))}
-                              placeholder="Answer…"
-                            />
-                            <Button type="button" onClick={() => void handleAnswerQuestion(q.id)} disabled={!(questionAnswers[q.id] || '').trim()}>
-                              Reply
-                            </Button>
-                          </div>
-                        </Surface>
-                      ))}
-                      {pendingApprovals.map((act) => (
-                        <Surface key={act.id} variant="muted" padding={2} className="space-y-2">
-                          <Badge color="yellow">{act.category}</Badge>
-                          <div className="text-sm font-medium">{act.summary}</div>
-                          <div className="flex gap-2">
-                            <Button type="button" size="sm" onClick={() => void handleDecideAction(act, 'approved')}>
-                              Approve
-                            </Button>
-                            <Button type="button" size="sm" variant="secondary" onClick={() => void handleDecideAction(act, 'rejected')}>
-                              Reject
-                            </Button>
-                          </div>
-                        </Surface>
-                      ))}
-                    </>
-                  )}
-                </div>
-
-                {/* 5f: User Library (Images Thumbnails & Parsed Documents/Spreadsheets) */}
-                <div className="space-y-2 border-t border-border/70 pt-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-sm font-semibold">User Library ({libraryItems.length})</h3>
-                    <FileButton
-                      variant="secondary"
-                      size="sm"
-                      accept="image/png,image/jpeg,image/webp,image/gif,.csv,.tsv,.txt,.md,.json"
-                      multiple
-                      onChange={(e) => void handleFileUpload(e)}
-                    >
-                      <Plus className="h-4 w-4" /> Upload
-                    </FileButton>
-                  </div>
-                  {libraryItems.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      Attached images and uploaded documents (.csv, .txt, .md, .json) appear here as thumbnails & parsed records.
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      {libraryItems.map((item) => (
-                        <Surface key={item.id} variant="muted" padding={2} className="flex items-center gap-2">
-                          {item.kind === 'image' && item.thumbnail_data ? (
-                            <img
-                              src={item.thumbnail_data}
-                              alt={item.title}
-                              className="h-10 w-10 shrink-0 rounded-xl object-cover"
-                            />
-                          ) : (
-                            <FileText className="h-4 w-4 shrink-0" />
-                          )}
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-medium">{item.title}</div>
-                            <div className="text-sm text-muted-foreground">{item.kind}</div>
-                          </div>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => void handleDeleteLibraryItem(item.id)}
-                            aria-label={`Delete ${item.title}`}
-                          >
-                            <Trash2 className="h-4 w-4" />
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold">Questions & Approvals ({inboxCount})</h3>
+                {inboxCount === 0 ? (
+                  <p className="text-sm text-muted-foreground">No pending questions or approvals.</p>
+                ) : (
+                  <>
+                    {pendingQuestions.map((q) => (
+                      <Surface key={q.id} variant="muted" padding={2} className="space-y-2">
+                        <div className="text-sm font-semibold">{q.question}</div>
+                        <div className="text-sm text-muted-foreground">{q.context_why}</div>
+                        <div className="flex gap-2">
+                          <Input
+                            value={questionAnswers[q.id] || ''}
+                            onChange={(e) => setQuestionAnswers((prev) => ({ ...prev, [q.id]: e.target.value }))}
+                            placeholder="Answer…"
+                          />
+                          <Button type="button" onClick={() => void handleAnswerQuestion(q.id)} disabled={!(questionAnswers[q.id] || '').trim()}>
+                            Reply
                           </Button>
-                        </Surface>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* 6: Active Context & Memories (with permanent Delete) */}
-                <div className="space-y-2 border-t border-border/70 pt-4">
-                  <h3 className="text-sm font-semibold">Context & Memories ({memories.length})</h3>
-                  <form className="space-y-2 pb-2" onSubmit={(e) => void handleRecordMemory(e)}>
-                    <Select
-                      value={newMemoryKind}
-                      onChange={(e) => setNewMemoryKind(e.target.value)}
-                      aria-label="Memory kind"
-                    >
-                      <option value="fact">Fact</option>
-                      <option value="preference">Preference</option>
-                      <option value="decision">Decision</option>
-                      <option value="lesson">Lesson</option>
-                    </Select>
-                    <Input value={newMemoryContent} onChange={(e) => setNewMemoryContent(e.target.value)} placeholder="Add context note…" />
-                    <Button type="submit" size="sm" variant="secondary" disabled={!newMemoryContent.trim()} className="w-full">
-                      Save Note
-                    </Button>
-                  </form>
-                  {memories.map((m) => (
-                    <Surface key={m.id} variant="muted" padding={2} className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <Badge color="slate">{m.kind}</Badge>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => void handleDeleteMemory(m.id)}
-                          title="Permanently delete memory"
-                          aria-label="Delete memory"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{m.content}</p>
-                    </Surface>
-                  ))}
-                </div>
-              </>
+                        </div>
+                      </Surface>
+                    ))}
+                    {pendingApprovals.map((act) => (
+                      <Surface key={act.id} variant="muted" padding={2} className="space-y-2">
+                        <Badge color="yellow">{act.category}</Badge>
+                        <div className="text-sm font-medium">{act.summary}</div>
+                        <div className="flex gap-2">
+                          <Button type="button" size="sm" onClick={() => void handleDecideAction(act, 'approved')}>
+                            Approve
+                          </Button>
+                          <Button type="button" size="sm" variant="secondary" onClick={() => void handleDecideAction(act, 'rejected')}>
+                            Reject
+                          </Button>
+                        </div>
+                      </Surface>
+                    ))}
+                  </>
+                )}
+              </div>
             )}
 
             {/* TAB 3: FINANCE */}
             {railTab === 'finance' && <Financier embedded />}
 
-            {/* TAB 4: BUDGET & INFRASTRUCTURE (Purely Budget, GCP Telemetry, Persona & Integrations) */}
+            {/* TAB 4: BUDGET & RESOURCES */}
             {railTab === 'budget' && (
               <>
                 <Surface variant="muted" padding={2} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold">Budget & Google Cloud Telemetry</span>
                     <Badge color={budget?.can_execute || freeOnly ? 'green' : 'red'}>
-                      {freeOnly ? 'Free Mode ($0)' : budget?.can_execute ? 'Active' : 'Halted'}
+                      {freeOnly ? 'Free Mode' : budget?.can_execute ? 'Active' : 'Halted'}
                     </Badge>
                   </div>
                   <div className="text-sm text-muted-foreground">
@@ -2297,36 +2485,13 @@ export function Companion() {
                   </Button>
                 </form>
 
-                <Surface variant="muted" padding={2} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold">Persona: {persona?.name || 'Lamat'}</span>
-                    <Button type="button" size="sm" variant="ghost" onClick={() => setShowOnboarding(true)}>
-                      Edit
+                <div className="space-y-2 border-t border-border/70 pt-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-sm font-semibold">Resources</h3>
+                    <Button type="button" size="sm" variant="secondary" onClick={() => void handleExportContinuity()}>
+                      <Download className="h-4 w-4" /> Export Snapshot
                     </Button>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    Presentation: {persona?.gender || 'adaptive'} · Callsign: {persona?.user_callsign || 'Dragoljub'}
-                  </div>
-                </Surface>
-
-                <div className="space-y-2 border-t border-border/70 pt-4">
-                  <h3 className="text-sm font-semibold">Integrations</h3>
-                  {[
-                    { name: 'GitHub', key: 'github' as const, icon: SiGithub },
-                    { name: 'Vercel', key: 'vercel' as const, icon: SiVercel },
-                    { name: 'Supabase', key: 'supabase' as const, icon: SiSupabase },
-                    { name: 'Google Workspace', key: 'google_workspace' as const, icon: SiGoogledrive },
-                  ].map(({ name, key, icon: Icon }) => (
-                    <div key={name} className="flex items-center gap-2">
-                      <Icon className="h-4 w-4 shrink-0" />
-                      <span className="flex-1 text-sm">{name}</span>
-                      <span className="text-sm text-muted-foreground">{statusLabel[integrationStatuses[key]]}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="space-y-2 border-t border-border/70 pt-4">
-                  <h3 className="text-sm font-semibold">Resources</h3>
                   {resources.map((r) => (
                     <Surface key={r.id} variant="muted" padding={2} className="space-y-2">
                       <div className="flex items-center justify-between gap-2">
@@ -2342,48 +2507,11 @@ export function Companion() {
                 </div>
               </>
             )}
-
-            {/* TAB 5: LOGS (5h: Rephrased from Runs to Logs, rendered as one-liner accordions) */}
-            {railTab === 'logs' && (
-              <>
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-semibold">Logs ({runs.length})</h3>
-                  <Button type="button" size="sm" variant="secondary" onClick={() => void handleExportContinuity()}>
-                    <Download className="h-4 w-4" /> Export
-                  </Button>
-                </div>
-                <div className="space-y-2">
-                  {runs.map((run) => (
-                    <details key={run.id} className="rounded-xl border border-border/70 bg-muted/40 p-2">
-                      <summary className="flex cursor-pointer items-center justify-between gap-2 text-sm">
-                        <div className="flex min-w-0 items-center gap-2">
-                          <Badge color={run.status === 'succeeded' ? 'green' : run.status === 'failed' ? 'red' : 'blue'}>
-                            {run.agent_role} · {run.status}
-                          </Badge>
-                          <span className="truncate text-foreground">
-                            {run.input_summary || run.output_summary || run.model}
-                          </span>
-                        </div>
-                        <span className="shrink-0 text-sm text-muted-foreground">${run.estimated_cost_usd}</span>
-                      </summary>
-                      <div className="mt-2 space-y-2 border-t border-border/70 pt-2 text-sm text-muted-foreground">
-                        <div>{run.output_summary || run.input_summary}</div>
-                        <div>
-                          Model: {run.model} · Tokens: {run.prompt_tokens + run.completion_tokens} ({run.cost_provenance})
-                          {run.duration_ms ? ` · ${run.duration_ms}ms` : ''}
-                        </div>
-                        {run.error && <div className="text-destructive">{run.error}</div>}
-                      </div>
-                    </details>
-                  ))}
-                </div>
-              </>
-            )}
           </div>
         </aside>
       )}
 
-      {/* 5k: Persona Settings as Centered Modal */}
+      {/* Persona & Identity Modal (B8: without logo) */}
       <PersonaConfigModal
         open={showOnboarding}
         onClose={() => setShowOnboarding(false)}
@@ -2395,6 +2523,47 @@ export function Companion() {
         setUserCallsignInput={setUserCallsignInput}
         savingPersona={savingPersona}
         onSubmit={(e) => void handleSavePersona(e)}
+      />
+
+      {/* Left-Nav Modal 1: Integrations */}
+      <IntegrationsModal
+        open={showIntegrationsModal}
+        onClose={() => setShowIntegrationsModal(false)}
+        integrations={integrationsDetail}
+        verifying={verifyingIntegrations}
+        onVerify={() => void refreshIntegrations()}
+        onConnectGoogleWorkspace={() => void connectGoogleWorkspace()}
+      />
+
+      {/* Left-Nav Modal 2: Memory & Personalization */}
+      <MemoryPersonalizationModal
+        open={showMemoryModal}
+        onClose={() => setShowMemoryModal(false)}
+        memories={memories}
+        personaNameInput={personaNameInput}
+        setPersonaNameInput={setPersonaNameInput}
+        personaGenderInput={personaGenderInput}
+        setPersonaGenderInput={setPersonaGenderInput}
+        userCallsignInput={userCallsignInput}
+        setUserCallsignInput={setUserCallsignInput}
+        savingPersona={savingPersona}
+        onSubmitPersona={(e) => void handleSavePersona(e)}
+        newMemoryKind={newMemoryKind}
+        setNewMemoryKind={setNewMemoryKind}
+        newMemoryContent={newMemoryContent}
+        setNewMemoryContent={setNewMemoryContent}
+        onCreateMemory={(e) => void handleRecordMemory(e)}
+        onArchiveMemory={(id) => void handleDeleteMemory(id)}
+      />
+
+      {/* Left-Nav Modal 3: Library */}
+      <LibraryModal
+        open={showLibraryModal}
+        onClose={() => setShowLibraryModal(false)}
+        items={libraryItems}
+        uploading={uploadingLibrary}
+        onUploadFiles={(files) => void processSelectedFiles(files, true)}
+        onDeleteItem={(id) => void handleDeleteLibraryItem(id)}
       />
 
       {/* Centered Modal: Rename Session */}
@@ -2443,7 +2612,7 @@ export function Companion() {
         </div>
       </Modal>
 
-      {/* 7: Centered Modal: Interactive Task Deliverable Viewer, Execution Steps & Yellow Star Rating */}
+      {/* Centered Modal: Interactive Task Deliverable Viewer, Execution Steps & Yellow Star Rating */}
       <TaskInspectModal
         task={selectedTaskModal}
         onClose={() => setSelectedTaskModal(null)}

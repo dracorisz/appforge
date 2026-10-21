@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto'
+
 export const COMPANION_SUPABASE_URL =
   process.env.SUPABASE_URL ||
   process.env.VITE_SUPABASE_URL ||
@@ -17,6 +19,14 @@ export const COMPANION_OWNER_EMAIL = (
 )
   .trim()
   .toLowerCase()
+
+const verifiedAuthCache = new Map()
+const AUTH_CACHE_TTL_MS = 60 * 1000
+const MAX_AUTH_CACHE_ENTRIES = 100
+
+function getTokenCacheKey(token) {
+  return createHash('sha256').update(String(token || '')).digest('hex')
+}
 
 export const getCompanionSupabaseKey = () =>
   process.env.SUPABASE_PUBLISHABLE_KEY ||
@@ -129,16 +139,27 @@ export async function authenticateCompanionRequest(req, { fetchImpl = fetch } = 
   const token = authorization.startsWith('Bearer ') ? authorization.slice(7).trim() : ''
   const supabaseKey = getCompanionSupabaseKey()
   if (!token || !supabaseKey) {
-    return { ok: false, status: 401, message: 'Sign in to use Lamat.' }
+    return { ok: false, status: 401, code: 'auth_missing', category: 'auth_error', message: 'Sign in to use Lamat.' }
+  }
+
+  const useCache = fetchImpl === fetch
+  const cacheKey = useCache ? getTokenCacheKey(token) : null
+  if (useCache && cacheKey) {
+    const cached = verifiedAuthCache.get(cacheKey)
+    if (cached && cached.expiresAt > Date.now()) {
+      return { ok: true, user: cached.user, accessToken: token }
+    }
+    if (cached) verifiedAuthCache.delete(cacheKey)
   }
 
   let response = null
   let lastNetworkError = false
-  for (let attempt = 0; attempt < 2; attempt += 1) {
+  const maxAttempts = decodeOwnerJwtFallback(token) ? 1 : 2
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     try {
       response = await fetchImpl(`${COMPANION_SUPABASE_URL}/auth/v1/user`, {
         headers: { apikey: supabaseKey, Authorization: `Bearer ${token}` },
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(4000),
       })
       if (response.status < 500) break
       lastNetworkError = true
@@ -153,26 +174,56 @@ export async function authenticateCompanionRequest(req, { fetchImpl = fetch } = 
     const fallbackUser = decodeOwnerJwtFallback(token)
     if (fallbackUser) {
       if (fallbackUser.email !== COMPANION_OWNER_EMAIL) {
-        return { ok: false, status: 403, message: 'Lamat is restricted to the authorized owner account.' }
+        return {
+          ok: false,
+          status: 403,
+          code: 'auth_forbidden',
+          category: 'auth_error',
+          message: 'Lamat is restricted to the authorized owner account.',
+        }
       }
       return { ok: true, user: fallbackUser, accessToken: token }
     }
     if (!response) {
-      return { ok: false, status: 503, message: 'Authentication service is temporarily unavailable.' }
+      return {
+        ok: false,
+        status: 503,
+        code: 'auth_unavailable',
+        category: 'auth_error',
+        message: 'Authentication service is temporarily unavailable.',
+      }
     }
   }
 
   if (!response.ok) {
-    return { ok: false, status: 401, message: 'Sign in to use Lamat.' }
+    return { ok: false, status: 401, code: 'auth_invalid', category: 'auth_error', message: 'Sign in to use Lamat.' }
   }
 
   const user = await response.json().catch(() => null)
   if (!user?.id) {
-    return { ok: false, status: 401, message: 'Sign in to use Lamat.' }
+    return { ok: false, status: 401, code: 'auth_invalid', category: 'auth_error', message: 'Sign in to use Lamat.' }
   }
   if (String(user.email || '').trim().toLowerCase() !== COMPANION_OWNER_EMAIL) {
-    return { ok: false, status: 403, message: 'Lamat is restricted to the authorized owner account.' }
+    return {
+      ok: false,
+      status: 403,
+      code: 'auth_forbidden',
+      category: 'auth_error',
+      message: 'Lamat is restricted to the authorized owner account.',
+    }
   }
+
+  if (useCache && cacheKey) {
+    if (verifiedAuthCache.size >= MAX_AUTH_CACHE_ENTRIES) {
+      const oldestKey = verifiedAuthCache.keys().next().value
+      if (oldestKey) verifiedAuthCache.delete(oldestKey)
+    }
+    verifiedAuthCache.set(cacheKey, {
+      user,
+      expiresAt: Date.now() + AUTH_CACHE_TTL_MS,
+    })
+  }
+
   return { ok: true, user, accessToken: token }
 }
 

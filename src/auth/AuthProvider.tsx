@@ -10,17 +10,32 @@ interface AuthContextValue {
   session: Session | null
   user: User | null
   loading: boolean
+  oauthError: string | null
   signInWithGoogle: (returnTo?: string) => Promise<void>
   signInWithGitHub: (returnTo?: string) => Promise<void>
-  signInWithEmail: (email: string, password: string) => Promise<void>
+  connectGoogleWorkspace: () => Promise<void>
   signOut: () => Promise<void>
 }
 
 const AuthContext = React.createContext<AuthContextValue | null>(null)
 
+function readOAuthCallbackError(): string | null {
+  if (typeof window === 'undefined') return null
+  const searchParams = new URLSearchParams(window.location.search)
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+  const raw =
+    searchParams.get('error_description') ||
+    hashParams.get('error_description') ||
+    searchParams.get('error') ||
+    hashParams.get('error')
+  if (!raw) return null
+  return decodeURIComponent(raw.replace(/\+/g, ' ')).slice(0, 220)
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = React.useState<Session | null>(null)
   const [loading, setLoading] = React.useState(true)
+  const [oauthError, setOauthError] = React.useState<string | null>(() => readOAuthCallbackError())
 
   React.useEffect(() => {
     let mounted = true
@@ -46,8 +61,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }).catch(() => {})
     }
 
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data, error }) => {
       if (!mounted) return
+      if (error) setOauthError(error.message)
       activateAccountLocalStorage(data.session?.user.id || null)
       setSession(data.session)
       syncGoogleProviderToken(data.session)
@@ -57,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       activateAccountLocalStorage(nextSession?.user.id || null)
       setSession(nextSession)
+      if (nextSession) setOauthError(null)
       syncGoogleProviderToken(nextSession)
       setLoading(false)
     })
@@ -67,8 +84,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const signInWithProvider = async (provider: OAuthProvider, returnTo = '/') => {
+  const signInWithProvider = async (provider: OAuthProvider, returnTo = '/', forceConsent = false) => {
     rememberReturnPath(returnTo)
+    setOauthError(null)
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -77,10 +95,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ...(provider === 'google'
           ? {
               scopes:
-                'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/documents.readonly https://www.googleapis.com/auth/spreadsheets.readonly',
+                'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/spreadsheets',
               queryParams: {
                 access_type: 'offline',
-                prompt: 'consent',
+                prompt: forceConsent ? 'consent' : 'select_account',
               },
             }
           : {}),
@@ -90,17 +108,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error
   }
 
-  const signInWithGoogle = (returnTo = '/') => signInWithProvider('google', returnTo)
-  const signInWithGitHub = (returnTo = '/') => signInWithProvider('github', returnTo)
-  const signInWithEmail = async (email: string, password: string) => { const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password }); if (error) throw error }
+  const signInWithGoogle = (returnTo = '/') => signInWithProvider('google', returnTo, false)
+  const signInWithGitHub = (returnTo = '/') => signInWithProvider('github', returnTo, false)
+  const connectGoogleWorkspace = () => signInWithProvider('google', '/', true)
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut()
     if (error) throw error
+    setSession(null)
   }
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user || null, loading, signInWithGoogle, signInWithGitHub, signInWithEmail, signOut }}>
+    <AuthContext.Provider
+      value={{
+        session,
+        user: session?.user || null,
+        loading,
+        oauthError,
+        signInWithGoogle,
+        signInWithGitHub,
+        connectGoogleWorkspace,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

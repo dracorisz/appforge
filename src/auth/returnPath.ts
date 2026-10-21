@@ -1,8 +1,18 @@
 const AUTH_RETURN_PATH_KEY = 'appforge-auth-return-path'
 
 export function normalizeReturnPath(value?: string | null) {
-  if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/login')) return '/'
-  return value
+  if (!value || typeof value !== 'string') return '/'
+  const trimmed = value.trim()
+  if (
+    !trimmed.startsWith('/') ||
+    trimmed.startsWith('//') ||
+    trimmed.startsWith('/\\') ||
+    /[\r\n\t\0]/.test(trimmed) ||
+    /^\/(?:login|auth(?:\/|$))/i.test(trimmed)
+  ) {
+    return '/'
+  }
+  return trimmed
 }
 
 export function rememberReturnPath(value?: string | null) {

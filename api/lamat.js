@@ -132,7 +132,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      const [context, runs, conversations, gcpStatus] = await Promise.all([
+      const [context, runs, conversations, gcpStatus, fullLibraryItems] = await Promise.all([
         loadLamatOperationalContext(auth.accessToken),
         db
           .select(
@@ -144,6 +144,12 @@ export default async function handler(req, res) {
           .select('maya_conversations', 'select=id,title,updated_at&archived=eq.false&order=updated_at.desc&limit=10')
           .catch(() => []),
         getCachedGcpQuotaAndBillingStatus(),
+        db
+          .select(
+            'lamat_library_items',
+            `select=id,title,file_name,mime_type,kind,size_bytes,thumbnail_data,parsed_text,metadata,created_at&user_id=eq.${encodeURIComponent(auth.user.id)}&order=created_at.desc&limit=30`
+          )
+          .catch(() => null),
       ])
 
       let latestMessages = []
@@ -178,7 +184,7 @@ export default async function handler(req, res) {
         actions: context.actions,
         memories: context.memories,
         resources: context.resources,
-        libraryItems: context.libraryItems || [],
+        libraryItems: Array.isArray(fullLibraryItems) ? fullLibraryItems : context.libraryItems || [],
         runs,
         conversations,
         latestMessages,
@@ -463,10 +469,23 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, requestId, item: created })
     }
 
+    if (action === 'get_library_item') {
+      const id = String(req.body?.id || '').trim()
+      if (!id) return res.status(400).json({ message: 'Library item id is required.', requestId })
+      const rows = await db
+        .select(
+          'lamat_library_items',
+          `select=id,title,file_name,mime_type,kind,size_bytes,thumbnail_data,parsed_text,metadata,created_at&id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(auth.user.id)}&limit=1`
+        )
+        .catch(() => [])
+      if (!rows?.[0]) return res.status(404).json({ message: 'Library item not found.', requestId })
+      return res.status(200).json({ ok: true, requestId, item: rows[0] })
+    }
+
     if (action === 'delete_library_item') {
       const id = String(req.body?.id || '').trim()
       if (!id) return res.status(400).json({ message: 'Library item id is required.', requestId })
-      await db.delete('lamat_library_items', `id=eq.${encodeURIComponent(id)}`)
+      await db.delete('lamat_library_items', `id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(auth.user.id)}`)
       return res.status(200).json({ ok: true, requestId, deletedId: id })
     }
 
@@ -482,6 +501,7 @@ export default async function handler(req, res) {
         ...currentPrefs,
         google_provider_token: providerToken,
         ...(req.body?.providerRefreshToken ? { google_provider_refresh_token: String(req.body.providerRefreshToken) } : {}),
+        google_provider_token_expires_at: Date.now() + 3500 * 1000,
         google_token_updated_at: new Date().toISOString(),
       }
       await db
